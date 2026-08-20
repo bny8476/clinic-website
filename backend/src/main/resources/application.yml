@@ -22,7 +22,7 @@ spring:
       password:
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
   data:
     redis:
       host: ${REDIS_HOST:localhost}
