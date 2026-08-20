@@ -1,6 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { User, Settings, LogOut, ChevronDown } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
 import useAuthStore from '../../../store/authStore';
 
 export default function ProfileDropdown() {

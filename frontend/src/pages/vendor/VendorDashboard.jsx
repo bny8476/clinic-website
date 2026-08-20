@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { ConfigDrivenDashboard } from '../../components/dashboard/ConfigDrivenDashboard';
 import { dashboardConfig } from '../../config/dashboardConfig';
+
+
 
 const VendorDashboard = () => {
   const [activeTab, setActiveTab] = useState('orders');
@@ -25,12 +26,14 @@ const VendorDashboard = () => {
   };
 
   return (
+    
     <ConfigDrivenDashboard 
       config={dashboardConfig.ROLE_VENDOR}
       data={data}
       activeTab={activeTab}
       onTabChange={setActiveTab}
     />
+    
   );
 };
 

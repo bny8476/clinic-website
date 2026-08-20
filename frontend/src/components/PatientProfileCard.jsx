@@ -1,5 +1,3 @@
-import React from 'react';
-import { Phone, Droplet, MapPin, User as UserIcon } from 'lucide-react';
 
 const PatientProfileCard = ({ patient }) => {
   if (!patient) return null;

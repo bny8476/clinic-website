@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import AppModal from '../pharmacy/ui/AppModal';
+import { useState } from 'react';
 
 export default function CdsAlertBanner({ alert, onAcknowledge }) {
   const [showOverrideModal, setShowOverrideModal] = useState(false);

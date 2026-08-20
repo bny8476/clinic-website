@@ -1,6 +1,11 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
+import { motion, AnimatePresence } from 'framer-motion';
+import { fadeIn, staggerContainer } from '../../components/ui/motion';
+import toast from 'react-hot-toast';
+
+
 
 const ReportVerification = () => {
   const queryClient = useQueryClient();
@@ -25,10 +30,10 @@ const ReportVerification = () => {
       queryClient.invalidateQueries(['lab-requests-verification']);
       setSelectedRequest(null);
       setComments('');
-      alert('Report verified successfully!');
+      toast.success('Report verified successfully!');
     },
     onError: (error) => {
-      alert('Error verifying report: ' + error.message);
+      toast.error('Error verifying report: ' + error.message);
     }
   });
 
@@ -53,93 +58,121 @@ const ReportVerification = () => {
       link.click();
     } catch (error) {
       console.error('Failed to download PDF', error);
-      alert('Failed to download PDF');
+      toast.error('Failed to download PDF');
     }
   };
 
-  if (isLoading) return <div>Loading verification worklist...</div>;
+  if (isLoading) return (
+    <div className="flex items-center justify-center h-full p-12">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" />
+    </div>
+  );
 
   return (
+    
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">Report Verification</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-1 border rounded shadow bg-white p-4 h-screen overflow-y-auto">
-          <h2 className="text-lg font-semibold mb-4">Pending Verification</h2>
+        <motion.div
+          className="md:col-span-1 border border-[var(--color-border)] rounded-xl shadow-sm bg-white p-4 h-screen overflow-y-auto"
+          variants={fadeIn}
+          initial="hidden"
+          animate="show"
+        >
+          <h2 className="text-lg font-semibold mb-4 text-[var(--color-text)]">Pending Verification</h2>
           {(!requests || requests.length === 0) ? (
-            <p className="text-gray-500">No reports pending verification.</p>
+            <p className="text-[var(--color-text-muted)] text-sm">No reports pending verification.</p>
           ) : (
-            <ul className="space-y-4">
+            <motion.ul
+              variants={staggerContainer}
+              initial="hidden"
+              animate="show"
+              className="space-y-3"
+            >
               {requests.map(req => (
-                <li 
+                <motion.li
+                  variants={fadeIn}
                   key={req.id}
-                  className={`p-3 rounded border cursor-pointer ${selectedRequest?.id === req.id ? 'bg-indigo-50 border-indigo-500' : 'bg-gray-50 hover:bg-gray-100'}`}
+                  className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                    selectedRequest?.id === req.id
+                      ? 'bg-indigo-50 border-indigo-400 shadow-sm'
+                      : 'bg-slate-50 hover:bg-slate-100 border-[var(--color-border)]'
+                  }`}
                   onClick={() => setSelectedRequest(req)}
                 >
-                  <div className="font-semibold text-indigo-600">{req.testCatalog?.testName}</div>
-                  <div className="text-sm">Patient ID: {req.patient?.id}</div>
-                  <div className="text-sm text-gray-500">Req #: {req.labRequestNumber}</div>
-                </li>
+                  <div className="font-semibold text-indigo-600 text-sm">{req.testCatalog?.testName}</div>
+                  <div className="text-xs text-[var(--color-text-muted)] mt-1">Patient ID: {req.patient?.id}</div>
+                  <div className="text-xs text-[var(--color-text-muted)]">Req #: {req.labRequestNumber}</div>
+                </motion.li>
               ))}
-            </ul>
+            </motion.ul>
           )}
-        </div>
+        </motion.div>
 
-        <div className="md:col-span-2 border rounded shadow bg-white p-6">
-          {selectedRequest ? (
-            <div>
-              <h2 className="text-xl font-bold mb-4">Verify Report: {selectedRequest.testCatalog?.testName}</h2>
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div><strong>Patient ID:</strong> {selectedRequest.patient?.id}</div>
-                <div><strong>Request Number:</strong> {selectedRequest.labRequestNumber}</div>
-                <div><strong>Status:</strong> {selectedRequest.status}</div>
-                <div><strong>Priority:</strong> {selectedRequest.priority}</div>
-              </div>
+        <motion.div
+          className="md:col-span-2 border border-[var(--color-border)] rounded-xl shadow-sm bg-white p-6"
+          variants={fadeIn}
+          initial="hidden"
+          animate="show"
+        >
+          <AnimatePresence mode="wait">
+            {selectedRequest ? (
+              <motion.div key="verify-form" variants={fadeIn} initial="hidden" animate="show" exit={{ opacity: 0 }}>
+                <h2 className="text-xl font-bold mb-4 text-[var(--color-text)]">Verify Report: {selectedRequest.testCatalog?.testName}</h2>
+                <div className="grid grid-cols-2 gap-4 mb-6 text-sm">
+                  <div className="bg-slate-50 rounded-lg p-3"><span className="font-semibold text-[var(--color-text-muted)]">Patient ID: </span>{selectedRequest.patient?.id}</div>
+                  <div className="bg-slate-50 rounded-lg p-3"><span className="font-semibold text-[var(--color-text-muted)]">Request No.: </span>{selectedRequest.labRequestNumber}</div>
+                  <div className="bg-slate-50 rounded-lg p-3"><span className="font-semibold text-[var(--color-text-muted)]">Status: </span>{selectedRequest.status}</div>
+                  <div className="bg-slate-50 rounded-lg p-3"><span className="font-semibold text-[var(--color-text-muted)]">Priority: </span>{selectedRequest.priority}</div>
+                </div>
 
-              <div className="mb-6">
-                <button
-                  onClick={() => handleDownloadPdf(selectedRequest.id)}
-                  className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700"
-                >
-                  Preview PDF
-                </button>
-              </div>
+                <div className="mb-6">
+                  <button
+                    onClick={() => handleDownloadPdf(selectedRequest.id)}
+                    className="bg-slate-600 text-white px-4 py-2 rounded-lg hover:bg-slate-700 text-sm font-semibold transition-colors"
+                  >
+                    Preview PDF
+                  </button>
+                </div>
 
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Pathologist Comments (Optional)</label>
-                <textarea
-                  className="w-full border-gray-300 rounded shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                  rows="4"
-                  value={comments}
-                  onChange={(e) => setComments(e.target.value)}
-                  placeholder="Enter any comments for the final report..."
-                ></textarea>
-              </div>
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-[var(--color-text-muted)] mb-2">Pathologist Comments (Optional)</label>
+                  <textarea
+                    className="w-full border border-[var(--color-border)] rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 p-3 text-sm transition-all"
+                    rows="4"
+                    value={comments}
+                    onChange={(e) => setComments(e.target.value)}
+                    placeholder="Enter any comments for the final report..."
+                  />
+                </div>
 
-              <div className="flex justify-end">
-                <button
-                  onClick={() => setSelectedRequest(null)}
-                  className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded mr-4 hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleVerify}
-                  disabled={verifyMutation.isLoading}
-                  className="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700"
-                >
-                  {verifyMutation.isLoading ? 'Verifying...' : 'Sign & Verify Report'}
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="flex h-full items-center justify-center text-gray-400">
-              Select a report from the list to review and verify.
-            </div>
-          )}
-        </div>
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={() => setSelectedRequest(null)}
+                    className="px-5 py-2 border border-[var(--color-border)] text-[var(--color-text-muted)] rounded-lg hover:bg-slate-50 text-sm font-medium transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleVerify}
+                    disabled={verifyMutation.isLoading}
+                    className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 text-sm font-semibold transition-colors disabled:opacity-60"
+                  >
+                    {verifyMutation.isLoading ? 'Verifying...' : 'Sign & Verify Report'}
+                  </button>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div key="empty" variants={fadeIn} initial="hidden" animate="show" className="flex h-full items-center justify-center text-[var(--color-text-muted)] py-20">
+                Select a report from the list to review and verify.
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
       </div>
     </div>
+    
   );
 };
 

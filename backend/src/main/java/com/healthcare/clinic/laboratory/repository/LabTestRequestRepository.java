@@ -23,6 +23,8 @@ public interface LabTestRequestRepository extends JpaRepository<LabTestRequest, 
     @Query("SELECT r.status, COUNT(r) FROM LabTestRequest r GROUP BY r.status")
     List<Object[]> countByStatus();
 
+    long countAllByStatus(String status);
+
     @Query("SELECT r.priority, COUNT(r) FROM LabTestRequest r GROUP BY r.priority")
     List<Object[]> countByPriority();
 

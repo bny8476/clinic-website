@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Bot, Send, User, X, MessageSquare, Sparkles, Loader2 } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import { axiosPrivate } from '../../api/axios';
+import { Bot, Loader, MessageSquare, Send, Sparkles, X } from 'lucide-react';
 
 const AIAssistantWidget = () => {
   const [isOpen, setIsOpen] = useState(false);

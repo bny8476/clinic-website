@@ -1,7 +1,7 @@
 package com.healthcare.clinic.ai.service;
 
-import com.healthcare.clinic.ai.entity.AiChatMessage;
-import com.healthcare.clinic.ai.entity.AiChatSession;
+import com.healthcare.clinic.patient.entity.AiChatMessage;
+import com.healthcare.clinic.patient.entity.AiChatSession;
 import com.healthcare.clinic.ai.repository.AiChatMessageRepository;
 import com.healthcare.clinic.ai.repository.AiChatSessionRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,10 +18,7 @@ public class AiPatientService {
 
     public AiChatSession startSession(Long userId, Long tenantId) {
         AiChatSession session = AiChatSession.builder()
-            .userId(userId)
-            .userRole("PATIENT")
-            .tenantId(tenantId)
-            .title("New Chat")
+            .patientId(userId)
             .build();
         return sessionRepository.save(session);
     }
@@ -32,8 +29,7 @@ public class AiPatientService {
         // Save User Message
         AiChatMessage userMessage = AiChatMessage.builder()
             .session(session)
-            .tenantId(tenantId)
-            .sender("USER")
+            .senderType("USER")
             .content(content)
             .build();
         messageRepository.save(userMessage);
@@ -44,10 +40,8 @@ public class AiPatientService {
         
         AiChatMessage aiMessage = AiChatMessage.builder()
             .session(session)
-            .tenantId(tenantId)
-            .sender("AI")
+            .senderType("AI")
             .content(aiResponse)
-            .containsSafetyFlag(flagged)
             .build();
             
         return messageRepository.save(aiMessage);

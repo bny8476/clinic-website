@@ -1,20 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
-import { Search, Plus, Eye, Printer, XCircle, Trash2, CheckCircle } from 'lucide-react';
-import ModuleFilterBar from '../../components/pharmacy/ui/ModuleFilterBar';
-import DataTable from '../../components/pharmacy/ui/DataTable';
-import Pagination from '../../components/pharmacy/ui/Pagination';
-import AppModal from '../../components/pharmacy/ui/AppModal';
-import Badge from '../../components/pharmacy/ui/Badge';
+import { Plus } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import pharmacyService from '../../utils/pharmacy/pharmacyService';
-import PharmacyInvoice from '../../components/pharmacy/pharmacy/PharmacyInvoice';
 import { usePOSStore } from '../../store/usePOSStore';
 import { usePageData } from '../../hooks/pharmacy/usePageData';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
-import TableSkeleton from '../../components/pharmacy/ui/TableSkeleton';
 import useDebounce from '../../hooks/pharmacy/useDebounce';
+
+
 export default function DirectPharmacySales() {
   const queryClient = useQueryClient();
   const { items: salesList = [], isLoading: loading } = usePageData('sales', '/pharmacy/sales');
@@ -161,6 +156,7 @@ export default function DirectPharmacySales() {
   ];
 
   return (
+    
     <div className="space-y-6">
       <div className="flex flex-col gap-1">
         <h2 className="text-2xl font-bold tracking-tight text-gray-900">Direct Sales (OTC)</h2>
@@ -426,5 +422,6 @@ export default function DirectPharmacySales() {
         </div>
       </AppModal>
     </div>
+    
   );
 }

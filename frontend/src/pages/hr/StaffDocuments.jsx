@@ -1,13 +1,18 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { toast } from 'react-hot-toast';
+import ConfirmDialog from '../../components/ui/ConfirmDialog';
+
+
 
 const StaffDocuments = () => {
   const queryClient = useQueryClient();
   const [selectedStaff, setSelectedStaff] = useState('');
   const [file, setFile] = useState(null);
   const [documentType, setDocumentType] = useState('CONTRACT');
+  const [confirmDelete, setConfirmDelete] = useState({ isOpen: false, docId: null });
 
   const { data: staffList } = useQuery({
     queryKey: ['staffList'],
@@ -69,6 +74,7 @@ const StaffDocuments = () => {
   };
 
   return (
+    
     <div className="p-6 max-w-7xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">Staff Document Management</h1>
 
@@ -157,9 +163,7 @@ const StaffDocuments = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <button
                             onClick={() => {
-                              if (window.confirm('Are you sure you want to delete this document?')) {
-                                deleteMutation.mutate(doc.id);
-                              }
+                              setConfirmDelete({ isOpen: true, docId: doc.id });
                             }}
                             className="text-red-600 hover:text-red-900"
                           >
@@ -180,7 +184,24 @@ const StaffDocuments = () => {
           </div>
         </div>
       </div>
+
+      <ConfirmDialog 
+        isOpen={confirmDelete.isOpen}
+        onClose={() => setConfirmDelete({ isOpen: false, docId: null })}
+        onConfirm={() => {
+          if (confirmDelete.docId) {
+            deleteMutation.mutate(confirmDelete.docId);
+            setConfirmDelete({ isOpen: false, docId: null });
+          }
+        }}
+        title="Delete Document"
+        description="Are you sure you want to delete this document? This action cannot be undone."
+        confirmText="Delete"
+        isDestructive={true}
+        isLoading={deleteMutation.isPending}
+      />
     </div>
+    
   );
 };
 

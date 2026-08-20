@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, FlaskConical, CheckSquare, Printer, History, AlertCircle, Microscope, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';

@@ -1,13 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import AnalyticsFilterBar from '../../components/analytics/AnalyticsFilterBar';
-import KPICard from '../../components/ui/KPICard';
-import ChartContainer from '../../components/analytics/ChartContainer';
-import ExportMenu from '../../components/analytics/ExportMenu';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Activity, FlaskConical, AlertTriangle, FileText } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+
+
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
@@ -39,6 +36,7 @@ const LabAnalyticsDashboard = () => {
   };
 
   return (
+    
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       <div className="flex justify-between items-center">
         <div>
@@ -114,6 +112,7 @@ const LabAnalyticsDashboard = () => {
         </div>
       </div>
     </div>
+    
   );
 };
 

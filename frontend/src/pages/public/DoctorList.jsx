@@ -1,9 +1,11 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, AlertTriangle, Stethoscope, ArrowLeft } from 'lucide-react';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { axiosPublic } from '../../api/axios';
 import useAuthStore from '../../store/authStore';
+import { motion } from 'framer-motion';
+import { staggerChildren, fadeUp, listStagger } from '../../components/ui/motion';
+import { ArrowLeft, Search, AlertTriangle, Stethoscope } from 'lucide-react';
 
 const DoctorList = () => {
   const { token, roles } = useAuthStore();
@@ -123,15 +125,20 @@ const DoctorList = () => {
             ))}
           </div>
         ) : filteredDoctors.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {filteredDoctors.map((doctor, index) => {
+          <motion.div 
+            variants={staggerChildren}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
+          >
+            {filteredDoctors.map((doctor) => {
               const initials = `${doctor.firstName?.[0] || ''}${doctor.lastName?.[0] || ''}`;
               
               return (
-                <div 
+                <motion.div 
                   key={doctor.id} 
+                  variants={listStagger}
                   className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all duration-300 flex flex-col items-center text-center group"
-                  style={{ animationDelay: `${index * 50}ms` }}
                 >
                   <div className="w-24 h-24 rounded-full bg-indigo-50 flex items-center justify-center mb-6 group-hover:bg-indigo-100 transition-colors">
                     {doctor.profileImageUrl ? (
@@ -163,10 +170,10 @@ const DoctorList = () => {
                       Book Consultation
                     </Link>
                   </div>
-                </div>
+                </motion.div>
               );
             })}
-          </div>
+          </motion.div>
         ) : (
           <div className="flex flex-col items-center justify-center py-20 px-4 bg-white rounded-3xl border border-gray-100 shadow-sm max-w-3xl mx-auto text-center">
             <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6">

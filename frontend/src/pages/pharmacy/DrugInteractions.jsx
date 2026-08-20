@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import useDebounce from '../../hooks/pharmacy/useDebounce';
-import { ShieldAlert, Search, RefreshCw, AlertTriangle, ShieldCheck, ListPlus, Trash2, Pill, Activity, ClipboardList, Clock } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import pharmacyService from '../../utils/pharmacy/pharmacyService';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+
+
 
 export default function DrugInteractions() {
   const queryClient = useQueryClient();
@@ -95,6 +96,7 @@ export default function DrugInteractions() {
   };
 
   return (
+    
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <div className="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center shrink-0">
@@ -248,5 +250,6 @@ export default function DrugInteractions() {
         </div>
       </div>
     </div>
+    
   );
 }

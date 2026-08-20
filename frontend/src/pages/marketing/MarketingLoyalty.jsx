@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import toast from 'react-hot-toast';
 import { axiosPrivate } from '../../api/axios';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+
+
 
 const TIER_STYLES = {
   PLATINUM: 'bg-purple-100 text-purple-800 border-purple-300',
@@ -40,13 +43,14 @@ export default function MarketingLoyalty() {
       qc.invalidateQueries({ queryKey: ['loyalty-history', searched, 0] });
       setAdjustPoints({ points: '', notes: '' });
     } catch (e) {
-      alert(e?.response?.data?.message || 'Adjustment failed');
+      toast.error(e?.response?.data?.message || 'Adjustment failed');
     } finally {
       setLoading(false);
     }
   };
 
   return (
+    
     <div className="p-6 space-y-6">
       <h1 className="text-xl font-bold text-gray-900">Loyalty & Points</h1>
 
@@ -147,5 +151,6 @@ export default function MarketingLoyalty() {
         </div>
       )}
     </div>
+    
   );
 }

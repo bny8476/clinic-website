@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { Shield, CheckCircle, XCircle } from 'lucide-react';
+import ConfirmDialog from '../../components/ui/ConfirmDialog';
+import { useState } from 'react';
 
 const PatientConsent = () => {
   const queryClient = useQueryClient();
@@ -80,7 +80,7 @@ const PatientConsent = () => {
             <div className="flex justify-end">
               {isGranted(version.consentType) ? (
                 <button 
-                  onClick={() => { if(window.confirm('Revoke this consent?')) revokeMutation.mutate(version.consentType) }}
+                  onClick={() => setConfirmRevoke({ isOpen: true, consentType: version.consentType })}
                   disabled={revokeMutation.isPending}
                   className="text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
                 >
@@ -99,6 +99,22 @@ const PatientConsent = () => {
           </div>
         ))}
       </div>
+
+      <ConfirmDialog 
+        isOpen={confirmRevoke.isOpen}
+        onClose={() => setConfirmRevoke({ isOpen: false, consentType: null })}
+        onConfirm={() => {
+          if (confirmRevoke.consentType) {
+            revokeMutation.mutate(confirmRevoke.consentType);
+            setConfirmRevoke({ isOpen: false, consentType: null });
+          }
+        }}
+        title="Revoke Consent"
+        description="Are you sure you want to revoke this consent?"
+        confirmText="Revoke"
+        isDestructive={true}
+        isLoading={revokeMutation.isPending}
+      />
     </div>
   );
 };

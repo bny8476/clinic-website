@@ -1,15 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useShallow } from 'zustand/react/shallow';
-import ReactBarcode from 'react-barcode';
-import { Plus, Search, Eye, Edit3, Pill, Save, CheckCircle, Barcode, AlertTriangle, ShieldAlert, Trash2, ArrowUp, ArrowDown, ShoppingCart, Calendar, AlertCircle, Filter, Download, Upload, ArrowLeftRight, Printer, Settings, RotateCcw, Activity } from 'lucide-react';
-import ModuleFilterBar from '../../components/pharmacy/ui/ModuleFilterBar';
-import DataTable from '../../components/pharmacy/ui/DataTable';
-import Pagination from '../../components/pharmacy/ui/Pagination';
-import AppModal from '../../components/pharmacy/ui/AppModal';
-import Badge from '../../components/pharmacy/ui/Badge';
 import { toast } from 'react-hot-toast';
-import { useMedicineStore } from '../../store/useMedicineStore';
 import { cn } from '../../utils/pharmacy/cn';
+import { motion, AnimatePresence } from 'framer-motion';
+import { staggerContainer, fadeIn } from '../../components/ui/motion';
 
 const TABS = ['Basic Info', 'Pricing & Tax', 'Stock Settings', 'Clinical Details', 'Storage & Handling', 'Barcode'];
 
@@ -20,14 +13,22 @@ const CATEGORIES = ['Tablet', 'Capsule', 'Syrup', 'Injection', 'Ointment', 'Drop
 const NON_MEDICINE_CATEGORIES = ['Biscuit', 'Chocolate', 'Juice', 'Beverage', 'Snacks', 'Personal Care', 'Other'];
 const MEDICINE_UNITS = ['Strip', 'Bottle', 'Vial', 'Ampoule', 'Tube'];
 const NON_MEDICINE_UNITS = ['Piece', 'Pack', 'Box', 'Kg', 'Litre', 'Set', 'Unit'];
+import { 
+  Package, Search, Plus, Loader2, Pill, Activity, Barcode, 
+  Settings2, Heart, CheckCircle2, TrendingUp, Filter, Trash2, Edit2, Hexagon, Factory, X, Calendar, AlertTriangle
+} from 'lucide-react';
+import AppModal from '../../components/pharmacy/ui/AppModal';
+import pharmacyService from '../../utils/pharmacy/pharmacyService';
+import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import { usePageData } from '../../hooks/pharmacy/usePageData';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
-import pharmacyService from '../../utils/pharmacy/pharmacyService';
-import TableSkeleton from '../../components/pharmacy/ui/TableSkeleton';
 import useDebounce from '../../hooks/pharmacy/useDebounce';
+
+
 
 export default function MedicineMaster() {
   const queryClient = useQueryClient();
+  const [confirmDelete, setConfirmDelete] = useState({ isOpen: false, id: null });
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebounce(searchTerm, 300);
   const [drugClassFilter, setDrugClassFilter] = useState('ALL');
@@ -103,9 +104,7 @@ export default function MedicineMaster() {
   });
 
   const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this medicine?")) {
-      deleteMedicineMutation.mutate(id);
-    }
+    setConfirmDelete({ isOpen: true, id });
   };
 
   // Modal states
@@ -256,7 +255,7 @@ export default function MedicineMaster() {
     { header: 'GENERIC NAME', render: (r) => <span className="text-slate-600 whitespace-nowrap text-xs">{r.genericName}</span> },
     { header: 'MANUFACTURER', accessor: 'manufacturer', render: (r) => <span className="text-slate-600 whitespace-nowrap text-xs">{r.manufacturer || '-'}</span> },
     { header: 'CATEGORY', accessor: 'category', render: (r) => (
-      <span className={cn("text-[11px] font-medium px-2 py-0.5 rounded-full", r.drugClass === 'Analgesic' ? "bg-indigo-50 text-indigo-600" : r.drugClass === 'Antibiotic' ? "bg-blue-50 text-blue-600" : r.drugClass === 'Antihistamine' ? "bg-emerald-50 text-emerald-600" : r.drugClass === 'Respiratory' ? "bg-purple-50 text-purple-600" : r.drugClass === 'Gastric' ? "bg-amber-50 text-amber-600" : "bg-slate-100 text-slate-600")}>
+      <span className={cn("text-[11px] font-medium px-2 py-0.5 rounded-full", r.drugClass === 'Analgesic' ? "bg-indigo-50 text-indigo-600" : r.drugClass === 'Antibiotic' ? "bg-blue-50 text-blue-600" : r.drugClass === 'Antihistamine' ? "bg-blue-50 text-blue-600" : r.drugClass === 'Respiratory' ? "bg-purple-50 text-purple-600" : r.drugClass === 'Gastric' ? "bg-amber-50 text-amber-600" : "bg-slate-100 text-slate-600")}>
         {r.drugClass || r.category || '-'}
       </span>
     )},
@@ -274,7 +273,7 @@ export default function MedicineMaster() {
       const reorder = r.reorderLevel || 10;
       if (stock === 0) return <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-rose-50 text-rose-600 border border-rose-100">Out of Stock</span>;
       if (stock <= reorder) return <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-amber-50 text-amber-600 border border-amber-100">Low Stock</span>;
-      return <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-600 border border-emerald-100">In Stock</span>;
+      return <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-blue-50 text-blue-600 border border-blue-100">In Stock</span>;
     }},
     { header: 'ACTIONS', render: (row) => (
       <div className="flex gap-1 justify-center">
@@ -286,6 +285,7 @@ export default function MedicineMaster() {
   ], []);
 
   return (
+    
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div className="flex flex-col gap-1">
@@ -308,7 +308,7 @@ export default function MedicineMaster() {
               <h3 className="text-2xl font-bold text-slate-800">1,248</h3>
             </div>
           </div>
-          <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-emerald-600">
+          <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-blue-600">
             <ArrowUp className="w-3 h-3" /> <span>8.5%</span> <span className="text-slate-400 font-normal ml-1">from last month</span>
           </div>
         </div>
@@ -323,14 +323,14 @@ export default function MedicineMaster() {
               <h3 className="text-2xl font-bold text-slate-800">1,126</h3>
             </div>
           </div>
-          <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-emerald-600">
+          <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-blue-600">
             <ArrowUp className="w-3 h-3" /> <span>12.3%</span> <span className="text-slate-400 font-normal ml-1">from last month</span>
           </div>
         </div>
 
         <div className="bg-white border border-slate-200 rounded-xl p-5 flex flex-col justify-between shadow-sm">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-emerald-50 rounded-xl text-emerald-600">
+            <div className="p-3 bg-blue-50 rounded-xl text-blue-600">
               <ShoppingCart className="w-6 h-6" />
             </div>
             <div>
@@ -383,7 +383,7 @@ export default function MedicineMaster() {
               placeholder="Search medicines..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-lg text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-shadow"
+              className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
             />
           </div>
           
@@ -406,11 +406,11 @@ export default function MedicineMaster() {
             />
           </div>
           
-          <select value={drugClassFilter} onChange={(e) => setDrugClassFilter(e.target.value)} className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm outline-none text-slate-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-shadow">
+          <select value={drugClassFilter} onChange={(e) => setDrugClassFilter(e.target.value)}           className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm outline-none text-slate-600 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
             <option value="ALL">All Drug Classes</option>
             {DRUG_CLASSES.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
-          <select value={scheduleFilter} onChange={(e) => setScheduleFilter(e.target.value)} className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm outline-none text-slate-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-shadow">
+          <select value={scheduleFilter} onChange={(e) => setScheduleFilter(e.target.value)}           className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm outline-none text-slate-600 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
             <option value="ALL">All Schedules</option>
             {SCHEDULES.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
@@ -497,8 +497,8 @@ export default function MedicineMaster() {
               </div>
               Import Medicines
             </button>
-            <button className="w-full flex items-center gap-4 p-3.5 bg-emerald-50/50 hover:bg-emerald-50 border border-emerald-100 rounded-xl text-emerald-700 font-semibold text-sm transition-colors text-left group">
-              <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg group-hover:bg-emerald-200 transition-colors">
+            <button className="w-full flex items-center gap-4 p-3.5 bg-blue-50/50 hover:bg-blue-50 border border-blue-100 rounded-xl text-blue-700 font-semibold text-sm transition-colors text-left group">
+              <div className="p-2 bg-blue-100 text-blue-600 rounded-lg group-hover:bg-blue-200 transition-colors">
                 <Download className="w-4 h-4" />
               </div>
               Export Medicines
@@ -839,6 +839,24 @@ export default function MedicineMaster() {
           </div>
         </div>
       </AppModal>
+
+      <ConfirmDialog 
+        isOpen={confirmDelete.isOpen}
+        onClose={() => setConfirmDelete({ isOpen: false, id: null })}
+        onConfirm={() => {
+          if (confirmDelete.id) {
+            deleteMedicineMutation.mutate(confirmDelete.id, {
+              onSettled: () => setConfirmDelete({ isOpen: false, id: null })
+            });
+          }
+        }}
+        title="Delete Medicine"
+        description="Are you sure you want to delete this medicine? This action cannot be undone."
+        confirmText="Delete"
+        isDestructive={true}
+        isLoading={deleteMedicineMutation.isPending}
+      />
     </div>
+    
   );
 }

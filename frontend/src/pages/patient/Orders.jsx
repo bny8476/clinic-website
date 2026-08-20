@@ -1,8 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { axiosPrivate as axios } from '../../api/axios';
-import { ShoppingBag, Package, Truck, CheckCircle, Clock, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
+import { CheckCircle, Truck, Clock, Package, AlertCircle, ShoppingBag } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { staggerChildren, fadeUp, listStagger } from '../../components/ui/motion';
+
+import PageLoadingSkeleton from '../../components/ui/PageLoadingSkeleton';
 
 export default function Orders() {
   const [orders, setOrders] = useState([]);
@@ -46,11 +50,7 @@ export default function Orders() {
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-      </div>
-    );
+    return <PageLoadingSkeleton />;
   }
 
   if (error) {
@@ -69,26 +69,27 @@ export default function Orders() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold text-gray-900">My Orders</h2>
-      </div>
+    
+      <div className="space-y-6">
+        <motion.div variants={fadeUp} initial="hidden" animate="visible" className="flex justify-between items-center">
+          <h2 className="text-2xl font-semibold text-gray-900">My Orders</h2>
+        </motion.div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-teal-50 to-emerald-50 flex items-center">
-          <div className="p-3 bg-white rounded-lg shadow-sm mr-4 text-emerald-600">
-            <ShoppingBag className="w-6 h-6" />
+        <motion.div variants={fadeUp} initial="hidden" animate="visible" className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-teal-50 to-emerald-50 flex items-center">
+            <div className="p-3 bg-white rounded-lg shadow-sm mr-4 text-emerald-600">
+              <ShoppingBag className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-gray-900">Order History</h3>
+              <p className="text-sm text-gray-600">Track your medical equipment, prescription refills, and wellness products.</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-lg font-bold text-gray-900">Order History</h3>
-            <p className="text-sm text-gray-600">Track your medical equipment, prescription refills, and wellness products.</p>
-          </div>
-        </div>
-      </div>
+        </motion.div>
 
       <div>
         {orders.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+          <motion.div variants={fadeUp} initial="hidden" animate="visible" className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
             <div className="w-16 h-16 bg-gray-50 text-gray-400 rounded-full flex items-center justify-center mx-auto mb-4">
               <Package className="w-8 h-8" />
             </div>
@@ -96,11 +97,11 @@ export default function Orders() {
             <p className="text-gray-500 max-w-sm mx-auto">
               You haven't placed any orders for wellness products or medical equipment yet.
             </p>
-          </div>
+          </motion.div>
         ) : (
-          <div className="space-y-6">
+          <motion.div variants={staggerChildren} initial="hidden" animate="visible" className="space-y-6">
             {orders.map((order) => (
-              <div key={order.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+              <motion.div variants={listStagger} key={order.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="border-b border-gray-100 bg-gray-50 px-6 py-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                   <div>
                     <p className="text-sm text-gray-500 mb-1">
@@ -167,11 +168,12 @@ export default function Orders() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         )}
       </div>
     </div>
+    
   );
 }

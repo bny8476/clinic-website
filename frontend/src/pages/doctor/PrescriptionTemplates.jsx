@@ -2,16 +2,15 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { Dialog, Transition, Menu } from '@headlessui/react';
-import { 
-  Search, Bell, PlusSquare, FilePlus, 
-  ChevronRight, MoreVertical, Activity, Heart, 
-  Wind, CircleDot, Bone, X, Plus, Trash2, FileText,
-  ChevronLeft, LayoutGrid, List, ChevronDown, FolderOpen
+import { Activity, Heart, 
+  Wind, CircleDot, Bone
 } from 'lucide-react';
 import clsx from 'clsx';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import useDebounce from '../../hooks/pharmacy/useDebounce';
+import ConfirmDialog from '../../components/ui/ConfirmDialog';
+
+
 
 const CATEGORIES = [
   { name: 'Respiratory', icon: Wind, color: 'blue', desc: 'Cough, Cold, Asthma, COPD' },
@@ -39,6 +38,7 @@ const PrescriptionTemplates = () => {
   // Modals state
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [isPatientModalOpen, setIsPatientModalOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState({ isOpen: false, templateId: null });
 
   // Search
   const [searchQuery, setSearchQuery] = useState('');
@@ -83,8 +83,9 @@ const PrescriptionTemplates = () => {
   );
 
   return (
+    
     <div className="min-h-screen bg-[#F8FAFC] font-sans flex flex-col">
-      <Toaster position="top-right" />
+
       
 
 
@@ -233,17 +234,7 @@ const PrescriptionTemplates = () => {
                     </div>
                     <TemplateActions 
                       template={template} 
-                      onDelete={async (id) => {
-                        if (window.confirm('Are you sure you want to delete this template?')) {
-                          try {
-                            await axiosPrivate.delete(`/prescriptions/templates/${id}`);
-                            toast.success('Template deleted');
-                            queryClient.invalidateQueries(['prescription-templates']);
-                          } catch (e) {
-                            toast.error('Failed to delete template');
-                          }
-                        }
-                      }} 
+                      onDelete={(id) => setConfirmDelete({ isOpen: true, templateId: id })}
                     />
                   </div>
                   <h4 className="font-extrabold text-slate-900 text-lg mb-2 group-hover:text-blue-700 transition-colors">{template.name}</h4>
@@ -280,17 +271,7 @@ const PrescriptionTemplates = () => {
                         <div className="col-span-3 sm:col-span-1 text-right">
                             <TemplateActions 
                             template={template} 
-                            onDelete={async (id) => {
-                                if (window.confirm('Are you sure you want to delete this template?')) {
-                                try {
-                                    await axiosPrivate.delete(`/prescriptions/templates/${id}`);
-                                    toast.success('Template deleted');
-                                    queryClient.invalidateQueries(['prescription-templates']);
-                                } catch (e) {
-                                    toast.error('Failed to delete template');
-                                }
-                                }
-                            }} 
+                            onDelete={(id) => setConfirmDelete({ isOpen: true, templateId: id })}
                             />
                         </div>
                     </div>
@@ -383,7 +364,29 @@ const PrescriptionTemplates = () => {
         onClose={() => setIsTemplateModalOpen(false)} 
         onSuccess={() => queryClient.invalidateQueries(['prescription-templates'])}
       />
+
+      <ConfirmDialog 
+        isOpen={confirmDelete.isOpen}
+        onClose={() => setConfirmDelete({ isOpen: false, templateId: null })}
+        onConfirm={async () => {
+          if (!confirmDelete.templateId) return;
+          try {
+            await axiosPrivate.delete(`/prescriptions/templates/${confirmDelete.templateId}`);
+            toast.success('Template deleted');
+            queryClient.invalidateQueries(['prescription-templates']);
+          } catch (e) {
+            toast.error('Failed to delete template');
+          } finally {
+            setConfirmDelete({ isOpen: false, templateId: null });
+          }
+        }}
+        title="Delete Template"
+        description="Are you sure you want to delete this template? This action cannot be undone."
+        confirmText="Delete"
+        isDestructive={true}
+      />
     </div>
+    
   );
 };
 

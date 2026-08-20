@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import toast from 'react-hot-toast';
 import { axiosPrivate } from '../../api/axios';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+
+
 
 export default function MarketingNps() {
   const qc = useQueryClient();
@@ -37,7 +40,7 @@ export default function MarketingNps() {
       setResponding(null);
       setResponse({ npsScore: '', rating: '', comments: '' });
     } catch (e) {
-      alert(e?.response?.data?.message || 'Submission failed');
+      toast.error(e?.response?.data?.message || 'Submission failed');
     } finally {
       setSubmitting(false);
     }
@@ -50,13 +53,14 @@ export default function MarketingNps() {
       });
       qc.invalidateQueries({ queryKey: ['nps-surveys', searched, page] });
     } catch (e) {
-      alert(e?.response?.data?.message || 'Resolution failed');
+      toast.error(e?.response?.data?.message || 'Resolution failed');
     }
   };
 
   const surveysContent = surveys?.content || [];
 
   return (
+    
     <div className="p-6 space-y-6">
       <h1 className="text-xl font-bold text-gray-900">NPS & Patient Feedback</h1>
 
@@ -179,5 +183,6 @@ export default function MarketingNps() {
         </div>
       )}
     </div>
+    
   );
 }

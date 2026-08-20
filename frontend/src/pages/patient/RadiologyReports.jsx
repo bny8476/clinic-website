@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { axiosPrivate as axios } from '../../api/axios';
-import { FileText, Download, Calendar, Activity, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
-import Modal from '../../components/ui/Modal';
-import Button from '../../components/ui/Button';
+import { motion, AnimatePresence } from 'framer-motion';
+import { fadeUp, staggerChildren } from '../../components/ui/motion';
 
 export default function RadiologyReports() {
   const [reports, setReports] = useState([]);
@@ -86,7 +85,10 @@ export default function RadiologyReports() {
       </div>
 
       {reports.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+        <motion.div 
+          initial="hidden" animate="visible" variants={fadeUp}
+          className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center"
+        >
           <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
             <Activity className="w-8 h-8" />
           </div>
@@ -94,13 +96,14 @@ export default function RadiologyReports() {
           <p className="text-gray-500 max-w-sm mx-auto">
             You don't have any radiology or imaging reports in your medical history yet.
           </p>
-        </div>
+        </motion.div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* List View */}
-          <div className="lg:col-span-1 space-y-4">
+          <motion.div variants={staggerChildren} initial="hidden" animate="visible" className="lg:col-span-1 space-y-4">
             {reports.map((report) => (
-              <div 
+              <motion.div 
+                variants={fadeUp}
                 key={report.id}
                 onClick={() => setSelectedReport(report)}
                 className={`bg-white rounded-xl shadow-sm border p-4 cursor-pointer transition-all ${
@@ -145,9 +148,9 @@ export default function RadiologyReports() {
                     </div>
                   )}
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
 
           {/* Detail View */}
           <div className="lg:col-span-2">
@@ -237,10 +240,15 @@ export default function RadiologyReports() {
                 </div>
               </div>
             ) : (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 h-full flex flex-col items-center justify-center p-12 text-center text-gray-500">
+              <motion.div 
+                key="empty-detail"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="bg-white rounded-xl shadow-sm border border-gray-100 h-full flex flex-col items-center justify-center p-12 text-center text-gray-500"
+              >
                 <FileText className="w-12 h-12 text-gray-300 mb-4" />
                 <p>Select a report from the list to view its details.</p>
-              </div>
+              </motion.div>
             )}
           </div>
         </div>
@@ -254,7 +262,7 @@ export default function RadiologyReports() {
             </label>
             <input
               type="datetime-local"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 sm:text-sm transition-shadow"
               value={scheduledAt}
               onChange={(e) => setScheduledAt(e.target.value)}
               min={new Date().toISOString().slice(0, 16)}

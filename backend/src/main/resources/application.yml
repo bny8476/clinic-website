@@ -10,13 +10,23 @@ spring:
   flyway:
     enabled: false
   datasource:
-    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    clinic:
+      jdbc-url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;NON_KEYWORDS=VALUE
+      driver-class-name: org.h2.Driver
+      username: sa
+      password:
+    pharmacy:
+      jdbc-url: jdbc:h2:mem:pharmacydb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;NON_KEYWORDS=VALUE
+      driver-class-name: org.h2.Driver
+      username: sa
+      password:
   jpa:
     hibernate:
       ddl-auto: create-drop
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
   mail:
     host: ${SMTP_HOST:localhost}
     port: ${SMTP_PORT:587}
@@ -27,7 +37,7 @@ spring:
       mail.smtp.starttls.enable: true
 
 jwt:
-  secret: ${JWT_SECRET:default_secret_key_that_is_long_enough_for_hs256_algorithm_12345}
+  secret: ${JWT_SECRET}
   access-token-expiration-ms: ${JWT_EXPIRATION_MS:900000} # 15 minutes
 
 cors:
@@ -67,6 +77,6 @@ gemini:
     url: ${GEMINI_API_URL:https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent}
 
 stripe:
-  secret-key: ${STRIPE_SECRET_KEY}
-  webhook-secret: ${STRIPE_WEBHOOK_SECRET}
-  publishable-key: ${STRIPE_PUBLISHABLE_KEY}
+  secret-key: ${STRIPE_SECRET_KEY:sk_test_placeholder}
+  webhook-secret: ${STRIPE_WEBHOOK_SECRET:whsec_placeholder}
+  publishable-key: ${STRIPE_PUBLISHABLE_KEY:pk_test_placeholder}

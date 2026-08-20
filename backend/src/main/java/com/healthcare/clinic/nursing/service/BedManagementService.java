@@ -1,8 +1,8 @@
 package com.healthcare.clinic.nursing.service;
 
-import com.healthcare.clinic.nursing.entity.Bed;
+import com.healthcare.clinic.inpatient.entity.Bed;
 import com.healthcare.clinic.nursing.entity.BedAssignment;
-import com.healthcare.clinic.nursing.entity.Ward;
+import com.healthcare.clinic.inpatient.entity.Ward;
 import com.healthcare.clinic.nursing.repository.BedAssignmentRepository;
 import com.healthcare.clinic.nursing.repository.BedRepository;
 import com.healthcare.clinic.nursing.repository.WardRepository;
@@ -29,7 +29,7 @@ public class BedManagementService {
 
     @Transactional(readOnly = true)
     public List<Bed> getBedsByWard(Long wardId) {
-        return bedRepository.findByWardIdAndIsActiveTrue(wardId);
+        return bedRepository.findByRoomWardId(wardId);
     }
 
     @Transactional(readOnly = true)

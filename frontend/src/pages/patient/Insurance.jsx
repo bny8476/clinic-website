@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { toast } from 'react-hot-toast';
-import { Shield, Plus, Loader2, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { CheckCircle, AlertCircle, Clock, Loader2, Plus, Shield } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { pageTransition, staggerChildren, fadeUp, listStagger } from '../../components/ui/motion';
 
 const Insurance = () => {
     const queryClient = useQueryClient();
@@ -61,8 +63,14 @@ const Insurance = () => {
     }
 
     return (
-        <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <motion.div 
+            variants={pageTransition}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto"
+        >
+            <motion.div variants={fadeUp} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                 <div>
                     <h2 className="text-2xl font-bold text-slate-800">Insurance Claims</h2>
                     <p className="text-slate-500 mt-1">Manage and track your health insurance claims.</p>
@@ -75,10 +83,16 @@ const Insurance = () => {
                         <Plus size={18} /> New Claim
                     </button>
                 )}
-            </div>
+            </motion.div>
 
+            <AnimatePresence>
             {showForm && (
-                <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-sm mb-8">
+                <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-sm mb-8 overflow-hidden"
+                >
                     <div className="flex items-center gap-3 mb-6">
                         <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
                             <Shield size={20} />
@@ -153,10 +167,11 @@ const Insurance = () => {
                             </button>
                         </div>
                     </form>
-                </div>
+                </motion.div>
             )}
+            </AnimatePresence>
 
-            <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+            <motion.div variants={fadeUp} className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
                 {claims?.length === 0 ? (
                     <div className="p-10 text-center">
                         <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -176,9 +191,14 @@ const Insurance = () => {
                                     <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100">
+                            <motion.tbody 
+                                variants={staggerChildren}
+                                initial="hidden"
+                                animate="visible"
+                                className="divide-y divide-slate-100"
+                            >
                                 {claims?.map((claim) => (
-                                    <tr key={claim.id} className="hover:bg-slate-50/50 transition">
+                                    <motion.tr variants={listStagger} key={claim.id} className="hover:bg-slate-50/50 transition">
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="text-sm font-medium text-slate-800">
                                                 {new Date(claim.submittedAt).toLocaleDateString()}
@@ -200,14 +220,14 @@ const Insurance = () => {
                                                 <span className="text-sm font-medium text-slate-700">{claim.status}</span>
                                             </div>
                                         </td>
-                                    </tr>
+                                    </motion.tr>
                                 ))}
-                            </tbody>
+                            </motion.tbody>
                         </table>
                     </div>
                 )}
-            </div>
-        </div>
+            </motion.div>
+        </motion.div>
     );
 };
 

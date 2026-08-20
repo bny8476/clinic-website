@@ -1,14 +1,11 @@
-import React from 'react';
-import { RotateCcw, AlertTriangle, Clock, ArrowRight, Package, Box, RefreshCw } from 'lucide-react';
+import { RotateCcw, AlertTriangle, Clock, Package, Box, RefreshCw } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import KPICard from '../../components/pharmacy/ui/KPICard';
-import DataTable from '../../components/pharmacy/ui/DataTable';
-import { DashboardShell, DashboardGrid } from '../../components/dashboard/shared/DashboardShell';
-import Card from '../../components/ui/Card';
 import { useSystem } from '../../context/pharmacy/SystemContext';
 import { useConfig } from '../../context/pharmacy/ConfigContext';
 import api from '../../utils/pharmacy/api';
+
+
 
 const DashboardSkeleton = () => (
   <div className="space-y-8 animate-pulse">
@@ -54,6 +51,7 @@ export default function StorekeeperDashboard() {
   ];
 
   return (
+    
     <DashboardShell quickActions={quickActions}>
       <div className="flex flex-col gap-1 mb-6">
         <h2 className="text-2xl sm:text-3xl font-bold font-display text-[var(--color-navy-900)] m-0">
@@ -120,5 +118,6 @@ export default function StorekeeperDashboard() {
         }
       />
     </DashboardShell>
+    
   );
 }

@@ -1,23 +1,21 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import useDebounce from '../../hooks/pharmacy/useDebounce';
 import useAuthStore from '../../store/authStore';
-import { useShallow } from 'zustand/react/shallow';
-import { Plus, Search, Users, Trash2, Edit3, Save, XCircle, Phone, MapPin, CreditCard, User, Calendar, History } from 'lucide-react';
-import ModuleFilterBar from '../../components/pharmacy/ui/ModuleFilterBar';
-import DataTable from '../../components/pharmacy/ui/DataTable';
-import Pagination from '../../components/pharmacy/ui/Pagination';
-import AppModal from '../../components/pharmacy/ui/AppModal';
-import Badge from '../../components/pharmacy/ui/Badge';
+import { Plus, Trash2, Edit3 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { usePageData } from '../../hooks/pharmacy/usePageData';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import pharmacyService from '../../utils/pharmacy/pharmacyService';
-import TableSkeleton from '../../components/pharmacy/ui/TableSkeleton';
+import ConfirmDialog from '../../components/ui/ConfirmDialog';
+import Badge from '../../components/ui/Badge';
+
+
 
 export default function Patients() {
   const queryClient = useQueryClient();
   const { roles = [] } = useAuthStore();
   const [searchTerm, setSearchTerm] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState({ isOpen: false, id: null });
   const debouncedSearch = useDebounce(searchTerm, 300);
   React.useEffect(() => { setCurrentPage(1); }, [debouncedSearch]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -88,8 +86,7 @@ export default function Patients() {
   };
 
   const handleDelete = (id) => {
-    if (!window.confirm('Are you sure you want to delete this patient record?')) return;
-    deletePatientMutation.mutate(id);
+    setConfirmDelete({ isOpen: true, id });
   };
 
   const openAddModal = () => {
@@ -214,6 +211,7 @@ export default function Patients() {
   ], [roles]);
 
   return (
+    
     <div className="space-y-6">
       <div className="flex flex-col gap-1">
         <h2 className="text-2xl font-bold tracking-tight text-gray-900 font-display">Patient Directory</h2>
@@ -340,6 +338,24 @@ export default function Patients() {
            </div>
         </div>
       </AppModal>
+
+      <ConfirmDialog 
+        isOpen={confirmDelete.isOpen}
+        onClose={() => setConfirmDelete({ isOpen: false, id: null })}
+        onConfirm={() => {
+          if (confirmDelete.id) {
+            deletePatientMutation.mutate(confirmDelete.id, {
+              onSettled: () => setConfirmDelete({ isOpen: false, id: null })
+            });
+          }
+        }}
+        title="Delete Patient"
+        description="Are you sure you want to delete this patient record? This action cannot be undone."
+        confirmText="Delete"
+        isDestructive={true}
+        isLoading={deletePatientMutation.isPending}
+      />
     </div>
+    
   );
 }

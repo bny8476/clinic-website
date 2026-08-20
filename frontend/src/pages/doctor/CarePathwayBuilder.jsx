@@ -1,9 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import logger from '../../utils/logger';
 import { useClinicalDecisionStore } from '../../store/useClinicalDecisionStore';
 import useAuthStore from '../../store/authStore';
-import DataTable from '../../components/pharmacy/ui/DataTable';
-import AppModal from '../../components/pharmacy/ui/AppModal';
 
 export default function CarePathwayBuilder() {
   const { user } = useAuthStore();

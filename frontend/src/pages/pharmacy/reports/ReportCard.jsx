@@ -1,11 +1,12 @@
-import React from 'react';
 import PropTypes from 'prop-types';
-import { Star, Eye, Bell, BarChart2 } from 'lucide-react';
+import { BarChart2 } from 'lucide-react';
 import { CATEGORIES } from './reportCatalog';
 
-import { doExportCSV, doExportImage } from './reportExportUtils';
+import { doExportCSV } from './reportExportUtils';
 import { toast } from 'react-hot-toast';
 import { fmtDateTime, fmtDateTimeEnd, monthStart, today } from './reportCatalog';
+
+
 
 /**
  * Individual report card shown in the catalog grid.
@@ -33,6 +34,7 @@ export default function ReportCard({ report, isFav, onToggleFav, onOpen, onSched
   };
 
   return (
+    
     <div className={`bg-white rounded-2xl border p-6 flex flex-col h-full hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all cursor-default ${
       report.isNarcotic ? 'border-blue-200' : 'border-slate-100'
     }`}>
@@ -42,7 +44,7 @@ export default function ReportCard({ report, isFav, onToggleFav, onOpen, onSched
         <div className="flex items-center gap-4 flex-1">
           <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${
             catIcon?.color === 'text-blue-500' ? 'bg-blue-50 text-blue-600' :
-            catIcon?.color === 'text-green-500' ? 'bg-green-50 text-green-600' :
+            catIcon?.color === 'text-blue-500' ? 'bg-blue-50 text-blue-600' :
             catIcon?.color === 'text-amber-500' ? 'bg-amber-50 text-amber-600' :
             catIcon?.color === 'text-blue-500' ? 'bg-blue-50 text-blue-600' :
             catIcon?.color === 'text-red-500' ? 'bg-red-50 text-red-600' :
@@ -99,6 +101,7 @@ export default function ReportCard({ report, isFav, onToggleFav, onOpen, onSched
         </button>
       </div>
     </div>
+    
   );
 }
 

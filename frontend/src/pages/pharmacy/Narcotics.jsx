@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { ShieldAlert, RefreshCw, ClipboardList, CheckCircle2, Lock, Unlock, Search, Save, ShieldCheck, Users, FileText, Clock, Info } from 'lucide-react';
+import { ShieldCheck, Users, FileText, Clock } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
 import pharmacyService from '../../utils/pharmacy/pharmacyService';
-import OTPVerificationModal from '../../components/pharmacy/auth/OTPVerificationModal';
+
+
 
 export default function Narcotics() {
   const [isVerified, setIsVerified] = useState(false);
@@ -197,7 +198,7 @@ export default function Narcotics() {
           <p className="text-sm text-slate-400">Compliance records for Schedule X and controlled substance inventories.</p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold flex items-center gap-1.5">
+          <span className="px-3 py-1.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold flex items-center gap-1.5">
             <Unlock className="w-3.5 h-3.5" /> Session Verified
           </span>
           <button onClick={loadRegister} disabled={loading} className="p-2 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">
@@ -246,6 +247,7 @@ export default function Narcotics() {
                   {virtualItems.map(virtualRow => {
                     const entry = registerEntries[virtualRow.index];
                     return (
+    
                       <tr key={entry.id || virtualRow.index} data-index={virtualRow.index} ref={rowVirtualizer.measureElement} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
                         <td className="px-4 py-3 text-slate-400 font-mono">{entry.createdAt?.split('T')?.[0] || entry.transactionDate}</td>
                         <td className="px-4 py-3">
@@ -253,7 +255,7 @@ export default function Narcotics() {
                           <div className="text-[10px] text-slate-400 font-mono">Bth: {entry.batchNumber}</div>
                         </td>
                         <td className="px-4 py-3 text-slate-600">{entry.transactionType}</td>
-                        <td className="px-4 py-3 text-right text-emerald-600 font-bold">
+                        <td className="px-4 py-3 text-right text-blue-600 font-bold">
                           {entry.transactionType === 'INWARD' || entry.quantityIn > 0 ? `+${entry.quantityIn || entry.quantity}` : '—'}
                         </td>
                         <td className="px-4 py-3 text-right text-red-600 font-bold">
@@ -360,5 +362,6 @@ export default function Narcotics() {
         </div>
       )}
     </div>
+    
   );
 }

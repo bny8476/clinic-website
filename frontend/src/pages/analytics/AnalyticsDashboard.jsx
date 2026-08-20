@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { Activity, Users, FileText, IndianRupee, TrendingUp, BarChart2, PieChart } from 'lucide-react';
-import dayjs from 'dayjs';
+
+
 
 const AnalyticsDashboard = () => {
   const [dateRange, setDateRange] = useState('7d'); // 7d, 30d, 90d
@@ -22,6 +22,7 @@ const AnalyticsDashboard = () => {
   const avgWaitTime = dailyMetrics.length ? (dailyMetrics.reduce((acc, cur) => acc + (cur.averageWaitTimeMinutes || 0), 0) / dailyMetrics.length).toFixed(1) : 0;
 
   return (
+    
     <div className="p-6 max-w-7xl mx-auto font-sans text-slate-800">
       <div className="flex justify-between items-center mb-6">
         <div>
@@ -102,6 +103,7 @@ const AnalyticsDashboard = () => {
       </div>
 
     </div>
+    
   );
 };
 

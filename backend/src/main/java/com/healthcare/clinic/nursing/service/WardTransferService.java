@@ -1,6 +1,6 @@
 package com.healthcare.clinic.nursing.service;
 
-import com.healthcare.clinic.nursing.entity.Bed;
+import com.healthcare.clinic.inpatient.entity.Bed;
 import com.healthcare.clinic.nursing.entity.BedAssignment;
 import com.healthcare.clinic.nursing.entity.WardTransfer;
 import com.healthcare.clinic.nursing.repository.BedAssignmentRepository;

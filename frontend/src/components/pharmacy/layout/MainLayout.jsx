@@ -1,7 +1,4 @@
-import React, { useState } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
-import TopNav from './TopNav';
-import Sidebar from './Sidebar';
+import { useState } from 'react';
 import { useAuth } from '../../../context/pharmacy/AuthContext';
 import { NAV_BY_ROLE, getBaseRoleForUI } from '../../../config/pharmacy/roles.config';
 

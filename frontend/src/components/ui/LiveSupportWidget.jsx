@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { MessageSquare, Send, X, User as UserIcon, HelpCircle } from 'lucide-react';
+import { useState } from 'react';
 import { axiosPrivate } from '../../api/axios';
 
 export default function LiveSupportWidget() {

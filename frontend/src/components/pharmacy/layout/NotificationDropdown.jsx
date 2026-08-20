@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Bell, Check, Info, AlertTriangle, Package, CheckCircle2 } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 
 const DUMMY_NOTIFICATIONS = [
   {
@@ -72,7 +71,7 @@ export default function NotificationDropdown() {
   const getIcon = (type) => {
     switch (type) {
       case 'warning': return <AlertTriangle className="w-4 h-4 text-amber-500" />;
-      case 'success': return <CheckCircle2 className="w-4 h-4 text-emerald-500" />;
+      case 'success': return <CheckCircle2 className="w-4 h-4 text-blue-500" />;
       case 'info': return <Info className="w-4 h-4 text-blue-500" />;
       default: return <Package className="w-4 h-4 text-slate-500" />;
     }

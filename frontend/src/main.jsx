@@ -1,9 +1,9 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import App from './App.jsx'
 import './index.css'
 import './styles/tokens.css'
 import './styles/components.css'
-import App from './App.jsx'
 import useThemeStore from './store/themeStore'
 
 useThemeStore.getState().initTheme();

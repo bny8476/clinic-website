@@ -1,5 +1,3 @@
-import React from 'react';
-import { AlertTriangle, FileText, FlaskConical } from 'lucide-react';
 
 const alerts = [];
 

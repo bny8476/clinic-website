@@ -1,6 +1,6 @@
 package com.healthcare.clinic.doctor.repository;
 
-import com.healthcare.clinic.doctor.entity.ClinicalReferral;
+import com.healthcare.clinic.emr.entity.ClinicalReferral;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

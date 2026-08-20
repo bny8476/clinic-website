@@ -1,6 +1,4 @@
-import React from 'react';
-import { Link, useLocation, useSearchParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { useLocation, useSearchParams, useNavigate } from 'react-router-dom';
 import { cn } from '../../utils/pharmacy/cn';
 import * as LucideIcons from 'lucide-react';
 

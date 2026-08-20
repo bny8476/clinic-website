@@ -1,15 +1,12 @@
-import WipBanner from '../../../components/ui/WipBanner';
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import {
-  BarChart2, Calendar, FileSpreadsheet, FileText,
-  Bell, X, RefreshCcw,
-} from 'lucide-react';
+
 import { toast } from 'react-hot-toast';
 import { today, monthStart, fmtDateTime, fmtDateTimeEnd, fmtDate, urgencyBadge } from './reportCatalog';
 import { doExportPDF, doExportExcel, doExportCSV, doExportImage } from './reportExportUtils';
-import { Image, FileType } from 'lucide-react';
+
+
 
 /**
  * Inline panel that shows the report filter controls, fetches data,
@@ -62,7 +59,7 @@ export default function ReportPreviewPanel({ report, onClose, onSchedule }) {
     if (col === 'status') return (
       <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
         val === 'PAID' || val === 'ACTIVE' || val === 'CONFIRMED'
-          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+          ? 'bg-blue-50 text-blue-700 border border-blue-200'
           : val === 'PENDING' || val === 'DRAFT'
           ? 'bg-amber-50 text-amber-700 border border-amber-200'
           : val === 'CANCELLED' || val === 'EXPIRED'
@@ -127,7 +124,7 @@ export default function ReportPreviewPanel({ report, onClose, onSchedule }) {
           </button>
           <button
             onClick={() => doExportExcel(report, data)}
-            className="flex items-center gap-1.5 px-3 py-1.5 border border-emerald-200 text-emerald-700 text-xs font-bold rounded-lg hover:bg-emerald-50 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 border border-blue-200 text-blue-700 text-xs font-bold rounded-lg hover:bg-blue-50 transition-colors"
           >
             <FileSpreadsheet className="w-3.5 h-3.5" /> Excel
           </button>
@@ -233,6 +230,7 @@ export default function ReportPreviewPanel({ report, onClose, onSchedule }) {
                 const i   = virtualRow.index;
                 const row = data[i];
                 return (
+    
                   <tr key={i} data-index={i} ref={rowVirtualizer.measureElement}
                     className={`border-b border-slate-50 hover:bg-blue-50/30 transition-colors ${i % 2 === 0 ? '' : 'bg-slate-50/30'}`}>
                     {report.columns.map(col => (
@@ -269,6 +267,7 @@ export default function ReportPreviewPanel({ report, onClose, onSchedule }) {
         </div>
       )}
     </div>
+    
   );
 }
 

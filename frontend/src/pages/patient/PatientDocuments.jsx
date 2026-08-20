@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { Shield, FileText, Search, Filter } from 'lucide-react';
+import useAuthStore from '../../store/authStore';
+import { FileText, Shield, Search, Filter } from 'lucide-react';
 import DocumentUploader from '../../components/common/DocumentUploader';
 import DocumentList from '../../components/common/DocumentList';
-import useAuthStore from '../../store/authStore';
+import { motion } from 'framer-motion';
+import { staggerChildren, fadeUp, listStagger } from '../../components/ui/motion';
+
+import PageLoadingSkeleton from '../../components/ui/PageLoadingSkeleton';
 
 const PatientDocuments = () => {
   const { user } = useAuthStore();
@@ -31,11 +35,16 @@ const PatientDocuments = () => {
     (doc.description && doc.description.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
+  if (isLoading) {
+    return <PageLoadingSkeleton />;
+  }
+
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    
+      <div className="p-6 max-w-7xl mx-auto space-y-6">
       
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <motion.div variants={fadeUp} initial="hidden" animate="visible" className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
             <FileText className="text-blue-600" />
@@ -47,12 +56,12 @@ const PatientDocuments = () => {
           <Shield size={16} />
           <span>Securely stored & encrypted</span>
         </div>
-      </div>
+      </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <motion.div variants={staggerChildren} initial="hidden" animate="visible" className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Upload Column */}
-        <div className="lg:col-span-1">
+        <motion.div variants={fadeUp} className="lg:col-span-1">
           <DocumentUploader 
             ownerType="PATIENT" 
             ownerId={user?.id} 
@@ -67,10 +76,10 @@ const PatientDocuments = () => {
               <li>Upload your ID proof to speed up clinic registration.</li>
             </ul>
           </div>
-        </div>
+        </motion.div>
 
         {/* List Column */}
-        <div className="lg:col-span-2 space-y-6">
+        <motion.div variants={fadeUp} className="lg:col-span-2 space-y-6">
           
           {/* Filters */}
           <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row gap-4 items-center justify-between">
@@ -111,9 +120,10 @@ const PatientDocuments = () => {
             />
           )}
 
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </div>
+    
   );
 };
 

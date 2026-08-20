@@ -1,12 +1,16 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { Users, UserPlus, Search, Mail, Phone, Building2, X } from 'lucide-react';
-import { Dialog, Transition } from '@headlessui/react';
-import toast, { Toaster } from 'react-hot-toast';
+import { UserPlus } from 'lucide-react';
+import toast from 'react-hot-toast';
+
+import { fadeIn } from '../../components/ui/motion';
+
+
 
 /**
- * Debounce helper – avoids a dependency on an external hook
+ * Debounce helper
  */
 function useDebouncedValue(value, delay = 300) {
   const [debounced, setDebounced] = React.useState(value);
@@ -22,7 +26,7 @@ const Employees = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  // ── Form state ──────────────────────────────────────────────────────────────
+  // Form state
   const [formData, setFormData] = useState({
     designation: '',
     department: '',
@@ -31,7 +35,7 @@ const Employees = () => {
 
   // Real user-select state
   const [userSearch, setUserSearch] = useState('');
-  const [selectedUser, setSelectedUser] = useState(null);     // { id, firstName, lastName, email }
+  const [selectedUser, setSelectedUser] = useState(null);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
   const debouncedUserSearch = useDebouncedValue(userSearch, 300);
@@ -48,7 +52,7 @@ const Employees = () => {
     staleTime: 30_000,
   });
 
-  // ── Mutations ────────────────────────────────────────────────────────────────
+  // Mutations
   const mutation = useMutation({
     mutationFn: async (data) => axiosPrivate.post('/hr/employees', data),
     onSuccess: () => {
@@ -73,7 +77,7 @@ const Employees = () => {
       return;
     }
     mutation.mutate({
-      userId: selectedUser.id,                       // ← real user ID from DB
+      userId: selectedUser.id,
       department: formData.department,
       designation: formData.designation,
       employmentType: 'FULL_TIME',
@@ -83,158 +87,136 @@ const Employees = () => {
     });
   };
 
-  // ── Employee list query ──────────────────────────────────────────────────────
+  // Employee list query
   const { data: employees = [], isLoading } = useQuery({
     queryKey: ['hr-employees-list'],
     queryFn: async () => (await axiosPrivate.get('/hr/employees')).data,
     staleTime: 60_000,
   });
 
-  const filtered = employees.filter(e =>
-    !search ||
-    (e.name || '').toLowerCase().includes(search.toLowerCase()) ||
-    (e.department || '').toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = useMemo(() => {
+    return employees.filter(e =>
+      !search ||
+      (e.name || '').toLowerCase().includes(search.toLowerCase()) ||
+      (e.department || '').toLowerCase().includes(search.toLowerCase())
+    );
+  }, [employees, search]);
+
+  const columns = [
+    {
+      key: 'name',
+      title: 'Name & Designation',
+      render: (_, row) => (
+        <div>
+          <span className="font-bold text-[var(--color-text)] block">{row.name}</span>
+          <span className="text-xs text-[var(--color-text-muted)]">{row.designation}</span>
+        </div>
+      )
+    },
+    { key: 'department', title: 'Department' },
+    { key: 'email', title: 'Email', render: (val) => <span className="text-[var(--color-text-muted)]">{val}</span> },
+    { key: 'phone', title: 'Phone', render: (val) => <span className="text-[var(--color-text-muted)]">{val}</span> },
+    {
+      key: 'status',
+      title: 'Status',
+      render: (val) => (
+        <Badge variant={val === 'ACTIVE' || !val ? 'success' : 'danger'}>
+          {val || 'ACTIVE'}
+        </Badge>
+      )
+    }
+  ];
 
   return (
-    <>
-    <div className="p-4 sm:p-6" style={{ maxWidth: '1000px', margin: '0 auto' }}>
-      <Toaster position="top-right" />
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-5">
+    
+    <motion.div initial="hidden" animate="visible" variants={fadeIn} className="max-w-6xl mx-auto space-y-6">
+      
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold" style={{ color: 'var(--color-text)', margin: 0 }}>Employee Directory</h1>
-          <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>Staff records linked with system user accounts</p>
+          <h1 className="text-2xl sm:text-3xl font-bold font-display text-[var(--color-navy-900)] m-0 flex items-center gap-2">
+            <Briefcase className="w-7 h-7 text-[var(--color-navy-800)]" />
+            Employee Directory
+          </h1>
+          <p className="text-sm text-[var(--color-text-muted)] m-0 mt-1">
+            Manage staff records linked with system user accounts
+          </p>
         </div>
-        <button onClick={() => setIsModalOpen(true)} style={{ background: '#be185d', color: 'var(--color-surface)', border: 'none', padding: '8px 16px', borderRadius: '8px', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', alignSelf: 'flex-start' }}>
-          <UserPlus size={16} /> Add Employee
-        </button>
+        <Button variant="primary" icon={UserPlus} onClick={() => setIsModalOpen(true)}>
+          Add Employee
+        </Button>
       </div>
 
-      {/* Search bar */}
-      <div style={{ marginBottom: '16px' }}>
-        <input
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          placeholder="Filter by name or department…"
-          className="w-full sm:w-64"
-          style={{ padding: '7px 12px', borderRadius: '8px', border: '1px solid var(--color-border)', fontSize: '0.85rem' }}
-        />
-      </div>
+      <DataTable 
+        columns={columns}
+        data={filtered}
+        isLoading={isLoading}
+        searchPlaceholder="Filter by name or department…"
+        searchQuery={search}
+        onSearchChange={setSearch}
+        emptyTitle="No employees found"
+        emptyDescription="There are no employee records matching your search."
+      />
 
-      <div style={{ background: 'var(--color-surface)', borderRadius: '12px', border: '1px solid var(--color-border)', overflow: 'hidden' }}>
-        <div className="overflow-x-auto">
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '520px' }}>
-          <thead style={{ background: 'var(--color-surface-alt)', borderBottom: '1px solid var(--color-border)' }}>
-            <tr>
-              <th style={{ padding: '12px 16px', color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>Name &amp; Designation</th>
-              <th style={{ padding: '12px 16px', color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>Department</th>
-              <th style={{ padding: '12px 16px', color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>Email</th>
-              <th style={{ padding: '12px 16px', color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>Phone</th>
-              <th style={{ padding: '12px 16px', color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
-              <tr><td colSpan={5} style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>Loading employees…</td></tr>
-            ) : filtered.length === 0 ? (
-              <tr><td colSpan={5} style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)' }}>No employees found.</td></tr>
-            ) : filtered.map(e => (
-              <tr key={e.id} style={{ borderBottom: '1px solid var(--color-surface-alt)' }}>
-                <td style={{ padding: '12px 16px' }}>
-                  <span style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--color-text)', display: 'block' }}>{e.name}</span>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>{e.designation}</span>
-                </td>
-                <td style={{ padding: '12px 16px', fontSize: '0.8rem', color: 'var(--color-text)' }}>{e.department}</td>
-                <td style={{ padding: '12px 16px', fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>{e.email}</td>
-                <td style={{ padding: '12px 16px', fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>{e.phone}</td>
-                <td style={{ padding: '12px 16px' }}>
-                  <span style={{ background: 'var(--color-success-bg)', color: 'var(--color-success)', padding: '3px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>{e.status || 'ACTIVE'}</span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        </div>{/* overflow-x-auto */}
-      </div>
-    </div>
-
-      <Transition show={isModalOpen} as={React.Fragment}>
-        <Dialog as="div" className="relative z-50" onClose={() => { setIsModalOpen(false); resetForm(); }}>
-          <Transition.Child as={React.Fragment} enter="ease-out duration-300" enterFrom="opacity-0" enterTo="opacity-100" leave="ease-in duration-200" leaveFrom="opacity-100" leaveTo="opacity-0">
-            <div className="fixed inset-0 bg-black bg-opacity-25" />
-          </Transition.Child>
-
-          <div className="fixed inset-0 overflow-y-auto">
-            <div className="flex min-h-full items-center justify-center p-4 text-center">
-              <Transition.Child as={React.Fragment} enter="ease-out duration-300" enterFrom="opacity-0 scale-95" enterTo="opacity-100 scale-100" leave="ease-in duration-200" leaveFrom="opacity-100 scale-100" leaveTo="opacity-0 scale-95">
-                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 shadow-xl transition-all">
-                  <div className="flex items-center justify-between mb-5">
-                    <Dialog.Title as="h3" className="text-lg font-bold leading-6 text-slate-900">Add Employee</Dialog.Title>
-                    <button onClick={() => { setIsModalOpen(false); resetForm(); }} className="text-slate-400 hover:text-slate-500"><span className="w-5 h-5 text-xl">&times;</span></button>
-                  </div>
-                  <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-
-                    {/* ── User Account Selector (real search) ── */}
-                    <div>
-                      <label className="block text-[11px] font-semibold text-slate-500 mb-1">Link System User Account <span className="text-red-500">*</span></label>
-                      <div className="relative">
-                        {selectedUser ? (
-                          <div className="flex items-center justify-between px-3 py-2 border rounded-lg text-sm bg-green-50 border-green-300">
-                            <span className="font-medium text-green-800">{selectedUser.firstName} {selectedUser.lastName} — {selectedUser.email}</span>
-                            <button type="button" onClick={() => setSelectedUser(null)} className="text-green-600 hover:text-red-500 ml-2"><X size={14} /></button>
-                          </div>
-                        ) : (
-                          <>
-                            <input
-                              value={userSearch}
-                              onChange={e => { setUserSearch(e.target.value); setUserDropdownOpen(true); }}
-                              onFocus={() => setUserDropdownOpen(true)}
-                              placeholder="Search by name or email…"
-                              className="w-full px-3 py-2 border rounded-lg text-sm"
-                            />
-                            {userDropdownOpen && (userResults.length > 0 || userSearchLoading) && (
-                              <div className="absolute z-10 top-full mt-1 left-0 right-0 bg-white border rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                                {userSearchLoading && <div className="px-3 py-2 text-xs text-slate-400">Searching…</div>}
-                                {userResults.map(u => (
-                                  <button key={u.id} type="button"
-                                    className="w-full text-left px-3 py-2 text-sm hover:bg-slate-100 flex flex-col"
-                                    onClick={() => { setSelectedUser(u); setUserDropdownOpen(false); setUserSearch(''); }}>
-                                    <span className="font-medium">{u.firstName} {u.lastName}</span>
-                                    <span className="text-xs text-slate-400">{u.email}</span>
-                                  </button>
-                                ))}
-                                {!userSearchLoading && userResults.length === 0 && debouncedUserSearch.length >= 1 && (
-                                  <div className="px-3 py-2 text-xs text-slate-400">No matching users found.</div>
-                                )}
-                              </div>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-semibold text-slate-500 mb-1">Designation</label>
-                      <input required value={formData.designation} onChange={e => setFormData({...formData, designation: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" />
-                    </div>
-                    <div>
-                      <label className="block text-[11px] font-semibold text-slate-500 mb-1">Department</label>
-                      <input required value={formData.department} onChange={e => setFormData({...formData, department: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" />
-                    </div>
-                    <div className="pt-4 flex justify-end gap-3">
-                      <button type="button" onClick={() => { setIsModalOpen(false); resetForm(); }} className="px-4 py-2 text-sm font-semibold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200">Cancel</button>
-                      <button type="submit" disabled={mutation.isPending || !selectedUser} className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50">
-                        {mutation.isPending ? 'Saving...' : 'Add Employee'}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => { setIsModalOpen(false); resetForm(); }}
+        title="Add Employee"
+      >
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <FormField label="Link System User Account" required>
+            {selectedUser ? (
+              <div className="flex items-center justify-between px-4 py-3 border border-[var(--color-success)] bg-[var(--color-success-bg)] rounded-xl text-sm">
+                <span className="font-semibold text-[var(--color-success)]">{selectedUser.firstName} {selectedUser.lastName} — {selectedUser.email}</span>
+                <button type="button" onClick={() => setSelectedUser(null)} className="text-[var(--color-success)] hover:text-red-500 transition-colors"><X size={16} /></button>
+              </div>
+            ) : (
+              <div className="relative">
+                <input
+                  value={userSearch}
+                  onChange={e => { setUserSearch(e.target.value); setUserDropdownOpen(true); }}
+                  onFocus={() => setUserDropdownOpen(true)}
+                  placeholder="Search by name or email…"
+                  className="input-field"
+                />
+                {userDropdownOpen && (userResults.length > 0 || userSearchLoading) && (
+                  <div className="absolute z-10 top-full mt-2 left-0 right-0 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl shadow-lg max-h-48 overflow-y-auto overflow-hidden">
+                    {userSearchLoading && <div className="px-4 py-3 text-sm text-[var(--color-text-muted)]">Searching…</div>}
+                    {userResults.map(u => (
+                      <button key={u.id} type="button"
+                        className="w-full text-left px-4 py-3 text-sm hover:bg-[var(--color-surface-alt)] flex flex-col transition-colors border-b border-[var(--color-border)] last:border-0"
+                        onClick={() => { setSelectedUser(u); setUserDropdownOpen(false); setUserSearch(''); }}>
+                        <span className="font-bold text-[var(--color-text)]">{u.firstName} {u.lastName}</span>
+                        <span className="text-xs text-[var(--color-text-muted)]">{u.email}</span>
                       </button>
-                    </div>
-                  </form>
-                </Dialog.Panel>
-              </Transition.Child>
-            </div>
+                    ))}
+                    {!userSearchLoading && userResults.length === 0 && debouncedUserSearch.length >= 1 && (
+                      <div className="px-4 py-3 text-sm text-[var(--color-text-muted)]">No matching users found.</div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </FormField>
+
+          <FormField label="Designation" required>
+            <input required value={formData.designation} onChange={e => setFormData({...formData, designation: e.target.value})} className="input-field" placeholder="e.g. Senior Nurse" />
+          </FormField>
+          
+          <FormField label="Department" required>
+            <input required value={formData.department} onChange={e => setFormData({...formData, department: e.target.value})} className="input-field" placeholder="e.g. Cardiology" />
+          </FormField>
+          
+          <div className="pt-4 flex justify-end gap-3 border-t border-[var(--color-border)] mt-6">
+            <Button type="button" variant="ghost" onClick={() => { setIsModalOpen(false); resetForm(); }}>Cancel</Button>
+            <Button type="submit" variant="primary" isLoading={mutation.isPending} disabled={!selectedUser}>
+              Add Employee
+            </Button>
           </div>
-        </Dialog>
-      </Transition>
-    </>
+        </form>
+      </Modal>
+
+    </motion.div>
+    
   );
 };
 

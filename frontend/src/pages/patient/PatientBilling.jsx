@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import useAuthStore from '../../store/authStore';
-import { FileText, CheckCircle2, Clock, XCircle, CreditCard, Download, ChevronRight, Receipt } from 'lucide-react';
+import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import './PatientBilling.css';
 
 const PatientBilling = () => {
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('invoices'); // 'invoices' or 'history'
+  const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, invoice: null });
 
   // Fetch Invoices
   const { data: invoices, isLoading: isLoadingInvoices } = useQuery({
@@ -52,13 +53,17 @@ const PatientBilling = () => {
   });
 
   const handlePay = (invoice) => {
-    if(window.confirm(`Process payment for ₹${invoice.totalAmount || invoice.amount || 0}?`)) {
-      payMutation.mutate({ 
-        invoiceId: invoice.id 
-      });
-    }
+    setConfirmDialog({ isOpen: true, invoice });
   };
 
+  const handleConfirmPay = () => {
+    if (confirmDialog.invoice) {
+      payMutation.mutate({ 
+        invoiceId: confirmDialog.invoice.id 
+      });
+      setConfirmDialog({ isOpen: false, invoice: null });
+    }
+  };
   const handleDownloadPdf = async (id, invoiceNumber) => {
     const res = await axiosPrivate.get(`/billing/invoices/${id}/pdf`, { responseType: 'blob' });
     const url = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
@@ -227,6 +232,17 @@ const PatientBilling = () => {
           )}
         </>
       )}
+
+      <ConfirmDialog 
+        isOpen={confirmDialog.isOpen}
+        onClose={() => setConfirmDialog({ isOpen: false, invoice: null })}
+        onConfirm={handleConfirmPay}
+        title="Confirm Payment"
+        description={`Process payment for ₹${confirmDialog.invoice?.totalAmount || confirmDialog.invoice?.amount || 0}?`}
+        confirmText="Pay Now"
+        isDestructive={false}
+        isLoading={payMutation.isPending}
+      />
     </div>
   );
 };

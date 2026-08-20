@@ -1,18 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import useDebounce from '../../hooks/pharmacy/useDebounce';
 import { useLocation } from 'react-router-dom';
-import { Search, Plus, Eye, Printer, RotateCcw } from 'lucide-react';
-import ModuleFilterBar from '../../components/pharmacy/ui/ModuleFilterBar';
-import DataTable from '../../components/pharmacy/ui/DataTable';
-import Pagination from '../../components/pharmacy/ui/Pagination';
-import AppModal from '../../components/pharmacy/ui/AppModal';
-import Badge from '../../components/pharmacy/ui/Badge';
+import { Plus } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import pharmacyService from '../../utils/pharmacy/pharmacyService';
 
 import { usePageData } from '../../hooks/pharmacy/usePageData';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import TableSkeleton from '../../components/pharmacy/ui/TableSkeleton';
+
+
 
 export default function MedicineCreditReturns() {
   const location = useLocation();
@@ -144,6 +140,7 @@ export default function MedicineCreditReturns() {
   });
 
   return (
+    
     <div className="space-y-6">
       <div className="flex flex-col gap-1">
         <h2 className="text-2xl font-bold tracking-tight text-gray-900">Medicine Credit Returns</h2>
@@ -297,5 +294,6 @@ export default function MedicineCreditReturns() {
         </div>
       </AppModal>
     </div>
+    
   );
 }

@@ -1,15 +1,12 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import {
-  ArrowLeft, Calendar, FileText, Activity, Phone, Mail, Droplet, MapPin,
-  User, ChevronRight, Loader2, AlertCircle, Pill, FlaskConical, CreditCard,
-  FolderOpen, ClipboardList, HeartPulse
+import { Calendar, Pill, FlaskConical, CreditCard,
+  FolderOpen, Loader2, AlertCircle, ChevronRight, ArrowLeft,
+  User, Phone, Mail, Droplet, MapPin, HeartPulse, Activity, FileText
 } from 'lucide-react';
-import ChartBanner from './emr/ChartBanner';
-import EMRChart from './emr/EMRChart';
-import CarePlan from './emr/CarePlan';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const TABS = [
   'Overview', 'Appointments', 'Prescriptions', 'Lab Reports',
@@ -17,13 +14,18 @@ const TABS = [
 ];
 
 const EmptyState = ({ icon: Icon, title, desc }) => (
-  <div className="flex flex-col items-center justify-center py-16 text-center">
+  <motion.div 
+    initial={{ opacity: 0, scale: 0.95 }}
+    animate={{ opacity: 1, scale: 1 }}
+    transition={{ duration: 0.3 }}
+    className="flex flex-col items-center justify-center py-16 text-center"
+  >
     <div className="w-14 h-14 bg-slate-50 rounded-full flex items-center justify-center mb-3">
       <Icon className="text-slate-300" size={22} />
     </div>
     <p className="text-sm font-semibold text-slate-600">{title}</p>
     {desc && <p className="text-xs text-slate-400 mt-1">{desc}</p>}
-  </div>
+  </motion.div>
 );
 
 const LoadingState = () => (
@@ -321,7 +323,7 @@ const PatientDetail = ({ patientIdOverride }) => {
           <div className="w-full lg:w-[340px] flex-shrink-0 flex flex-col gap-6">
 
             {/* Profile Info */}
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 flex flex-col items-center">
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 p-6 flex flex-col items-center">
               <div className="flex items-center gap-4 w-full mb-6">
                 <img
                   src={`https://i.pravatar.cc/150?u=${profileId || patientId}`}
@@ -396,7 +398,7 @@ const PatientDetail = ({ patientIdOverride }) => {
 
             {/* Emergency Contact */}
             {(patient.emergencyContactName || patient.emergencyContactPhone) && (
-              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 relative">
+              <div className="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 p-6 relative">
                 <h3 className="text-[13px] font-bold text-slate-800 mb-4">Emergency Contact</h3>
                 <div className="flex items-center justify-between">
                   <div>
@@ -414,7 +416,7 @@ const PatientDetail = ({ patientIdOverride }) => {
             )}
 
             {/* Allergies */}
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 relative">
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 p-6 relative">
               <h3 className="text-[13px] font-bold text-slate-800 mb-4">Allergies</h3>
               {patient.allergies && patient.allergies.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
@@ -431,7 +433,7 @@ const PatientDetail = ({ patientIdOverride }) => {
 
             {/* Chronic Conditions */}
             {patient.chronicConditions && (
-              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 relative">
+              <div className="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 p-6 relative">
                 <h3 className="text-[13px] font-bold text-slate-800 mb-4">Chronic Conditions</h3>
                 <p className="text-xs text-slate-700">{patient.chronicConditions}</p>
               </div>
@@ -447,20 +449,34 @@ const PatientDetail = ({ patientIdOverride }) => {
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`pb-3 text-sm font-bold whitespace-nowrap transition-colors relative ${
+                  className={`relative pb-3 text-sm font-bold whitespace-nowrap transition-colors ${
                     activeTab === tab ? 'text-[#5B21B6]' : 'text-slate-500 hover:text-slate-700'
                   }`}
                 >
                   {tab}
                   {activeTab === tab && (
-                    <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#5B21B6] rounded-t-md" />
+                    <motion.div
+                      layoutId="patientTab"
+                      className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#5B21B6] rounded-t-md"
+                      initial={false}
+                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    />
                   )}
                 </button>
               ))}
             </div>
 
             {/* Tab Content Area */}
-            <div className="bg-white rounded-b-xl border border-slate-200 shadow-sm p-6 flex flex-col gap-6">
+            <div className="bg-white rounded-b-xl border border-slate-200 shadow-sm p-6 flex flex-col gap-6 relative min-h-[400px]">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeTab}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex-1"
+                >
 
               {activeTab === 'Overview' && (
                 <>
@@ -700,6 +716,8 @@ const PatientDetail = ({ patientIdOverride }) => {
               {activeTab === 'Billing & Payments' && (
                 <BillingTab patientUserId={patientUserId} />
               )}
+                </motion.div>
+              </AnimatePresence>
             </div>
           </div>
         </div>

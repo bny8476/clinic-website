@@ -42,7 +42,7 @@ export default function Badge({
 
   return (
     <span 
-      className={`inline-flex items-center justify-center whitespace-nowrap select-none ${variants[variant] || variants.neutral} ${sizes[size] || sizes.md} ${className}`}
+      className={`inline-flex items-center justify-center whitespace-nowrap select-none transition-all duration-[var(--duration-fast)] ease-[var(--ease-out-smooth)] ${variants[variant] || variants.neutral} ${sizes[size] || sizes.md} ${className}`}
       {...rest}
     >
       {renderIcon(IconComponent, "w-3 h-3 text-current shrink-0")}

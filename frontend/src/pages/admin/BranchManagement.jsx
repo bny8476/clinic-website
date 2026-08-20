@@ -1,22 +1,15 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { Building2 } from 'lucide-react';
+import { fadeIn } from '../../components/ui/motion';
 
 const BranchManagement = () => {
     const queryClient = useQueryClient();
-    const [isEditing, setIsEditing] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentBranch, setCurrentBranch] = useState(null);
     const [formData, setFormData] = useState({
-        name: '',
-        address: '',
-        city: '',
-        country: '',
-        postalCode: '',
-        phoneNumber: '',
-        email: '',
-        timezone: 'UTC',
-        isActive: true
+        name: '', address: '', city: '', country: '', postalCode: '', phoneNumber: '', email: '', timezone: 'UTC', isActive: true
     });
 
     const { data: branches, isLoading } = useQuery({
@@ -39,7 +32,7 @@ const BranchManagement = () => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries(['branches']);
-            setIsEditing(false);
+            setIsModalOpen(false);
             setCurrentBranch(null);
         }
     });
@@ -47,7 +40,7 @@ const BranchManagement = () => {
     const handleEdit = (branch) => {
         setCurrentBranch(branch);
         setFormData(branch);
-        setIsEditing(true);
+        setIsModalOpen(true);
     };
 
     const handleCreateNew = () => {
@@ -55,7 +48,7 @@ const BranchManagement = () => {
         setFormData({
             name: '', address: '', city: '', country: '', postalCode: '', phoneNumber: '', email: '', timezone: 'UTC', isActive: true
         });
-        setIsEditing(true);
+        setIsModalOpen(true);
     };
 
     const handleChange = (e) => {
@@ -71,107 +64,112 @@ const BranchManagement = () => {
         mutation.mutate(formData);
     };
 
-    if (isEditing) {
-        return (
-            <div className="card">
-                <div className="admin-section-header">
-                    <h3>{currentBranch ? 'Edit Branch' : 'Create Branch'}</h3>
-                </div>
-                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 'var(--space-4)' }}>
-                        <div>
-                            <label className="label-caps" style={{ display: 'block', marginBottom: 'var(--space-1)' }}>Name</label>
-                            <input type="text" name="name" value={formData.name} onChange={handleChange} required className="input-field" />
-                        </div>
-                        <div>
-                            <label className="label-caps" style={{ display: 'block', marginBottom: 'var(--space-1)' }}>Email</label>
-                            <input type="email" name="email" value={formData.email} onChange={handleChange} required className="input-field" />
-                        </div>
-                        <div>
-                            <label className="label-caps" style={{ display: 'block', marginBottom: 'var(--space-1)' }}>Phone Number</label>
-                            <input type="text" name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} required className="input-field" />
-                        </div>
-                        <div>
-                            <label className="label-caps" style={{ display: 'block', marginBottom: 'var(--space-1)' }}>Timezone</label>
-                            <input type="text" name="timezone" value={formData.timezone} onChange={handleChange} required className="input-field" />
-                        </div>
-                        <div style={{ gridColumn: '1 / -1' }}>
-                            <label className="label-caps" style={{ display: 'block', marginBottom: 'var(--space-1)' }}>Address</label>
-                            <input type="text" name="address" value={formData.address} onChange={handleChange} required className="input-field" />
-                        </div>
-                        <div>
-                            <label className="label-caps" style={{ display: 'block', marginBottom: 'var(--space-1)' }}>City</label>
-                            <input type="text" name="city" value={formData.city} onChange={handleChange} required className="input-field" />
-                        </div>
-                        <div>
-                            <label className="label-caps" style={{ display: 'block', marginBottom: 'var(--space-1)' }}>Country</label>
-                            <input type="text" name="country" value={formData.country} onChange={handleChange} required className="input-field" />
-                        </div>
-                        <div>
-                            <label className="label-caps" style={{ display: 'block', marginBottom: 'var(--space-1)' }}>Postal Code</label>
-                            <input type="text" name="postalCode" value={formData.postalCode} onChange={handleChange} className="input-field" />
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', marginTop: 'var(--space-6)' }}>
-                            <input type="checkbox" id="isActive" name="isActive" checked={formData.isActive} onChange={handleChange} />
-                            <label htmlFor="isActive" style={{ marginLeft: 'var(--space-2)', fontSize: '0.875rem' }}>Active Branch</label>
-                        </div>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-4)', paddingTop: 'var(--space-4)', borderTop: '1px solid var(--color-border)' }}>
-                        <button type="button" onClick={() => setIsEditing(false)} className="btn-ghost">Cancel</button>
-                        <button type="submit" disabled={mutation.isPending} className="btn-primary">{mutation.isPending ? 'Saving...' : 'Save Branch'}</button>
-                    </div>
-                </form>
-            </div>
-        );
-    }
+    const columns = [
+        { key: 'name', title: 'Name', render: (val) => <span className="font-semibold text-gray-900">{val}</span> },
+        { key: 'city', title: 'City', render: (_, row) => `${row.city}, ${row.country}` },
+        { key: 'phoneNumber', title: 'Phone' },
+        { key: 'timezone', title: 'Timezone' },
+        {
+            key: 'isActive',
+            title: 'Status',
+            render: (val) => (
+                <Badge variant={val ? 'success' : 'danger'}>
+                    {val ? 'Active' : 'Inactive'}
+                </Badge>
+            )
+        },
+        {
+            key: 'actions',
+            title: 'Actions',
+            align: 'right',
+            render: (_, row) => (
+                <button
+                    onClick={() => handleEdit(row)}
+                    className="p-1 text-gray-400 hover:text-[#2B4AFE] transition-colors"
+                    title="Edit Branch"
+                >
+                    <Edit2 size={16} />
+                </button>
+            )
+        }
+    ];
 
     return (
-        <section className="card">
-            <div className="admin-section-header">
-                <h3>Active Branches</h3>
-                <button onClick={handleCreateNew} className="btn-primary">Add Branch</button>
-            </div>
-            
-            {isLoading ? (
+        <motion.div initial="hidden" animate="visible" variants={fadeIn} className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <div className="skeleton line-shape" style={{ height: 'var(--space-10)' }}></div>
-                    <div className="skeleton line-shape" style={{ height: 'var(--space-10)' }}></div>
-                    <div className="skeleton line-shape" style={{ height: 'var(--space-10)' }}></div>
+                    <h1 className="text-2xl sm:text-3xl font-bold font-display text-[var(--color-navy-900)] m-0 flex items-center gap-2">
+                        <Building2 className="w-7 h-7 text-[var(--color-navy-800)]" />
+                        Branch Management
+                    </h1>
+                    <p className="text-sm text-[var(--color-text-muted)] m-0 mt-1">
+                        Manage clinic locations, contact details, and status.
+                    </p>
                 </div>
-            ) : branches && branches.length > 0 ? (
-                <div style={{ overflowX: 'auto' }}>
-                    <table className="table">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>City, Country</th>
-                                <th>Phone</th>
-                                <th>Timezone</th>
-                                <th style={{ textAlign: 'right' }}>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {branches.map(branch => (
-                                <tr key={branch.id}>
-                                    <td style={{ fontWeight: 500 }}>{branch.name}</td>
-                                    <td>{branch.city}, {branch.country}</td>
-                                    <td>{branch.phoneNumber}</td>
-                                    <td>{branch.timezone}</td>
-                                    <td style={{ textAlign: 'right' }}>
-                                        <button onClick={() => handleEdit(branch)} className="btn-secondary" style={{ padding: 'var(--space-1) var(--space-3)', fontSize: '0.75rem' }}>Edit</button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            ) : (
-                <div className="empty-state">
-                    <div className="empty-state-icon"><Building2 size={48} aria-hidden="true" /></div>
-                    <h3 className="empty-state-title">No branches found.</h3>
-                </div>
-            )}
-        </section>
+                <Button variant="primary" onClick={handleCreateNew} className="flex items-center gap-2">
+                    <Plus size={16} />
+                    Add Branch
+                </Button>
+            </div>
+
+            <div className="bg-[var(--color-surface)] rounded-xl border border-[var(--color-border)] overflow-hidden">
+                <DataTable 
+                    columns={columns} 
+                    data={branches || []} 
+                    isLoading={isLoading} 
+                    emptyTitle="No branches found."
+                />
+            </div>
+
+            <Modal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                title={currentBranch ? 'Edit Branch' : 'Create Branch'}
+            >
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                        <FormField label="Name" required>
+                            <input type="text" name="name" value={formData.name} onChange={handleChange} required className="input-field" />
+                        </FormField>
+                        <FormField label="Email" required>
+                            <input type="email" name="email" value={formData.email} onChange={handleChange} required className="input-field" />
+                        </FormField>
+                        <FormField label="Phone Number" required>
+                            <input type="text" name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} required className="input-field" />
+                        </FormField>
+                        <FormField label="Timezone" required>
+                            <input type="text" name="timezone" value={formData.timezone} onChange={handleChange} required className="input-field" />
+                        </FormField>
+                        <div className="col-span-2">
+                            <FormField label="Address" required>
+                                <input type="text" name="address" value={formData.address} onChange={handleChange} required className="input-field" />
+                            </FormField>
+                        </div>
+                        <FormField label="City" required>
+                            <input type="text" name="city" value={formData.city} onChange={handleChange} required className="input-field" />
+                        </FormField>
+                        <FormField label="Country" required>
+                            <input type="text" name="country" value={formData.country} onChange={handleChange} required className="input-field" />
+                        </FormField>
+                        <FormField label="Postal Code">
+                            <input type="text" name="postalCode" value={formData.postalCode} onChange={handleChange} className="input-field" />
+                        </FormField>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 pt-2 pb-2">
+                        <input type="checkbox" id="isActive" name="isActive" checked={formData.isActive} onChange={handleChange} className="w-4 h-4 rounded border-[var(--color-border)] text-[var(--color-navy-600)] focus:ring-[var(--color-navy-600)]" />
+                        <label htmlFor="isActive" className="text-sm font-medium text-[var(--color-text)] cursor-pointer">Active Branch</label>
+                    </div>
+
+                    <div className="flex justify-end gap-3 pt-4 border-t border-[var(--color-border)] mt-6">
+                        <Button type="button" variant="secondary" onClick={() => setIsModalOpen(false)}>Cancel</Button>
+                        <Button type="submit" variant="primary" isLoading={mutation.isPending}>
+                            {currentBranch ? 'Save Changes' : 'Create Branch'}
+                        </Button>
+                    </div>
+                </form>
+            </Modal>
+        </motion.div>
     );
 };
 

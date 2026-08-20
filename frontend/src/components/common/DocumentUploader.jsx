@@ -1,5 +1,4 @@
-import React, { useState, useRef } from 'react';
-import { Upload, X, File as FileIcon, AlertCircle, CheckCircle } from 'lucide-react';
+import { useState, useRef } from 'react';
 import { axiosPrivate } from '../../api/axios';
 import { toast } from 'react-hot-toast';
 

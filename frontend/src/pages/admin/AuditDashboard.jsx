@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { format } from 'date-fns';
-import { Search, ShieldAlert, CheckCircle, XCircle, AlertTriangle, Download } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+
+
 
 const AuditDashboard = () => {
   const [page, setPage] = useState(0);
@@ -45,6 +47,7 @@ const AuditDashboard = () => {
   };
 
   return (
+    
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       <div className="flex justify-between items-center">
         <div>
@@ -188,6 +191,7 @@ const AuditDashboard = () => {
         )}
       </div>
     </div>
+    
   );
 };
 

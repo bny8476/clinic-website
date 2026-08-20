@@ -1,16 +1,13 @@
-import React, { useState } from 'react';
-import { RefreshCcw, ArrowLeft, Plus, CheckCircle, XCircle, Clock } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { RefreshCcw, Plus } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { axiosPrivate } from '../../api/axios';
-import Card from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
 import { fadeIn } from '../../components/ui/motion';
-import EmptyState from '../../components/ui/EmptyState';
-import Modal from '../../components/ui/Modal';
 import useAuthStore from '../../store/authStore';
+
+
 
 const FinanceRefunds = () => {
   const queryClient = useQueryClient();
@@ -99,6 +96,7 @@ const FinanceRefunds = () => {
   };
 
   return (
+    
     <motion.div 
       initial="hidden" 
       animate="visible" 
@@ -219,6 +217,7 @@ const FinanceRefunds = () => {
         </form>
       </Modal>
     </motion.div>
+    
   );
 };
 

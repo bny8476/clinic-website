@@ -1,23 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import logger from '../../utils/logger';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import useDebounce from '../../hooks/pharmacy/useDebounce';
-import WipBanner from '../../components/ui/WipBanner';
-import OrderSetPicker from './OrderSetPicker';
-import PrescriptionDocument from '../../components/doctor/PrescriptionDocument';
-import { 
-  Plus, Trash2, ChevronLeft, Search, BriefcaseMedical, 
-  FileText, AlertTriangle, Activity, Clock, Save, Printer, 
-  Eye, BadgeCheck, CheckCircle2, ChevronRight,
-  Sun, Moon, Sunrise, Sunset, Heart, 
-  Thermometer, FileCode, CheckCircle, Send, ArrowLeft, Edit2, X, Sparkles
+import { AlertTriangle, Clock,
+  Sun, Sunrise
 } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import toast, { Toaster } from 'react-hot-toast';
-import clsx from 'clsx';
+import toast from 'react-hot-toast';
 import useAuthStore from '../../store/authStore';
+
+
 
 const TYPES = ['Tablet', 'Capsule', 'Syrup', 'Injection', 'Ointment', 'Drops', 'Inhaler', 'Powder', 'Spray', 'Gel', 'Suspension', 'Lotion', 'Suppository'];
 const FREQUENCIES = [
@@ -547,8 +540,8 @@ const NewPrescription = () => {
   }
 
   return (
+    
     <div className="flex flex-col min-h-screen bg-[#F8FAFC] font-sans p-6 pb-28 max-w-[1500px] mx-auto text-[#1E293B]">
-      <Toaster position="top-right" />
       
       {/* Page Header */}
       <div className="mb-6 flex flex-col gap-1">
@@ -776,7 +769,7 @@ const NewPrescription = () => {
                             aria-label={`Medicine name for row ${idx + 1}`}
                             aria-autocomplete="list"
                             aria-expanded={activeSearchIndex === idx && showSearchDropdown}
-                            className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-[13px] font-medium text-slate-800 focus:outline-none focus:border-blue-500"
+                            className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-[13px] font-medium text-slate-800 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
                         />
                         {activeSearchIndex === idx && showSearchDropdown && debouncedSearch.length >= 1 && (
                             <div className="absolute z-50 left-1.5 right-1.5 mt-1 bg-white border border-slate-200 rounded-md shadow-lg overflow-hidden max-h-60 overflow-y-auto">
@@ -846,7 +839,7 @@ const NewPrescription = () => {
                           value={item.type} 
                           onChange={e => updateItem(idx, 'type', e.target.value)}
                           disabled={isReadOnly}
-                          className="w-full px-2 py-2 bg-white border border-slate-200 rounded-md text-[12px] font-medium text-slate-700 focus:outline-none focus:border-blue-500 appearance-none bg-no-repeat bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%20%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M5%207.5L10%2012.5L15%207.5%22%20stroke%3D%22%2394A3B8%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[position:right_4px_center] pr-6"
+                          className="w-full px-2 py-2 bg-white border border-slate-200 rounded-md text-[12px] font-medium text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 appearance-none bg-no-repeat bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%20%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M5%207.5L10%2012.5L15%207.5%22%20stroke%3D%22%2394A3B8%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[position:right_4px_center] pr-6"
                         >
                           {TYPES.map(t => <option key={t}>{t}</option>)}
                         </select>
@@ -856,7 +849,7 @@ const NewPrescription = () => {
                           value={item.strength} 
                           onChange={e => updateItem(idx, 'strength', e.target.value)}
                           disabled={isReadOnly}
-                          className="w-full px-2 py-2 bg-white border border-slate-200 rounded-md text-[12px] font-medium text-slate-700 focus:outline-none focus:border-blue-500 appearance-none bg-no-repeat bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%20%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M5%207.5L10%2012.5L15%207.5%22%20stroke%3D%22%2394A3B8%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[position:right_4px_center] pr-6"
+                          className="w-full px-2 py-2 bg-white border border-slate-200 rounded-md text-[12px] font-medium text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 appearance-none bg-no-repeat bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%20%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M5%207.5L10%2012.5L15%207.5%22%20stroke%3D%22%2394A3B8%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[position:right_4px_center] pr-6"
                         >
                           <option>5 mg</option>
                           <option>10 mg</option>
@@ -872,7 +865,7 @@ const NewPrescription = () => {
                           onChange={e => updateItem(idx, 'dosage', e.target.value)}
                           disabled={isReadOnly}
                           min="1"
-                          className="w-full px-2 py-2 bg-white border border-slate-200 rounded-md text-[13px] font-medium text-center focus:outline-none focus:border-blue-500"
+                          className="w-full px-2 py-2 bg-white border border-slate-200 rounded-md text-[13px] font-medium text-center focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
                         />
                       </td>
                       <td className="p-1.5 align-top relative">
@@ -884,7 +877,7 @@ const NewPrescription = () => {
                             value={item.frequency} 
                             onChange={e => updateItem(idx, 'frequency', e.target.value)}
                             disabled={isReadOnly}
-                            className="w-full pl-8 pr-6 py-2 bg-white border border-slate-200 rounded-md text-[12px] font-medium text-slate-700 focus:outline-none focus:border-blue-500 appearance-none bg-no-repeat bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%20%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M5%207.5L10%2012.5L15%207.5%22%20stroke%3D%22%2394A3B8%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[position:right_4px_center]"
+                            className="w-full pl-8 pr-6 py-2 bg-white border border-slate-200 rounded-md text-[12px] font-medium text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 appearance-none bg-no-repeat bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%20%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M5%207.5L10%2012.5L15%207.5%22%20stroke%3D%22%2394A3B8%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[position:right_4px_center]"
                             >
                             <option>Once Daily</option>
                             <option>Twice Daily</option>
@@ -897,7 +890,7 @@ const NewPrescription = () => {
                             value={item.durationDays}
                             onChange={e => updateItem(idx, 'durationDays', e.target.value)}
                             disabled={isReadOnly}
-                            className="w-full px-2 py-2 bg-white border border-slate-200 rounded-md text-[12px] font-medium text-slate-700 focus:outline-none focus:border-blue-500 appearance-none bg-no-repeat bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%20%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M5%207.5L10%2012.5L15%207.5%22%20stroke%3D%22%2394A3B8%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[position:right_4px_center] pr-6"
+                            className="w-full px-2 py-2 bg-white border border-slate-200 rounded-md text-[12px] font-medium text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 appearance-none bg-no-repeat bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%20%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M5%207.5L10%2012.5L15%207.5%22%20stroke%3D%22%2394A3B8%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[position:right_4px_center] pr-6"
                         >
                             <option value="15">15 Days</option>
                             <option value="30">30 Days</option>
@@ -927,7 +920,7 @@ const NewPrescription = () => {
                           onChange={e => updateItem(idx, 'instructions', e.target.value)}
                           disabled={isReadOnly}
                           placeholder="Instructions"
-                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-[12px] font-medium text-slate-700 focus:outline-none focus:border-blue-500"
+                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-[12px] font-medium text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
                         />
                       </td>
                       {!isReadOnly && (
@@ -1005,7 +998,7 @@ const NewPrescription = () => {
                         value={followUpDate} 
                         onChange={e => setFollowUpDate(e.target.value)}
                         disabled={isReadOnly}
-                        className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-md text-[13px] font-medium text-slate-700 focus:outline-none focus:border-blue-500 transition-colors disabled:bg-slate-50" 
+                        className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-md text-[13px] font-medium text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-colors disabled:bg-slate-50" 
                     />
                     <Clock className="w-4 h-4 text-slate-400 absolute left-3 top-[9px]" aria-hidden="true" />
                 </div>
@@ -1194,7 +1187,7 @@ const NewPrescription = () => {
                               <select 
                                   value={editProfile.bloodGroup} 
                                   onChange={e => setEditProfile({...editProfile, bloodGroup: e.target.value})}
-                                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-sm focus:outline-none focus:border-blue-500"
+                                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
                               >
                                   <option value="">Select Blood Group</option>
                                   <option value="A+">A+</option>
@@ -1214,7 +1207,7 @@ const NewPrescription = () => {
                                   value={editProfile.allergies} 
                                   onChange={e => setEditProfile({...editProfile, allergies: e.target.value})}
                                   placeholder="e.g. Peanuts, Penicillin"
-                                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-sm focus:outline-none focus:border-blue-500 placeholder-slate-400"
+                                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 placeholder-slate-400"
                               />
                               <p className="text-[10px] text-slate-400 mt-1">Separate multiple with commas</p>
                           </div>
@@ -1227,7 +1220,7 @@ const NewPrescription = () => {
                                   type="number" 
                                   value={editProfile.heightCm} 
                                   onChange={e => setEditProfile({...editProfile, heightCm: e.target.value})}
-                                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-sm focus:outline-none focus:border-blue-500"
+                                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
                               />
                           </div>
                           <div>
@@ -1236,7 +1229,7 @@ const NewPrescription = () => {
                                   type="number" 
                                   value={editProfile.weightKg} 
                                   onChange={e => setEditProfile({...editProfile, weightKg: e.target.value})}
-                                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-sm focus:outline-none focus:border-blue-500"
+                                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
                               />
                           </div>
                       </div>
@@ -1248,7 +1241,7 @@ const NewPrescription = () => {
                                   value={editProfile.bloodPressure} 
                                   onChange={e => setEditProfile({...editProfile, bloodPressure: e.target.value})}
                                   placeholder="e.g. 120/80"
-                                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-sm focus:outline-none focus:border-blue-500"
+                                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
                               />
                           </div>
                           <div>
@@ -1257,7 +1250,7 @@ const NewPrescription = () => {
                                   type="number" 
                                   value={editProfile.pulseBpm} 
                                   onChange={e => setEditProfile({...editProfile, pulseBpm: e.target.value})}
-                                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-sm focus:outline-none focus:border-blue-500"
+                                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
                               />
                           </div>
                       </div>
@@ -1309,7 +1302,7 @@ const NewPrescription = () => {
                           <select 
                               value={selectedPharmacyUserId} 
                               onChange={e => setSelectedPharmacyUserId(e.target.value)}
-                              className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-sm focus:outline-none focus:border-blue-500"
+                              className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
                           >
                               <option value="">Any Available Pharmacist</option>
                               {pharmacyUsers.map(u => (
@@ -1402,6 +1395,7 @@ const NewPrescription = () => {
       )}
 
     </div>
+    
   );
 };
 

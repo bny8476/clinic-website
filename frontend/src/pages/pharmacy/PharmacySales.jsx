@@ -1,20 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Search, Plus, Eye, Printer, XCircle, Trash2, PlusCircle, Barcode, CheckCircle, ShoppingCart, BarChart, IndianRupee, Receipt, Users, Filter, Calendar, ClipboardList } from 'lucide-react';
-import ModuleFilterBar from '../../components/pharmacy/ui/ModuleFilterBar';
-import DataTable from '../../components/pharmacy/ui/DataTable';
-import Pagination from '../../components/pharmacy/ui/Pagination';
-import AppModal from '../../components/pharmacy/ui/AppModal';
-import Badge from '../../components/pharmacy/ui/Badge';
+import { useState, useEffect, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 import pharmacyService from '../../utils/pharmacy/pharmacyService';
-import PharmacyInvoice from '../../components/pharmacy/pharmacy/PharmacyInvoice';
 import { usePharmacySalesStore } from '../../store/usePharmacySalesStore';
 import { usePOSStore } from '../../store/usePOSStore';
 import { useShallow } from 'zustand/react/shallow';
-import TableSkeleton from '../../components/pharmacy/ui/TableSkeleton';
-import ErrorBanner from '../../components/pharmacy/ui/ErrorBanner';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { fadeIn } from '../../components/ui/motion';
+
+
 
 export default function PharmacySales() {
   const {
@@ -229,6 +224,7 @@ export default function PharmacySales() {
   ];
 
   return (
+    
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div className="flex flex-col gap-1">
@@ -265,13 +261,13 @@ export default function PharmacySales() {
         </div>
 
         <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex items-center gap-4">
-          <div className="p-3 bg-emerald-50 rounded-2xl text-emerald-500 shrink-0">
+          <div className="p-3 bg-blue-50 rounded-2xl text-blue-500 shrink-0">
             <IndianRupee className="w-6 h-6" />
           </div>
           <div>
             <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Total Sales (This Year)</p>
             <p className="text-xl font-bold text-slate-900 leading-none mb-1">0</p>
-            <p className="text-xs font-semibold text-emerald-500">₹0.00</p>
+            <p className="text-xs font-semibold text-blue-500">₹0.00</p>
           </div>
         </div>
 
@@ -315,7 +311,7 @@ export default function PharmacySales() {
             placeholder="Search by invoice no., patient name, medicine..." 
             value={searchTerm}
             onChange={(e) => setSalesSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none focus:border-[#2563eb] focus:bg-white transition-colors"
+            className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:bg-white transition-all"
           />
         </div>
         
@@ -721,7 +717,7 @@ export default function PharmacySales() {
               {Number(posStore.discount) > 0 && (
                 <div className="flex justify-between text-xs text-slate-400 uppercase tracking-widest font-bold">
                   <span>Discount</span>
-                  <span className="text-emerald-400">-₹{calculateDiscountAmount().toFixed(2)}</span>
+                  <span className="text-blue-400">-₹{calculateDiscountAmount().toFixed(2)}</span>
                 </div>
               )}
               <div className="border-t border-white/10 pt-3 flex justify-between text-xl font-black">
@@ -750,5 +746,6 @@ export default function PharmacySales() {
         </div>
       </AppModal>
     </div>
+    
   );
 }

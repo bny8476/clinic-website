@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { Star, Shield, ShieldCheck, ShieldAlert, Check, X } from 'lucide-react';
 import toast from 'react-hot-toast';
+
+
 
 const EngagementDashboard = () => {
   const queryClient = useQueryClient();
@@ -27,6 +29,7 @@ const EngagementDashboard = () => {
   });
 
   return (
+    
     <div className="p-4 sm:p-6" style={{ maxWidth: '1200px', margin: '0 auto' }}>
       <h1 className="text-xl sm:text-2xl font-bold mb-6" style={{ color: 'var(--color-text)' }}>Engagement Dashboard</h1>
 
@@ -118,6 +121,7 @@ const EngagementDashboard = () => {
       )}
 
     </div>
+    
   );
 };
 

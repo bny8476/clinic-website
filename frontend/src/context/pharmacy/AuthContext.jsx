@@ -1,8 +1,7 @@
-import React, { createContext, useContext, useCallback, useMemo, useEffect, useState } from 'react';
+import { createContext, useContext, useCallback, useMemo, useEffect, useState } from 'react';
 import logger from '../../utils/logger';
 import useAuthStore from '../../store/authStore';
 import { ROLES } from '../../config/pharmacy/roles.config';
-import api from '../../utils/pharmacy/api';
 import { axiosPublic, axiosPrivate } from '../../api/axios';
 
 const AuthContext = createContext();

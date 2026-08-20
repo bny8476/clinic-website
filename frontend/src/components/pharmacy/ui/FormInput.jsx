@@ -1,6 +1,5 @@
-import React, { forwardRef, useState } from 'react';
+import { forwardRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Eye, EyeOff } from 'lucide-react';
 
 const FormInput = forwardRef(({ 
   label, 

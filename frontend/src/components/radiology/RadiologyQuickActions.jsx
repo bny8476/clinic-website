@@ -1,6 +1,5 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Clock, CheckSquare, Scan, Layers, CheckCircle } from 'lucide-react';
+import { Clock, Scan, Layers, CheckCircle } from 'lucide-react';
 
 const RadiologyQuickActions = ({ setFilter }) => {
   const navigate = useNavigate();

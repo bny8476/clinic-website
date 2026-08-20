@@ -1,5 +1,4 @@
-import React, { useCallback, useState } from 'react';
-import { UploadCloud, File, X, CheckCircle } from 'lucide-react';
+import { useState } from 'react';
 
 export default function FileUpload({
   accept = "*",

@@ -1,18 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import useDebounce from '../../hooks/pharmacy/useDebounce';
-import { useShallow } from 'zustand/react/shallow';
 import { useLocation } from 'react-router-dom';
-import { Search, Plus, Eye, Printer, RotateCcw, CheckCircle, Ticket, FileText, IndianRupee, Wallet, Users, Filter, X, ClipboardList } from 'lucide-react';
-import DataTable from '../../components/pharmacy/ui/DataTable';
-import Pagination from '../../components/pharmacy/ui/Pagination';
-import AppModal from '../../components/pharmacy/ui/AppModal';
-import Badge from '../../components/pharmacy/ui/Badge';
 import { toast } from 'react-hot-toast';
 import pharmacyService from '../../utils/pharmacy/pharmacyService';
-import PharmacyInvoice from '../../components/pharmacy/pharmacy/PharmacyInvoice';
 import { usePageData } from '../../hooks/pharmacy/usePageData';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import TableSkeleton from '../../components/pharmacy/ui/TableSkeleton';
+
+
 
 export default function MedicineReturns() {
   const location = useLocation();
@@ -128,7 +122,7 @@ export default function MedicineReturns() {
           <button 
             title="Approve" 
             onClick={() => approveReturn(row.id)}
-            className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg"
+            className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg"
           >
             <CheckCircle className="w-4 h-4" />
           </button>
@@ -151,6 +145,7 @@ export default function MedicineReturns() {
   const pendingReturnsAmount = returnsList.filter(r => r.status === 'PENDING').reduce((sum, r) => sum + r.totalReturnAmount, 0);
 
   return (
+    
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -197,15 +192,15 @@ export default function MedicineReturns() {
         {/* Card 3 */}
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-between">
           <div className="flex items-start gap-3 mb-2">
-            <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center shrink-0">
-              <IndianRupee className="w-5 h-5 text-green-500" />
+            <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center shrink-0">
+              <IndianRupee className="w-5 h-5 text-blue-500" />
             </div>
             <div>
               <p className="text-[11px] font-bold text-slate-500">Total Returns (This Year)</p>
               <h3 className="text-2xl font-bold text-slate-900">{returnsThisYear}</h3>
             </div>
           </div>
-          <p className="text-sm font-semibold text-green-500">₹0.00</p>
+          <p className="text-sm font-semibold text-blue-500">₹0.00</p>
         </div>
         {/* Card 4 */}
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-between">
@@ -482,5 +477,6 @@ export default function MedicineReturns() {
         />
       </AppModal>
     </div>
+    
   );
 }

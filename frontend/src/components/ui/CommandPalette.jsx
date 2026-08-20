@@ -1,17 +1,19 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Search, FileText, User, Calendar, Activity, X } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { FileText, User, Calendar, Activity } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { axiosPrivate } from '../../api/axios';
 
-const MOCK_RESULTS = [
-  { id: 1, type: 'patient', title: 'John Doe', subtitle: 'Patient ID: AH-9821 • DOB: 12/05/1985', icon: User },
-  { id: 2, type: 'patient', title: 'Sarah Smith', subtitle: 'Patient ID: AH-3214 • DOB: 04/22/1990', icon: User },
-  { id: 3, type: 'appointment', title: 'Dr. Emily Chen - Follow up', subtitle: 'Today, 2:30 PM • General Medicine', icon: Calendar },
-  { id: 4, type: 'report', title: 'Complete Blood Count (CBC)', subtitle: 'Lab Report • Prepared on Oct 24, 2023', icon: FileText },
-  { id: 5, type: 'action', title: 'Register New Walk-in', subtitle: 'Quick Action', icon: Activity },
-];
+const ICON_MAP = {
+  'User': User,
+  'Calendar': Calendar,
+  'FileText': FileText,
+  'Activity': Activity
+};
 
 export default function CommandPalette({ isOpen, onClose }) {
   const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
   const inputRef = useRef(null);
   const navigate = useNavigate();
 
@@ -20,10 +22,10 @@ export default function CommandPalette({ isOpen, onClose }) {
       setTimeout(() => inputRef.current?.focus(), 50);
     } else {
       setQuery('');
+      setResults([]);
     }
   }, [isOpen]);
 
-  // Handle keyboard shortcuts to close
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') onClose();
@@ -32,14 +34,28 @@ export default function CommandPalette({ isOpen, onClose }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    const fetchResults = async () => {
+      if (!query.trim()) {
+        setResults([]);
+        return;
+      }
+      setLoading(true);
+      try {
+        const response = await axiosPrivate.get(`/search?q=${encodeURIComponent(query)}`);
+        setResults(response.data);
+      } catch (error) {
+        console.error('Search error:', error);
+        setResults([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    const debounceTimeout = setTimeout(fetchResults, 300);
+    return () => clearTimeout(debounceTimeout);
+  }, [query]);
 
-  const filteredResults = query.trim() === '' 
-    ? MOCK_RESULTS 
-    : MOCK_RESULTS.filter(r => 
-        r.title.toLowerCase().includes(query.toLowerCase()) || 
-        r.subtitle.toLowerCase().includes(query.toLowerCase())
-      );
+  if (!isOpen) return null;
 
   const handleSelect = (result) => {
     onClose();
@@ -83,7 +99,12 @@ export default function CommandPalette({ isOpen, onClose }) {
 
         {/* Results Area */}
         <div className="max-h-[60vh] overflow-y-auto p-2">
-          {filteredResults.length === 0 ? (
+          {loading ? (
+             <div className="px-6 py-12 text-center text-slate-500">
+               <Activity className="w-8 h-8 mx-auto text-indigo-400 mb-3 animate-spin" />
+               <p className="text-sm font-medium text-slate-900">Searching...</p>
+             </div>
+          ) : results.length === 0 && query !== '' ? (
             <div className="px-6 py-12 text-center text-slate-500">
               <Search className="w-8 h-8 mx-auto text-slate-300 mb-3" />
               <p className="text-sm font-medium text-slate-900">No results found</p>
@@ -93,11 +114,11 @@ export default function CommandPalette({ isOpen, onClose }) {
             <div className="space-y-1">
               {query === '' && (
                 <div className="px-3 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                  Recent Searches
+                  Type to search...
                 </div>
               )}
-              {filteredResults.map((result) => {
-                const Icon = result.icon;
+              {results.map((result) => {
+                const Icon = ICON_MAP[result.icon] || Activity;
                 return (
                   <button
                     key={result.id}

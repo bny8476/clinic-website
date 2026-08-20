@@ -19,11 +19,11 @@ public class WardReplacementService {
     }
 
     public List<WardReplacementRequest> getPendingReplacements() {
-        return repository.findByStatusOrderByRequestDateDesc("PENDING");
+        return repository.findByStatusOrderByCreatedAtDesc("PENDING");
     }
 
     public List<WardReplacementRequest> getAllReplacements() {
-        return repository.findAllByOrderByRequestDateDesc();
+        return repository.findAllByOrderByCreatedAtDesc();
     }
 
     public record ReplacementItemRequest(String medicineName, Integer qty, Integer availableStock) {}

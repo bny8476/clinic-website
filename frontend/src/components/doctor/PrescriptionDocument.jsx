@@ -1,5 +1,3 @@
-import React from 'react';
-import { Pill, Activity, Calendar } from 'lucide-react';
 
 const PrescriptionDocument = ({ data }) => {
   if (!data) return null;

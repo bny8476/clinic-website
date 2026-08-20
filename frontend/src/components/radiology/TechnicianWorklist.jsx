@@ -1,11 +1,8 @@
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { UploadCloud, CheckCircle, Clock, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'react-hot-toast';
-import Modal from '../ui/Modal';
-import Button from '../ui/Button';
 
 export default function TechnicianWorklist({ requests = [] }) {
   const queryClient = useQueryClient();

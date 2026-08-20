@@ -1,12 +1,25 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import api from '../../utils/pharmacy/api';
+import KPICard from '../../components/ui/KPICard';
+import Card from '../../components/ui/Card';
+import Badge from '../../components/ui/Badge';
+import Button from '../../components/ui/Button';
+import { motion, AnimatePresence } from 'framer-motion';
+import { staggerContainer, fadeIn } from '../../components/ui/motion';
 import { 
-  Calendar, ChevronDown, Package, Database, ShoppingCart, FileText, AlertOctagon,
-  PlusCircle, ArrowRightLeft, FileOutput, ArrowDownToLine, Settings2
+  Package, Database, ShoppingCart, FileText, AlertOctagon, 
+  ChevronDown, Calendar, PlusCircle, ArrowRightLeft, 
+  FileOutput, ArrowDownToLine, Settings2 
 } from 'lucide-react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { Link } from 'react-router-dom';
+import {
+
+
+  ResponsiveContainer, AreaChart, XAxis, YAxis, Tooltip, Area, 
+  CartesianGrid, PieChart, Pie, Cell
+} from 'recharts';
+
+
 
 export default function PharmacyDashboard() {
   const { data: stats } = useQuery({
@@ -56,124 +69,110 @@ export default function PharmacyDashboard() {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'In Stock': return 'bg-emerald-100 text-emerald-700';
+      case 'In Stock': return 'bg-blue-100 text-blue-700';
       case 'Low Stock': return 'bg-amber-100 text-amber-700';
-      default: return 'bg-slate-100 text-slate-700';
+      default: return 'bg-slate-100 text-[var(--color-text-muted)]';
     }
   };
 
   const getCategoryColor = (cat) => {
     switch(cat) {
       case 'Antibiotic': return 'bg-indigo-50 text-indigo-700';
-      case 'Vitamins': return 'bg-emerald-50 text-emerald-700';
-      case 'Diabetes': return 'bg-blue-50 text-blue-700';
+      case 'Vitamins': return 'bg-blue-50 text-[var(--color-navy-800)]';
+      case 'Diabetes': return 'bg-blue-50 text-[var(--color-navy-800)]';
       case 'Cardiovascular': return 'bg-rose-50 text-rose-700';
       case 'Gastric': return 'bg-amber-50 text-amber-700';
-      default: return 'bg-slate-50 text-slate-700';
+      default: return 'bg-slate-50 text-[var(--color-text-muted)]';
     }
   };
 
   return (
-    <div className="font-sans">
+    
+    <div className="font-sans h-full flex flex-col overflow-y-auto bg-[var(--color-bg-app)] p-6">
       {/* Header */}
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex justify-between items-center mb-8 shrink-0">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Dashboard</h1>
-          <p className="text-sm text-slate-500 mt-1">Overview of your pharmacy inventory and sales</p>
+          <h1 className="text-[24px] font-bold text-[var(--color-text)] tracking-tight">Dashboard</h1>
+          <p className="text-[14px] text-[var(--color-text-muted)] mt-1">Overview of your pharmacy inventory and sales</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
-          <Calendar className="w-4 h-4 text-indigo-600" />
+        <button className="flex items-center gap-2 px-4 py-2 bg-white border border-[var(--color-border)] rounded-lg text-[13px] font-bold text-[var(--color-navy-800)] shadow-sm hover:bg-[var(--color-navy-800)] hover:text-white transition-colors">
+          <Calendar className="w-4 h-4" />
           Today, 21 May 2024
-          <ChevronDown className="w-4 h-4 text-slate-400 ml-2" />
+          <ChevronDown className="w-4 h-4 ml-2" />
         </button>
       </div>
 
       {/* 5 KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-5 mb-6">
-        <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
-          <div className="flex items-center gap-4 mb-3">
-            <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600">
-              <Package className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-[11px] font-semibold text-slate-500 mb-1">Total Medicines</p>
-              <h3 className="text-xl font-bold text-slate-900">1,248</h3>
-            </div>
-          </div>
-          <p className="text-xs font-medium text-emerald-600 flex items-center gap-1">
-            ↑ 8.5% <span className="text-slate-400 font-normal">from last month</span>
-          </p>
-        </div>
+      <motion.div 
+        variants={staggerContainer}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4 mb-6 shrink-0"
+      >
+        <motion.div variants={fadeIn}>
+          <KPICard 
+            icon={Package}
+            label="Total Medicines"
+            value="1,248"
+            trend={{ value: "8.5%", isPositive: true }}
+            subtext="from last month"
+            colorToken="info"
+          />
+        </motion.div>
 
-        <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
-          <div className="flex items-center gap-4 mb-3">
-            <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-500">
-              <Database className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-[11px] font-semibold text-slate-500 mb-1">Total Stock Value</p>
-              <h3 className="text-xl font-bold text-slate-900">₹24,560.80</h3>
-            </div>
-          </div>
-          <p className="text-xs font-medium text-emerald-600 flex items-center gap-1">
-            ↑ 12.3% <span className="text-slate-400 font-normal">from last month</span>
-          </p>
-        </div>
+        <motion.div variants={fadeIn}>
+          <KPICard 
+            icon={Database}
+            label="Total Stock Value"
+            value="₹24,560.80"
+            trend={{ value: "12.3%", isPositive: true }}
+            subtext="from last month"
+            colorToken="info"
+          />
+        </motion.div>
 
-        <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
-          <div className="flex items-center gap-4 mb-3">
-            <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-500">
-              <ShoppingCart className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-[11px] font-semibold text-slate-500 mb-1">Total Sales (Today)</p>
-              <h3 className="text-xl font-bold text-slate-900">₹1,245.30</h3>
-            </div>
-          </div>
-          <p className="text-xs font-medium text-emerald-600 flex items-center gap-1">
-            ↑ 6.7% <span className="text-slate-400 font-normal">from yesterday</span>
-          </p>
-        </div>
+        <motion.div variants={fadeIn}>
+          <KPICard 
+            icon={ShoppingCart}
+            label="Total Sales (Today)"
+            value="₹1,245.30"
+            trend={{ value: "6.7%", isPositive: true }}
+            subtext="from yesterday"
+            colorToken="info"
+          />
+        </motion.div>
 
-        <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
-          <div className="flex items-center gap-4 mb-3">
-            <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center text-amber-500">
-              <FileText className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-[11px] font-semibold text-slate-500 mb-1">Low Stock Items</p>
-              <h3 className="text-xl font-bold text-slate-900">32</h3>
-            </div>
-          </div>
-          <p className="text-xs font-medium text-rose-500 flex items-center gap-1">
-            ↓ 5 <span className="text-slate-400 font-normal">from yesterday</span>
-          </p>
-        </div>
+        <motion.div variants={fadeIn}>
+          <KPICard 
+            icon={FileText}
+            label="Low Stock Items"
+            value="32"
+            trend={{ value: "5", isPositive: false }}
+            subtext="from yesterday"
+            colorToken="warning"
+          />
+        </motion.div>
 
-        <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
-          <div className="flex items-center gap-4 mb-3">
-            <div className="w-12 h-12 bg-rose-50 rounded-xl flex items-center justify-center text-rose-500">
-              <AlertOctagon className="w-6 h-6" />
-            </div>
-            <div>
-              <p className="text-[11px] font-semibold text-slate-500 mb-1">Expired Items</p>
-              <h3 className="text-xl font-bold text-slate-900">7</h3>
-            </div>
-          </div>
-          <p className="text-xs font-medium text-rose-500 flex items-center gap-1">
-            ↓ 2 <span className="text-slate-400 font-normal">from yesterday</span>
-          </p>
-        </div>
-      </div>
+        <motion.div variants={fadeIn}>
+          <KPICard 
+            icon={AlertOctagon}
+            label="Expired Items"
+            value="7"
+            trend={{ value: "2", isPositive: false }}
+            subtext="from yesterday"
+            colorToken="danger"
+          />
+        </motion.div>
+      </motion.div>
 
       {/* Middle Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 mb-6">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 mb-6 shrink-0">
         
         {/* Stock Overview Chart */}
-        <div className="xl:col-span-5 bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
+        <div className="xl:col-span-5 bg-white rounded-xl p-6 border border-[var(--color-border)] shadow-sm">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="font-bold text-slate-900 text-base">Stock Overview</h3>
-            <button className="flex items-center gap-1 text-xs font-medium text-slate-600 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">
+            <h3 className="font-bold text-[var(--color-text)] text-[16px]">Stock Overview</h3>
+            <button className="flex items-center gap-1 text-[12px] font-bold text-[var(--color-navy-800)] bg-white px-3 py-1.5 rounded-lg border border-[var(--color-border)]">
               This Month <ChevronDown className="w-3 h-3" />
             </button>
           </div>
@@ -187,8 +186,8 @@ export default function PharmacyDashboard() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 11}} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 11}} tickFormatter={(val) => val >= 1000 ? `${val/1000}K` : val} />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: 'var(--color-text-muted)', fontSize: 11, fontWeight: 'bold'}} dy={10} />
+                <YAxis axisLine={false} tickLine={false} tick={{fill: 'var(--color-text-muted)', fontSize: 11, fontWeight: 'bold'}} tickFormatter={(val) => val >= 1000 ? `${val/1000}K` : val} />
                 <Tooltip />
                 <Area type="monotone" dataKey="value" stroke="#8b5cf6" strokeWidth={3} fillOpacity={1} fill="url(#colorStock)" />
               </AreaChart>
@@ -197,8 +196,8 @@ export default function PharmacyDashboard() {
         </div>
 
         {/* Stock Summary Donut */}
-        <div className="xl:col-span-3 bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
-          <h3 className="font-bold text-slate-900 text-base mb-2">Stock Summary</h3>
+        <div className="xl:col-span-3 bg-white rounded-xl p-6 border border-[var(--color-border)] shadow-sm">
+          <h3 className="font-bold text-[var(--color-text)] text-[16px] mb-2">Stock Summary</h3>
           <div className="relative h-[200px] flex items-center justify-center">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -217,20 +216,20 @@ export default function PharmacyDashboard() {
               </PieChart>
             </ResponsiveContainer>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-2xl font-bold text-slate-900">1,248</span>
-              <span className="text-xs text-slate-500 font-medium">Total Items</span>
+              <span className="text-[24px] font-black text-[var(--color-text)]">1,248</span>
+              <span className="text-[12px] text-[var(--color-text-muted)] font-bold">Total Items</span>
             </div>
           </div>
           <div className="mt-2 space-y-2.5">
             {stockSummaryData.map(item => (
-              <div key={item.name} className="flex items-center justify-between text-xs">
+              <div key={item.name} className="flex items-center justify-between text-[12px]">
                 <div className="flex items-center gap-2">
                   <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-                  <span className="text-slate-600 font-medium">{item.name}</span>
+                  <span className="text-[var(--color-text)] font-bold">{item.name}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold text-slate-900">{item.value}</span>
-                  <span className="text-slate-400 w-10 text-right">({(item.value / 1248 * 100).toFixed(1)}%)</span>
+                  <span className="font-black text-[var(--color-text)]">{item.value}</span>
+                  <span className="text-[var(--color-text-muted)] w-10 text-right font-bold">({(item.value / 1248 * 100).toFixed(1)}%)</span>
                 </div>
               </div>
             ))}
@@ -238,26 +237,26 @@ export default function PharmacyDashboard() {
         </div>
 
         {/* Low Stock Alert */}
-        <div className="xl:col-span-4 bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col">
+        <div className="xl:col-span-4 bg-white rounded-xl p-6 border border-[var(--color-border)] shadow-sm flex flex-col">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="font-bold text-slate-900 text-base">Low Stock Alert</h3>
-            <button className="text-indigo-600 text-xs font-semibold hover:underline">View All</button>
+            <h3 className="font-bold text-[var(--color-text)] text-[16px]">Low Stock Alert</h3>
+            <button className="text-[var(--color-navy-800)] text-[12px] font-bold hover:underline">View All</button>
           </div>
           <div className="flex-1 space-y-4">
             {lowStockAlerts.map((item, idx) => (
-              <div key={idx} className="flex items-center justify-between group">
+              <div key={idx} className="flex items-center justify-between group bg-slate-50 p-3 rounded-lg border border-[var(--color-border)]">
                 <div className="flex items-center gap-3 overflow-hidden">
-                  <div className="w-9 h-9 bg-slate-100 rounded flex items-center justify-center text-slate-400 shrink-0">
+                  <div className="w-9 h-9 bg-[var(--color-info-bg)] rounded-full flex items-center justify-center text-[var(--color-navy-600)] shrink-0">
                     <Package className="w-4 h-4" />
                   </div>
                   <div className="min-w-0">
-                    <h4 className="text-xs font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors truncate" title={item.name}>{item.name}</h4>
-                    <p className="text-[10px] text-slate-500 mt-0.5 truncate">{item.type}</p>
+                    <h4 className="text-[13px] font-bold text-[var(--color-text)] group-hover:text-[var(--color-navy-800)] transition-colors truncate" title={item.name}>{item.name}</h4>
+                    <p className="text-[11px] font-medium text-[var(--color-text-muted)] mt-0.5 truncate">{item.type}</p>
                   </div>
                 </div>
                 <div className="text-right shrink-0 ml-2">
-                  <p className="text-[11px] font-bold text-rose-600">Stock: {item.stock}</p>
-                  <p className="text-[10px] text-slate-400 font-medium">Min: {item.min}</p>
+                  <p className="text-[12px] font-black text-rose-600">Stock: {item.stock}</p>
+                  <p className="text-[11px] text-[var(--color-text-muted)] font-bold">Min: {item.min}</p>
                 </div>
               </div>
             ))}
@@ -266,128 +265,138 @@ export default function PharmacyDashboard() {
       </div>
 
       {/* Bottom Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 shrink-0">
         
         {/* Recently Added Medicines */}
-        <div className="xl:col-span-6 bg-white rounded-2xl p-6 border border-slate-100 shadow-sm overflow-hidden">
+        <motion.div
+          className="xl:col-span-6 bg-white rounded-xl p-6 border border-[var(--color-border)] shadow-sm overflow-hidden"
+          variants={fadeIn}
+          initial="hidden"
+          animate="show"
+        >
           <div className="flex justify-between items-center mb-6">
-            <h3 className="font-bold text-slate-900 text-base">Recently Added Medicines</h3>
-            <button className="text-indigo-600 text-xs font-semibold hover:underline">View All</button>
+            <h3 className="font-bold text-[var(--color-text)] text-[16px]">Recently Added Medicines</h3>
+            <button className="text-[var(--color-navy-800)] text-[12px] font-bold hover:underline">View All</button>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm whitespace-nowrap">
+            <table className="w-full text-left text-[13px] whitespace-nowrap">
               <thead>
-                <tr className="text-[11px] font-semibold text-slate-500 border-b border-slate-100">
-                  <th className="pb-3 font-medium px-2">Medicine Name</th>
-                  <th className="pb-3 font-medium px-2">Category</th>
-                  <th className="pb-3 font-medium px-2">Manufacturer</th>
-                  <th className="pb-3 font-medium px-2">Batch No.</th>
-                  <th className="pb-3 font-medium px-2">Expiry Date</th>
-                  <th className="pb-3 font-medium px-2 text-right">Stock</th>
-                  <th className="pb-3 font-medium px-2 text-right">Price</th>
-                  <th className="pb-3 font-medium px-2 text-center">Status</th>
+                <tr className="text-[11px] font-bold text-[var(--color-text-muted)] border-b border-[var(--color-border)] uppercase tracking-wider">
+                  <th className="pb-3 px-2">Medicine Name</th>
+                  <th className="pb-3 px-2">Category</th>
+                  <th className="pb-3 px-2">Manufacturer</th>
+                  <th className="pb-3 px-2">Batch No.</th>
+                  <th className="pb-3 px-2">Expiry Date</th>
+                  <th className="pb-3 px-2 text-right">Stock</th>
+                  <th className="pb-3 px-2 text-right">Price</th>
+                  <th className="pb-3 px-2 text-center">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-50">
+              <motion.tbody
+                variants={staggerContainer}
+                initial="hidden"
+                animate="show"
+                className="divide-y divide-[var(--color-border)]"
+              >
                 {recentlyAdded.map((item, idx) => (
-                  <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="py-2.5 px-2">
+                  <motion.tr key={idx} variants={fadeIn} className="hover:bg-slate-50 transition-colors">
+                    <td className="py-3 px-2">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-slate-100 rounded flex items-center justify-center text-slate-400 shrink-0">
+                        <div className="w-8 h-8 bg-[var(--color-info-bg)] rounded-full flex items-center justify-center text-[var(--color-navy-600)] shrink-0">
                           <Package className="w-4 h-4" />
                         </div>
                         <div>
-                          <p className="font-semibold text-slate-900 text-xs">{item.name}</p>
-                          <p className="text-[10px] text-slate-500">{item.type}</p>
+                          <p className="font-bold text-[var(--color-text)] text-[13px]">{item.name}</p>
+                          <p className="text-[11px] font-medium text-[var(--color-text-muted)]">{item.type}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="py-2.5 px-2">
-                      <span className={`px-2 py-1.5 rounded text-[10px] font-semibold tracking-wide ${getCategoryColor(item.category)}`}>
+                    <td className="py-3 px-2">
+                      <span className={`px-2 py-1 rounded-full text-[10px] font-bold tracking-wide ${getCategoryColor(item.category)}`}>
                         {item.category}
                       </span>
                     </td>
-                    <td className="py-2.5 px-2 text-xs text-slate-700 font-medium">{item.mfg}</td>
-                    <td className="py-2.5 px-2 text-[11px] text-slate-600 font-medium">{item.batch}</td>
-                    <td className="py-2.5 px-2 text-[11px] text-slate-600 font-medium">{item.exp}</td>
-                    <td className="py-2.5 px-2 text-xs text-slate-900 font-bold text-right">{item.stock}</td>
-                    <td className="py-2.5 px-2 text-xs text-slate-900 font-bold text-right">{item.price}</td>
-                    <td className="py-2.5 px-2 text-center">
-                      <span className={`px-2 py-1 rounded text-[10px] font-bold ${getStatusColor(item.status)}`}>
+                    <td className="py-3 px-2 text-[12px] text-[var(--color-text)] font-medium">{item.mfg}</td>
+                    <td className="py-3 px-2 text-[12px] text-[var(--color-text-muted)] font-bold">{item.batch}</td>
+                    <td className="py-3 px-2 text-[12px] text-[var(--color-text-muted)] font-bold">{item.exp}</td>
+                    <td className="py-3 px-2 text-[13px] text-[var(--color-text)] font-black text-right">{item.stock}</td>
+                    <td className="py-3 px-2 text-[13px] text-[var(--color-text)] font-black text-right">{item.price}</td>
+                    <td className="py-3 px-2 text-center">
+                      <Badge variant={item.status === 'In Stock' ? 'info' : 'warning'}>
                         {item.status}
-                      </span>
+                      </Badge>
                     </td>
-                  </tr>
+                  </motion.tr>
                 ))}
-              </tbody>
+              </motion.tbody>
             </table>
           </div>
-        </div>
+        </motion.div>
 
         {/* Quick Actions */}
-        <div className="xl:col-span-3 bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
-          <h3 className="font-bold text-slate-900 text-base mb-6">Quick Actions</h3>
+        <div className="xl:col-span-3 bg-white rounded-xl p-6 border border-[var(--color-border)] shadow-sm">
+          <h3 className="font-bold text-[var(--color-text)] text-[16px] mb-6">Quick Actions</h3>
           <div className="grid grid-cols-2 gap-3">
-            <Link to="/pharmacy/medicine-master" className="flex flex-col items-center justify-center gap-2.5 p-4 rounded-xl bg-indigo-50 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-200 group">
-              <div className="w-10 h-10 rounded-full bg-white text-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
+            <Link to="/pharmacy/medicine-master" className="flex flex-col items-center justify-center gap-2.5 p-4 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors border border-[var(--color-border)] group">
+              <div className="w-10 h-10 rounded-full bg-[var(--color-info-bg)] text-[var(--color-navy-600)] flex items-center justify-center group-hover:scale-110 transition-transform">
                 <PlusCircle className="w-5 h-5" />
               </div>
-              <span className="text-[10px] font-bold text-indigo-900 text-center">Add Medicine</span>
+              <span className="text-[11px] font-bold text-[var(--color-text)] text-center">Add Medicine</span>
             </Link>
-            <Link to="/pharmacy/purchase-orders" className="flex flex-col items-center justify-center gap-2.5 p-4 rounded-xl bg-sky-50 hover:bg-sky-100 transition-colors border border-transparent hover:border-sky-200 group">
-              <div className="w-10 h-10 rounded-full bg-white text-sky-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
+            <Link to="/pharmacy/purchase-orders" className="flex flex-col items-center justify-center gap-2.5 p-4 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors border border-[var(--color-border)] group">
+              <div className="w-10 h-10 rounded-full bg-[var(--color-info-bg)] text-[var(--color-navy-600)] flex items-center justify-center group-hover:scale-110 transition-transform">
                 <ShoppingCart className="w-5 h-5" />
               </div>
-              <span className="text-[10px] font-bold text-sky-900 text-center">Purchase Order</span>
+              <span className="text-[11px] font-bold text-[var(--color-text)] text-center">Purchase Order</span>
             </Link>
-            <Link to="/pharmacy/medicine-stock" className="flex flex-col items-center justify-center gap-2.5 p-4 rounded-xl bg-emerald-50 hover:bg-emerald-100 transition-colors border border-transparent hover:border-emerald-200 group">
-              <div className="w-10 h-10 rounded-full bg-white text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
+            <Link to="/pharmacy/medicine-stock" className="flex flex-col items-center justify-center gap-2.5 p-4 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors border border-[var(--color-border)] group">
+              <div className="w-10 h-10 rounded-full bg-[var(--color-info-bg)] text-[var(--color-navy-600)] flex items-center justify-center group-hover:scale-110 transition-transform">
                 <ArrowRightLeft className="w-5 h-5" />
               </div>
-              <span className="text-[10px] font-bold text-emerald-900 text-center">Stock Transfer</span>
+              <span className="text-[11px] font-bold text-[var(--color-text)] text-center">Stock Transfer</span>
             </Link>
-            <Link to="/pharmacy/direct-pharmacy-sales" className="flex flex-col items-center justify-center gap-2.5 p-4 rounded-xl bg-orange-50 hover:bg-orange-100 transition-colors border border-transparent hover:border-orange-200 group">
-              <div className="w-10 h-10 rounded-full bg-white text-orange-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
+            <Link to="/pharmacy/direct-pharmacy-sales" className="flex flex-col items-center justify-center gap-2.5 p-4 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors border border-[var(--color-border)] group">
+              <div className="w-10 h-10 rounded-full bg-[var(--color-info-bg)] text-[var(--color-navy-600)] flex items-center justify-center group-hover:scale-110 transition-transform">
                 <FileOutput className="w-5 h-5" />
               </div>
-              <span className="text-[10px] font-bold text-orange-900 text-center">Sales Invoice</span>
+              <span className="text-[11px] font-bold text-[var(--color-text)] text-center">Sales Invoice</span>
             </Link>
-            <Link to="/pharmacy/grnentry" className="flex flex-col items-center justify-center gap-2.5 p-4 rounded-xl bg-rose-50 hover:bg-rose-100 transition-colors border border-transparent hover:border-rose-200 group">
-              <div className="w-10 h-10 rounded-full bg-white text-rose-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
+            <Link to="/pharmacy/grnentry" className="flex flex-col items-center justify-center gap-2.5 p-4 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors border border-[var(--color-border)] group">
+              <div className="w-10 h-10 rounded-full bg-[var(--color-info-bg)] text-[var(--color-navy-600)] flex items-center justify-center group-hover:scale-110 transition-transform">
                 <ArrowDownToLine className="w-5 h-5" />
               </div>
-              <span className="text-[10px] font-bold text-rose-900 text-center">GRN Entry</span>
+              <span className="text-[11px] font-bold text-[var(--color-text)] text-center">GRN Entry</span>
             </Link>
-            <Link to="/pharmacy/medicine-stock" className="flex flex-col items-center justify-center gap-2.5 p-4 rounded-xl bg-purple-50 hover:bg-purple-100 transition-colors border border-transparent hover:border-purple-200 group">
-              <div className="w-10 h-10 rounded-full bg-white text-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm">
+            <Link to="/pharmacy/medicine-stock" className="flex flex-col items-center justify-center gap-2.5 p-4 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors border border-[var(--color-border)] group">
+              <div className="w-10 h-10 rounded-full bg-[var(--color-info-bg)] text-[var(--color-navy-600)] flex items-center justify-center group-hover:scale-110 transition-transform">
                 <Settings2 className="w-5 h-5" />
               </div>
-              <span className="text-[10px] font-bold text-purple-900 text-center">Stock Adjust</span>
+              <span className="text-[11px] font-bold text-[var(--color-text)] text-center">Stock Adjust</span>
             </Link>
           </div>
         </div>
 
         {/* Expiry Alert */}
-        <div className="xl:col-span-3 bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col">
+        <div className="xl:col-span-3 bg-white rounded-xl p-6 border border-[var(--color-border)] shadow-sm flex flex-col">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="font-bold text-slate-900 text-base">Expiry Alert</h3>
-            <button className="text-indigo-600 text-xs font-semibold hover:underline">View All</button>
+            <h3 className="font-bold text-[var(--color-text)] text-[16px]">Expiry Alert</h3>
+            <button className="text-[var(--color-navy-800)] text-[12px] font-bold hover:underline">View All</button>
           </div>
           <div className="flex-1 space-y-5">
             {expiryAlerts.map((item, idx) => (
-              <div key={idx} className="flex items-center justify-between group">
-                <div className="flex items-center gap-2.5 overflow-hidden">
-                  <div className="w-8 h-8 bg-slate-100 rounded flex items-center justify-center text-slate-400 shrink-0">
+              <div key={idx} className="flex items-center justify-between group p-3 rounded-lg border border-[var(--color-border)] bg-slate-50">
+                <div className="flex items-center gap-3 overflow-hidden">
+                  <div className="w-9 h-9 bg-[var(--color-info-bg)] rounded-full flex items-center justify-center text-[var(--color-navy-600)] shrink-0">
                     <Package className="w-4 h-4" />
                   </div>
                   <div className="min-w-0">
-                    <h4 className="text-[11px] font-bold text-slate-900 group-hover:text-indigo-600 transition-colors truncate" title={item.name}>{item.name}</h4>
-                    <p className="text-[9px] text-slate-500 mt-0.5 truncate">Expiry: {item.exp}</p>
+                    <h4 className="text-[12px] font-bold text-[var(--color-text)] group-hover:text-[var(--color-navy-800)] transition-colors truncate" title={item.name}>{item.name}</h4>
+                    <p className="text-[10px] text-[var(--color-text-muted)] font-medium mt-0.5 truncate">Expiry: {item.exp}</p>
                   </div>
                 </div>
                 <div className="text-right shrink-0 ml-2">
-                  <p className={`text-sm font-bold ${item.days < 30 ? 'text-rose-600' : 'text-amber-500'}`}>{item.days}</p>
-                  <p className={`text-[8px] font-bold uppercase tracking-wider mt-0.5 ${item.days < 30 ? 'text-rose-500' : 'text-amber-400'}`}>Days Left</p>
+                  <p className={`text-[14px] font-black ${item.days < 30 ? 'text-rose-600' : 'text-amber-500'}`}>{item.days}</p>
+                  <p className={`text-[9px] font-bold uppercase tracking-wider mt-0.5 ${item.days < 30 ? 'text-rose-500' : 'text-amber-400'}`}>Days Left</p>
                 </div>
               </div>
             ))}
@@ -396,5 +405,6 @@ export default function PharmacyDashboard() {
 
       </div>
     </div>
+    
   );
 }

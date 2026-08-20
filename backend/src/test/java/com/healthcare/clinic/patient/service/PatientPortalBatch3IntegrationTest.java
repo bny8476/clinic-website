@@ -6,10 +6,10 @@ import com.healthcare.clinic.identity.repository.RoleRepository;
 import com.healthcare.clinic.identity.repository.UserRepository;
 import com.healthcare.clinic.branch.entity.Branch;
 import com.healthcare.clinic.branch.repository.BranchRepository;
-import com.healthcare.clinic.ai.entity.AiChatMessage;
-import com.healthcare.clinic.ai.entity.AiChatSession;
-import com.healthcare.clinic.patient.entity.PatientDocument;
+import com.healthcare.clinic.patient.entity.AiChatMessage;
+import com.healthcare.clinic.patient.entity.AiChatSession;
 import com.healthcare.clinic.patient.entity.PatientProfile;
+import com.healthcare.clinic.patient.entity.PatientDocument;
 import com.healthcare.clinic.patient.repository.PatientProfileRepository;
 import com.healthcare.clinic.patient.dto.TimelineEventDTO;
 import org.junit.jupiter.api.BeforeEach;
@@ -100,14 +100,14 @@ public class PatientPortalBatch3IntegrationTest {
         // 2. Send message
         AiChatMessage aiResponse = aiAssistantService.sendMessage(testPatient, session.getId(), "I have a headache");
         assertThat(aiResponse).isNotNull();
-        assertThat(aiResponse.getSender()).isEqualTo("AI");
+        assertThat(aiResponse.getSenderType()).isEqualTo("AI");
         assertThat(aiResponse.getContent()).containsIgnoringCase("headache");
 
         // 3. Verify chat history
         List<AiChatMessage> history = aiAssistantService.getSessionMessages(testPatient, session.getId());
         assertThat(history).hasSize(2);
-        assertThat(history.get(0).getSender()).isEqualTo("USER");
-        assertThat(history.get(1).getSender()).isEqualTo("AI");
+        assertThat(history.get(0).getSenderType()).isEqualTo("USER");
+        assertThat(history.get(1).getSenderType()).isEqualTo("AI");
     }
 
     @Test

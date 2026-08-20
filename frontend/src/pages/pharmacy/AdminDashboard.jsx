@@ -1,22 +1,16 @@
-import React, { useMemo } from 'react';
-import { Cardio } from 'ldrs/react';
-import 'ldrs/react/Cardio.css';
+
 import { useQuery } from '@tanstack/react-query';
-import {
-  BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
-} from 'recharts';
+
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/pharmacy/AuthContext';
 import api from '../../utils/pharmacy/api';
 import {
+
+
   Package, IndianRupee, FileText, AlertTriangle, Calendar, Users,
-  Plus, ScanLine, PackagePlus, ShoppingCart, ClipboardList, Printer,
-  Clock, TrendingUp, TrendingDown, Activity, Thermometer, ShieldAlert,
+  Plus, ScanLine, PackagePlus, ShoppingCart, ClipboardList, Printer, TrendingUp, Activity, ShieldAlert,
   Truck, RotateCcw, CheckSquare, Receipt
 } from 'lucide-react';
-import KPICard from '../../components/pharmacy/ui/KPICard';
-import { DashboardShell } from '../../components/dashboard/shared/DashboardShell';
 
 const ROLE_CONFIG = {
   SYSTEM_ADMIN: {
@@ -382,6 +376,7 @@ export default function AdminDashboard() {
   }));
 
   return (
+    
     <DashboardShell
       quickActions={mappedQuickActions}
     >
@@ -506,5 +501,6 @@ export default function AdminDashboard() {
       )}
       </div>
     </DashboardShell>
+    
   );
 }

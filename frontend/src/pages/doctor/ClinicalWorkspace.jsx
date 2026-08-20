@@ -1,9 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { axiosPrivate } from '../../api/axios';
 import { toast } from 'react-hot-toast';
 import useAuthStore from '../../store/authStore';
-import { Activity, FileText, AlertTriangle, List, CheckCircle, Save, Stethoscope, ArrowLeft, Lock, Pill, Send, Paperclip, MessageSquare, Plus, Video, Mic, MicOff } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+import { 
+  ArrowLeft, Stethoscope, Lock, Save, CheckCircle, AlertTriangle, 
+  Activity, Video, FileText, List, Pill, Send, Paperclip, MessageSquare,
+  Mic, MicOff
+} from 'lucide-react';
 
 const ClinicalWorkspace = () => {
   const { id } = useParams(); // encounterId
@@ -346,52 +352,48 @@ const ClinicalWorkspace = () => {
           <div className="bg-white rounded-2xl shadow-xs border border-slate-200 flex flex-col h-full min-h-[600px]">
             {/* Tabs */}
             <div className="flex border-b border-slate-200 overflow-x-auto hide-scrollbar p-1 bg-slate-50/50 rounded-t-2xl">
-              <button 
-                onClick={() => setActiveTab('soap')}
-                className={`flex items-center gap-2 px-5 py-3 text-sm font-bold border-b-2 transition whitespace-nowrap ${activeTab === 'soap' ? 'border-indigo-600 text-indigo-700 bg-white shadow-xs rounded-xl' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
-              >
-                <FileText size={16} /> SOAP Notes
-              </button>
-              <button 
-                onClick={() => setActiveTab('dx')}
-                className={`flex items-center gap-2 px-5 py-3 text-sm font-bold border-b-2 transition whitespace-nowrap ${activeTab === 'dx' ? 'border-indigo-600 text-indigo-700 bg-white shadow-xs rounded-xl' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
-              >
-                <List size={16} /> Diagnoses
-              </button>
-              <button 
-                onClick={() => setActiveTab('allergy')}
-                className={`flex items-center gap-2 px-5 py-3 text-sm font-bold border-b-2 transition whitespace-nowrap ${activeTab === 'allergy' ? 'border-indigo-600 text-indigo-700 bg-white shadow-xs rounded-xl' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
-              >
-                <AlertTriangle size={16} /> Allergies
-              </button>
-              <button 
-                onClick={() => setActiveTab('prescriptions')}
-                className={`flex items-center gap-2 px-5 py-3 text-sm font-bold border-b-2 transition whitespace-nowrap ${activeTab === 'prescriptions' ? 'border-indigo-600 text-indigo-700 bg-white shadow-xs rounded-xl' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
-              >
-                <Pill size={16} /> Prescriptions
-              </button>
-              <button 
-                onClick={() => setActiveTab('referrals')}
-                className={`flex items-center gap-2 px-5 py-3 text-sm font-bold border-b-2 transition whitespace-nowrap ${activeTab === 'referrals' ? 'border-indigo-600 text-indigo-700 bg-white shadow-xs rounded-xl' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
-              >
-                <Send size={16} /> Referrals
-              </button>
-              <button 
-                onClick={() => setActiveTab('attachments')}
-                className={`flex items-center gap-2 px-5 py-3 text-sm font-bold border-b-2 transition whitespace-nowrap ${activeTab === 'attachments' ? 'border-indigo-600 text-indigo-700 bg-white shadow-xs rounded-xl' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
-              >
-                <Paperclip size={16} /> Attachments
-              </button>
-              <button 
-                onClick={() => setActiveTab('messages')}
-                className={`flex items-center gap-2 px-5 py-3 text-sm font-bold border-b-2 transition whitespace-nowrap ${activeTab === 'messages' ? 'border-indigo-600 text-indigo-700 bg-white shadow-xs rounded-xl' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
-              >
-                <MessageSquare size={16} /> Messages
-              </button>
+              {[
+                { id: 'soap', icon: FileText, label: 'SOAP Notes' },
+                { id: 'dx', icon: List, label: 'Diagnoses' },
+                { id: 'allergy', icon: AlertTriangle, label: 'Allergies' },
+                { id: 'prescriptions', icon: Pill, label: 'Prescriptions' },
+                { id: 'referrals', icon: Send, label: 'Referrals' },
+                { id: 'attachments', icon: Paperclip, label: 'Attachments' },
+                { id: 'messages', icon: MessageSquare, label: 'Messages' }
+              ].map(tab => (
+                <button 
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`relative flex items-center gap-2 px-5 py-3 text-sm font-bold transition whitespace-nowrap ${activeTab === tab.id ? 'text-indigo-700' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100/50 rounded-xl'}`}
+                >
+                  {activeTab === tab.id && (
+                    <motion.div
+                      layoutId="workspaceTab"
+                      className="absolute inset-0 bg-white border border-slate-200 shadow-sm rounded-xl"
+                      initial={false}
+                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                      style={{ zIndex: 0 }}
+                    />
+                  )}
+                  <span className="relative z-10 flex items-center gap-2">
+                    <tab.icon size={16} /> {tab.label}
+                  </span>
+                </button>
+              ))}
             </div>
 
             {/* Tab Content */}
-            <div className="p-6 flex-1 flex flex-col">
+            <div className="p-6 flex-1 flex flex-col relative">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeTab}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex-1 flex flex-col"
+                >
+
               
               {activeTab === 'soap' && (
                 <div className="space-y-5 flex-1 flex flex-col">
@@ -613,6 +615,8 @@ const ClinicalWorkspace = () => {
                 </div>
               )}
 
+                </motion.div>
+              </AnimatePresence>
             </div>
           </div>
         </div>

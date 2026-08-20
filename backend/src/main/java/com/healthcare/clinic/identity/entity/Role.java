@@ -34,6 +34,7 @@ public class Role implements GrantedAuthority {
             joinColumns = @JoinColumn(name = "role_id"),
             inverseJoinColumns = @JoinColumn(name = "permission_id")
     )
+    @Builder.Default
     private Set<Permission> permissions = new HashSet<>();
 
     @Override

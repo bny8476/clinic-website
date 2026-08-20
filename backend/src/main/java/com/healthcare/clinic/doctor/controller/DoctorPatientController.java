@@ -105,6 +105,13 @@ public class DoctorPatientController {
                 .notes(a.getNotes())
                 .build())
             .collect(Collectors.toList());
+            
+        // Security check for IDOR: Prevent doctor from viewing PII/PHI of unassociated patients
+        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_SUPER_ADMIN"));
+        if (history.isEmpty() && !isAdmin) {
+            throw new org.springframework.security.access.AccessDeniedException("You do not have permission to view this patient's medical records.");
+        }
 
         var prescriptions = prescriptionRepository.findByPatientIdOrderByCreatedAtDesc(patientId).stream()
             .map(p -> {

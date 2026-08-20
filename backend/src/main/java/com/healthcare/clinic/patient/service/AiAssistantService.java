@@ -1,8 +1,8 @@
 package com.healthcare.clinic.patient.service;
 
 import com.healthcare.clinic.identity.entity.User;
-import com.healthcare.clinic.ai.entity.AiChatMessage;
-import com.healthcare.clinic.ai.entity.AiChatSession;
+import com.healthcare.clinic.patient.entity.AiChatMessage;
+import com.healthcare.clinic.patient.entity.AiChatSession;
 import com.healthcare.clinic.patient.entity.PatientProfile;
 import com.healthcare.clinic.ai.repository.AiChatMessageRepository;
 import com.healthcare.clinic.ai.repository.AiChatSessionRepository;
@@ -30,13 +30,11 @@ public class AiAssistantService {
     @Transactional
     public AiChatSession getOrCreateActiveSession(User user) {
         PatientProfile profile = getPatientProfile(user);
-        return sessionRepository.findByUserId(profile.getId())
+        return sessionRepository.findByPatientId(profile.getId())
                 .stream().findFirst()
                 .orElseGet(() -> {
                     AiChatSession newSession = AiChatSession.builder()
-                            .userId(profile.getId())
-                            .userRole("PATIENT")
-                            .title("Health Assistant")
+                            .patientId(profile.getId())
                             .build();
                     return sessionRepository.save(newSession);
                 });
@@ -56,7 +54,7 @@ public class AiAssistantService {
         // Save User Message
         AiChatMessage userMessage = AiChatMessage.builder()
                 .session(session)
-                .sender("USER")
+                .senderType("USER")
                 .content(content)
                 .build();
         messageRepository.save(userMessage);
@@ -67,7 +65,7 @@ public class AiAssistantService {
         // Save AI Message
         AiChatMessage aiMessage = AiChatMessage.builder()
                 .session(session)
-                .sender("AI")
+                .senderType("AI")
                 .content(aiResponseText)
                 .build();
         return messageRepository.save(aiMessage);

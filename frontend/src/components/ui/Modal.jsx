@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { scaleIn } from './motion';
@@ -126,7 +126,7 @@ export default function Modal({
             initial="hidden"
             animate="visible"
             exit="exit"
-            className={`relative w-full ${sizes[size] || sizes.md} bg-[var(--color-surface)] border border-[var(--color-border)] rounded-md shadow-elevated z-10 flex flex-col max-h-[90vh] overflow-hidden ${className}`}
+            className={`relative w-full ${sizes[size] || sizes.md} bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl shadow-elevated z-10 flex flex-col max-h-[90vh] overflow-hidden ${className}`}
           >
             {/* Visually-hidden description for screen readers */}
             {description && (

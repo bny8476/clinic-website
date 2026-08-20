@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { Search, ChevronDown, Plus, Eye, Download, MoreVertical, FileText, ArrowUp, Activity, Briefcase, Plane, PenTool, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const DoctorMedicalCertificates = () => {

@@ -1,7 +1,5 @@
-import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { RefreshCw, Calendar, Phone, CheckCircle, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const FollowUps = () => {

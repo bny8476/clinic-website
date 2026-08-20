@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Cardio } from 'ldrs/react';
-import 'ldrs/react/Cardio.css';
+import { useState, useEffect } from 'react';
+
 import logger from '../../utils/logger';
-import { Shield, Edit2, Users, Plus, Check, X, Loader2, ClipboardPlus, FileText, Package, BarChart2, ShieldCheck, User, ChevronDown } from 'lucide-react';
 import { MODULE_PERMISSIONS } from '../../config/pharmacy/roles.config';
 import api from '../../utils/pharmacy/api';
 import { toast } from 'react-hot-toast';
+
+
 
 export default function RoleManagementPanel({ onBack }) {
   const [roles, setRoles] = useState([]);
@@ -313,6 +313,7 @@ export default function RoleManagementPanel({ onBack }) {
                         {perms.map(perm => {
                           const isSelected = formData.permissions.includes(perm.id) || formData.permissions.includes('ALL');
                           return (
+    
                             <button
                               key={perm.id}
                               type="button"
@@ -365,5 +366,6 @@ export default function RoleManagementPanel({ onBack }) {
         </div>
       )}
     </div>
+    
   );
 }

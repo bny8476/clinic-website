@@ -1,5 +1,4 @@
 import React from 'react';
-import { Loader2 } from 'lucide-react';
 
 const renderIcon = (Icon, className) => {
   if (!Icon) return null;
@@ -31,51 +30,44 @@ export default function Button({
   disabled,
   className = '',
   type = 'button',
+  onClick,
   ...rest
 }) {
-  const baseStyles = "inline-flex items-center justify-center font-medium transition-all duration-200 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-surface)] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none select-none";
+  const baseStyles = "inline-flex items-center justify-center font-medium rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-surface)] disabled:opacity-60 disabled:cursor-not-allowed select-none transition-colors duration-300";
 
   const variants = {
-    // Gold gradient primary — the premium default CTA
     primary: [
-      "bg-[var(--color-navy-800)] text-white",
-      "hover:bg-[var(--color-navy-900)]",
+      "bg-[var(--color-navy-800)] text-white shadow-sm",
+      "hover:bg-[var(--color-navy-900)] hover:shadow-md",
       "dark:bg-[var(--color-navy-800)] dark:hover:bg-[var(--color-navy-900)]",
-      "active:scale-[0.99] shadow-sm hover:shadow-card",
       "focus-visible:ring-[var(--color-navy-600)]",
     ].join(' '),
-    // Explicit gold/luxury CTA variant
     gold: [
-      "bg-[var(--color-gold)] text-white font-semibold",
-      "hover:bg-[var(--color-gold-hover)]",
-      "active:scale-[0.99] shadow-sm hover:shadow-card",
+      "bg-[var(--color-gold)] text-white font-semibold shadow-sm",
+      "hover:bg-[var(--color-gold-hover)] hover:shadow-md",
       "focus-visible:ring-[var(--color-gold)]",
     ].join(' '),
     secondary: [
       "bg-[var(--color-surface-alt)] text-[var(--color-navy-900)] border border-[var(--color-border)]",
       "hover:bg-[var(--color-border)]",
       "dark:border-white/15 dark:text-[var(--color-text)] dark:hover:bg-white/8",
-      "active:scale-[0.99]",
       "focus-visible:ring-[var(--color-navy-600)]",
     ].join(' '),
     outline: [
       "bg-transparent text-[var(--color-navy-900)] border border-[var(--color-navy-800)]",
       "hover:bg-black/5",
       "dark:border-white/20 dark:text-[var(--color-text)] dark:hover:bg-white/8",
-      "active:scale-[0.99]",
       "focus-visible:ring-[var(--color-navy-600)]",
     ].join(' '),
     ghost: [
       "bg-transparent text-[var(--color-navy-900)]",
       "hover:bg-black/5 dark:hover:bg-white/8",
       "dark:text-[var(--color-text)]",
-      "active:scale-[0.99]",
       "focus-visible:ring-[var(--color-navy-600)]",
     ].join(' '),
     danger: [
-      "bg-[var(--color-danger)] text-white",
-      "hover:bg-red-700 dark:hover:bg-red-500",
-      "active:scale-[0.99] shadow-sm",
+      "bg-[var(--color-danger)] text-white shadow-sm",
+      "hover:bg-red-700 dark:hover:bg-red-500 hover:shadow-md",
       "focus-visible:ring-[var(--color-danger)]",
     ].join(' '),
   };
@@ -87,20 +79,41 @@ export default function Button({
   };
 
   const widthStyle = fullWidth ? "w-full" : "";
+  const isDisabled = disabled || isLoading;
+
+  const handleClick = (e) => {
+    if (isDisabled) {
+      e.preventDefault();
+      return;
+    }
+    if (onClick) {
+      onClick(e);
+    }
+  };
 
   return (
-    <button
+    <motion.button
       type={type}
-      disabled={disabled || isLoading}
+      disabled={isDisabled}
       className={`${baseStyles} ${variants[variant] || variants.primary} ${sizes[size] || sizes.md} ${widthStyle} ${className}`}
+      onClick={handleClick}
+      whileHover={isDisabled ? {} : { scale: 1.01 }}
+      whileTap={isDisabled ? {} : { scale: 0.97 }}
+      transition={{ type: "spring", stiffness: 400, damping: 25 }}
       {...rest}
     >
-      {isLoading ? (
-        <Loader2 className="w-4 h-4 animate-spin text-current shrink-0" />
-      ) : (
-        renderIcon(IconComponent, "w-4 h-4 text-current shrink-0")
-      )}
-      {children && <span>{children}</span>}
-    </button>
+      <motion.div 
+        className="flex items-center justify-center gap-inherit"
+        initial={false}
+        animate={{ opacity: 1 }}
+      >
+        {isLoading ? (
+          <Loader2 className="w-4 h-4 animate-spin text-current shrink-0" />
+        ) : (
+          renderIcon(IconComponent, "w-4 h-4 text-current shrink-0")
+        )}
+        {children && <span>{children}</span>}
+      </motion.div>
+    </motion.button>
   );
 }

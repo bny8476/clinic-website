@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ChevronLeft, ChevronRight, Plus, Clock } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import { useNavigate } from 'react-router-dom';
 import { axiosPrivate } from '../../api/axios';
-import Badge from '../../components/ui/Badge';
-import PageHeader from './PageHeader';
+import { motion } from 'framer-motion';
+import { pageTransition, fadeUp, staggerChildren, listStagger } from '../../components/ui/motion';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const HOURS = Array.from({ length: 14 }, (_, i) => `${(8 + i).toString().padStart(2, '0')}:00`); // 8 AM to 9 PM
@@ -72,8 +71,14 @@ const DoctorCalendar = () => {
   };
 
   return (
-    <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <motion.div 
+      variants={pageTransition}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto"
+    >
+      <motion.div variants={fadeUp} className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <PageHeader 
           title="Calendar" 
           subtitle="Manage your scheduled appointments and availability"
@@ -91,9 +96,9 @@ const DoctorCalendar = () => {
             <Plus size={14} /> Block Time
           </button>
         </div>
-      </div>
+      </motion.div>
 
-      <div className="bg-surface rounded-xl border border-surface-border shadow-sm overflow-hidden">
+      <motion.div variants={fadeUp} className="bg-surface rounded-xl border border-surface-border shadow-sm overflow-hidden">
         {/* Day headers */}
         <div className="grid grid-cols-[80px_repeat(7,1fr)] border-b border-surface-border bg-surface-hover/50">
           <div className="p-3"></div>
@@ -128,8 +133,8 @@ const DoctorCalendar = () => {
             </div>
           ))}
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

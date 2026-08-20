@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { BarChart3, TrendingUp, TrendingDown, Calendar } from 'lucide-react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { format } from 'date-fns';
+
+
 
 const fetchPnL = async (startDate, endDate, branchId) => {
   const params = new URLSearchParams({ startDate, endDate });
@@ -31,6 +32,7 @@ const PnLStatement = () => {
   };
 
   return (
+    
     <div className="p-4 sm:p-6 max-w-4xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
@@ -116,6 +118,7 @@ const PnLStatement = () => {
         ) : null}
       </div>
     </div>
+    
   );
 };
 

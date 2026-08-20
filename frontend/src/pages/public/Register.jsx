@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { axiosPublic } from '../../api/axios';
-import { Mail, Phone, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { axiosPublic } from '../../api/axios';
+import { Mail, Phone, Lock, User } from 'lucide-react';
 
 /* ─── Medvice colour tokens ──────────────────────────────────────────────── */
 const BLUE = '#2B4AFE';
@@ -138,8 +138,7 @@ const InputField = ({ icon: Icon, rightSlot, ...props }) => (
     </span>
     <input
       {...props}
-      className="w-full border border-gray-200 bg-gray-50 rounded-xl py-3 pl-10 pr-10 text-[13px] text-gray-800 placeholder-gray-400
-                 focus:border-[#2B4AFE] focus:ring-2 focus:ring-[#2B4AFE]/10 outline-none transition-all"
+      className="input-field pl-10 pr-10 w-full py-3 text-[13px]"
     />
     {rightSlot && (
       <span className="absolute right-3.5 top-1/2 -translate-y-1/2">{rightSlot}</span>
@@ -262,89 +261,108 @@ const Register = () => {
             )}
           </AnimatePresence>
 
-          <form onSubmit={handleRegister} className="space-y-3">
-
+          <motion.form 
+            onSubmit={handleRegister} 
+            className="space-y-3"
+            variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.1 } } }}
+            initial="hidden"
+            animate="visible"
+          >
             {/* Full Name */}
-            <InputField icon={User} type="text" required onChange={handleNameChange} placeholder="Full Name"/>
+            <motion.div variants={listStagger}>
+              <InputField icon={User} type="text" required onChange={handleNameChange} placeholder="Full Name"/>
+            </motion.div>
 
             {/* Email */}
-            <InputField icon={Mail} type="email" required name="email" value={formData.email} onChange={handleChange} placeholder="Email Address"/>
+            <motion.div variants={listStagger}>
+              <InputField icon={Mail} type="email" required name="email" value={formData.email} onChange={handleChange} placeholder="Email Address"/>
+            </motion.div>
 
             {/* Phone */}
-            <InputField icon={Phone} type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="Phone Number"/>
+            <motion.div variants={listStagger}>
+              <InputField icon={Phone} type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="Phone Number"/>
+            </motion.div>
 
             {/* Password */}
-            <InputField
-              icon={Lock}
-              type={showPassword ? 'text' : 'password'}
-              required name="password" value={formData.password} onChange={handleChange}
-              placeholder="Password"
-              rightSlot={
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-gray-400 hover:text-gray-600">
-                  {showPassword ? <EyeOff size={14}/> : <Eye size={14}/>}
-                </button>
-              }
-            />
+            <motion.div variants={listStagger}>
+              <InputField
+                icon={Lock}
+                type={showPassword ? 'text' : 'password'}
+                required name="password" value={formData.password} onChange={handleChange}
+                placeholder="Password"
+                rightSlot={
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-gray-400 hover:text-gray-600">
+                    {showPassword ? <EyeOff size={14}/> : <Eye size={14}/>}
+                  </button>
+                }
+              />
+            </motion.div>
 
             {/* Confirm Password */}
-            <InputField
-              icon={Lock}
-              type={showConfirmPassword ? 'text' : 'password'}
-              required name="confirmPassword" value={formData.confirmPassword} onChange={handleChange}
-              placeholder="Confirm Password"
-              rightSlot={
-                <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="text-gray-400 hover:text-gray-600">
-                  {showConfirmPassword ? <EyeOff size={14}/> : <Eye size={14}/>}
-                </button>
-              }
-            />
-
-            {/* Terms */}
-            <label className="flex items-start gap-2.5 cursor-pointer pt-1">
-              <input
-                type="checkbox" name="agreeTerms" checked={formData.agreeTerms} onChange={handleChange}
-                className="mt-0.5 w-4 h-4 rounded border-gray-300 accent-[#2B4AFE] flex-shrink-0"
+            <motion.div variants={listStagger}>
+              <InputField
+                icon={Lock}
+                type={showConfirmPassword ? 'text' : 'password'}
+                required name="confirmPassword" value={formData.confirmPassword} onChange={handleChange}
+                placeholder="Confirm Password"
+                rightSlot={
+                  <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="text-gray-400 hover:text-gray-600">
+                    {showConfirmPassword ? <EyeOff size={14}/> : <Eye size={14}/>}
+                  </button>
+                }
               />
-              <span className="text-[11px] text-gray-600 leading-relaxed">
-                I agree to the{' '}
-                <a href="#" style={{ color: BLUE }} className="font-semibold hover:underline">Terms of Service</a>
-                {' '}and{' '}
-                <a href="#" style={{ color: BLUE }} className="font-semibold hover:underline">Privacy Policy</a>
+            </motion.div>
+
+            {/* Terms checkbox */}
+            <motion.div variants={listStagger} className="flex items-start gap-2.5 mt-4 mb-5">
+              <input
+                type="checkbox" required
+                name="agreeTerms" checked={formData.agreeTerms} onChange={handleChange}
+                className="w-4 h-4 mt-0.5 rounded border-gray-300 accent-[#2B4AFE]"
+              />
+              <span className="text-[12px] text-gray-500 leading-tight">
+                I agree to Medvice's <a href="#" style={{ color: BLUE }} className="hover:underline">Terms of Service</a> and <a href="#" style={{ color: BLUE }} className="hover:underline">Privacy Policy</a>
               </span>
-            </label>
+            </motion.div>
 
             {/* Submit */}
-            <button
-              type="submit" disabled={loading}
-              className="w-full py-3 rounded-xl text-[13px] font-semibold text-white shadow transition-all hover:brightness-110 active:scale-[0.98]"
-              style={{ background: BLUE }}
-            >
-              {loading ? 'Creating Account…' : 'Create Account'}
-            </button>
+            <motion.div variants={listStagger}>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3.5 rounded-xl text-[13px] font-semibold text-white shadow-md transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-70 flex items-center justify-center gap-2"
+                style={{ background: BLUE }}
+              >
+                {loading && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+                Create Account
+              </button>
+            </motion.div>
 
             {/* OAuth */}
-            <div className="flex items-center gap-3 my-1">
-              <div className="flex-1 h-px bg-gray-200"/>
-              <span className="text-[11px] text-gray-400 whitespace-nowrap">or continue with</span>
-              <div className="flex-1 h-px bg-gray-200"/>
-            </div>
+            <motion.div variants={listStagger}>
+              <div className="flex items-center gap-3 my-1">
+                <div className="flex-1 h-px bg-gray-200"/>
+                <span className="text-[11px] text-gray-400 whitespace-nowrap">or continue with</span>
+                <div className="flex-1 h-px bg-gray-200"/>
+              </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <button type="button"
-                className="flex items-center justify-center gap-2 border border-gray-200 bg-white hover:bg-gray-50 rounded-xl py-2.5 text-[12px] font-semibold text-gray-700 transition-all"
-              ><GoogleIcon /> Google</button>
-              <button type="button"
-                className="flex items-center justify-center gap-2 border border-gray-200 bg-white hover:bg-gray-50 rounded-xl py-2.5 text-[12px] font-semibold text-gray-700 transition-all"
-              ><AppleIcon /> Apple</button>
-            </div>
+              <div className="grid grid-cols-2 gap-3">
+                <button type="button"
+                  className="flex items-center justify-center gap-2 border border-gray-200 bg-white hover:bg-gray-50 rounded-xl py-2.5 text-[12px] font-semibold text-gray-700 transition-all"
+                ><GoogleIcon /> Google</button>
+                <button type="button"
+                  className="flex items-center justify-center gap-2 border border-gray-200 bg-white hover:bg-gray-50 rounded-xl py-2.5 text-[12px] font-semibold text-gray-700 transition-all"
+                ><AppleIcon /> Apple</button>
+              </div>
+            </motion.div>
 
             {/* Mobile bottom link */}
-            <p className="text-center text-[12px] text-gray-500 lg:hidden pt-1">
+            <motion.p variants={listStagger} className="text-center text-[12px] text-gray-500 lg:hidden pt-1">
               Already have an account?{' '}
               <Link to="/patient/login" style={{ color: BLUE }} className="font-semibold hover:underline">Sign In</Link>
-            </p>
+            </motion.p>
 
-          </form>
+          </motion.form>
         </div>
       </div>
     </div>

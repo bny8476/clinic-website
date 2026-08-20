@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { toast } from 'react-hot-toast';
+
+
 
 const FhirImport = () => {
   const [file, setFile] = useState(null);
@@ -34,6 +36,7 @@ const FhirImport = () => {
   };
 
   return (
+    
     <div className="p-6 max-w-4xl mx-auto">
       <h1 className="text-3xl font-bold mb-8 text-gray-800">FHIR Data Import</h1>
       
@@ -86,6 +89,7 @@ const FhirImport = () => {
         </div>
       )}
     </div>
+    
   );
 };
 

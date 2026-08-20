@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { CalendarDays, XCircle, RefreshCw } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import useAuthStore from '../../store/authStore';
 import { useNavigate } from 'react-router-dom';
+import { CalendarDays, XCircle, RefreshCw, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { pageTransition, staggerChildren, listStagger, fadeUp } from '../../components/ui/motion';
 
 const AppointmentHistory = () => {
   const { user } = useAuthStore();
@@ -48,23 +50,56 @@ const AppointmentHistory = () => {
   };
 
   return (
-    <div className="p-4 sm:p-6 max-w-3xl mx-auto">
-      <h1 className="text-xl sm:text-2xl font-bold mb-5 flex items-center gap-2" style={{ color: 'var(--color-text)' }}>
+    <motion.div 
+      className="p-4 sm:p-6 max-w-3xl mx-auto"
+      variants={pageTransition}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+    >
+      <motion.h1 
+        variants={fadeUp}
+        className="text-xl sm:text-2xl font-bold mb-5 flex items-center gap-2" 
+        style={{ color: 'var(--color-text)' }}
+      >
         <CalendarDays size={24} color="#2B4AFE" aria-hidden="true" /> Appointment History
-      </h1>
+      </motion.h1>
 
-      <div style={{ background: 'var(--color-surface)', borderRadius: '12px', border: '1px solid var(--color-border)', overflow: 'hidden' }}>
-        {isLoading && (
-          <div className="p-8 text-center" style={{ color: 'var(--color-text-muted)' }}>Loading...</div>
-        )}
-        {!isLoading && appointments.length === 0 && (
-          <div className="p-8 text-center" style={{ color: 'var(--color-text-muted)' }}>No appointments found.</div>
-        )}
-        {appointments.map(a => {
-          const { bg, color } = statusColor(a.status);
-          return (
-            <div
-              key={a.id}
+      <motion.div 
+        variants={staggerChildren}
+        className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm"
+      >
+        <AnimatePresence mode="wait">
+          {isLoading ? (
+            <motion.div 
+              key="loading"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="p-12 flex flex-col items-center justify-center gap-3 text-slate-400"
+            >
+              <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+              <p className="text-sm font-medium">Loading history...</p>
+            </motion.div>
+          ) : appointments.length === 0 ? (
+            <motion.div 
+              key="empty"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="p-12 text-center" 
+              style={{ color: 'var(--color-text-muted)' }}
+            >
+              No appointments found.
+            </motion.div>
+          ) : (
+            appointments.map(a => {
+              const { bg, color } = statusColor(a.status);
+              return (
+                <motion.div
+                  variants={listStagger}
+                  layout
+                  key={a.id}
               className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-4 border-b"
               style={{ borderColor: 'var(--color-surface-alt)' }}
             >
@@ -110,11 +145,12 @@ const AppointmentHistory = () => {
                   </div>
                 )}
               </div>
-            </div>
+            </motion.div>
           );
-        })}
-      </div>
-    </div>
+        }))}
+        </AnimatePresence>
+      </motion.div>
+    </motion.div>
   );
 };
 

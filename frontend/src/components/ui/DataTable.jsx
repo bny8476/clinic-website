@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { ArrowUpDown, ChevronDown, ChevronUp, Search } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, ChevronUp, ChevronDown, ArrowUpDown } from 'lucide-react';
 import Card from './Card';
-import EmptyState from './EmptyState';
 import Skeleton from './Skeleton';
+import EmptyState from './EmptyState';
 
 /**
  * Enterprise DataTable Primitive
@@ -68,8 +69,7 @@ export default function DataTable({
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder={searchPlaceholder}
-                className="w-full pl-9 pr-4 py-2 text-sm bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-sm text-[var(--color-text)] focus:outline-none focus:border-[var(--color-navy-600)] transition-colors"
+                className="w-full pl-9 pr-4 py-2 text-sm bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-lg text-[var(--color-text)] focus:outline-none focus:border-[var(--color-navy-600)] transition-colors"
               />
             </div>
           )}
@@ -77,22 +77,25 @@ export default function DataTable({
         </Card.Header>
       )}
 
-      {isLoading ? (
-        <div className="p-4">
-          <Skeleton.Table rows={5} />
-        </div>
-      ) : sortedData.length === 0 ? (
-        <EmptyState 
-          title={emptyTitle}
-          description={emptyDescription}
-        />
-      ) : (
-        <>
-          {/* Desktop / Tablet Table View */}
+      <AnimatePresence mode="wait">
+        {isLoading ? (
+          <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="p-4">
+            <Skeleton.Table rows={5} />
+          </motion.div>
+        ) : sortedData.length === 0 ? (
+          <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <EmptyState 
+              title={emptyTitle}
+              description={emptyDescription}
+            />
+          </motion.div>
+        ) : (
+          <motion.div key="content" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            {/* Desktop / Tablet Table View */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-white dark:bg-white/[0.03] border-b border-gray-100 dark:border-white/[0.07] text-sm font-semibold text-gray-900 select-none">
+                <tr className="bg-[var(--color-surface-alt)] border-b border-[var(--color-border)] text-sm font-semibold text-[var(--color-navy-900)] select-none">
                   {columns.map((col) => (
                     <th
                       key={col.key}
@@ -115,30 +118,47 @@ export default function DataTable({
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100 text-sm">
-                {sortedData.map((row, index) => (
-                  <tr 
-                    key={row.id || index} 
-                    className="hover:bg-gray-50 dark:hover:bg-white/[0.04] transition-colors bg-white"
-                  >
-                    {columns.map((col) => (
-                      <td 
-                        key={col.key} 
-                        className={`p-4 ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'}`}
-                      >
-                        {col.render ? col.render(row[col.key], row, index) : row[col.key]}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
+              <motion.tbody 
+                className="divide-y divide-[var(--color-border)] text-sm"
+              >
+                <AnimatePresence>
+                  {sortedData.map((row, index) => (
+                    <motion.tr 
+                      layout
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, transition: { duration: 0.1 } }}
+                      transition={{ duration: 0.2, delay: Math.min(index * 0.02, 0.2) }}
+                      key={row.id || index} 
+                      className="hover:bg-slate-50 dark:hover:bg-[var(--color-surface-alt)] transition-colors bg-[var(--color-surface)]"
+                    >
+                      {columns.map((col) => (
+                        <td 
+                          key={col.key} 
+                          className={`p-4 ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'}`}
+                        >
+                          {col.render ? col.render(row[col.key], row, index) : row[col.key]}
+                        </td>
+                      ))}
+                    </motion.tr>
+                  ))}
+                </AnimatePresence>
+              </motion.tbody>
             </table>
           </div>
 
           {/* Mobile Card Stack View */}
           <div className="md:hidden divide-y divide-[var(--color-border)] p-2">
-            {sortedData.map((row, index) => (
-              <div key={row.id || index} className="p-4 space-y-2">
+            <AnimatePresence>
+              {sortedData.map((row, index) => (
+                <motion.div 
+                  layout
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  key={row.id || index} 
+                  className="p-4 space-y-2 bg-[var(--color-surface)]"
+                >
                 {columns.map((col) => (
                   <div key={col.key} className="flex justify-between items-center text-xs">
                     <span className="font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
@@ -149,11 +169,13 @@ export default function DataTable({
                     </span>
                   </div>
                 ))}
-              </div>
-            ))}
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
-        </>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {pagination && pagination.totalPages > 1 && (
         <Card.Footer className="justify-between">
@@ -165,7 +187,7 @@ export default function DataTable({
               type="button"
               disabled={pagination.page <= 1}
               onClick={() => pagination.onPageChange(pagination.page - 1)}
-              className="px-3 py-1 text-xs rounded-sm border border-[var(--color-border)] bg-[var(--color-surface)] disabled:opacity-50"
+              className="px-3 py-1 text-xs rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] disabled:opacity-50"
             >
               Previous
             </button>
@@ -173,7 +195,7 @@ export default function DataTable({
               type="button"
               disabled={pagination.page >= pagination.totalPages}
               onClick={() => pagination.onPageChange(pagination.page + 1)}
-              className="px-3 py-1 text-xs rounded-sm border border-[var(--color-border)] bg-[var(--color-surface)] disabled:opacity-50"
+              className="px-3 py-1 text-xs rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] disabled:opacity-50"
             >
               Next
             </button>

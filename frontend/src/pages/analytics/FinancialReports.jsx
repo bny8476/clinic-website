@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { IndianRupee, TrendingUp, TrendingDown, Calendar, FileText, Download } from 'lucide-react';
 import dayjs from 'dayjs';
+
+
 
 const FinancialReports = () => {
   const [period, setPeriod] = useState(dayjs().format('YYYY-MM')); // Current month
@@ -25,6 +26,7 @@ const FinancialReports = () => {
   });
 
   return (
+    
     <div className="p-6 max-w-7xl mx-auto font-sans text-slate-800">
       <div className="flex justify-between items-center mb-6">
         <div>
@@ -114,6 +116,7 @@ const FinancialReports = () => {
         </div>
       )}
     </div>
+    
   );
 };
 

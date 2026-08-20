@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { Save, FileText, Pill, FlaskConical, HeartPulse, ChevronLeft, Plus } from 'lucide-react';
+
+
 
 const ClinicalNotes = () => {
   const { patientId } = useParams();
@@ -37,6 +38,7 @@ const ClinicalNotes = () => {
   ];
 
   return (
+    
     <div className="p-4 sm:p-6" style={{ maxWidth: '900px', margin: '0 auto' }}>
       {/* Back + header */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-5">
@@ -105,6 +107,7 @@ const ClinicalNotes = () => {
         </div>
       </div>
     </div>
+    
   );
 };
 

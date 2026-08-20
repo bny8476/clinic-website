@@ -23,6 +23,7 @@ public class VitalSignsController {
     private final VitalSignRepository vitalSignRepository;
     private final PatientProfileRepository patientProfileRepository;
     private final AppointmentRepository appointmentRepository;
+    private final com.healthcare.clinic.identity.repository.UserRepository userRepository;
 
     @GetMapping
     @PreAuthorize("@nursingSecurity.isAssigned(authentication, #patientId) or hasRole('DOCTOR')")
@@ -35,9 +36,12 @@ public class VitalSignsController {
     public ResponseEntity<?> addVitalSign(@PathVariable Long patientId, 
                                           @RequestParam(required = false) Long appointmentId,
                                           @RequestBody VitalSign vitalSign, 
-                                          @AuthenticationPrincipal User nurse) {
+                                          @AuthenticationPrincipal com.healthcare.clinic.security.UserPrincipal nursePrincipal) {
         com.healthcare.clinic.patient.entity.PatientProfile patient = patientProfileRepository.findById(patientId).orElse(null);
         if (patient == null) return ResponseEntity.notFound().build();
+
+        com.healthcare.clinic.identity.entity.User nurse = userRepository.findById(nursePrincipal.getUserId())
+            .orElseThrow(() -> new RuntimeException("Nurse not found"));
 
         vitalSign.setPatient(patient);
         vitalSign.setNurse(nurse);

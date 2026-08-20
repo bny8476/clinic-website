@@ -1,16 +1,17 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { useSearchParams } from 'react-router-dom';
-import { FileText, Save, ArrowLeft, Plus } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { useSearchParams, Link } from 'react-router-dom';
+import { FileText, Plus, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
-import Card from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
-import FormField from '../../components/ui/FormField';
+import { motion } from 'framer-motion';
 import { fadeIn } from '../../components/ui/motion';
 import EmptyState from '../../components/ui/EmptyState';
+import Button from '../../components/ui/Button';
+import Card from '../../components/ui/Card';
+import FormField from '../../components/ui/FormField';
+
+
 
 const NursingNotes = () => {
   const queryClient = useQueryClient();
@@ -68,6 +69,7 @@ const NursingNotes = () => {
   const selectedPatient = assignments.find(a => a.patientId === selectedPatientId);
 
   return (
+    
     <motion.div 
       initial="hidden" 
       animate="visible" 
@@ -156,7 +158,7 @@ const NursingNotes = () => {
                           value={noteContent} 
                           onChange={e => setNoteContent(e.target.value)} 
                           placeholder="Enter clinical observations, patient complaints, or care provided..."
-                          className="input-field min-h-[120px]" 
+                          className="input-field min-h-[120px] focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-shadow" 
                           required
                         />
                       </FormField>
@@ -206,6 +208,7 @@ const NursingNotes = () => {
         </div>
       </div>
     </motion.div>
+    
   );
 };
 

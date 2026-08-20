@@ -1,11 +1,8 @@
-import React from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { motion, AnimatePresence } from 'framer-motion';
 import { axiosPrivate } from '../../api/axios';
-import { Activity, ArrowLeft, HeartPulse, Thermometer, Wind } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import Card from '../../components/ui/Card';
 import { fadeIn } from '../../components/ui/motion';
+
 
 const PatientMonitoring = () => {
   // Fetch assigned patients first

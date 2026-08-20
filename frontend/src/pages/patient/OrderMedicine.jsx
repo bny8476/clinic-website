@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
-import { 
-  ShoppingBag, Search, Filter, LayoutGrid, List, ChevronLeft, ChevronRight, 
-  Trash2, Plus, Minus, Info, CheckCircle2, Truck, RefreshCcw, HeadphonesIcon, ShieldCheck, ChevronDown
-} from 'lucide-react';
+import { useState } from 'react';
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { usePatientMedicineFeed } from '../../hooks/usePatientMedicineFeed';
+import { motion, AnimatePresence } from 'framer-motion';
+import { pageTransition, staggerChildren, listStagger, fadeUp } from '../../components/ui/motion';
 
 // Mock data (kept for fallback)
 const categories = [
@@ -124,10 +123,16 @@ export default function OrderMedicine() {
   const totalAmount = subtotal + deliveryCharges + packagingCharges;
 
   return (
-    <div className="max-w-[1400px] mx-auto p-4 sm:p-6 lg:p-8 font-sans bg-slate-50/50 min-h-screen">
+    <motion.div 
+      className="max-w-[1400px] mx-auto p-4 sm:p-6 lg:p-8 font-sans bg-slate-50/50 min-h-screen"
+      variants={pageTransition}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+    >
       
       {/* Page Header */}
-      <div className="mb-6">
+      <motion.div variants={fadeUp} className="mb-6">
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-[#3B28CC] shadow-sm">
             <ShoppingBag size={24} />
@@ -137,10 +142,10 @@ export default function OrderMedicine() {
             <p className="text-slate-500 text-sm font-medium">Search and order medicines delivered to your doorstep</p>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Search & Filters */}
-      <div className="bg-white p-3 rounded-2xl border border-slate-200 mb-6 flex flex-wrap gap-3 items-center shadow-sm">
+      <motion.div variants={fadeUp} className="bg-white p-3 rounded-2xl border border-slate-200 mb-6 flex flex-wrap gap-3 items-center shadow-sm">
         <div className="flex-1 min-w-[300px] relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
           <input 
@@ -164,10 +169,10 @@ export default function OrderMedicine() {
         <button className="flex items-center gap-2 px-5 py-3 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition cursor-pointer">
           <Filter size={16} /> Filter
         </button>
-      </div>
+      </motion.div>
 
       {/* Categories */}
-      <div className="flex gap-2.5 overflow-x-auto pb-2 mb-6 scrollbar-hide">
+      <motion.div variants={fadeUp} className="flex gap-2.5 overflow-x-auto pb-2 mb-6 scrollbar-hide">
         {categories.map((cat, idx) => (
           <button 
             key={idx}
@@ -181,7 +186,7 @@ export default function OrderMedicine() {
             {cat}
           </button>
         ))}
-      </div>
+      </motion.div>
 
       {/* Main Content */}
       <div className="flex flex-col lg:flex-row gap-8 items-start">
@@ -208,7 +213,12 @@ export default function OrderMedicine() {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm divide-y divide-slate-100 overflow-hidden min-h-[300px] relative">
+          <motion.div 
+            variants={staggerChildren}
+            initial="hidden"
+            animate="visible"
+            className="bg-white rounded-2xl border border-slate-200 shadow-sm divide-y divide-slate-100 overflow-hidden min-h-[300px] relative"
+          >
             {isLoading && (
               <div className="absolute inset-0 bg-white/50 flex items-center justify-center z-10">
                 <div className="w-8 h-8 border-4 border-indigo-200 border-t-[#3B28CC] rounded-full animate-spin"></div>
@@ -222,7 +232,12 @@ export default function OrderMedicine() {
             )}
             
             {medicines.map(med => (
-              <div key={med.id} className="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-slate-50/50 transition gap-4">
+              <motion.div 
+                key={med.id} 
+                variants={listStagger}
+                whileHover={{ backgroundColor: 'var(--color-surface)' }}
+                className="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between transition gap-4"
+              >
                 <div className="flex items-center gap-5 sm:gap-6">
                   <div className="w-20 h-20 bg-slate-50 rounded-xl overflow-hidden border border-slate-100 shrink-0 shadow-sm flex items-center justify-center p-2">
                     {med.imageUrl ? (
@@ -254,9 +269,9 @@ export default function OrderMedicine() {
                     <ShoppingBag size={16} /> {med.stockQuantity <= 0 ? 'Out of Stock' : 'Add to Cart'}
                   </button>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
 
           {/* Pagination */}
           <div className="flex items-center justify-between mt-8 text-sm font-medium text-slate-500">
@@ -438,6 +453,6 @@ export default function OrderMedicine() {
 
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

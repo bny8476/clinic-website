@@ -1,11 +1,10 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { BarChart, ArrowLeft, TrendingUp, Users, MousePointerClick, MailOpen } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import Card from '../../components/ui/Card';
 import { fadeIn } from '../../components/ui/motion';
+
+
 
 const MarketingAnalytics = () => {
   const { data: campaigns = [], isLoading } = useQuery({
@@ -144,6 +143,7 @@ const MarketingAnalytics = () => {
                         const clickRate = opened > 0 ? ((clicked / opened) * 100).toFixed(1) : 0;
                         
                         return (
+    
                           <tr key={c.id} className="hover:bg-slate-50 transition-colors">
                             <td className="p-4 font-semibold text-[var(--color-navy-900)]">{c.title}</td>
                             <td className="p-4 text-xs font-medium">
@@ -177,6 +177,7 @@ const MarketingAnalytics = () => {
         </>
       )}
     </motion.div>
+    
   );
 };
 

@@ -5,11 +5,13 @@ import com.healthcare.clinic.inventory.service.InventoryTransferService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/inventorys/inventorytransfers")
+@PreAuthorize("hasAuthority('ROLE_INVENTORY_MANAGER') or hasAuthority('ROLE_STORE_MANAGER') or hasAuthority('ROLE_SUPER_ADMIN')")
 @RequiredArgsConstructor
 public class InventoryTransferController {
 

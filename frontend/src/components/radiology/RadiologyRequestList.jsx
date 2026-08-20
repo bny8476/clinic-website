@@ -1,5 +1,3 @@
-import React from 'react';
-import { ArrowRight, Eye, Edit } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { useNavigate } from 'react-router-dom';

@@ -1,20 +1,22 @@
 import React, { useState } from 'react';
-import { Outlet, useLocation, Navigate, useNavigate, Link } from 'react-router-dom';
+import { useLocation, useNavigate, Link, Navigate, Outlet } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { motion, AnimatePresence } from 'framer-motion';
 import { axiosPrivate } from '../api/axios';
+import ErrorBoundary from '../components/ui/ErrorBoundary';
 import { 
   LogOut, ChevronDown, Search, Bell, Moon, MessageSquare, 
   Stethoscope, ShieldPlus, Plus, Zap, Activity, ArrowLeft
 } from 'lucide-react';
-import { getPortalConfig } from '../config/portalConfig';
-import useAuthStore, { isTokenValid } from '../store/authStore';
 import DashboardGrid from '../components/dashboard/DashboardGrid';
 import ThemeToggle from '../components/ui/ThemeToggle';
-import ErrorBoundary from '../components/ui/ErrorBoundary';
 import CommandPalette from '../components/ui/CommandPalette';
 import NotificationBell from '../components/NotificationBell';
 import MessageDropdown from '../components/MessageDropdown';
 import ActivityDropdown from '../components/ActivityDropdown';
+
+import { getPortalConfig } from '../config/portalConfig';
+import useAuthStore, { isTokenValid } from '../store/authStore';
 
 const DashboardLayout = ({ portalSlug, allowedRoles }) => {
   const [isQuickActionOpen, setIsQuickActionOpen] = useState(false);
@@ -70,7 +72,7 @@ const DashboardLayout = ({ portalSlug, allowedRoles }) => {
     <ErrorBoundary>
     <div className="h-screen overflow-hidden bg-[var(--color-bg-app)] flex flex-col font-sans transition-colors duration-200">
       {/* Top Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-50 shrink-0">
+      <header className="bg-[var(--color-surface)] border-b border-slate-200 sticky top-0 z-50 shrink-0">
         <div className="px-6 py-3 flex items-center justify-between">
           {/* Logo and Brand */}
           <div className="flex items-center gap-3">
@@ -84,13 +86,13 @@ const DashboardLayout = ({ portalSlug, allowedRoles }) => {
               </button>
             )}
             <Link to={`/${portalSlug}/dashboard`} className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[#2B4AFE] rounded-xl flex items-center justify-center shadow-xs cursor-pointer hover:opacity-90 transition">
+              <div className="w-10 h-10 bg-[var(--color-navy-800)] rounded-xl flex items-center justify-center shadow-xs cursor-pointer hover:opacity-90 transition">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
                 </svg>
               </div>
               <div>
-                <h1 className="text-xl font-bold tracking-tight text-[#0B1220] leading-none cursor-pointer hover:opacity-80 transition">AURELIAN HEALTH</h1>
+                <h1 className="text-xl font-bold tracking-tight text-[var(--color-navy-900)] leading-none cursor-pointer hover:opacity-80 transition">AURELIAN HEALTH</h1>
                 <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mt-1">
                   {portalSlug ? `${portalSlug.charAt(0).toUpperCase() + portalSlug.slice(1)} Portal` : 'Portal'}
                 </p>
@@ -110,7 +112,7 @@ const DashboardLayout = ({ portalSlug, allowedRoles }) => {
                 readOnly
                 onClick={() => setIsSearchOpen(true)} 
                 placeholder={portalSlug === 'patient' ? "Search health records, vitals, appointments..." : "Search patients, appointments, reports..."}
-                className="block w-full pl-10 pr-12 py-2 border border-slate-200 rounded-lg bg-slate-50 text-sm focus:ring-[#2B4AFE] focus:border-[#2B4AFE] text-slate-800 placeholder-slate-400 cursor-pointer hover:bg-slate-100 transition-colors"
+                className="block w-full pl-10 pr-12 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-input-bg)] text-sm focus:ring-[var(--color-navy-600)] focus:border-[var(--color-navy-600)] text-[var(--color-text)] placeholder-slate-400 cursor-pointer hover:bg-[var(--color-surface-alt)] transition-colors"
               />
               <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 text-xs font-medium">
                 ⌘ K
@@ -123,7 +125,7 @@ const DashboardLayout = ({ portalSlug, allowedRoles }) => {
             <div className="relative">
               <button 
                 onClick={() => setIsQuickActionOpen(!isQuickActionOpen)}
-                className="bg-[#2B4AFE] text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-semibold hover:opacity-90 transition shadow-xs"
+                className="bg-[var(--color-navy-800)] text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-semibold hover:opacity-90 transition shadow-xs"
               >
                 <Zap size={16} className="fill-current" />
                 Quick Action
@@ -132,7 +134,7 @@ const DashboardLayout = ({ portalSlug, allowedRoles }) => {
 
               {isQuickActionOpen && (
                 <div 
-                  className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-xl z-50 py-2 text-xs font-medium text-slate-700"
+                  className="absolute right-0 mt-2 w-56 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl shadow-xl z-50 py-2 text-xs font-medium text-[var(--color-text)]"
                   onMouseLeave={() => setIsQuickActionOpen(false)}
                 >
                   <div className="px-3 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 mb-1">
@@ -225,10 +227,12 @@ const DashboardLayout = ({ portalSlug, allowedRoles }) => {
         className={`flex-1 w-full flex flex-col ${
           location.pathname.endsWith('/dashboard')
             ? 'overflow-hidden'
-            : 'overflow-y-auto'
+            : 'overflow-x-hidden overflow-y-auto relative'
         }`}
       >
-        <Outlet />
+        <div key={location.pathname} className="flex-1 flex flex-col">
+          <Outlet />
+        </div>
       </main>
     </div>
     </ErrorBoundary>

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Users, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
 
 export default function AgentDashboard() {

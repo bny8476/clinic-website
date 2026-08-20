@@ -1,15 +1,13 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { Cardio } from 'ldrs/react';
-import 'ldrs/react/Cardio.css';
-import { useShallow } from 'zustand/react/shallow';
+import { useState, useRef } from 'react';
+
 import { useParams, useNavigate } from 'react-router-dom';
-import { Printer, ArrowLeft, CheckCircle, XCircle, PackageCheck, Loader2 } from 'lucide-react';
 import pharmacyService from '../../utils/pharmacy/pharmacyService';
-import Badge from '../../components/pharmacy/ui/Badge';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../context/pharmacy/AuthContext';
 import { ROLES } from '../../config/pharmacy/roles.config';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+
+
 
 export default function PurchaseOrderDetail() {
   const { id } = useParams();
@@ -71,6 +69,7 @@ export default function PurchaseOrderDetail() {
   const variants = { PENDING: 'warning', APPROVED: 'primary', RECEIVED: 'success', CANCELLED: 'danger' };
 
   return (
+    
     <div className="space-y-6 pb-20">
       <div className="flex flex-wrap items-center justify-between gap-4 print:hidden">
         <button 
@@ -92,7 +91,7 @@ export default function PurchaseOrderDetail() {
             </>
           )}
           {po.status === 'APPROVED' && (
-            <button onClick={() => updateStatus('RECEIVED')} disabled={isUpdating} className="px-4 py-2 bg-green-600 text-white hover:bg-green-700 shadow-md shadow-green-600/20 rounded-xl font-bold text-sm flex items-center gap-2 disabled:opacity-50">
+            <button onClick={() => updateStatus('RECEIVED')} disabled={isUpdating} className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-600/20 rounded-xl font-bold text-sm flex items-center gap-2 disabled:opacity-50">
               <PackageCheck className="w-4 h-4" /> Mark Received
             </button>
           )}
@@ -190,5 +189,6 @@ export default function PurchaseOrderDetail() {
         }
       `}</style>
     </div>
+    
   );
 }

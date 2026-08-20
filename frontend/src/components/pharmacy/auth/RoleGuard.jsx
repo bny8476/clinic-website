@@ -1,6 +1,4 @@
-import React from 'react';
 import logger from '../../../utils/logger';
-import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../../../context/pharmacy/AuthContext';
 import { ROLES, DASHBOARD_ROUTES, getBaseRoleForUI } from '../../../config/pharmacy/roles.config';
 

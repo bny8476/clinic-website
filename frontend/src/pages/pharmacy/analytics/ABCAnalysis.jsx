@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import logger from '../../../utils/logger';
 import { useOutletContext } from 'react-router-dom';
 import api from '../../../utils/pharmacy/api';
-import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
 import { exportToCSV } from '../../../utils/pharmacy/reportExport';
+
+
 
 export default function ABCAnalysis() {
   const { dateRange } = useOutletContext() || {};
@@ -57,6 +58,7 @@ export default function ABCAnalysis() {
   ];
 
   return (
+    
     <div className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-white p-5 rounded-lg border border-gray-200 shadow-sm flex flex-col justify-center items-center h-80">
@@ -87,7 +89,7 @@ export default function ABCAnalysis() {
            </p>
            <ul className="space-y-3">
              <li className="flex items-start">
-               <span className="flex-shrink-0 w-3 h-3 mt-1 rounded-full bg-green-500 mr-3"></span>
+               <span className="flex-shrink-0 w-3 h-3 mt-1 rounded-full bg-blue-500 mr-3"></span>
                <div>
                  <p className="text-sm font-medium text-gray-800">Category A (Top 70%)</p>
                  <p className="text-xs text-gray-500">Most valuable medicines. Require strict inventory control, frequent reordering, and accurate records.</p>
@@ -143,7 +145,7 @@ export default function ABCAnalysis() {
                   <td className="px-5 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{row.medicineName}</td>
                   <td className="px-5 py-3 whitespace-nowrap text-center text-sm">
                     <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
-                      row.category === 'A' ? 'bg-green-100 text-green-800' :
+                      row.category === 'A' ? 'bg-blue-100 text-blue-800' :
                       row.category === 'B' ? 'bg-amber-100 text-amber-800' :
                       'bg-gray-100 text-gray-800'
                     }`}>
@@ -166,5 +168,6 @@ export default function ABCAnalysis() {
         </div>
       </div>
     </div>
+    
   );
 }

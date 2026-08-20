@@ -1,7 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Video, Mic, MicOff, VideoOff, PhoneOff, MonitorUp, FileText, CheckSquare, AlertCircle } from 'lucide-react';
-import Button from '../../components/ui/Button';
 import { axiosPrivate } from '../../api/axios';
 import { connect, createLocalVideoTrack } from 'twilio-video';
 import useAuthStore from '../../store/authStore';

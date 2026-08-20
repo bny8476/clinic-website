@@ -1,15 +1,12 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
-import {
-  Monitor, CheckCircle2, Search, User, Calendar, ArrowRight,
-  AlertCircle, Loader2
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+
 import toast from 'react-hot-toast';
-import Input from '../../components/ui/Input';
-import Button from '../../components/ui/Button';
 import { staggerChildren, fadeIn } from '../../components/ui/motion';
+
+
 
 const KIOSK_STATION = 'KIOSK-1';
 const BRANCH_ID = 1; // Fixed for this kiosk terminal
@@ -51,6 +48,7 @@ const CheckInKiosk = () => {
   };
 
   return (
+    
     <div className="min-h-screen bg-gradient-to-br from-[var(--color-navy-900)] via-[var(--color-navy-800)] to-[var(--color-navy-900)] flex flex-col items-center justify-center p-6">
       {/* Header */}
       <div className="text-center mb-8">
@@ -227,6 +225,7 @@ const CheckInKiosk = () => {
         </motion.div>
       </AnimatePresence>
     </div>
+    
   );
 };
 

@@ -8,7 +8,7 @@ import com.healthcare.clinic.nursing.dto.ShiftHandoverRequest;
 import com.healthcare.clinic.nursing.entity.MedicationIncident;
 import com.healthcare.clinic.nursing.entity.NursingTask;
 import com.healthcare.clinic.nursing.entity.ShiftHandover;
-import com.healthcare.clinic.nursing.entity.Ward;
+import com.healthcare.clinic.inpatient.entity.Ward;
 import com.healthcare.clinic.nursing.repository.MedicationIncidentRepository;
 import com.healthcare.clinic.nursing.repository.NursingTaskRepository;
 import com.healthcare.clinic.nursing.repository.ShiftHandoverRepository;

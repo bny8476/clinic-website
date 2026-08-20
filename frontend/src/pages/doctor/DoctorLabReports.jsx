@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { Search, ChevronDown, Eye, Download, MoreVertical, ArrowUp, Upload, Activity, Droplet, Brain, Scan } from 'lucide-react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { toast } from 'react-hot-toast';
 import { format } from 'date-fns';
+
+
 
 const DoctorLabReports = () => {
   const navigate = useNavigate();
@@ -70,6 +71,7 @@ const DoctorLabReports = () => {
   const tabs = ['All Reports', 'Blood Tests', 'Imaging', 'Pathology', 'Microbiology', 'Other Tests'];
 
   return (
+    
     <div className="p-6 md:p-8 bg-white min-h-full font-sans">
       <div className="max-w-[1500px] mx-auto">
         
@@ -295,6 +297,7 @@ const DoctorLabReports = () => {
 
       </div>
     </div>
+    
   );
 };
 

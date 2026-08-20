@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { Search, UserCircle, ArrowLeft, Calendar } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import Card from '../../components/ui/Card';
+import { useNavigate } from 'react-router-dom';
 import { fadeIn } from '../../components/ui/motion';
 import { useDebounce } from 'use-debounce';
+
+
 
 const PatientSearch = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -24,6 +24,7 @@ const PatientSearch = () => {
   });
 
   return (
+    
     <motion.div 
       initial="hidden" 
       animate="visible" 
@@ -110,6 +111,7 @@ const PatientSearch = () => {
         </Card.Body>
       </Card>
     </motion.div>
+    
   );
 };
 

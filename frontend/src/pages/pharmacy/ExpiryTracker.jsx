@@ -1,12 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { useShallow } from 'zustand/react/shallow';
-import { CalendarX, RefreshCw, AlertTriangle, ArrowLeftRight, Trash2, ShieldAlert } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { useExpiryStore } from '../../store/useExpiryStore';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import pharmacyService from '../../utils/pharmacy/pharmacyService';
+
+
 
 export default function ExpiryTracker() {
   const queryClient = useQueryClient();
@@ -108,7 +107,7 @@ export default function ExpiryTracker() {
     } else if (days <= 90) {
       return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700 border border-blue-200">WARNING ({days}d)</span>;
     }
-    return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">SAFE ({days}d)</span>;
+    return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700 border border-blue-200">SAFE ({days}d)</span>;
   };
 
   return (
@@ -174,6 +173,7 @@ export default function ExpiryTracker() {
                 {virtualItems.map(virtualRow => {
                   const batch = batches[virtualRow.index];
                   return (
+    
                     <tr key={batch.id || virtualRow.index} data-index={virtualRow.index} ref={rowVirtualizer.measureElement} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
                       <td className="px-4 py-3 font-bold text-slate-700">
                         <div>{batch.medicineName}</div>
@@ -293,5 +293,6 @@ export default function ExpiryTracker() {
         </div>
       </div>
     </div>
+    
   );
 }

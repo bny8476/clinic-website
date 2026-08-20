@@ -1,14 +1,13 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { UploadCloud, Save, ArrowLeft, FileImage } from 'lucide-react';
-import { Link, useSearchParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { Save } from 'lucide-react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import Card from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
-import FormField from '../../components/ui/FormField';
 import { fadeIn } from '../../components/ui/motion';
+
+
 
 const RadiologyUpload = () => {
   const queryClient = useQueryClient();
@@ -90,6 +89,7 @@ const RadiologyUpload = () => {
   }
 
   return (
+    
     <motion.div 
       initial="hidden" 
       animate="visible" 
@@ -191,6 +191,7 @@ const RadiologyUpload = () => {
         </Card.Body>
       </Card>
     </motion.div>
+    
   );
 };
 

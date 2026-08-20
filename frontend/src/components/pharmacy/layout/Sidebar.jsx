@@ -1,7 +1,5 @@
-import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { cn } from '../../../utils/pharmacy/cn';
-import { ShieldPlus, Menu } from 'lucide-react';
 
 export default function Sidebar({ items = [], isOpen, setIsOpen }) {
   const location = useLocation();

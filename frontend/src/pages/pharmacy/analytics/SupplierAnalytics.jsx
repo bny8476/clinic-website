@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import logger from '../../../utils/logger';
 import api from '../../../utils/pharmacy/api';
-import { Truck, Percent, Star, AlertCircle, Loader2 } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from 'recharts';
+
+
 
 export default function SupplierAnalytics() {
   const [data, setData] = useState(null);
@@ -42,6 +42,7 @@ export default function SupplierAnalytics() {
 ];
 
   return (
+    
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
@@ -84,7 +85,7 @@ export default function SupplierAnalytics() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-xs font-medium text-emerald-600">Fill: {supplier.orderFillRate}%</div>
+                  <div className="text-xs font-medium text-blue-600">Fill: {supplier.orderFillRate}%</div>
                   <div className="text-xs text-slate-500">On Time: {supplier.onTimeDeliveryRate}%</div>
                 </div>
               </div>
@@ -126,5 +127,6 @@ export default function SupplierAnalytics() {
         </div>
       </div>
     </div>
+    
   );
 }

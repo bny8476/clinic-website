@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { Briefcase, FileText, UserPlus, Search, CheckCircle, XCircle } from 'lucide-react';
-import toast, { Toaster } from 'react-hot-toast';
-import dayjs from 'dayjs';
+
+
 
 const Recruitment = () => {
   const [activeTab, setActiveTab] = useState('requisitions'); // requisitions or applications
@@ -20,8 +20,9 @@ const Recruitment = () => {
   });
 
   return (
+    
     <div className="p-6 max-w-7xl mx-auto font-sans text-slate-800">
-      <Toaster position="top-right" />
+
       
       <div className="flex justify-between items-center mb-6">
         <div>
@@ -108,6 +109,7 @@ const Recruitment = () => {
       )}
 
     </div>
+    
   );
 };
 

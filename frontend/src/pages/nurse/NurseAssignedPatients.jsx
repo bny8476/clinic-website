@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { useNavigate } from 'react-router-dom';
-import { HeartPulse, FileText, UserRound } from 'lucide-react';
+import { UserRound, HeartPulse } from 'lucide-react';
+import { motion } from 'framer-motion';
 import EmptyState from '../../components/ui/EmptyState';
+
 
 const NurseAssignedPatients = () => {
   const navigate = useNavigate();
@@ -14,19 +16,33 @@ const NurseAssignedPatients = () => {
     queryFn: async () => (await axiosPrivate.get('/nursing/assignments/op')).data,
   });
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.05 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0 }
+  };
+
   return (
-    <div className="p-4 sm:p-6" style={{ maxWidth: '1000px', margin: '0 auto' }}>
+    
+    <div className="p-4 sm:p-6 max-w-5xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-5">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold" style={{ color: 'var(--color-text)', margin: 0 }}>Assigned Patients</h1>
-          <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>Patients currently assigned to your shift</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-[var(--color-text)] m-0">Assigned Patients</h1>
+          <p className="m-0 text-sm text-[var(--color-text-muted)] mt-1">Patients currently assigned to your shift</p>
         </div>
-        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#0f766e', background: '#ccfbf1', padding: '4px 12px', borderRadius: '6px', whiteSpace: 'nowrap' }}>Shift: Morning (08:00 - 16:00)</span>
+        <span className="text-sm font-semibold text-[var(--color-navy-800)] bg-[var(--color-info-bg)] px-3 py-1.5 rounded-md whitespace-nowrap">Shift: Morning (08:00 - 16:00)</span>
       </div>
 
-      <div style={{ background: 'var(--color-surface)', borderRadius: '12px', border: '1px solid var(--color-border)', overflow: 'hidden' }}>
+      <div className="bg-[var(--color-surface)] rounded-xl border border-[var(--color-border)] overflow-hidden shadow-sm">
         {patients.length === 0 ? (
-          <div style={{ padding: '40px 0' }}>
+          <div className="py-10">
             <EmptyState 
               icon={UserRound}
               title="No Patients Assigned" 
@@ -34,30 +50,33 @@ const NurseAssignedPatients = () => {
             />
           </div>
         ) : (
-          patients.map(p => (
-            <div key={p.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border-b" style={{ borderColor: 'var(--color-surface-alt)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#ccfbf1', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0f766e', fontWeight: 700, flexShrink: 0 }}>
-                  {p.patientName ? p.patientName[0] : '?'}
+          <motion.div variants={containerVariants} initial="hidden" animate="visible">
+            {patients.map(p => (
+              <motion.div key={p.id} variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border-b border-[var(--color-border)] hover:bg-[var(--color-surface-alt)] transition-colors last:border-b-0">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-full bg-[var(--color-info-bg)] flex items-center justify-center text-[var(--color-navy-800)] font-bold shrink-0">
+                    {p.patientName ? p.patientName[0] : '?'}
+                  </div>
+                  <div>
+                    <h3 className="m-0 text-[15px] font-bold text-[var(--color-text)]">{p.patientName} ({p.age}y)</h3>
+                    <p className="m-0 mt-1 text-xs text-[var(--color-text-muted)]">
+                      {p.tokenNumber ? `Token #${p.tokenNumber} · ` : ''}Reason: {p.appointmentReason} · Attending: {p.attendingDoctorName}
+                    </p>
+                    <p className="m-0 mt-1 text-xs font-medium text-[var(--color-navy-600)]">Vitals: {p.lastVitalsSummary}</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: 'var(--color-text)' }}>{p.patientName} ({p.age}y)</h3>
-                  <p style={{ margin: '2px 0 0', fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>
-                    {p.tokenNumber ? `Token #${p.tokenNumber} · ` : ''}Reason: {p.appointmentReason} · Attending: {p.attendingDoctorName}
-                  </p>
-                  <p style={{ margin: '2px 0 0', fontSize: '0.75rem', color: '#0f766e', fontWeight: 500 }}>Vitals: {p.lastVitalsSummary}</p>
+                <div className="flex gap-2 flex-wrap sm:flex-nowrap">
+                  <button onClick={() => navigate(`/nurse/workspace/${p.patientId}`)} className="bg-[var(--color-navy-800)] hover:bg-[var(--color-navy-900)] text-white border-none px-3 py-1.5 rounded-md text-xs cursor-pointer font-semibold flex items-center gap-1.5 transition-colors shadow-sm hover:shadow-md hover:-translate-y-0.5 transform duration-200">
+                    <HeartPulse size={14} /> Workspace
+                  </button>
                 </div>
-              </div>
-              <div className="flex gap-2 flex-wrap sm:flex-nowrap">
-                <button onClick={() => navigate(`/nurse/workspace/${p.patientId}`)} style={{ background: '#0f766e', color: 'var(--color-surface)', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '0.78rem', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <HeartPulse size={14} /> Workspace
-                </button>
-              </div>
-            </div>
-          ))
+              </motion.div>
+            ))}
+          </motion.div>
         )}
       </div>
     </div>
+    
   );
 };
 

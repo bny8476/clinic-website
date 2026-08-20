@@ -1,4 +1,3 @@
-import React from 'react';
 
 /**
  * Enterprise Skeleton Shimmer Loader Primitive

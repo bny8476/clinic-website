@@ -1,4 +1,3 @@
-import React, { useMemo } from 'react';
 import { FileText, ClipboardList, FlaskConical, Settings, CheckSquare, ShieldCheck, FileCheck, XCircle } from 'lucide-react';
 
 const KpiCard = ({ title, value, subtext, subtextColor, icon: Icon, iconBg, iconColor }) => (

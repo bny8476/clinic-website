@@ -2,8 +2,8 @@ import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { axiosPrivate } from '../../api/axios';
-import { Users, Clock, Bell, ChevronRight, Loader, ArrowRight, RefreshCw, ClipboardList, User } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
+import { motion } from 'framer-motion';
 
 const ConsultationQueue = () => {
   const navigate = useNavigate();
@@ -147,9 +147,24 @@ const ConsultationQueue = () => {
                 <p className="text-[15px] font-medium text-slate-500 max-w-sm">No patients are currently waiting for consultation.</p>
              </div>
            ) : (
-             <div className="flex flex-col">
+             <motion.div 
+               className="flex flex-col"
+               initial="hidden"
+               animate="visible"
+               variants={{
+                 hidden: { opacity: 0 },
+                 visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+               }}
+             >
                {waiting.map((p, i) => (
-                  <div key={p.id} className="flex items-center gap-5 px-6 py-5 border-b border-slate-50 hover:bg-slate-50/50 transition-colors group cursor-pointer">
+                  <motion.div 
+                    key={p.id} 
+                    variants={{
+                      hidden: { opacity: 0, y: 10 },
+                      visible: { opacity: 1, y: 0 }
+                    }}
+                    className="flex items-center gap-5 px-6 py-5 border-b border-slate-50 hover:bg-slate-50/50 transition-colors group cursor-pointer"
+                  >
                     <div className="w-[42px] h-[42px] rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-extrabold text-[15px] shrink-0 border border-slate-200 group-hover:bg-indigo-50 group-hover:text-indigo-600 group-hover:border-indigo-100 transition-colors">
                       {i + 1}
                     </div>
@@ -158,12 +173,12 @@ const ConsultationQueue = () => {
                       <p className="text-[13px] font-semibold text-slate-500 truncate">{p.opNumber ? `${p.opNumber} · ` : ''}Token #{p.tokenNumber || p.id} · {p.appointmentType || 'Consultation'}</p>
                     </div>
                     <div className="text-right flex items-center gap-4">
-                      <div className="text-[13px] font-bold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200 group-hover:bg-white transition-colors">~{(i + 1) * 15} min</div>
+                      <div className="text-[13px] font-bold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200 group-hover:bg-white transition-colors hover:shadow-sm">~{(i + 1) * 15} min</div>
                       <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-indigo-500 transition-colors" />
                     </div>
-                  </div>
+                  </motion.div>
                ))}
-             </div>
+             </motion.div>
            )}
         </div>
       </div>

@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
@@ -20,6 +21,7 @@ import java.util.List;
 @SQLDelete(sql = "UPDATE pharmacy_prescriptions SET is_deleted = true WHERE id=?")
 @SQLRestriction("is_deleted=false")
 @Data
+@EqualsAndHashCode(callSuper=true)
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

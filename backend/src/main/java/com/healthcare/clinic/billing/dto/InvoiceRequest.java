@@ -30,12 +30,16 @@ public class InvoiceRequest {
     @NotNull(message = "Due date is required")
     private LocalDateTime dueDate;
 
+    @Builder.Default
     private BigDecimal taxAmount = BigDecimal.ZERO;
+    @Builder.Default
     private BigDecimal discountAmount = BigDecimal.ZERO;
 
     // Kept for backward compat; will be computed from items if items provided
     @DecimalMin(value = "0.0", inclusive = true)
+    @Builder.Default
     private BigDecimal amount = BigDecimal.ZERO;
 
+    @Builder.Default
     private List<InvoiceItemRequest> items = new ArrayList<>();
 }

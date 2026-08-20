@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import logger from '../../../utils/logger';
 import { useOutletContext } from 'react-router-dom';
 import api from '../../../utils/pharmacy/api';
-import { ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
 import { exportToCSV } from "../../../utils/pharmacy/reportExport";
+
+
 
 export default function MonthOverMonth() {
   const { dateRange } = useOutletContext() || {};
@@ -70,6 +71,7 @@ export default function MonthOverMonth() {
   const displayTop10B = monthB.top10Medicines?.length > 0 ? monthB.top10Medicines : defaultTop10B;
 
   return (
+    
     <div className="space-y-6">
               
       <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm flex flex-col md:flex-row items-center justify-between">
@@ -89,7 +91,7 @@ export default function MonthOverMonth() {
             <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">{monthB.monthName}</p>
             <p className="text-2xl font-bold text-gray-900 flex items-center">
               ₹{monthB.totalRevenue?.toLocaleString()}
-              <span className={`ml-3 flex items-center text-sm px-2 py-1 rounded-full ${isPositive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+              <span className={`ml-3 flex items-center text-sm px-2 py-1 rounded-full ${isPositive ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'}`}>
                 {isPositive ? <ArrowUpRight className="w-4 h-4 mr-1" /> : <ArrowDownRight className="w-4 h-4 mr-1" />}
                 {revenuePercentageChange?.toFixed(1)}%
               </span>
@@ -149,5 +151,6 @@ export default function MonthOverMonth() {
       </div>
 
     </div>
+    
   );
 }

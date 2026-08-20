@@ -10,6 +10,9 @@ import java.time.ZonedDateTime;
 @Entity(name="PatientAiChatSession")
 @Table(name = "ai_chat_sessions")
 @Data
+@lombok.Builder
+@lombok.NoArgsConstructor
+@lombok.AllArgsConstructor
 public class AiChatSession {
 
     @Id
@@ -19,6 +22,7 @@ public class AiChatSession {
     @Column(name = "patient_id", nullable = false)
     private Long patientId;
 
+    @lombok.Builder.Default
     @Column(nullable = false)
     private String status = "Active";
 

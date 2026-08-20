@@ -1,15 +1,12 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, FileText, Activity, AlertTriangle, Pill, ClipboardList, CheckCircle } from 'lucide-react';
+import { FileText, Activity, AlertTriangle, Pill, ClipboardList, CheckCircle } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import toast from 'react-hot-toast';
 
-import { CarePlansTab } from './workspace/CarePlansTab';
-import { TasksTab } from './workspace/TasksTab';
-import { AssessmentsTab } from './workspace/AssessmentsTab';
-import { IncidentsTab } from './workspace/IncidentsTab';
-import { ChecklistsTab } from './workspace/ChecklistsTab';
+
+
 
 const NurseWorkspace = () => {
   const { patientId } = useParams();
@@ -57,6 +54,7 @@ const NurseWorkspace = () => {
   ];
 
   return (
+    
     <div className="p-4 sm:p-6" style={{ maxWidth: '1200px', margin: '0 auto', fontFamily: 'Inter, sans-serif' }}>
       <button 
         onClick={() => navigate('/nurse/dashboard')} 
@@ -136,6 +134,7 @@ const NurseWorkspace = () => {
         {activeTab === 'checklists' && <ChecklistsTab patientId={patientId} />}
       </div>
     </div>
+    
   );
 };
 

@@ -1,10 +1,11 @@
-import React from 'react';
-import { FileText, Download, Clock, ShieldCheck, Share2, Trash2, AlertTriangle, File, ImageIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { axiosPrivate } from '../../api/axios';
 import { toast } from 'react-hot-toast';
+import { useState } from 'react';
+import ConfirmDialog from '../ui/ConfirmDialog';
 
 const DocumentList = ({ documents, onRefresh, readOnly = false }) => {
+  const [confirmDelete, setConfirmDelete] = useState({ isOpen: false, docId: null });
   if (!documents || documents.length === 0) {
     return (
       <div className="p-10 text-center bg-slate-50 rounded-xl border border-dashed border-slate-200">
@@ -33,11 +34,16 @@ const DocumentList = ({ documents, onRefresh, readOnly = false }) => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this document?")) return;
+  const handleDelete = (id) => {
+    setConfirmDelete({ isOpen: true, docId: id });
+  };
+
+  const executeDelete = async () => {
+    if (!confirmDelete.docId) return;
     try {
-      await axiosPrivate.delete(`/documents/${id}`);
+      await axiosPrivate.delete(`/documents/${confirmDelete.docId}`);
       toast.success('Document deleted');
+      setConfirmDelete({ isOpen: false, docId: null });
       if (onRefresh) onRefresh();
     } catch (error) {
       toast.error('Failed to delete document');
@@ -127,6 +133,16 @@ const DocumentList = ({ documents, onRefresh, readOnly = false }) => {
           </div>
         );
       })}
+
+      <ConfirmDialog 
+        isOpen={confirmDelete.isOpen}
+        onClose={() => setConfirmDelete({ isOpen: false, docId: null })}
+        onConfirm={executeDelete}
+        title="Delete Document"
+        description="Are you sure you want to delete this document? This action cannot be undone."
+        confirmText="Delete"
+        isDestructive={true}
+      />
     </div>
   );
 };

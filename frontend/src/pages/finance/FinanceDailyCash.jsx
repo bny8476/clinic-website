@@ -1,15 +1,18 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { DollarSign, ArrowLeft, BarChart3, TrendingUp, Lock, Unlock } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { Lock, Unlock, BarChart3, TrendingUp, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { motion } from 'framer-motion';
+import { fadeIn, staggerContainer } from '../../components/ui/motion';
+import useAuthStore from '../../store/authStore';
+import { Link } from 'react-router-dom';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
-import { fadeIn } from '../../components/ui/motion';
-import useAuthStore from '../../store/authStore';
 import Modal from '../../components/ui/Modal';
+import Badge from '../../components/ui/Badge';
+
+
 
 const FinanceDailyCash = () => {
   const { user } = useAuthStore();
@@ -87,14 +90,15 @@ const FinanceDailyCash = () => {
 
   const getStatusBadge = (status) => {
     switch (status) {
-      case 'OPEN': return <span className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-medium">Open</span>;
-      case 'CLOSED': return <span className="px-2 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-medium">Closed</span>;
-      case 'DISCREPANCY': return <span className="px-2 py-1 bg-rose-100 text-rose-700 rounded-full text-xs font-medium">Discrepancy</span>;
-      default: return <span className="px-2 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-medium">{status}</span>;
+      case 'OPEN': return <Badge variant="success">Open</Badge>;
+      case 'CLOSED': return <Badge variant="secondary">Closed</Badge>;
+      case 'DISCREPANCY': return <Badge variant="danger">Discrepancy</Badge>;
+      default: return <Badge variant="secondary">{status}</Badge>;
     }
   };
 
   return (
+    
     <motion.div 
       initial="hidden" 
       animate="visible" 
@@ -127,8 +131,9 @@ const FinanceDailyCash = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-emerald-50 border-emerald-100">
+      <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <motion.div variants={fadeIn}>
+        <Card className="bg-emerald-50 border-emerald-100 h-full">
           <Card.Body className="p-5">
             <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-800 mb-2">Session Status</h3>
             <p className="text-3xl font-bold text-emerald-600">
@@ -139,7 +144,9 @@ const FinanceDailyCash = () => {
             </p>
           </Card.Body>
         </Card>
-        <Card>
+        </motion.div>
+        <motion.div variants={fadeIn}>
+        <Card className="h-full">
           <Card.Body className="p-5">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Opening Float</h3>
             <p className="text-2xl font-bold text-[var(--color-navy-900)]">
@@ -147,7 +154,9 @@ const FinanceDailyCash = () => {
             </p>
           </Card.Body>
         </Card>
-        <Card>
+        </motion.div>
+        <motion.div variants={fadeIn}>
+        <Card className="h-full">
           <Card.Body className="p-5">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Cash Collections</h3>
             <p className="text-2xl font-bold text-[var(--color-navy-900)]">
@@ -155,7 +164,8 @@ const FinanceDailyCash = () => {
             </p>
           </Card.Body>
         </Card>
-      </div>
+        </motion.div>
+      </motion.div>
 
       <Card>
         <Card.Header>
@@ -181,9 +191,9 @@ const FinanceDailyCash = () => {
                     <th className="p-4 border-b border-slate-200 text-right">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <motion.tbody variants={staggerContainer} initial="hidden" animate="visible" className="divide-y divide-slate-100">
                   {sessions.slice().reverse().map((session) => (
-                    <tr key={session.id} className="hover:bg-slate-50 transition-colors">
+                    <motion.tr variants={fadeIn} key={session.id} className="hover:bg-slate-50 transition-colors">
                       <td className="p-4 font-semibold text-[var(--color-navy-900)]">
                         {new Date(session.openedAt).toLocaleString()}
                       </td>
@@ -198,9 +208,9 @@ const FinanceDailyCash = () => {
                       <td className="p-4 text-right">
                         {getStatusBadge(session.status)}
                       </td>
-                    </tr>
+                    </motion.tr>
                   ))}
-                </tbody>
+                </motion.tbody>
               </table>
             </div>
           )}
@@ -217,7 +227,7 @@ const FinanceDailyCash = () => {
               type="number"
               step="0.01"
               required
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
+              className="input-field focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-shadow"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="0.00"
@@ -232,6 +242,7 @@ const FinanceDailyCash = () => {
         </form>
       </Modal>
     </motion.div>
+    
   );
 };
 

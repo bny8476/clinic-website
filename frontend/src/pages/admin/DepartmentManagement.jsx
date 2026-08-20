@@ -1,17 +1,16 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Building, Plus, Edit2, Trash2 } from 'lucide-react';
 import { axiosPrivate } from '../../api/axios';
-import { motion } from 'framer-motion';
-import DataTable from '../../components/ui/DataTable';
-import Badge from '../../components/ui/Badge';
-import Button from '../../components/ui/Button';
 import { fadeIn } from '../../components/ui/motion';
+import { toast } from 'react-hot-toast';
 
 const DepartmentManagement = () => {
     const queryClient = useQueryClient();
     const [page, setPage] = useState(0);
     const [size] = useState(10);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [departmentToDelete, setDepartmentToDelete] = useState(null);
 
     const { data, isLoading } = useQuery({
         queryKey: ['admin-departments', page, size],
@@ -23,8 +22,23 @@ const DepartmentManagement = () => {
 
     const deleteMutation = useMutation({
         mutationFn: async (id) => axiosPrivate.delete(`/departments/${id}`),
-        onSuccess: () => queryClient.invalidateQueries(['admin-departments'])
+        onSuccess: () => {
+            toast.success('Department deleted successfully');
+            queryClient.invalidateQueries(['admin-departments']);
+            setIsDeleteDialogOpen(false);
+            setDepartmentToDelete(null);
+        },
+        onError: () => {
+            toast.error('Failed to delete department');
+            setIsDeleteDialogOpen(false);
+            setDepartmentToDelete(null);
+        }
     });
+
+    const handleDeleteClick = (id) => {
+        setDepartmentToDelete(id);
+        setIsDeleteDialogOpen(true);
+    };
 
     const deptList = Array.isArray(data) ? data : (data?.content || []);
     const totalPages = data?.totalPages || 1;
@@ -63,11 +77,7 @@ const DepartmentManagement = () => {
                         variant="ghost" 
                         size="sm" 
                         className="text-[var(--color-danger)] hover:bg-red-50"
-                        onClick={() => {
-                            if (window.confirm('Are you sure you want to delete this department?')) {
-                                deleteMutation.mutate(row.id);
-                            }
-                        }}
+                        onClick={() => handleDeleteClick(row.id)}
                     >
                         <Trash2 size={16} />
                     </Button>
@@ -78,6 +88,17 @@ const DepartmentManagement = () => {
 
     return (
         <motion.div initial="hidden" animate="visible" variants={fadeIn} className="space-y-6">
+            <ConfirmDialog
+                isOpen={isDeleteDialogOpen}
+                onClose={() => setIsDeleteDialogOpen(false)}
+                onConfirm={() => deleteMutation.mutate(departmentToDelete)}
+                title="Delete Department"
+                message="Are you sure you want to delete this department? This action cannot be undone."
+                confirmText="Delete"
+                cancelText="Cancel"
+                isDestructive={true}
+                isLoading={deleteMutation.isPending}
+            />
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl sm:text-3xl font-bold font-display text-[var(--color-navy-900)] m-0 flex items-center gap-2">
@@ -88,7 +109,7 @@ const DepartmentManagement = () => {
                         Manage clinic departments, assign head doctors, and update details.
                     </p>
                 </div>
-                <Button className="bg-[var(--color-navy-600)] hover:bg-[var(--color-navy-700)] text-white font-medium flex items-center gap-2">
+                <Button variant="primary" className="flex items-center gap-2">
                     <Plus size={18} />
                     Add Department
                 </Button>

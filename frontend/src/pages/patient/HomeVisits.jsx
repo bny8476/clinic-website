@@ -1,12 +1,6 @@
-import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { useNavigate } from 'react-router-dom';
-import { DashboardShell, DashboardGrid } from '../../components/dashboard/shared/DashboardShell';
-import { Home, MapPin, Truck, CheckCircle, Plus } from 'lucide-react';
-import Button from '../../components/ui/Button';
-import DataTable from '../../components/ui/DataTable';
-import Badge from '../../components/ui/Badge';
 
 const HomeVisits = () => {
   const navigate = useNavigate();

@@ -1,0 +1,35 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ------------------< com.healthcare.clinic:clinic-app >------------------
+[INFO] Building clinic-app 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.5.0:clean (default-clean) @ clinic-app ---
+[INFO] Deleting /Users/eakhalaivan/Downloads/clinic-website/backend/target
+[INFO] 
+[INFO] --- resources:3.5.0:resources (default-resources) @ clinic-app ---
+[INFO] Copying 4 resources from src/main/resources to target/classes
+[INFO] Copying 123 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ clinic-app ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 1272 source files with javac [debug parameters release 21] to target/classes
+[WARNING] /Users/eakhalaivan/Downloads/clinic-website/backend/src/main/java/com/healthcare/clinic/billing/dto/InvoiceRequest.java:[33,24] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /Users/eakhalaivan/Downloads/clinic-website/backend/src/main/java/com/healthcare/clinic/billing/dto/InvoiceRequest.java:[34,24] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /Users/eakhalaivan/Downloads/clinic-website/backend/src/main/java/com/healthcare/clinic/billing/dto/InvoiceRequest.java:[38,24] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /Users/eakhalaivan/Downloads/clinic-website/backend/src/main/java/com/healthcare/clinic/billing/dto/InvoiceRequest.java:[40,38] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /Users/eakhalaivan/Downloads/clinic-website/backend/src/main/java/com/healthcare/clinic/billing/dto/InvoiceItemRequest.java:[25,17] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /Users/eakhalaivan/Downloads/clinic-website/backend/src/main/java/com/healthcare/clinic/billing/dto/InvoiceItemRequest.java:[31,22] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /Users/eakhalaivan/Downloads/clinic-website/backend/src/main/java/com/healthcare/clinic/identity/entity/Role.java:[37,29] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /Users/eakhalaivan/Downloads/clinic-website/backend/src/main/java/com/healthcare/clinic/pharmacy/entity/PharmacyPrescriptionRecord.java:[22,1] Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentional, add '@EqualsAndHashCode(callSuper=false)' to your type.
+[INFO] /Users/eakhalaivan/Downloads/clinic-website/backend/src/main/java/com/healthcare/clinic/exception/GlobalExceptionHandler.java: /Users/eakhalaivan/Downloads/clinic-website/backend/src/main/java/com/healthcare/clinic/exception/GlobalExceptionHandler.java uses or overrides a deprecated API.
+[INFO] /Users/eakhalaivan/Downloads/clinic-website/backend/src/main/java/com/healthcare/clinic/exception/GlobalExceptionHandler.java: Recompile with -Xlint:deprecation for details.
+[INFO] /Users/eakhalaivan/Downloads/clinic-website/backend/src/main/java/com/healthcare/clinic/doctor/controller/PrescriptionController.java: Some input files use unchecked or unsafe operations.
+[INFO] /Users/eakhalaivan/Downloads/clinic-website/backend/src/main/java/com/healthcare/clinic/doctor/controller/PrescriptionController.java: Recompile with -Xlint:unchecked for details.
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  16.900 s
+[INFO] Finished at: 2026-08-18T17:07:49+05:30
+[INFO] ------------------------------------------------------------------------

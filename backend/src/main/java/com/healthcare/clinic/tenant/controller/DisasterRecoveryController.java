@@ -2,10 +2,12 @@ package com.healthcare.clinic.tenant.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/tenants/disaster-recovery")
+@PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
 public class DisasterRecoveryController {
 
     @GetMapping("/status")

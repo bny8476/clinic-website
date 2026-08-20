@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { CreditCard, CheckCircle2, ArrowLeft, Search } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { CheckCircle2, Search, ArrowLeft, CreditCard } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { motion, AnimatePresence } from 'framer-motion';
+import { fadeIn, staggerContainer } from '../../components/ui/motion';
+import { Link } from 'react-router-dom';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import FormField from '../../components/ui/FormField';
-import { fadeIn } from '../../components/ui/motion';
+
+
 
 const FinancePayments = () => {
   const queryClient = useQueryClient();
@@ -94,6 +96,7 @@ const FinancePayments = () => {
   };
 
   return (
+    
     <motion.div 
       initial="hidden" 
       animate="visible" 
@@ -129,7 +132,7 @@ const FinancePayments = () => {
                     placeholder="Enter Invoice ID..."
                     value={searchInvoiceId}
                     onChange={(e) => setSearchInvoiceId(e.target.value)}
-                    className="input-field py-2"
+                    className="input-field py-2 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-shadow"
                   />
                 </div>
                 <Button type="submit" variant="secondary" icon={Search} isLoading={isSearching}>
@@ -137,8 +140,14 @@ const FinancePayments = () => {
                 </Button>
               </form>
 
+              <AnimatePresence>
               {invoiceToPay && (
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-5">
+                <motion.div 
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="bg-slate-50 border border-slate-200 rounded-xl p-5 overflow-hidden"
+                >
                   <div className="flex justify-between items-start mb-4">
                     <div>
                       <h3 className="font-bold text-slate-800">Invoice #{invoiceToPay.invoiceNumber}</h3>
@@ -167,7 +176,7 @@ const FinancePayments = () => {
                             type="number" step="0.01"
                             value={paymentForm.amount} 
                             onChange={e => setPaymentForm({ ...paymentForm, amount: e.target.value })} 
-                            className="input-field" 
+                            className="input-field focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-shadow" 
                             required
                           />
                         </FormField>
@@ -176,7 +185,7 @@ const FinancePayments = () => {
                             id="paymentMethod"
                             value={paymentForm.paymentMethod} 
                             onChange={e => setPaymentForm({ ...paymentForm, paymentMethod: e.target.value })} 
-                            className="input-field" 
+                            className="input-field focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-shadow" 
                           >
                             <option value="CASH">Cash</option>
                             <option value="CREDIT_CARD">Credit Card</option>
@@ -193,7 +202,7 @@ const FinancePayments = () => {
                             type="text"
                             value={paymentForm.referenceNumber} 
                             onChange={e => setPaymentForm({ ...paymentForm, referenceNumber: e.target.value })} 
-                            className="input-field" 
+                            className="input-field focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-shadow" 
                             required
                           />
                         </FormField>
@@ -206,8 +215,9 @@ const FinancePayments = () => {
                       </div>
                     </form>
                   )}
-                </div>
+                </motion.div>
               )}
+              </AnimatePresence>
             </Card.Body>
           </Card>
         </div>
@@ -222,9 +232,9 @@ const FinancePayments = () => {
             ) : payments.length === 0 ? (
               <div className="p-8 text-center text-sm text-[var(--color-text-muted)]">No payments recorded yet.</div>
             ) : (
-              <ul className="divide-y divide-[var(--color-border)]">
+              <motion.ul variants={staggerContainer} initial="hidden" animate="visible" className="divide-y divide-[var(--color-border)]">
                 {payments.map(payment => (
-                  <li key={payment.id} className="p-4 hover:bg-[var(--color-surface-alt)]">
+                  <motion.li variants={fadeIn} key={payment.id} className="p-4 hover:bg-[var(--color-surface-alt)]">
                     <div className="flex justify-between items-start">
                       <div>
                         <div className="flex items-center gap-2">
@@ -244,14 +254,15 @@ const FinancePayments = () => {
                         <p className="font-bold text-emerald-600">+${payment.amount?.toFixed(2)}</p>
                       </div>
                     </div>
-                  </li>
+                  </motion.li>
                 ))}
-              </ul>
+              </motion.ul>
             )}
           </Card.Body>
         </Card>
       </div>
     </motion.div>
+    
   );
 };
 

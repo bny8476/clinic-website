@@ -1,4 +1,3 @@
-import React from 'react';
 import Skeleton from './Skeleton';
 
 export default function PageLoadingSkeleton() {
@@ -17,7 +16,7 @@ export default function PageLoadingSkeleton() {
       </div>
       
       {/* Content Skeleton */}
-      <div className="flex-1 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+      <div className="flex-1 bg-[var(--color-surface)] rounded-xl border border-[var(--color-border)] p-6 shadow-sm">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Skeleton variant="card" className="h-32" />
           <Skeleton variant="card" className="h-32" />

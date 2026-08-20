@@ -1,6 +1,6 @@
 package com.healthcare.clinic.homevisit.repository;
 
-import com.healthcare.clinic.homevisit.entity.HomeVisitRequest;
+import com.healthcare.clinic.patient.entity.HomeVisitRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -9,7 +9,6 @@ import java.util.List;
 @Repository
 public interface HomeVisitRequestRepository extends JpaRepository<HomeVisitRequest, Long> {
     List<HomeVisitRequest> findByPatientId(Long patientId);
-    List<HomeVisitRequest> findByPatientIdOrderByRequestDateDesc(Long patientId);
     List<HomeVisitRequest> findByPatientIdOrderByCreatedAtDesc(Long patientId);
-    List<HomeVisitRequest> findByStatusOrderByRequestDateDesc(String status);
+    List<HomeVisitRequest> findByStatusOrderByCreatedAtDesc(String status);
 }

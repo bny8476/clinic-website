@@ -1,6 +1,4 @@
-import React, { useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 import { cn } from '../../utils/pharmacy/cn';
 
 export default function ModulePanel({ 

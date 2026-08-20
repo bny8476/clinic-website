@@ -25,18 +25,18 @@ public class ClinicalEncounterService {
     private final com.healthcare.clinic.doctor.repository.SoapNoteRepository soapNoteRepository;
     private final com.healthcare.clinic.appointment.service.AppointmentService appointmentService;
 
-    private DoctorProfile getDoctorProfile(User user) {
-        return doctorProfileRepository.findByUserId(user.getId())
+    private DoctorProfile getDoctorProfile(Long userId) {
+        return doctorProfileRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Doctor profile not found"));
     }
 
-    public List<ClinicalEncounter> getMyEncounters(User user) {
-        DoctorProfile doctor = getDoctorProfile(user);
+    public List<ClinicalEncounter> getMyEncounters(Long userId) {
+        DoctorProfile doctor = getDoctorProfile(userId);
         return encounterRepository.findByDoctorIdOrderByCreatedAtDesc(doctor.getId());
     }
 
-    public ClinicalEncounter getEncounter(User user, Long id) {
-        DoctorProfile doctor = getDoctorProfile(user);
+    public ClinicalEncounter getEncounter(Long userId, Long id) {
+        DoctorProfile doctor = getDoctorProfile(userId);
         ClinicalEncounter encounter = encounterRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Encounter not found"));
         
@@ -48,22 +48,22 @@ public class ClinicalEncounterService {
     }
 
     @Transactional
-    public ClinicalEncounter startEncounter(User user, ClinicalEncounter encounter) {
+    public ClinicalEncounter startEncounter(Long userId, ClinicalEncounter encounter) {
         if (encounter.getAppointmentId() != null) {
              java.util.Optional<ClinicalEncounter> existing = encounterRepository.findByAppointmentId(encounter.getAppointmentId());
              if (existing.isPresent()) {
                  return existing.get();
              }
         }
-        DoctorProfile doctor = getDoctorProfile(user);
+        DoctorProfile doctor = getDoctorProfile(userId);
         encounter.setDoctorId(doctor.getId());
-        encounter.setStatus("In Progress");
+        encounter.setStatus(com.healthcare.clinic.doctor.entity.EncounterStatus.IN_PROGRESS);
         return encounterRepository.save(encounter);
     }
 
     @Transactional
-    public ClinicalEncounter closeEncounter(User user, Long id) {
-        ClinicalEncounter encounter = getEncounter(user, id);
+    public ClinicalEncounter closeEncounter(Long userId, Long id) {
+        ClinicalEncounter encounter = getEncounter(userId, id);
         if ("CLOSED".equals(encounter.getStatus()) || "Completed".equals(encounter.getStatus())) {
             throw new RuntimeException("Encounter is already closed");
         }
@@ -98,10 +98,10 @@ public class ClinicalEncounterService {
                 encounter.getDoctorId(),
                 "Consultation",
                 "CONS-01",
-                new BigDecimal("150.00") // Example base fee
+                java.math.BigDecimal.ZERO // Fee determined dynamically by processor job
         );
 
-        encounter.setStatus("CLOSED");
+        encounter.setStatus(com.healthcare.clinic.doctor.entity.EncounterStatus.CLOSED);
         encounter.setClosedAt(ZonedDateTime.now());
         encounter.setFinalizedAt(ZonedDateTime.now()); // legacy compatibility
         

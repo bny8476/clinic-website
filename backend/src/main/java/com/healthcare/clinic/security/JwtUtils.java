@@ -4,6 +4,7 @@ import com.healthcare.clinic.identity.entity.User;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
@@ -12,16 +13,24 @@ import java.security.Key;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.util.StringUtils;
 
 @Component
 @Slf4j
 public class JwtUtils {
 
-    @Value("${jwt.secret:default_dev_secret_key_that_is_long_enough_for_hs256_algorithm_12345}")
+    @Value("${jwt.secret}")
     private String jwtSecret;
 
     @Value("${jwt.access-token-expiration-ms:86400000}")
     private int jwtExpirationMs;
+
+    @PostConstruct
+    public void init() {
+        if (!StringUtils.hasText(jwtSecret) || jwtSecret.length() < 32) {
+            throw new IllegalStateException("JWT_SECRET is missing or too short. It must be at least 32 characters long for HS256.");
+        }
+    }
 
     private Key key() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes());

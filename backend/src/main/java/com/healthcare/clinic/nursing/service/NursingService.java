@@ -161,7 +161,7 @@ public class NursingService {
 
     @org.springframework.transaction.annotation.Transactional
     public java.util.Map<String, Object> generateOPToken(Long nurseId, Long patientId) {
-        PatientProfile patient = patientProfileRepository.findByUserId(patientId)
+        PatientProfile patient = patientProfileRepository.findById(patientId)
                 .orElseThrow(() -> new RuntimeException("Patient profile not found"));
                 
         Long branchId = patient.getBranchId() != null ? patient.getBranchId() : 1L;

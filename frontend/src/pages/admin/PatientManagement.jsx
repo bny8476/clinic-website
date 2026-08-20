@@ -1,10 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
-import { Users, Search, UserCheck } from 'lucide-react';
 import { axiosPrivate } from '../../api/axios';
-import { motion } from 'framer-motion';
-import DataTable from '../../components/ui/DataTable';
-import Badge from '../../components/ui/Badge';
 import { fadeIn } from '../../components/ui/motion';
 
 const PatientManagement = () => {

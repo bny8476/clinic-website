@@ -1,15 +1,8 @@
-import React, { useState } from 'react';
-import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../../api/axios';
-import { Ambulance as AmbulanceIcon, MapPin, AlertTriangle, CheckCircle, Truck, Radio, Navigation } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Truck, Radio } from 'lucide-react';
 import toast from 'react-hot-toast';
-import KPICard from '../../ui/KPICard';
-import DataTable from '../../ui/DataTable';
-import Badge from '../../ui/Badge';
-import Button from '../../ui/Button';
-import Modal from '../../ui/Modal';
-import FormField from '../../ui/FormField';
-import Card from '../../ui/Card';
 
 export const AmbulanceHeaderWidget = () => (
   <div className="mb-6">

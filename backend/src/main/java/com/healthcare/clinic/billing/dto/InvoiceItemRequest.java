@@ -22,12 +22,14 @@ public class InvoiceItemRequest {
     private String description;
 
     @Min(value = 1, message = "Quantity must be at least 1")
+    @Builder.Default
     private int quantity = 1;
 
     @NotNull(message = "Unit price is required")
     @DecimalMin(value = "0.0", inclusive = true, message = "Unit price must be non-negative")
     private BigDecimal unitPrice;
 
+    @Builder.Default
     private ItemType itemType = ItemType.OTHER;
 
     private Long referenceId;

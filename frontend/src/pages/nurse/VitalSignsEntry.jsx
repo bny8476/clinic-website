@@ -1,9 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { HeartPulse, Save, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { HeartPulse, AlertTriangle, Save } from 'lucide-react';
+
+
 
 const VitalSignsEntry = () => {
   const queryClient = useQueryClient();
@@ -51,6 +53,7 @@ const VitalSignsEntry = () => {
   });
 
   return (
+    
     <div className="p-4 sm:p-6 max-w-2xl mx-auto">
       <h1 className="text-xl sm:text-2xl font-bold mb-5 flex items-center gap-2 text-[var(--color-navy-900)]">
         <HeartPulse size={24} className="text-teal-700" aria-hidden="true" /> Record Vital Signs
@@ -73,27 +76,27 @@ const VitalSignsEntry = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">Systolic BP (mmHg)</label>
-            <input type="number" value={vitals.systolicBp} onChange={e => setVitals({ ...vitals, systolicBp: +e.target.value })} className="w-full p-2 rounded-md border border-slate-300 focus:ring-2 focus:ring-teal-500 focus:border-teal-500" />
+            <input type="number" value={vitals.systolicBp} onChange={e => setVitals({ ...vitals, systolicBp: +e.target.value })} className="w-full p-2 rounded-md border border-slate-300 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-shadow" />
           </div>
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">Diastolic BP (mmHg)</label>
-            <input type="number" value={vitals.diastolicBp} onChange={e => setVitals({ ...vitals, diastolicBp: +e.target.value })} className="w-full p-2 rounded-md border border-slate-300 focus:ring-2 focus:ring-teal-500 focus:border-teal-500" />
+            <input type="number" value={vitals.diastolicBp} onChange={e => setVitals({ ...vitals, diastolicBp: +e.target.value })} className="w-full p-2 rounded-md border border-slate-300 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-shadow" />
           </div>
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">Heart Rate (bpm)</label>
-            <input type="number" value={vitals.heartRate} onChange={e => setVitals({ ...vitals, heartRate: +e.target.value })} className="w-full p-2 rounded-md border border-slate-300 focus:ring-2 focus:ring-teal-500 focus:border-teal-500" />
+            <input type="number" value={vitals.heartRate} onChange={e => setVitals({ ...vitals, heartRate: +e.target.value })} className="w-full p-2 rounded-md border border-slate-300 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-shadow" />
           </div>
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">Height (cm)</label>
-            <input type="number" value={vitals.heightCm} onChange={e => setVitals({ ...vitals, heightCm: +e.target.value })} className="w-full p-2 rounded-md border border-slate-300 focus:ring-2 focus:ring-teal-500 focus:border-teal-500" />
+            <input type="number" value={vitals.heightCm} onChange={e => setVitals({ ...vitals, heightCm: +e.target.value })} className="w-full p-2 rounded-md border border-slate-300 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-shadow" />
           </div>
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">Weight (kg)</label>
-            <input type="number" value={vitals.weightKg} onChange={e => setVitals({ ...vitals, weightKg: +e.target.value })} className="w-full p-2 rounded-md border border-slate-300 focus:ring-2 focus:ring-teal-500 focus:border-teal-500" />
+            <input type="number" value={vitals.weightKg} onChange={e => setVitals({ ...vitals, weightKg: +e.target.value })} className="w-full p-2 rounded-md border border-slate-300 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-shadow" />
           </div>
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">SpO2 (%)</label>
-            <input type="number" value={vitals.spo2Percentage} onChange={e => setVitals({ ...vitals, spo2Percentage: +e.target.value })} className="w-full p-2 rounded-md border border-slate-300 focus:ring-2 focus:ring-teal-500 focus:border-teal-500" />
+            <input type="number" value={vitals.spo2Percentage} onChange={e => setVitals({ ...vitals, spo2Percentage: +e.target.value })} className="w-full p-2 rounded-md border border-slate-300 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-shadow" />
           </div>
         </div>
 
@@ -106,6 +109,7 @@ const VitalSignsEntry = () => {
         </button>
       </div>
     </div>
+    
   );
 };
 

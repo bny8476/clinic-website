@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { useShallow } from 'zustand/react/shallow';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ShieldCheck, Plus, RefreshCw, CheckCircle, Clock, XCircle, Save, FileText, IndianRupee, Hourglass, Inbox } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import pharmacyService from '../../utils/pharmacy/pharmacyService';
-import AppModal from '../../components/pharmacy/ui/AppModal';
+
+
 
 export default function InsuranceClaims() {
   const queryClient = useQueryClient();
@@ -122,7 +121,7 @@ export default function InsuranceClaims() {
   const getStatusBadge = (status) => {
     switch (status?.toUpperCase()) {
       case 'APPROVED':
-        return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">APPROVED</span>;
+        return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700 border border-blue-200">APPROVED</span>;
       case 'REJECTED':
         return <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700 border border-red-200">REJECTED</span>;
       case 'SUBMITTED':
@@ -133,6 +132,7 @@ export default function InsuranceClaims() {
   };
 
   return (
+    
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -182,12 +182,12 @@ export default function InsuranceClaims() {
           </div>
         </div>
         <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
-          <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center shrink-0">
-            <ShieldCheck className="w-7 h-7 text-emerald-600" />
+          <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center shrink-0">
+            <ShieldCheck className="w-7 h-7 text-blue-600" />
           </div>
           <div className="flex flex-col">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Approved Amount</span>
-            <span className="text-2xl font-black text-emerald-600 mt-0.5">₹{claims.filter(c => c.status === 'APPROVED').reduce((sum, c) => sum + (c.claimedAmount || 0), 0).toFixed(2)}</span>
+            <span className="text-2xl font-black text-blue-600 mt-0.5">₹{claims.filter(c => c.status === 'APPROVED').reduce((sum, c) => sum + (c.claimedAmount || 0), 0).toFixed(2)}</span>
           </div>
         </div>
         <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
@@ -233,7 +233,7 @@ export default function InsuranceClaims() {
                   <td className="px-4 py-3 text-right font-bold text-blue-700 font-mono">₹{claim.claimedAmount?.toFixed(2)}</td>
                   <td className="px-4 py-3 text-center">
                     {claim.preAuthApproved ? (
-                      <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[9px] font-bold border border-emerald-100">YES</span>
+                      <span className="px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-[9px] font-bold border border-blue-100">YES</span>
                     ) : (
                       <span className="px-2 py-0.5 rounded bg-slate-50 text-slate-400 text-[9px] font-bold border border-slate-100">NO</span>
                     )}
@@ -244,7 +244,7 @@ export default function InsuranceClaims() {
                       <>
                         <button
                           onClick={() => handleUpdateStatus(claim.id, 'APPROVED')}
-                          className="p-1 hover:bg-emerald-50 text-emerald-600 rounded transition-colors"
+                          className="p-1 hover:bg-blue-50 text-blue-600 rounded transition-colors"
                           title="Approve Claim"
                         >
                           <CheckCircle className="w-4 h-4" />
@@ -411,5 +411,6 @@ export default function InsuranceClaims() {
         </form>
       </AppModal>
     </div>
+    
   );
 }

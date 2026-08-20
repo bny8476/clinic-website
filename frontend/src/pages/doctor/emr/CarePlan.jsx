@@ -1,7 +1,5 @@
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { axiosPrivate } from '../../../api/axios';
-import { ClipboardList, Plus, X } from 'lucide-react';
+import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 
 const CarePlan = ({ patientId }) => {

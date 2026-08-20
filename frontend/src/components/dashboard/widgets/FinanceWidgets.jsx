@@ -1,10 +1,6 @@
-import React from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../../api/axios';
-import { CreditCard, DollarSign, ShieldAlert, Banknote } from 'lucide-react';
-import KPICard from '../../ui/KPICard';
-import DataTable from '../../ui/DataTable';
-import Badge from '../../ui/Badge';
+import { CreditCard, DollarSign, ShieldAlert } from 'lucide-react';
 
 export const FinanceHeaderWidget = () => (
   <div className="mb-6">

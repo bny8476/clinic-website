@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { useShallow } from 'zustand/react/shallow';
-import { ArrowLeft, Search, Package, CheckCircle2, AlertCircle, Plus, Trash2, Save, FileText } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import pharmacyService from '../../utils/pharmacy/pharmacyService';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import FormInput from '../../components/pharmacy/ui/FormInput';
+
+
 
 const REJECTION_REASONS = ['Damaged', 'Wrong Item', 'Short Expiry', 'Quality Fail'];
 const EMPTY_ITEM = {
@@ -133,6 +132,7 @@ export default function GRNEntry({ onBack }) {
   const tableDateCls = "w-full px-3 py-1.5 text-sm border border-slate-200 rounded-full outline-none focus:ring-2 focus:ring-[#2563eb]/20 focus:border-[#2563eb] bg-white transition-colors placeholder:text-slate-400 text-slate-600";
 
   return (
+    
     <div className="space-y-6 max-w-[1400px] mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3">
@@ -163,11 +163,11 @@ export default function GRNEntry({ onBack }) {
           </button>
         </div>
         {po && (
-          <div className="mt-4 p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3 shadow-sm">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl flex items-center gap-3 shadow-sm">
+            <CheckCircle2 className="w-5 h-5 text-blue-600 flex-shrink-0" />
             <div className="text-sm">
-              <span className="font-bold text-emerald-800">{po.poNumber}</span>
-              <span className="text-emerald-600 ml-2 font-medium">· {po.supplier?.name} · {po.items?.length} item(s) · ₹{Number(po.totalAmount || 0).toLocaleString()}</span>
+              <span className="font-bold text-blue-800">{po.poNumber}</span>
+              <span className="text-blue-600 ml-2 font-medium">· {po.supplier?.name} · {po.items?.length} item(s) · ₹{Number(po.totalAmount || 0).toLocaleString()}</span>
             </div>
           </div>
         )}
@@ -297,10 +297,11 @@ export default function GRNEntry({ onBack }) {
           <Save className="w-4 h-4" /> Save as Draft
         </button>
         <button onClick={() => handleSave(true)} disabled={saveMutation.isPending}
-          className="px-6 py-2.5 bg-[#10b981] text-white text-sm font-semibold rounded-xl hover:bg-emerald-600 transition-all flex items-center gap-2 disabled:opacity-50 shadow-sm">
+          className="px-6 py-2.5 bg-[#10b981] text-white text-sm font-semibold rounded-xl hover:bg-blue-600 transition-all flex items-center gap-2 disabled:opacity-50 shadow-sm">
           <CheckCircle2 className="w-4 h-4" /> Confirm GRN & Update Stock
         </button>
       </div>
     </div>
+    
   );
 }

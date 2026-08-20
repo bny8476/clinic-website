@@ -6,7 +6,7 @@ import lombok.*;
 
 @Entity
 @Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
-@Table(name = "integration_configs")
+@Table(name = "superadmin_integration_configs")
 @Data
 @Builder
 @NoArgsConstructor

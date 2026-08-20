@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { Activity, Users, UserPlus, Clock, ArrowRightLeft, FileOutput, X } from 'lucide-react';
-import EmptyState from '../../components/common/EmptyState';
+import { Users } from 'lucide-react';
 import toast from 'react-hot-toast';
+
+
 
 const NursingStationDashboard = () => {
   const [filter, setFilter] = useState('ALL'); // ALL, ADMITTED, DISCHARGED
@@ -89,6 +90,7 @@ const NursingStationDashboard = () => {
   }
 
   return (
+    
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
         <div>
@@ -288,6 +290,7 @@ const NursingStationDashboard = () => {
       )}
 
     </div>
+    
   );
 };
 

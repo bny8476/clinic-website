@@ -3,9 +3,7 @@
  */
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import AdminDashboard from '../AdminDashboard';
-import { BrowserRouter } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient } from '@tanstack/react-query';
 
 // Mock dependencies
 vi.mock('@tanstack/react-query', async () => {

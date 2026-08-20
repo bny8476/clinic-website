@@ -1,17 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import useDebounce from '../../hooks/pharmacy/useDebounce';
-import { useShallow } from 'zustand/react/shallow';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Search, CreditCard, Eye, Printer, CheckCircle, Plus, FileText, Wallet, IndianRupee, Users, Filter, ClipboardList } from 'lucide-react';
-import DataTable from '../../components/pharmacy/ui/DataTable';
-import Pagination from '../../components/pharmacy/ui/Pagination';
-import AppModal from '../../components/pharmacy/ui/AppModal';
-import Badge from '../../components/pharmacy/ui/Badge';
 import { toast } from 'react-hot-toast';
 import pharmacyService from '../../utils/pharmacy/pharmacyService';
 import { usePageData } from '../../hooks/pharmacy/usePageData';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import TableSkeleton from '../../components/pharmacy/ui/TableSkeleton';
+
+
 
 export default function MedicineCreditBills() {
   const location = useLocation();
@@ -74,7 +69,7 @@ export default function MedicineCreditBills() {
           <button 
             title="Collect Payment" 
             onClick={() => { setSelectedBill(row); setPaymentAmount(row.balanceAmount); setIsModalOpen(true); }}
-            className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+            className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
           >
             <CreditCard className="w-4 h-4" />
           </button>
@@ -93,6 +88,7 @@ export default function MedicineCreditBills() {
   const overdueBills = creditBillsList.filter(b => b.status !== 'PAID').length; // Simplify overdue logic to not paid for now
 
   return (
+    
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -139,15 +135,15 @@ export default function MedicineCreditBills() {
         {/* Card 3 */}
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-between">
           <div className="flex items-start gap-3 mb-2">
-            <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center shrink-0">
-              <Wallet className="w-5 h-5 text-green-500" />
+            <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center shrink-0">
+              <Wallet className="w-5 h-5 text-blue-500" />
             </div>
             <div>
               <p className="text-[11px] font-bold text-slate-500">Total Paid Amount</p>
               <h3 className="text-2xl font-bold text-slate-900">{totalPaidAmount > 0 ? totalPaidAmount : 0}</h3>
             </div>
           </div>
-          <p className="text-sm font-semibold text-green-500">₹{totalPaidAmount.toFixed(2)}</p>
+          <p className="text-sm font-semibold text-blue-500">₹{totalPaidAmount.toFixed(2)}</p>
         </div>
         {/* Card 4 */}
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-between">
@@ -273,7 +269,7 @@ export default function MedicineCreditBills() {
         footer={
           <div className="flex w-full gap-3">
              <button onClick={() => setIsModalOpen(false)} className="flex-1 px-6 py-2.5 border border-gray-200 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all">Cancel</button>
-             <button onClick={handleRecordPayment} disabled={paymentMutation.isPending} className="flex-1 px-6 py-2.5 bg-success text-white rounded-xl text-sm font-bold shadow-lg shadow-green-200 hover:bg-green-700 transition-all disabled:opacity-50">
+             <button onClick={handleRecordPayment} disabled={paymentMutation.isPending} className="flex-1 px-6 py-2.5 bg-success text-white rounded-xl text-sm font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all disabled:opacity-50">
                {paymentMutation.isPending ? 'Recording...' : 'Record Payment'}
              </button>
           </div>
@@ -327,5 +323,6 @@ export default function MedicineCreditBills() {
         )}
       </AppModal>
     </div>
+    
   );
 }

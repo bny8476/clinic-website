@@ -1,5 +1,3 @@
-import React from 'react';
-import { FlaskConical, TrendingUp, TrendingDown } from 'lucide-react';
 
 const LabCollectionOverview = () => {
   return (

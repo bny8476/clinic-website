@@ -1,7 +1,8 @@
-import React from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { motion, AnimatePresence } from 'framer-motion';
 import { axiosPrivate } from '../../api/axios';
-import { CalendarX, CheckCircle, XCircle } from 'lucide-react';
+
+
 
 const LeaveManagement = () => {
   const { data: leaves = [] } = useQuery({
@@ -15,6 +16,7 @@ const LeaveManagement = () => {
   ];
 
   return (
+    
     <div className="p-4 sm:p-6" style={{ maxWidth: '1000px', margin: '0 auto' }}>
       <h1 className="text-xl sm:text-2xl font-bold mb-5 flex items-center gap-2" style={{ color: 'var(--color-text)' }}>
         <CalendarX size={22} color="#be185d" aria-hidden="true" /> Leave Requests Management
@@ -64,6 +66,7 @@ const LeaveManagement = () => {
         </div>
       </div>
     </div>
+    
   );
 };
 

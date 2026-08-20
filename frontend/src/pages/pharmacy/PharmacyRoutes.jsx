@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from 'react';
+import { lazy, Suspense } from 'react';
 import { Route } from 'react-router-dom';
 
 const AdminDashboard = lazy(() => import('./AdminDashboard'));

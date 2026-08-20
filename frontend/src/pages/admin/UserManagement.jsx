@@ -1,18 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useDebounce } from 'use-debounce';
-import { Users, Edit2, CheckCircle, XCircle, UserPlus } from 'lucide-react';
 import { axiosPrivate } from '../../api/axios';
-import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
-import Card from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
-import Badge from '../../components/ui/Badge';
-import DataTable from '../../components/ui/DataTable';
-import Modal from '../../components/ui/Modal';
-import FormField from '../../components/ui/FormField';
 import { fadeIn } from '../../components/ui/motion';
-import { MoreHorizontal, ChevronDown, Search } from 'lucide-react';
 
 const UserManagement = () => {
     const queryClient = useQueryClient();
@@ -237,16 +229,17 @@ const UserManagement = () => {
                         Manage system accounts, edit user details, and toggle access permissions.
                     </p>
                 </div>
-                <button 
-                    className="bg-[#2B4AFE] hover:bg-[#2039d0] text-white font-medium py-2 px-4 rounded-lg flex items-center gap-2 text-sm transition-colors"
+                <Button 
+                    variant="primary"
                     onClick={() => {
                         setFormData(initialFormState);
                         setIsCreateModalOpen(true);
                     }}
+                    className="flex items-center gap-2"
                 >
                     <UserPlus size={16} />
                     Create User
-                </button>
+                </Button>
             </div>
 
             <div className="bg-white">

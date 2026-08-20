@@ -2,14 +2,11 @@ import React, { useState, useEffect } from 'react';
 import logger from '../../utils/logger';
 import useDebounce from '../../hooks/pharmacy/useDebounce';
 import { useLocation } from 'react-router-dom';
-import { Eye, CheckCircle, XCircle, Plus, ClipboardList, Trash2, Search, PlusCircle } from 'lucide-react';
-import ModuleFilterBar from '../../components/pharmacy/ui/ModuleFilterBar';
-import DataTable from '../../components/pharmacy/ui/DataTable';
-import Pagination from '../../components/pharmacy/ui/Pagination';
-import AppModal from '../../components/pharmacy/ui/AppModal';
-import Badge from '../../components/pharmacy/ui/Badge';
+import { Plus } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import pharmacyService from '../../utils/pharmacy/pharmacyService';
+
+
 
 export default function PendingPharmacyReplacement() {
   const location = useLocation();
@@ -155,7 +152,7 @@ export default function PendingPharmacyReplacement() {
                    toast.error('Failed to approve request');
                 }
               }}
-              className="p-1.5 text-success hover:bg-green-50 rounded-lg transition-colors"
+              className="p-1.5 text-success hover:bg-blue-50 rounded-lg transition-colors"
             >
               <CheckCircle className="w-4 h-4" />
             </button>
@@ -189,6 +186,7 @@ export default function PendingPharmacyReplacement() {
   });
 
   return (
+    
     <div className="space-y-6">
       <div className="flex flex-col gap-1">
         <h2 className="text-2xl font-bold tracking-tight text-gray-900">Replacement Request List</h2>
@@ -359,5 +357,6 @@ export default function PendingPharmacyReplacement() {
         </div>
       </AppModal>
     </div>
+    
   );
 }

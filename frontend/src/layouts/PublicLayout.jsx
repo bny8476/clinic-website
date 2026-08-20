@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
-import './PublicLayout.css';
+import { useLocation, Link, Outlet } from 'react-router-dom';
 import ErrorBoundary from '../components/ui/ErrorBoundary';
+
+import './PublicLayout.css';
 
 const PublicLayout = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -37,7 +37,7 @@ const PublicLayout = () => {
 
 
 
-      <main className="public-main">
+      <main className="public-main overflow-x-hidden">
         <Outlet />
       </main>
       {location.pathname !== '/' && (

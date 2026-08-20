@@ -1,14 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { DashboardShell, DashboardGrid } from '../../components/dashboard/shared/DashboardShell';
-import { Video, Calendar, Clock, PlayCircle, ShieldCheck, FileText } from 'lucide-react';
-import Button from '../../components/ui/Button';
-import DataTable from '../../components/ui/DataTable';
-import Badge from '../../components/ui/Badge';
 import { useNavigate } from 'react-router-dom';
-import Modal from '../../components/ui/Modal';
-import FormField from '../../components/ui/FormField';
 import toast from 'react-hot-toast';
 
 const Teleconsultations = () => {

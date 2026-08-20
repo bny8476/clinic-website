@@ -1,17 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import useDebounce from '../../hooks/pharmacy/useDebounce';
-import { useShallow } from 'zustand/react/shallow';
 import { useLocation } from 'react-router-dom';
-import { Search, Plus, Eye, Printer, RotateCcw, CheckCircle, FileText } from 'lucide-react';
-import DataTable from '../../components/pharmacy/ui/DataTable';
-import Pagination from '../../components/pharmacy/ui/Pagination';
-import AppModal from '../../components/pharmacy/ui/AppModal';
-import Badge from '../../components/pharmacy/ui/Badge';
 import { toast } from 'react-hot-toast';
 import pharmacyService from '../../utils/pharmacy/pharmacyService';
 import { usePageData } from '../../hooks/pharmacy/usePageData';
-import PharmacyInvoice from '../../components/pharmacy/pharmacy/PharmacyInvoice';
-import TableSkeleton from '../../components/pharmacy/ui/TableSkeleton';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 
 export default function DirectMedicineReturns() {

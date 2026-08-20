@@ -1,12 +1,4 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { Users, Clock, UserPlus, ArrowRight } from 'lucide-react';
-import Card from '../../ui/Card';
-import Button from '../../ui/Button';
-import DataTable from '../../ui/DataTable';
-import KPICard from '../../ui/KPICard';
-import Badge from '../../ui/Badge';
 import { fadeIn } from '../../ui/motion';
 
 export const ReceptionKPIWidget = ({ walkInsData, isLoading }) => (
@@ -47,7 +39,7 @@ export const ReceptionHeaderWidget = () => (
       <p className="text-sm text-[var(--color-text-muted)] m-0 mt-1">Real-time patient walk-ins, queue management, and registration portal.</p>
     </div>
     <div className="flex items-center gap-2">
-      <Link to="/reception/registration"><Button variant="secondary" icon={UserPlus}>Register Patient</Button></Link>
+      <Link to="/reception/register"><Button variant="secondary" icon={UserPlus}>Register Patient</Button></Link>
       <Link to="/reception/queue"><Button variant="primary" icon={ArrowRight}>Queue Management</Button></Link>
     </div>
   </div>

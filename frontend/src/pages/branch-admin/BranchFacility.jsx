@@ -1,13 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Settings, ArrowLeft, Building, Wrench, ShieldAlert } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import Card from '../../components/ui/Card';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ShieldAlert } from 'lucide-react';
 import { fadeIn } from '../../components/ui/motion';
-import EmptyState from '../../components/ui/EmptyState';
-import Button from '../../components/ui/Button';
 import { axiosPrivate } from '../../api/axios';
 import toast from 'react-hot-toast';
+
+
 
 const BranchFacility = () => {
   const [branch, setBranch] = useState(null);
@@ -30,6 +28,7 @@ const BranchFacility = () => {
   }, []);
 
   return (
+    
     <motion.div 
       initial="hidden" 
       animate="visible" 
@@ -147,6 +146,7 @@ const BranchFacility = () => {
         </div>
       </div>
     </motion.div>
+    
   );
 };
 

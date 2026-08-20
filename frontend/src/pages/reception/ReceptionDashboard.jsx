@@ -1,45 +1,40 @@
-import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import {
   Users, Monitor, FileText, DollarSign, Shield, Ticket,
-  UserCheck, UserPlus, ClipboardList, ArrowRight, RefreshCw,
-  Loader2, TrendingUp, AlertCircle
+  UserCheck, UserPlus, ClipboardList, TrendingUp, AlertCircle, ArrowRight, Loader2, RefreshCw
 } from 'lucide-react';
-import Card from '../../components/ui/Card';
-import Badge from '../../components/ui/Badge';
-import { staggerChildren, fadeIn } from '../../components/ui/motion';
+import { motion } from 'framer-motion';
+import { fadeIn, staggerContainer } from '../../components/ui/motion';
 import useAuthStore from '../../store/authStore';
+
+
 
 const BRANCH_ID = 1;
 
 const QUICK_ACTIONS = [
-  { label: 'Register Patient', icon: UserPlus, path: '/reception/register', color: 'from-indigo-500 to-indigo-600' },
-  { label: 'Walk-In Check-In', icon: UserCheck, path: '/reception/walk-in', color: 'from-emerald-500 to-emerald-600' },
-  { label: 'Queue Management', icon: Users, path: '/reception/queue', color: 'from-blue-500 to-blue-600' },
-  { label: 'Token Generation', icon: Ticket, path: '/reception/tokens', color: 'from-orange-500 to-orange-600' },
-  { label: 'Billing & Payments', icon: DollarSign, path: '/reception/billing', color: 'from-green-500 to-green-600' },
-  { label: 'Insurance Verify', icon: Shield, path: '/reception/insurance', color: 'from-purple-500 to-purple-600' },
-  { label: 'Document Scanning', icon: FileText, path: '/reception/documents', color: 'from-rose-500 to-rose-600' },
-  { label: 'Kiosk Check-In', icon: Monitor, path: '/reception/kiosk', color: 'from-teal-500 to-teal-600' },
+  { label: 'Register\nPatient', icon: UserPlus, path: '/reception/register' },
+  { label: 'Walk-In\nCheck-In', icon: UserCheck, path: '/reception/walk-in' },
+  { label: 'Queue\nManagement', icon: Users, path: '/reception/queue' },
+  { label: 'Token\nGeneration', icon: Ticket, path: '/reception/tokens' },
+  { label: 'Billing &\nPayments', icon: DollarSign, path: '/reception/billing' },
+  { label: 'Insurance\nVerify', icon: Shield, path: '/reception/insurance' },
+  { label: 'Document\nScanning', icon: FileText, path: '/reception/documents' },
+  { label: 'Kiosk\nCheck-In', icon: Monitor, path: '/reception/kiosk' },
 ];
 
-const StatCard = ({ label, value, icon: Icon, color, isLoading }) => (
-  <motion.div
-    variants={fadeIn}
-    className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow"
-  >
-    <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center flex-shrink-0`}>
-      <Icon className="w-5 h-5 text-white" />
+const StatCard = ({ label, value, icon: Icon, isLoading }) => (
+  <motion.div variants={fadeIn} className="bg-white rounded-xl border border-[var(--color-border)] p-5 flex items-center gap-4 hover:shadow-md transition-shadow">
+    <div className="w-12 h-12 rounded-full bg-[var(--color-info-bg)] flex items-center justify-center flex-shrink-0 text-[var(--color-navy-600)]">
+      <Icon size={24} strokeWidth={2} />
     </div>
     <div className="min-w-0">
-      <p className="text-xs font-medium text-[var(--color-text-muted)] truncate">{label}</p>
+      <p className="text-[13px] font-bold text-[var(--color-text-muted)] truncate">{label}</p>
       {isLoading ? (
         <Loader2 className="w-5 h-5 animate-spin text-[var(--color-navy-600)] mt-1" />
       ) : (
-        <p className="text-2xl font-bold text-[var(--color-navy-900)] font-display">{value ?? '—'}</p>
+        <p className="text-[24px] font-black text-[var(--color-text)]">{value ?? '—'}</p>
       )}
     </div>
   </motion.div>
@@ -47,6 +42,7 @@ const StatCard = ({ label, value, icon: Icon, color, isLoading }) => (
 
 const ReceptionDashboard = () => {
   const user = useAuthStore(s => s.user);
+  const navigate = useNavigate();
 
   const { data: stats, isLoading: statsLoading, refetch, isFetching } = useQuery({
     queryKey: ['receptionDashboardStats', BRANCH_ID],
@@ -54,7 +50,7 @@ const ReceptionDashboard = () => {
       const res = await axiosPrivate.get(`/reception/kiosk/branch/${BRANCH_ID}/stats`);
       return res.data;
     },
-    refetchInterval: 30000 // refresh every 30s
+    refetchInterval: 30000
   });
 
   const { data: kioskToday = [], isLoading: kioskLoading } = useQuery({
@@ -67,158 +63,149 @@ const ReceptionDashboard = () => {
   });
 
   const statusVariant = (status) => {
-    if (status === 'CHECKED_IN') return 'success';
-    if (status === 'NO_SHOW') return 'danger';
-    if (status === 'VERIFIED') return 'info';
-    return 'warning';
+    if (status === 'CHECKED_IN') return 'bg-green-100 text-green-700';
+    if (status === 'NO_SHOW') return 'bg-red-100 text-red-700';
+    if (status === 'VERIFIED') return 'bg-[var(--color-info-bg)] text-[var(--color-navy-800)]';
+    return 'bg-yellow-100 text-yellow-700';
   };
 
   return (
-    <motion.div
-      initial="hidden"
-      animate="visible"
-      variants={staggerChildren}
-      className="space-y-6"
-    >
-      {/* Header */}
-      <motion.div variants={fadeIn} className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold font-display text-[var(--color-navy-900)]">
-            Reception Desk
-          </h1>
-          <p className="text-sm text-[var(--color-text-muted)] mt-1">
-            Good {new Date().getHours() < 12 ? 'morning' : 'afternoon'}, {user?.firstName || 'Staff'}! Here's your live overview.
-          </p>
-        </div>
-        <button
-          onClick={() => refetch()}
-          className="flex items-center gap-1.5 text-sm font-semibold text-[var(--color-navy-600)] hover:text-[var(--color-navy-900)] transition-colors"
-        >
-          <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
-          Refresh
-        </button>
-      </motion.div>
-
-      {/* Live Stats */}
-      <motion.div variants={fadeIn} className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        <StatCard
-          label="Queue Waiting"
-          value={stats?.queueWaiting}
-          icon={ClipboardList}
-          color="from-blue-500 to-blue-600"
-          isLoading={statsLoading}
-        />
-        <StatCard
-          label="Walk-ins Today"
-          value={stats?.walkInsToday}
-          icon={UserCheck}
-          color="from-emerald-500 to-emerald-600"
-          isLoading={statsLoading}
-        />
-        <StatCard
-          label="Kiosk Pending"
-          value={stats?.kioskPending}
-          icon={AlertCircle}
-          color="from-orange-500 to-orange-600"
-          isLoading={statsLoading}
-        />
-        <StatCard
-          label="Verified Today"
-          value={stats?.kioskVerified}
-          icon={UserPlus}
-          color="from-purple-500 to-purple-600"
-          isLoading={statsLoading}
-        />
-        <StatCard
-          label="Checked In"
-          value={stats?.kioskCheckedIn}
-          icon={TrendingUp}
-          color="from-teal-500 to-teal-600"
-          isLoading={statsLoading}
-        />
-      </motion.div>
-
-      {/* Quick Actions */}
-      <motion.div variants={fadeIn}>
-        <h2 className="text-sm font-bold uppercase tracking-wider text-[var(--color-text-muted)] mb-3">Quick Actions</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {QUICK_ACTIONS.map(action => (
-            <Link
-              key={action.path}
-              to={action.path}
-              className="group flex flex-col items-center gap-2 p-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] hover:border-[var(--color-primary)]/40 hover:shadow-md transition-all text-center"
-            >
-              <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${action.color} flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform`}>
-                <action.icon className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-xs font-semibold text-[var(--color-navy-900)] leading-tight">{action.label}</span>
-            </Link>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* Today's Kiosk Check-ins */}
-      <motion.div variants={fadeIn}>
-        <Card>
-          <Card.Header>
-            <div className="flex items-center justify-between w-full">
-              <h2 className="font-display font-bold text-lg text-[var(--color-navy-900)] flex items-center gap-2">
-                <Monitor className="w-5 h-5" />
-                Today's Kiosk Check-ins
-              </h2>
-              <Link
-                to="/reception/queue"
-                className="text-xs font-semibold text-[var(--color-primary)] hover:underline flex items-center gap-1"
-              >
-                Full Queue <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
+    
+    <div className="h-full flex flex-col font-sans overflow-y-auto bg-[var(--color-bg-app)]">
+      
+      {/* Top Action Cards */}
+      <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="flex gap-4 p-6 shrink-0 bg-[var(--color-bg-app)] overflow-x-auto">
+        {QUICK_ACTIONS.map((action, idx) => (
+          <motion.button variants={fadeIn} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} key={idx} onClick={() => navigate(action.path)} className="min-w-[120px] flex-1 flex flex-col items-center justify-center gap-3 bg-white border border-[var(--color-border)] rounded-xl py-6 hover:shadow-md transition-shadow">
+            <div className="w-12 h-12 rounded-full bg-[var(--color-info-bg)] flex items-center justify-center text-[var(--color-navy-600)]">
+              <action.icon size={24} strokeWidth={2} />
             </div>
-          </Card.Header>
-          <Card.Body>
+            <span className="font-bold text-[13px] text-[var(--color-text)] text-center leading-tight whitespace-pre-line">
+              {action.label}
+            </span>
+          </motion.button>
+        ))}
+      </motion.div>
+
+      {/* Main Content Area */}
+      <div className="px-6 pb-6 space-y-6">
+        
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-[24px] font-bold text-[var(--color-text)]">
+              Reception Desk
+            </h1>
+            <p className="text-[14px] text-[var(--color-text-muted)] mt-1">
+              Welcome back, {user?.firstName || 'Staff'}.
+            </p>
+          </div>
+          <button
+            onClick={() => refetch()}
+            className="flex items-center gap-2 text-[13px] font-bold text-[var(--color-navy-800)] hover:text-white hover:bg-[var(--color-navy-800)] bg-white px-4 py-2 rounded-lg border border-[var(--color-border)] shadow-sm transition-colors"
+          >
+            <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
+        </div>
+
+        {/* Live Stats */}
+        <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          <StatCard
+            label="Queue Waiting"
+            value={stats?.queueWaiting}
+            icon={ClipboardList}
+            isLoading={statsLoading}
+          />
+          <StatCard
+            label="Walk-ins Today"
+            value={stats?.walkInsToday}
+            icon={UserCheck}
+            isLoading={statsLoading}
+          />
+          <StatCard
+            label="Kiosk Pending"
+            value={stats?.kioskPending}
+            icon={AlertCircle}
+            isLoading={statsLoading}
+          />
+          <StatCard
+            label="Verified Today"
+            value={stats?.kioskVerified}
+            icon={UserPlus}
+            isLoading={statsLoading}
+          />
+          <StatCard
+            label="Checked In"
+            value={stats?.kioskCheckedIn}
+            icon={TrendingUp}
+            isLoading={statsLoading}
+          />
+        </motion.div>
+        
+        {/* Today's Kiosk Check-ins */}
+        <motion.div initial="hidden" animate="visible" variants={fadeIn} className="bg-white rounded-xl border border-[var(--color-border)] p-5">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="font-bold text-[16px] text-[var(--color-text)] flex items-center gap-2">
+              <Monitor className="w-5 h-5 text-[var(--color-navy-600)]" />
+              Today's Kiosk Check-ins
+            </h2>
+            <button
+              onClick={() => navigate('/reception/queue')}
+              className="text-[12px] font-bold text-[var(--color-navy-800)] hover:underline flex items-center gap-1"
+            >
+              Full Queue <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+          
+          <div>
             {kioskLoading ? (
               <div className="flex justify-center py-6">
                 <Loader2 className="w-6 h-6 animate-spin text-[var(--color-navy-600)]" />
               </div>
             ) : kioskToday.length === 0 ? (
-              <div className="text-center py-6 text-sm text-[var(--color-text-muted)]">
+              <div className="text-center py-6 text-[14px] text-[var(--color-text-muted)]">
                 No kiosk check-ins yet today.
               </div>
             ) : (
-              <div className="space-y-2">
+              <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-3">
                 {kioskToday.slice(0, 8).map(k => (
-                  <div
+                  <motion.div
+                    variants={fadeIn}
                     key={k.id}
-                    className="flex items-center justify-between p-3 rounded-md border border-[var(--color-border)] bg-[var(--color-surface-alt)]/40"
+                    className="flex items-center justify-between p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors border border-[var(--color-border)]"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="w-7 h-7 rounded-full bg-[var(--color-primary-bg)]/20 flex items-center justify-center">
-                        <Monitor className="w-3.5 h-3.5 text-[var(--color-primary)]" />
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-full bg-[var(--color-info-bg)] flex items-center justify-center">
+                        <Monitor className="w-5 h-5 text-[var(--color-navy-600)]" />
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-[var(--color-navy-900)]">
+                        <p className="text-[14px] font-bold text-[var(--color-text)]">
                           Check-In #{k.id}
-                          {k.kioskStation && <span className="text-xs text-[var(--color-text-muted)] ml-1">— {k.kioskStation}</span>}
+                          {k.kioskStation && <span className="text-[12px] text-[var(--color-text-muted)] ml-2">— {k.kioskStation}</span>}
                         </p>
-                        <p className="text-xs text-[var(--color-text-muted)]">
+                        <p className="text-[12px] text-[var(--color-text-muted)] mt-1">
                           {k.createdAt ? new Date(k.createdAt).toLocaleTimeString() : ''}
                           {k.appointmentId ? ` · Appointment #${k.appointmentId}` : ' · Walk-In'}
                         </p>
                       </div>
                     </div>
-                    <Badge variant={statusVariant(k.status)} size="sm">{k.status}</Badge>
-                  </div>
+                    <span className={`px-3 py-1 rounded-full text-[11px] font-bold ${statusVariant(k.status)}`}>
+                      {k.status}
+                    </span>
+                  </motion.div>
                 ))}
                 {kioskToday.length > 8 && (
-                  <p className="text-xs text-center text-[var(--color-text-muted)] pt-1">
+                  <p className="text-[12px] text-center text-[var(--color-text-muted)] pt-2 font-bold">
                     +{kioskToday.length - 8} more check-ins today
                   </p>
                 )}
-              </div>
+              </motion.div>
             )}
-          </Card.Body>
-        </Card>
-      </motion.div>
-    </motion.div>
+          </div>
+        </motion.div>
+      </div>
+    </div>
+    
   );
 };
 

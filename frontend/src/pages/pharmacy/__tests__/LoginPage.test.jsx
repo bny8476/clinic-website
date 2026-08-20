@@ -1,8 +1,6 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import PortalLoginPage from '../../auth/PortalLoginPage';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import useAuthStore, { isTokenValid } from '../../../store/authStore';
+import { isTokenValid } from '../../../store/authStore';
 
 vi.mock('../../../store/authStore', () => {
   const mockState = {

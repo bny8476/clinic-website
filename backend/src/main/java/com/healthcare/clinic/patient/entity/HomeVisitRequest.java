@@ -1,7 +1,11 @@
 package com.healthcare.clinic.patient.entity;
 
+import com.healthcare.clinic.branch.entity.Branch;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -11,17 +15,22 @@ import java.time.ZonedDateTime;
 @Entity(name="PatientHomeVisitRequest")
 @Table(name = "home_visit_requests")
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class HomeVisitRequest {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "patient_id", nullable = false)
-    private Long patientId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "patient_id", nullable = false)
+    private PatientProfile patient;
 
-    @Column(name = "branch_id", nullable = false)
-    private Long branchId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "branch_id", nullable = false)
+    private Branch branch;
 
     @Column(nullable = false)
     private String address;
@@ -29,29 +38,15 @@ public class HomeVisitRequest {
     @Column(name = "preferred_date", nullable = false)
     private LocalDate preferredDate;
 
-    @Column(name = "preferred_time", nullable = false)
+    @Column(name = "preferred_time")
     private String preferredTime;
 
-    @Column(name = "service_type", nullable = false)
-    private String serviceType;
-
-    @Column(name = "symptoms_reason")
-    private String symptomsReason;
+    @Column(name = "reason_for_visit", columnDefinition = "TEXT")
+    private String reasonForVisit;
 
     @Column(nullable = false)
-    private String urgency = "Routine";
-
-    @Column(name = "contact_person", nullable = false)
-    private String contactPerson;
-
-    @Column(name = "contact_phone", nullable = false)
-    private String contactPhone;
-
-    @Column(nullable = false)
-    private String status = "Requested";
-
-    @Column(name = "assigned_staff_id")
-    private Long assignedStaffId;
+    @Builder.Default
+    private String status = "PENDING";
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

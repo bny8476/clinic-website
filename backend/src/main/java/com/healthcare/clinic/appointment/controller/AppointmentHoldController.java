@@ -6,13 +6,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/v1/appointments/hold")
+@RequestMapping("/api/appointments/hold")
+@PreAuthorize("hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_PATIENT') or hasAuthority('ROLE_SUPER_ADMIN')")
 @RequiredArgsConstructor
 public class AppointmentHoldController {
 

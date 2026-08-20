@@ -1,5 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Activity, ShieldAlert, LogIn, FileText, CheckCircle, Clock } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { ShieldAlert, LogIn, CheckCircle, Clock, Activity } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { scaleIn } from './ui/motion';
 
 const DUMMY_ACTIVITIES = [
   {
@@ -83,71 +85,79 @@ export default function ActivityDropdown() {
         )}
       </div>
 
-      {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200 origin-top-right">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50/50">
-            <h3 className="font-semibold text-slate-900 text-[14px]">Recent Activity</h3>
-            {unreadCount > 0 && (
-              <button 
-                onClick={markAllAsRead}
-                className="text-[12px] font-medium text-indigo-600 hover:text-indigo-700 flex items-center gap-1 transition-colors"
-              >
-                <CheckCircle className="w-3.5 h-3.5" />
-                Mark all as read
-              </button>
-            )}
-          </div>
-          
-          <div className="max-h-[350px] overflow-y-auto">
-            {activities.length === 0 ? (
-              <div className="py-8 text-center text-slate-500 text-[13px]">
-                No recent activity.
-              </div>
-            ) : (
-              <div className="divide-y divide-slate-50">
-                {activities.map((activity) => {
-                  const Icon = activity.icon;
-                  return (
-                    <div 
-                      key={activity.id} 
-                      className={`flex items-start gap-3 p-4 transition-colors hover:bg-slate-50 cursor-pointer ${activity.isUnread ? 'bg-indigo-50/30' : ''}`}
-                      onClick={() => {
-                        setActivities(activities.map(a => a.id === activity.id ? { ...a, isUnread: false } : a));
-                      }}
-                    >
-                      <div className={`w-9 h-9 rounded-full flex flex-col items-center justify-center shrink-0 mt-0.5 ${activity.bg} ${activity.color}`}>
-                        <Icon size={18} />
-                      </div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <div className="flex justify-between items-start gap-2">
-                          <p className={`text-[13px] leading-tight truncate ${activity.isUnread ? 'font-semibold text-slate-900' : 'font-medium text-slate-700'}`}>
-                            {activity.title}
-                          </p>
-                          <span className="text-[11px] text-slate-400 whitespace-nowrap">{activity.time}</span>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div 
+            variants={scaleIn}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden z-50 origin-top-right"
+          >
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50/50">
+              <h3 className="font-semibold text-slate-900 text-[14px]">Recent Activity</h3>
+              {unreadCount > 0 && (
+                <button 
+                  onClick={markAllAsRead}
+                  className="text-[12px] font-medium text-indigo-600 hover:text-indigo-700 flex items-center gap-1 transition-colors"
+                >
+                  <CheckCircle className="w-3.5 h-3.5" />
+                  Mark all as read
+                </button>
+              )}
+            </div>
+            
+            <div className="max-h-[350px] overflow-y-auto">
+              {activities.length === 0 ? (
+                <div className="py-8 text-center text-slate-500 text-[13px]">
+                  No recent activity.
+                </div>
+              ) : (
+                <div className="divide-y divide-slate-50">
+                  {activities.map((activity) => {
+                    const Icon = activity.icon;
+                    return (
+                      <div 
+                        key={activity.id} 
+                        className={`flex items-start gap-3 p-4 transition-colors hover:bg-slate-50 cursor-pointer ${activity.isUnread ? 'bg-indigo-50/30' : ''}`}
+                        onClick={() => {
+                          setActivities(activities.map(a => a.id === activity.id ? { ...a, isUnread: false } : a));
+                        }}
+                      >
+                        <div className={`w-9 h-9 rounded-full flex flex-col items-center justify-center shrink-0 mt-0.5 ${activity.bg} ${activity.color}`}>
+                          <Icon size={18} />
                         </div>
-                        <p className={`text-[12px] mt-1 line-clamp-2 ${activity.isUnread ? 'text-slate-700 font-medium' : 'text-slate-500'}`}>
-                          {activity.description}
-                        </p>
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="flex justify-between items-start gap-2">
+                            <p className={`text-[13px] leading-tight truncate ${activity.isUnread ? 'font-semibold text-slate-900' : 'font-medium text-slate-700'}`}>
+                              {activity.title}
+                            </p>
+                            <span className="text-[11px] text-slate-400 whitespace-nowrap">{activity.time}</span>
+                          </div>
+                          <p className={`text-[12px] mt-1 line-clamp-2 ${activity.isUnread ? 'text-slate-700 font-medium' : 'text-slate-500'}`}>
+                            {activity.description}
+                          </p>
+                        </div>
+                        {activity.isUnread && (
+                          <div className="w-2 h-2 rounded-full bg-indigo-500 shrink-0 mt-3"></div>
+                        )}
                       </div>
-                      {activity.isUnread && (
-                        <div className="w-2 h-2 rounded-full bg-indigo-500 shrink-0 mt-3"></div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-          
-          <div className="p-2 border-t border-slate-100 bg-slate-50">
-            <button className="w-full py-2 text-center text-[12px] font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 rounded-lg transition-colors flex items-center justify-center gap-1.5">
-              <Activity className="w-3.5 h-3.5" />
-              View Full Log
-            </button>
-          </div>
-        </div>
-      )}
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+            
+            <div className="p-2 border-t border-slate-100 bg-slate-50">
+              <button className="w-full py-2 text-center text-[12px] font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 rounded-lg transition-colors flex items-center justify-center gap-1.5">
+                <Activity className="w-3.5 h-3.5" />
+                View Full Log
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

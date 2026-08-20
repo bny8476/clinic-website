@@ -1,13 +1,14 @@
-import React from 'react';
-import { Shield } from 'lucide-react';
 import { useAuth } from '../../context/pharmacy/AuthContext';
 import { getRoleColor } from '../../config/pharmacy/roles.config';
+
+
 
 export default function RoleDashboard({ title, description }) {
   const { activeRole } = useAuth();
   const colorClass = getRoleColor(activeRole);
 
   return (
+    
     <div className="space-y-6">
               <div className="flex flex-col gap-1">
         <h2 className="text-2xl font-bold tracking-tight text-gray-900 flex items-center gap-2">
@@ -28,5 +29,6 @@ export default function RoleDashboard({ title, description }) {
         </p>
       </div>
     </div>
+    
   );
 }

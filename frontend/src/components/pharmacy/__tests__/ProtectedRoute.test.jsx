@@ -1,7 +1,5 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import ProtectedRoute from '../auth/ProtectedRoute';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { useAuth } from '../../../context/pharmacy/AuthContext';
 
 // Mock the module directly

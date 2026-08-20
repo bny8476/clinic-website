@@ -1,4 +1,3 @@
-import React from 'react';
 
 export default function CarePathwayTimeline({ pathway, onStartStep, onCompleteStep }) {
   if (!pathway || !pathway.steps || pathway.steps.length === 0) {

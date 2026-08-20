@@ -4,9 +4,9 @@ import com.healthcare.clinic.identity.entity.Role;
 import com.healthcare.clinic.identity.entity.User;
 import com.healthcare.clinic.identity.repository.RoleRepository;
 import com.healthcare.clinic.identity.repository.UserRepository;
-import com.healthcare.clinic.nursing.entity.Bed;
+import com.healthcare.clinic.inpatient.entity.Bed;
 import com.healthcare.clinic.nursing.entity.BedAssignment;
-import com.healthcare.clinic.nursing.entity.Ward;
+import com.healthcare.clinic.inpatient.entity.Ward;
 import com.healthcare.clinic.nursing.entity.WardTransfer;
 import com.healthcare.clinic.nursing.repository.BedAssignmentRepository;
 import com.healthcare.clinic.nursing.repository.BedRepository;
@@ -102,15 +102,16 @@ class BedManagementIntegrationTest {
             System.err.println("Failed to insert room: " + e.getMessage());
         }
 
+        com.healthcare.clinic.inpatient.entity.Room room = entityManager.find(com.healthcare.clinic.inpatient.entity.Room.class, 1L);
 
         bed1 = Bed.builder()
-                .wardId(ward.getId())
+                .room(room)
                 .bedNumber("A-01")
                 .build();
         bed1 = bedRepository.save(bed1);
 
         bed2 = Bed.builder()
-                .wardId(ward.getId())
+                .room(room)
                 .bedNumber("A-02")
                 .build();
         bed2 = bedRepository.save(bed2);

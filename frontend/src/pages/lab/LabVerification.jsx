@@ -1,13 +1,12 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { ShieldCheck, CheckCircle2, ArrowLeft } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { CheckCircle2 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import Card from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
+import { motion, AnimatePresence } from 'framer-motion';
 import { fadeIn } from '../../components/ui/motion';
+
+
 
 const LabVerification = () => {
   const queryClient = useQueryClient();
@@ -47,6 +46,7 @@ const LabVerification = () => {
   });
 
   return (
+    
     <motion.div 
       initial="hidden" 
       animate="visible" 
@@ -150,6 +150,7 @@ const LabVerification = () => {
         </div>
       </div>
     </motion.div>
+    
   );
 };
 

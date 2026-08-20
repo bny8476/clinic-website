@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import logger from '../../utils/logger';
 import { useClinicalDecisionStore } from '../../store/useClinicalDecisionStore';
-import AppModal from '../../components/pharmacy/ui/AppModal';
 
 export default function OrderSetPicker({ isOpen, onClose, patientId = 1, diagnosisCode = '', onApplied }) {
   const { orderSets, fetchOrderSets, applyOrderSet, loading, error } = useClinicalDecisionStore();

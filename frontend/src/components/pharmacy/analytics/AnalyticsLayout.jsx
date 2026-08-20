@@ -1,6 +1,4 @@
-import React, { useState } from 'react';
-import { Outlet, NavLink } from 'react-router-dom';
-import { Calendar } from 'lucide-react';
+import { useState } from 'react';
 
 export default function AnalyticsLayout() {
   const [dateRange, setDateRange] = useState('This Month');

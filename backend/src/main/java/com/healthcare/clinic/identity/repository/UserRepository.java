@@ -28,6 +28,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u JOIN u.roles r WHERE r.name = :roleName AND u.enabled = true")
     java.util.List<User> findUsersByRoleName(@Param("roleName") String roleName);
     
+    @Query("SELECT COUNT(u) FROM User u JOIN u.roles r WHERE r.name = :roleName AND u.enabled = true")
+    long countByRolesName(@Param("roleName") String roleName);
+    
     long countByEnabledTrue();
     long countByEnabledFalse();
 }

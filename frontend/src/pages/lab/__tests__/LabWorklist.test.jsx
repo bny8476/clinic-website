@@ -1,7 +1,6 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { MemoryRouter } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient } from '@tanstack/react-query';
 
 // Mock axios and auth
 vi.mock('../../../api/axios', () => ({
@@ -25,7 +24,6 @@ vi.mock('date-fns', async (importOriginal) => {
   };
 });
 
-import LabWorklist from '../../lab/LabWorklist';
 import { axiosPrivate } from '../../../api/axios';
 
 const MOCK_REQUESTS = [

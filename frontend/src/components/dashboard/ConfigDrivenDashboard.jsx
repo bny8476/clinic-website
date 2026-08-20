@@ -1,100 +1,37 @@
-import React from 'react';
-import { DashboardShell, DashboardGrid, BottomRow } from './shared/DashboardShell';
-import { 
-  PatientQueueWidget, 
-  NextAppointmentWidget, 
-  CalendarTimelineWidget, 
-  NewAppointmentsWidget, 
-  RecentLabReportsWidget, 
-  RecentActivitiesWidget, 
-  AIAssistantWidget, 
-  QuickSearchWidget 
-} from './widgets/CoreWidgets';
-import {
-  NurseAssignedPatientsWidget,
-  VitalSignsFormWidget,
-  NurseRecentActivityWidget
-} from './widgets/NurseWidgets';
-import {
-  ReceptionHeaderWidget,
-  ReceptionKPIWidget,
-  ReceptionWaitingListWidget
-} from './widgets/ReceptionWidgets';
-import {
-  PharmacyKPIWidget,
-  PharmacySalesTrendWidget,
-  PharmacyRevenueSummaryWidget,
-  PharmacyRecentBillsWidget,
-  PharmacyLowStockWidget
-} from './widgets/PharmacyWidgets';
-import {
-  PatientHeaderWidget,
-  PatientKPIWidget,
-  PatientProfileWidget,
-  PatientAppointmentsWidget
-} from './widgets/PatientWidgets';
-import {
-  AdminHeaderWidget,
-  AdminKpiGridWidget,
-  AdminChartAndAlertsWidget,
-  AdminRevenueStripWidget
-} from './widgets/AdminWidgets';
-import {
-  InsuranceHeaderWidget,
-  InsuranceKPIWidget,
-  InsuranceAdjudicationWidget
-} from './widgets/InsuranceWidgets';
-import {
-  LabHeaderWidget,
-  LabKPIWidget,
-  LabRequestsWidget
-} from './widgets/LabWidgets';
-import {
-  RadiologistHeaderWidget,
-  RadiologistKPIWidget,
-  RadiologistWorkstationWidget
-} from './widgets/RadiologistWidgets';
-import {
-  FinanceHeaderWidget,
-  FinanceKPIWidget,
-  FinanceTablesWidget
-} from './widgets/FinanceWidgets';
-import {
-  AccountantHeaderWidget,
-  AccountantKPIWidget,
-  AccountantInvoicesWidget
-} from './widgets/AccountantWidgets';
-import {
-  HrHeaderWidget,
-  HrKPIWidget,
-  HrTablesWidget
-} from './widgets/HrWidgets';
-import {
-  InventoryHeaderWidget,
-  InventoryKPIWidget,
-  InventoryTablesWidget
-} from './widgets/InventoryWidgets';
-import {
-  AmbulanceHeaderWidget,
-  AmbulanceKPIWidget,
-  AmbulanceTablesWidget,
-  AmbulanceNewRequestWidget
-} from './widgets/AmbulanceWidgets';
-import {
-  SupportHeaderWidget,
-  SupportKPIWidget,
-  SupportTicketsWidget
-} from './widgets/SupportWidgets';
-import {
-  VendorHeaderWidget,
-  VendorKPIWidget,
-  VendorTablesWidget
-} from './widgets/VendorWidgets';
-import {
-  MarketingHeaderWidget,
-  MarketingKPIWidget,
-  MarketingTablesWidget
-} from './widgets/MarketingWidgets';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import { WIDGETS } from '../../config/dashboardConfig';
 import { useNavigate } from 'react-router-dom';
 

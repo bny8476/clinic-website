@@ -1,11 +1,10 @@
-import React from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { motion, AnimatePresence } from 'framer-motion';
 import { axiosPrivate } from '../../api/axios';
-import { Archive, ArrowLeft, FileText } from 'lucide-react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import Card from '../../components/ui/Card';
+import { useSearchParams } from 'react-router-dom';
 import { fadeIn } from '../../components/ui/motion';
+
+
 
 const RadiologyArchive = () => {
   const [searchParams] = useSearchParams();
@@ -93,6 +92,7 @@ const RadiologyArchive = () => {
   const isLoading = isLoadingRequest || isLoadingReport;
 
   return (
+    
     <motion.div 
       initial="hidden" 
       animate="visible" 
@@ -171,6 +171,7 @@ const RadiologyArchive = () => {
         </Card>
       )}
     </motion.div>
+    
   );
 };
 

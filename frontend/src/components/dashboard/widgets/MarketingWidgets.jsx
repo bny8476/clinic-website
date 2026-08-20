@@ -1,12 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../../api/axios';
 import { Megaphone, Ticket, Share2, Send } from 'lucide-react';
-import KPICard from '../../ui/KPICard';
-import DataTable from '../../ui/DataTable';
-import Badge from '../../ui/Badge';
-import Button from '../../ui/Button';
-import FormField from '../../ui/FormField';
 
 export const MarketingHeaderWidget = () => (
   <div className="mb-6">

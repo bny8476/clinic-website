@@ -1,16 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import {
-  Shield, Settings, CreditCard, FileText, CheckCircle, XCircle, AlertTriangle, Save,
-  Server, Database, Mail, Bell, ToggleLeft, ToggleRight, Key, Globe, Clock, History, ShieldAlert,
-  Archive, DatabaseBackup
+
+
+  Server, Database, Mail, Bell
 } from 'lucide-react';
-import { DashboardShell, DashboardGrid } from '../../components/dashboard/shared/DashboardShell';
-import KPICard from '../../components/ui/KPICard';
-import DataTable from '../../components/ui/DataTable';
-import Badge from '../../components/ui/Badge';
-import Button from '../../components/ui/Button';
 
 const ServiceStatusCard = ({ name, icon: Icon, colorToken }) => (
   <div className="bg-[var(--color-surface)] p-4 rounded-xl border border-[var(--color-border)] flex items-center gap-3">
@@ -87,6 +82,7 @@ const SuperAdminConsole = ({ defaultTab = 'health' }) => {
   ];
 
   return (
+    
     <DashboardShell tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} quickActions={[]}>
       <div className="flex items-center gap-3">
         <div className="p-2.5 bg-[#1e1b4b] rounded-xl">
@@ -170,6 +166,7 @@ const SuperAdminConsole = ({ defaultTab = 'health' }) => {
         }
       />
     </DashboardShell>
+    
   );
 };
 

@@ -1,20 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import logger from '../../utils/logger';
 import { useShallow } from 'zustand/react/shallow';
-import { Search, Plus, Eye, FileText, CheckCircle, XCircle, Trash2, Edit3, Loader2 } from 'lucide-react';
-import ModuleFilterBar from '../../components/pharmacy/ui/ModuleFilterBar';
-import DataTable from '../../components/pharmacy/ui/DataTable';
-import Pagination from '../../components/pharmacy/ui/Pagination';
-import AppModal from '../../components/pharmacy/ui/AppModal';
-import Badge from '../../components/pharmacy/ui/Badge';
 import { toast } from 'react-hot-toast';
-import TableSkeleton from '../../components/pharmacy/ui/TableSkeleton';
-import ErrorBanner from '../../components/pharmacy/ui/ErrorBanner';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { Plus, Eye, Trash2, FileText } from 'lucide-react';
 import pharmacyService from '../../utils/pharmacy/pharmacyService';
 import { usePurchaseStore } from '../../store/usePurchaseStore';
 import { useAuth } from '../../context/pharmacy/AuthContext';
 import { ROLES } from '../../config/pharmacy/roles.config';
+import ConfirmDialog from '../../components/ui/ConfirmDialog';
+import Badge from '../../components/ui/Badge';
+import ModuleFilterBar from '../../components/pharmacy/ui/ModuleFilterBar';
+import TableSkeleton from '../../components/pharmacy/ui/TableSkeleton';
+import ErrorBanner from '../../components/pharmacy/ui/ErrorBanner';
+
+
 
 export default function PurchaseOrders() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -57,6 +57,7 @@ export default function PurchaseOrders() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState({ isOpen: false, id: null });
 
   // Form State
   const [supplierId, setSupplierId] = useState('');
@@ -168,15 +169,8 @@ export default function PurchaseOrders() {
     }
   };
 
-  const handleDeletePO = async (poId) => {
-    if (!window.confirm('Are you sure you want to delete this Purchase Order?')) return;
-    try {
-      await pharmacyService.api.delete(`/pharmacy/purchase-orders/${poId}`);
-      toast.success('Purchase Order deleted successfully');
-      refetch();
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to delete PO');
-    }
+  const handleDeletePO = (poId) => {
+    setConfirmDelete({ isOpen: true, id: poId });
   };
 
   const columns = [
@@ -218,6 +212,7 @@ export default function PurchaseOrders() {
   }
 
   return (
+    
     <div className="space-y-6">
       <div className="flex flex-col gap-1">
         <h2 className="text-2xl font-bold tracking-tight text-gray-900">Purchase Orders</h2>
@@ -432,6 +427,28 @@ export default function PurchaseOrders() {
           </div>
         </div>
       </AppModal>
+
+      <ConfirmDialog 
+        isOpen={confirmDelete.isOpen}
+        onClose={() => setConfirmDelete({ isOpen: false, id: null })}
+        onConfirm={async () => {
+          if (!confirmDelete.id) return;
+          try {
+            await pharmacyService.api.delete(`/pharmacy/purchase-orders/${confirmDelete.id}`);
+            toast.success('Purchase Order deleted successfully');
+            refetch();
+          } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to delete PO');
+          } finally {
+            setConfirmDelete({ isOpen: false, id: null });
+          }
+        }}
+        title="Delete Purchase Order"
+        description="Are you sure you want to delete this Purchase Order? This action cannot be undone."
+        confirmText="Delete"
+        isDestructive={true}
+      />
     </div>
+    
   );
 }

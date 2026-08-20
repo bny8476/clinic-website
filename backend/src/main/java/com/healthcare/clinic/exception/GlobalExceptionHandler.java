@@ -95,7 +95,7 @@ public class GlobalExceptionHandler {
                 "message", ex.getMessage(),
                 "alerts", ex.getSafetyAlerts()
         );
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+        return ResponseEntity.status(HttpStatus.valueOf(422))
                 .body(new ApiResponse<>(false, "Prescription blocked due to critical safety contraindication: " + ex.getMessage(), body));
     }
 

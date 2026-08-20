@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { Bell, Mail, Smartphone, MessageSquare } from 'lucide-react';
+import { Bell, Mail, MessageSquare, Smartphone } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { staggerChildren, listStagger, fadeUp } from '../../components/ui/motion';
+
+import PageLoadingSkeleton from '../../components/ui/PageLoadingSkeleton';
 
 const CATEGORIES = [
   { id: 'APPOINTMENTS', label: 'Appointments & Reminders', desc: 'Updates about your bookings and visit reminders.' },
@@ -45,24 +48,40 @@ const PatientSettings = () => {
     return existing[type];
   };
 
-  if (isLoading) return <div className="p-8 text-center text-slate-500">Loading settings...</div>;
+  if (isLoading) return <PageLoadingSkeleton />;
 
   return (
-    <div className="p-8 max-w-4xl mx-auto animate-in fade-in">
-      <h2 className="text-2xl font-bold text-slate-800 mb-6">Account Settings</h2>
+    
+      <div className="p-8 max-w-4xl mx-auto">
+        <motion.h2 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-2xl font-bold text-slate-800 mb-6"
+        >
+          Account Settings
+        </motion.h2>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="p-6 border-b border-slate-100 bg-slate-50/50">
-          <h3 className="text-lg font-semibold flex items-center gap-2">
-            <Bell className="text-blue-500" size={20} />
-            Notification Preferences
-          </h3>
-          <p className="text-sm text-slate-500 mt-1">Control how and when you want to be notified.</p>
-        </div>
+        <motion.div 
+          variants={staggerChildren}
+          initial="hidden"
+          animate="visible"
+          className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"
+        >
+          <motion.div variants={fadeUp} className="p-6 border-b border-slate-100 bg-slate-50/50">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <Bell className="text-blue-500" size={20} />
+              Notification Preferences
+            </h3>
+            <p className="text-sm text-slate-500 mt-1">Control how and when you want to be notified.</p>
+          </motion.div>
 
-        <div className="p-0">
-          {CATEGORIES.map((cat, idx) => (
-            <div key={cat.id} className={`p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 ${idx !== CATEGORIES.length - 1 ? 'border-b border-slate-100' : ''}`}>
+          <div className="p-0">
+            {CATEGORIES.map((cat, idx) => (
+              <motion.div 
+                variants={listStagger}
+                key={cat.id} 
+                className={`p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 ${idx !== CATEGORIES.length - 1 ? 'border-b border-slate-100' : ''}`}
+              >
               <div className="flex-1">
                 <h4 className="font-medium text-slate-800">{cat.label}</h4>
                 <p className="text-sm text-slate-500 mt-1">{cat.desc}</p>
@@ -85,11 +104,12 @@ const PatientSettings = () => {
                   onClick={() => handleToggle(cat.id, 'pushEnabled', getPref(cat.id, 'pushEnabled'))} 
                 />
               </div>
-            </div>
-          ))}
-        </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
       </div>
-    </div>
+    
   );
 };
 

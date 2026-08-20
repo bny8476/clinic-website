@@ -1,16 +1,11 @@
 import React, { useState } from 'react';
 import useDebounce from '../../hooks/pharmacy/useDebounce';
-import { Eye, Pill, Search, CheckCircle, XCircle, ShieldCheck } from 'lucide-react';
-import ModuleFilterBar from '../../components/pharmacy/ui/ModuleFilterBar';
-import DataTable from '../../components/pharmacy/ui/DataTable';
-import Pagination from '../../components/pharmacy/ui/Pagination';
-import AppModal from '../../components/pharmacy/ui/AppModal';
-import Badge from '../../components/pharmacy/ui/Badge';
-import TableSkeleton from '../../components/pharmacy/ui/TableSkeleton';
 import { usePageData } from '../../hooks/pharmacy/usePageData';
 import { axiosPrivate } from '../../api/axios';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
+
+
 
 export default function PendingPrescriptions() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -102,7 +97,7 @@ export default function PendingPrescriptions() {
               title="Verify"
               disabled={busy}
               onClick={() => doAction(row.id, 'verify', 'Prescription verified')}
-              className="p-1.5 text-green-700 hover:bg-green-50 rounded-lg transition-colors disabled:opacity-50"
+              className="p-1.5 text-blue-700 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50"
             >
               <ShieldCheck className="w-4 h-4" />
             </button>
@@ -141,6 +136,7 @@ export default function PendingPrescriptions() {
     : filteredPrescriptions.slice((currentPage - 1) * Number(pageSize), currentPage * Number(pageSize));
 
   return (
+    
     <div className="space-y-6">
       <div className="flex flex-col gap-1">
         <h2 className="text-2xl font-bold tracking-tight text-gray-900">Pending Prescriptions</h2>
@@ -249,8 +245,8 @@ export default function PendingPrescriptions() {
 
             {/* Dispensed info */}
             {selectedPrescription.status === 'DISPENSED' && selectedPrescription.dispensedAt && (
-              <div className="p-3 bg-green-50 border border-green-100 rounded-lg text-sm">
-                <CheckCircle className="w-4 h-4 text-green-600 inline mr-2" />
+              <div className="p-3 bg-blue-50 border border-blue-100 rounded-lg text-sm">
+                <CheckCircle className="w-4 h-4 text-blue-600 inline mr-2" />
                 Dispensed by <strong>{selectedPrescription.dispensedBy}</strong> on{' '}
                 {new Date(selectedPrescription.dispensedAt).toLocaleString()}
               </div>
@@ -264,7 +260,7 @@ export default function PendingPrescriptions() {
                     await doAction(selectedPrescription.id, 'verify', 'Prescription verified');
                     setIsViewModalOpen(false);
                   }}
-                  className="px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 transition-colors"
+                  className="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   Verify
                 </button>
@@ -296,5 +292,6 @@ export default function PendingPrescriptions() {
         )}
       </AppModal>
     </div>
+    
   );
 }

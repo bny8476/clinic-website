@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import logger from '../../utils/logger';
 import { useAuth } from '../../context/pharmacy/AuthContext';
-import { Save, User, ShieldCheck, Clock, MapPin, Briefcase, ChevronDown, Pen, IdCard, CalendarDays } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import pharmacyService from '../../utils/pharmacy/pharmacyService';
+
+
 
 export default function ProfileSettings() {
   const { user } = useAuth();
@@ -76,6 +77,7 @@ export default function ProfileSettings() {
   if (!user) return null;
 
   return (
+    
     <div className="max-w-5xl mx-auto space-y-6 pb-10 p-2 md:p-6 lg:p-8 font-sans">
       
       {/* Breadcrumb & Header */}
@@ -285,5 +287,6 @@ export default function ProfileSettings() {
 
       </div>
     </div>
+    
   );
 }

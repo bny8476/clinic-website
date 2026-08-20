@@ -1,5 +1,7 @@
 package com.healthcare.clinic.homevisit.entity;
 
+import com.healthcare.clinic.patient.entity.HomeVisitRequest;
+
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;

@@ -1,28 +1,21 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Cardio } from 'ldrs/react';
-import 'ldrs/react/Cardio.css';
+import { useState, useEffect, useMemo } from 'react';
+
 import useDebounce from '../../hooks/pharmacy/useDebounce';
-import { useShallow } from 'zustand/react/shallow';
-import {
-  Plus, Search, Truck, Trash2, Edit3, Eye, FileText, Star, TrendingUp,
-  Phone, MapPin, CreditCard, User, Building2, Shield, ChevronRight,
-  CheckCircle2, AlertCircle, XCircle, Clock, Package, BarChart3, ArrowLeft,
-  Banknote, Receipt, RotateCcw, Filter, X
+import { FileText, User, Shield, Package, BarChart3,
+  Banknote, Receipt, RotateCcw
 } from 'lucide-react';
-import AppModal from '../../components/pharmacy/ui/AppModal';
-import Badge from '../../components/pharmacy/ui/Badge';
 import { toast } from 'react-hot-toast';
-import { useSupplierStore } from '../../store/useSupplierStore';
-import GRNEntry from './GRNEntry';
-import InvoiceMatching from './InvoiceMatching';
-import SupplierReturns from './SupplierReturns';
+import Skeleton from '../../components/ui/Skeleton';
 import { usePageData } from '../../hooks/pharmacy/usePageData';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import pharmacyService from '../../utils/pharmacy/pharmacyService';
+import ConfirmDialog from '../../components/ui/ConfirmDialog';
+
+
 
 // ── Status helpers ──────────────────────────────────────────────
 const statusConfig = {
-  ACTIVE:      { label: 'Active',      cls: 'bg-emerald-50 text-emerald-700 border border-emerald-200' },
+  ACTIVE:      { label: 'Active',      cls: 'bg-blue-50 text-blue-700 border border-blue-200' },
   INACTIVE:    { label: 'Inactive',    cls: 'bg-amber-50 text-amber-700 border border-amber-200' },
   BLACKLISTED: { label: 'Blacklisted', cls: 'bg-red-50 text-red-700 border border-red-200' },
 };
@@ -36,7 +29,7 @@ const typeColors = {
 
 const scoreColor = (s) => {
   if (!s && s !== 0) return { text: 'text-slate-400', ring: '#e2e8f0', fill: '#94a3b8', label: 'N/A' };
-  if (s >= 80) return { text: 'text-emerald-600', ring: '#d1fae5', fill: '#10b981', label: 'Preferred' };
+  if (s >= 80) return { text: 'text-blue-600', ring: '#d1fae5', fill: '#10b981', label: 'Preferred' };
   if (s >= 60) return { text: 'text-amber-600', ring: '#fef3c7', fill: '#f59e0b', label: 'Acceptable' };
   return { text: 'text-red-600', ring: '#fee2e2', fill: '#ef4444', label: 'At Risk' };
 };
@@ -458,6 +451,7 @@ function SupplierProfile({ supplier, onClose, onEdit, onCreatePO }) {
 
 export default function Suppliers() {
   const queryClient = useQueryClient();
+  const [confirmDelete, setConfirmDelete] = useState({ isOpen: false, id: null });
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebounce(searchTerm, 300);
 
@@ -517,9 +511,8 @@ export default function Suppliers() {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Delete this supplier?')) return;
-    deleteSupplierMutation.mutate(id);
+  const handleDelete = (id) => {
+    setConfirmDelete({ isOpen: true, id });
   };
 
   const openAdd = () => { setIsEditMode(false); setSelectedSupplier(null); setIsModalOpen(true); };
@@ -560,7 +553,7 @@ export default function Suppliers() {
       {/* Procurement Action Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { icon: Package, label: 'Goods Receipt (GRN)', color: 'bg-emerald-50 border-emerald-200 text-emerald-700', action: () => setView('grn') },
+          { icon: Package, label: 'Goods Receipt (GRN)', color: 'bg-blue-50 border-blue-200 text-blue-700', action: () => setView('grn') },
           { icon: Receipt, label: 'Invoice Matching', color: 'bg-blue-50 border-blue-200 text-blue-700', action: () => setView('invoice') },
           { icon: RotateCcw, label: 'Returns to Supplier', color: 'bg-amber-50 border-amber-200 text-amber-700', action: () => setView('returns') },
           { icon: BarChart3, label: 'Performance Reports', color: 'bg-violet-50 border-violet-200 text-violet-700', action: () => toast('Reports coming soon') },
@@ -608,9 +601,8 @@ export default function Suppliers() {
       {/* Suppliers Table */}
       <div className="bg-white rounded-xl border border-slate-100 overflow-hidden">
         {loading ? (
-          <div className="p-12 flex flex-col items-center gap-3">
-            <Cardio size="50" stroke="4" speed="2" color="#3b82f6" />
-            <p className="text-sm text-slate-400 font-bold">Loading suppliers…</p>
+          <div className="p-8">
+            <Skeleton.Table rows={5} />
           </div>
         ) : filtered.length === 0 ? (
           <div className="p-12 text-center">
@@ -632,6 +624,7 @@ export default function Suppliers() {
                 {filtered.map((s, i) => {
                   const statusCfg = statusConfig[s.status] || statusConfig.ACTIVE;
                   return (
+    
                     <tr key={s.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
                       <td className="px-4 py-3 text-xs text-slate-400">{i + 1}</td>
                       <td className="px-4 py-3">
@@ -715,6 +708,24 @@ export default function Suppliers() {
           onCreatePO={() => { setProfileSupplier(null); window.location.href = '/purchase-orders'; }}
         />
       )}
+
+      <ConfirmDialog 
+        isOpen={confirmDelete.isOpen}
+        onClose={() => setConfirmDelete({ isOpen: false, id: null })}
+        onConfirm={() => {
+          if (confirmDelete.id) {
+            deleteSupplierMutation.mutate(confirmDelete.id, {
+              onSettled: () => setConfirmDelete({ isOpen: false, id: null })
+            });
+          }
+        }}
+        title="Delete Supplier"
+        description="Are you sure you want to delete this supplier? This action cannot be undone."
+        confirmText="Delete"
+        isDestructive={true}
+        isLoading={deleteSupplierMutation.isPending}
+      />
     </div>
+    
   );
 }

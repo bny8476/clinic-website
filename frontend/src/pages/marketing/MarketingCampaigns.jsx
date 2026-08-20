@@ -1,15 +1,12 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { Megaphone, Send, ArrowLeft, Plus } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { Megaphone, Send, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
-import Card from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
-import FormField from '../../components/ui/FormField';
 import { fadeIn } from '../../components/ui/motion';
-import EmptyState from '../../components/ui/EmptyState';
+
+
 
 const MarketingCampaigns = () => {
   const queryClient = useQueryClient();
@@ -82,6 +79,7 @@ const MarketingCampaigns = () => {
   };
 
   return (
+    
     <motion.div 
       initial="hidden" 
       animate="visible" 
@@ -228,6 +226,7 @@ const MarketingCampaigns = () => {
         </Card.Body>
       </Card>
     </motion.div>
+    
   );
 };
 

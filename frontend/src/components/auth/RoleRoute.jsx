@@ -1,6 +1,5 @@
-import React from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
-import useAuthStore, { isTokenValid } from '../../store/authStore';
+import { useLocation, Navigate } from 'react-router-dom';
+import useAuthStore from '../../store/authStore';
 import { getPortalConfig } from '../../config/portalConfig';
 
 export default function RoleRoute({ portalSlug, allowedRoles, children }) {

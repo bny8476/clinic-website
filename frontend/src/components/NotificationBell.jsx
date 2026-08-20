@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { motion, AnimatePresence } from 'framer-motion';
+import { scaleIn } from './ui/motion';
 import { axiosPrivate } from '../api/axios';
-import { Bell, X, CheckCheck } from 'lucide-react';
 
 const TYPE_ICONS = {
   APPOINTMENT: '📅',
@@ -106,18 +107,23 @@ const NotificationBell = () => {
         )}
       </button>
 
-      {/* Dropdown Panel */}
-      {open && (
-        <div
-          id="notification-panel"
-          style={{
-            position: 'absolute', top: 'calc(100% + 8px)', right: 0,
-            width: '380px', maxHeight: '480px',
-            background: 'var(--color-surface)', borderRadius: '12px',
-            border: '1px solid var(--color-border)', boxShadow: '0 10px 40px rgba(0,0,0,0.12)',
-            zIndex: 1000, display: 'flex', flexDirection: 'column', overflow: 'hidden',
-          }}
-        >
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            id="notification-panel"
+            variants={scaleIn}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            style={{
+              position: 'absolute', top: 'calc(100% + 8px)', right: 0,
+              width: '380px', maxHeight: '480px',
+              background: 'var(--color-surface)', borderRadius: '12px',
+              border: '1px solid var(--color-border)', boxShadow: '0 10px 40px rgba(0,0,0,0.12)',
+              zIndex: 1000, display: 'flex', flexDirection: 'column', overflow: 'hidden',
+              transformOrigin: 'top right',
+            }}
+          >
           {/* Header */}
           <div style={{
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -204,8 +210,9 @@ const NotificationBell = () => {
               ))
             )}
           </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

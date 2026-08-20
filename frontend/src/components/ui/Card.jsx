@@ -1,4 +1,6 @@
-import React from 'react';
+
+import { motion } from 'framer-motion';
+import { tapScale } from './motion';
 
 /**
  * Enterprise Card Primitive
@@ -13,7 +15,7 @@ export default function Card({
   className = '',
   ...rest
 }) {
-  const baseStyles = "bg-[var(--color-surface)] border border-[var(--color-border)] dark:border-white/[0.07] rounded-md transition-all duration-200";
+  const baseStyles = "bg-[var(--color-surface)] border border-[var(--color-border)] dark:border-white/[0.07] rounded-xl transition-all duration-[var(--duration-base)] ease-[var(--ease-out-smooth)]";
 
   const variants = {
     flat: "shadow-none bg-[var(--color-surface-alt)]",
@@ -22,12 +24,16 @@ export default function Card({
     glass: "backdrop-blur-glass bg-[var(--glass-bg)] border-[var(--glass-border)] shadow-md"
   };
 
-  const hoverStyle = hoverable ? "hover:-translate-y-0.5 hover:shadow-elevated cursor-pointer" : "";
+  const hoverStyle = hoverable ? "hover:-translate-y-1 hover:shadow-xl hover:border-[var(--color-navy-600)]/30 cursor-pointer" : "";
 
   return (
-    <div className={`${baseStyles} ${variants[variant] || variants.card} ${hoverStyle} ${className}`} {...rest}>
+    <motion.div 
+      className={`${baseStyles} ${variants[variant] || variants.card} ${hoverStyle} ${className}`}
+      whileTap={hoverable ? tapScale : undefined}
+      {...rest}
+    >
       {children}
-    </div>
+    </motion.div>
   );
 }
 

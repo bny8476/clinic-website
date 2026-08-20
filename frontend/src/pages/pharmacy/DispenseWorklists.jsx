@@ -1,18 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import useDebounce from '../../hooks/pharmacy/useDebounce';
 import { useLocation } from 'react-router-dom';
-import { Eye, Pill, Search } from 'lucide-react';
-import ModuleFilterBar from '../../components/pharmacy/ui/ModuleFilterBar';
-import DataTable from '../../components/pharmacy/ui/DataTable';
-import Pagination from '../../components/pharmacy/ui/Pagination';
-import AppModal from '../../components/pharmacy/ui/AppModal';
-import Badge from '../../components/pharmacy/ui/Badge';
 import { toast } from 'react-hot-toast';
 import { usePageData } from '../../hooks/pharmacy/usePageData';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
-import TableSkeleton from '../../components/pharmacy/ui/TableSkeleton';
 import api from '../../utils/pharmacy/api';
 import { v4 as uuidv4 } from 'uuid';
+
+
 
 export default function DispenseWorklists() {
   const queryClient = useQueryClient();
@@ -77,7 +72,7 @@ export default function DispenseWorklists() {
             })) || []);
             setIsModalOpen(true); 
           }}
-          className="p-1.5 text-success hover:bg-green-50 rounded-lg transition-colors"
+          className="p-1.5 text-success hover:bg-blue-50 rounded-lg transition-colors"
         >
           <Pill className="w-4 h-4" />
         </button>
@@ -95,6 +90,7 @@ export default function DispenseWorklists() {
   });
 
   return (
+    
     <div className="space-y-6">
       <div className="flex flex-col gap-1">
         <h2 className="text-2xl font-bold tracking-tight text-gray-900">Pending Dispense List</h2>
@@ -130,7 +126,7 @@ export default function DispenseWorklists() {
              <button 
                onClick={() => dispenseMutation.mutate({ items: dispenseItems, partialDispense })} 
                disabled={dispenseMutation.isLoading}
-               className="flex-1 px-6 py-2.5 bg-success text-white rounded-xl text-sm font-bold shadow-lg shadow-green-200 hover:bg-green-700 transition-all font-display disabled:opacity-50"
+               className="flex-1 px-6 py-2.5 bg-success text-white rounded-xl text-sm font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all font-display disabled:opacity-50"
              >
                {dispenseMutation.isLoading ? 'Dispensing...' : 'Confirm Dispense'}
              </button>
@@ -226,5 +222,6 @@ export default function DispenseWorklists() {
         )}
       </AppModal>
     </div>
+    
   );
 }

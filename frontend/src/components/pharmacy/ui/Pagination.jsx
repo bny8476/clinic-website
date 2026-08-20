@@ -1,6 +1,4 @@
-import React from 'react';
 import PropTypes from 'prop-types';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from "../../../utils/pharmacy/cn";
 
 export default function Pagination({ 

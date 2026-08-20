@@ -4,7 +4,7 @@ import com.healthcare.clinic.appointment.entity.Appointment;
 import com.healthcare.clinic.appointment.repository.AppointmentRepository;
 import com.healthcare.clinic.identity.entity.User;
 import com.healthcare.clinic.patient.dto.TimelineEventDTO;
-import com.healthcare.clinic.homevisit.entity.HomeVisitRequest;
+import com.healthcare.clinic.patient.entity.HomeVisitRequest;
 import com.healthcare.clinic.patient.entity.PatientProfile;
 import com.healthcare.clinic.patient.entity.PatientDocument;
 import com.healthcare.clinic.homevisit.repository.HomeVisitRequestRepository;
@@ -59,7 +59,7 @@ public class HealthTimelineService {
         // 2. Home Visits
         List<HomeVisitRequest> homeVisits = homeVisitRequestRepository.findByPatientIdOrderByCreatedAtDesc(profile.getId());
         for (HomeVisitRequest visit : homeVisits) {
-            String serviceType = visit.getServiceType() != null ? visit.getServiceType() : "General";
+            String serviceType = visit.getReasonForVisit() != null ? visit.getReasonForVisit() : "General";
             events.add(TimelineEventDTO.builder()
                     .id("VISIT-" + visit.getId())
                     .type("HOME_VISIT")
@@ -67,8 +67,8 @@ public class HealthTimelineService {
                     .description("Status: " + visit.getStatus())
                     .status(visit.getStatus())
                     .eventDate(visit.getPreferredDate() != null
-                            ? visit.getPreferredDate().atZone(ZoneId.systemDefault())
-                            : visit.getCreatedAt().atZone(ZoneId.systemDefault()))
+                            ? visit.getPreferredDate().atStartOfDay(ZoneId.systemDefault())
+                            : visit.getCreatedAt())
                     .referenceId(visit.getId())
                     .build());
         }

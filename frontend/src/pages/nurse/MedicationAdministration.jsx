@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import logger from '../../utils/logger';
-import { Pill, CheckCircle, Clock } from 'lucide-react';
 import { axiosPrivate } from '../../api/axios';
+
+
 
 const MedicationAdministration = () => {
   const [marList, setMarList] = useState([]);
@@ -32,7 +33,7 @@ const MedicationAdministration = () => {
       fetchMarList();
     } catch (err) {
       logger.error(err);
-      alert('Failed to update status.');
+      toast.error('Failed to update status.');
     }
   };
 
@@ -42,6 +43,7 @@ const MedicationAdministration = () => {
   };
 
   return (
+    
     <div className="p-4 sm:p-6" style={{ maxWidth: '1000px', margin: '0 auto' }}>
       <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0f172a', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
         <Pill size={24} color="#0f766e" /> Medication Administration Record (MAR)
@@ -92,6 +94,7 @@ const MedicationAdministration = () => {
         </table>
       </div>
     </div>
+    
   );
 };
 

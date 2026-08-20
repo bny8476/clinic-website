@@ -1,6 +1,4 @@
-import React from 'react';
 import logger from '../../../utils/logger';
-import { Printer, Download, X, MessageCircle } from 'lucide-react';
 import { numberToWords } from "../../../utils/pharmacy/numberToWords";
 import api from "../../../utils/pharmacy/api";
 
@@ -37,7 +35,7 @@ export default function PharmacyInvoice({ bill, onClose }) {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       logger.error('Failed to download PDF:', error);
-      alert('Failed to generate PDF. Please try again.');
+      toast.error('Failed to generate PDF. Please try again.');
     }
   };
 
@@ -65,7 +63,7 @@ export default function PharmacyInvoice({ bill, onClose }) {
             onClick={handleWhatsApp}
             disabled={!bill.patient?.phone}
             title={!bill.patient?.phone ? "No phone number on file" : "Send via WhatsApp"}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-bold hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <MessageCircle className="w-4 h-4" /> WhatsApp
           </button>
@@ -228,7 +226,7 @@ export default function PharmacyInvoice({ bill, onClose }) {
                   <span className="text-gray-900">{safeNum(bill.taxAmount).toFixed(2)}</span>
                 </div>
                 {safeNum(bill.discountAmount) > 0 && (
-                  <div className="px-6 py-3 flex justify-between text-[11px] font-bold text-emerald-600 bg-emerald-50/30">
+                  <div className="px-6 py-3 flex justify-between text-[11px] font-bold text-blue-600 bg-blue-50/30">
                     <span>Discount Applied</span>
                     <span>(-) {safeNum(bill.discountAmount).toFixed(2)}</span>
                   </div>
@@ -239,7 +237,7 @@ export default function PharmacyInvoice({ bill, onClose }) {
                 </div>
                 <div className="px-6 py-3 flex justify-between text-[11px] font-medium text-gray-600 lowercase italic">
                   <span>Payment Made ({bill.paymentMode})</span>
-                  <span className="text-green-600 italic">(-) {safeNum(bill.paidAmount).toFixed(2)}</span>
+                  <span className="text-blue-600 italic">(-) {safeNum(bill.paidAmount).toFixed(2)}</span>
                 </div>
                 <div className="px-6 py-4 flex justify-between text-sm font-black text-blue-600 bg-blue-50/30">
                   <span className="uppercase tracking-tighter">Balance Due</span>

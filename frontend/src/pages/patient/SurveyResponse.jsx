@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import toast from 'react-hot-toast';

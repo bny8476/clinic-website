@@ -1,7 +1,6 @@
 import { 
-  Calendar as CalendarIcon, Clock, Activity, FileText, Pill, Users,
-  UploadCloud, Video, Plus, Search, CheckCircle2, DollarSign, Building, Truck,
-  Settings, Bot, HeartPulse, UserPlus, CreditCard, UserCheck, Ticket, Shield
+  Calendar as CalendarIcon, Activity, FileText, Pill, Users,
+  UploadCloud, Video, Plus, HeartPulse, UserPlus, CreditCard, UserCheck, Ticket, Shield
 } from 'lucide-react';
 
 export const WIDGETS = {

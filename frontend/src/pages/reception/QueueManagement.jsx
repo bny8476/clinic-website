@@ -1,17 +1,18 @@
-import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { Ticket, Users, Clock, ArrowLeft, CheckCircle2, UserCheck, Play } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { Ticket, CheckCircle2, UserCheck, Play, ArrowLeft, Users, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
-import Card from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
-import Badge from '../../components/ui/Badge';
-import EmptyState from '../../components/ui/EmptyState';
-import Skeleton from '../../components/ui/Skeleton';
+import { motion } from 'framer-motion';
 import { fadeIn, staggerChildren } from '../../components/ui/motion';
+import { Link } from 'react-router-dom';
+import Button from '../../components/ui/Button';
+import Card from '../../components/ui/Card';
+import Badge from '../../components/ui/Badge';
+import Skeleton from '../../components/ui/Skeleton';
+import EmptyState from '../../components/ui/EmptyState';
 import useAuthStore from '../../store/authStore';
+
+
 
 const QueueManagement = () => {
   const queryClient = useQueryClient();
@@ -45,6 +46,7 @@ const QueueManagement = () => {
   const completedQueue = queueList.filter(q => q.status === 'COMPLETED' || q.status === 'NO_SHOW');
 
   return (
+    
     <motion.div 
       initial="hidden" 
       animate="visible" 
@@ -101,12 +103,12 @@ const QueueManagement = () => {
                     variants={fadeIn}
                     className={`p-4 rounded-md border text-center flex flex-col items-center justify-between gap-3 shadow-sm transition-shadow ${
                       q.status === 'IN_PROGRESS' 
-                        ? 'border-[var(--color-primary)]/30 bg-[var(--color-primary-bg)]/40' 
+                        ? 'border-[var(--color-info)]/30 bg-[var(--color-info-bg)]/40' 
                         : 'border-[var(--color-warning)]/30 bg-[var(--color-warning-bg)]/40'
                     }`}
                   >
                     <div>
-                      <span className={`text-[11px] font-bold uppercase tracking-wider ${q.status === 'IN_PROGRESS' ? 'text-[var(--color-primary)]' : 'text-[var(--color-warning)]'}`}>
+                      <span className={`text-[11px] font-bold uppercase tracking-wider ${q.status === 'IN_PROGRESS' ? 'text-[var(--color-info)]' : 'text-[var(--color-warning)]'}`}>
                         {q.department} • P{q.priorityLevel}
                       </span>
                       <div className="text-4xl font-extrabold font-display text-[var(--color-navy-900)] my-1">
@@ -151,6 +153,7 @@ const QueueManagement = () => {
         </Card>
       </div>
     </motion.div>
+    
   );
 };
 

@@ -1,17 +1,13 @@
-import React, { useState, useMemo } from 'react';
-import { Cardio } from 'ldrs/react';
-import 'ldrs/react/Cardio.css';
+import { useState, useMemo } from 'react';
+
 import useDebounce from '../../hooks/pharmacy/useDebounce';
-import { LineChart, Line, AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { ArrowUpRight, ArrowDownRight, Loader2, Info, Download, ShoppingBasket, TrendingUp, Tag, Package, IndianRupee, ArrowRight, RefreshCw, ChevronDown } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { exportToCSV } from '../../utils/pharmacy/reportExport';
-import ModuleFilterBar from '../../components/pharmacy/ui/ModuleFilterBar';
-import DataTable from '../../components/pharmacy/ui/DataTable';
-import Pagination from '../../components/pharmacy/ui/Pagination';
-import Badge from '../../components/pharmacy/ui/Badge';
 import { useQuery } from '@tanstack/react-query';
 import api from '../../utils/pharmacy/api';
 import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, subMonths } from 'date-fns';
+
+
 
 const TABS = [
   { id: 'landing', label: 'Analytics Landing' },
@@ -80,7 +76,7 @@ export default function ProductSalesPerformance() {
     if (!data) return null;
     const { currentValue, previousValue, percentageChange, positiveTrend } = data;
     const Icon = positiveTrend ? ArrowUpRight : ArrowDownRight;
-    const trendColor = positiveTrend ? 'text-emerald-500' : 'text-red-500';
+    const trendColor = positiveTrend ? 'text-blue-500' : 'text-red-500';
     
     let displayValue = currentValue;
     let prevDisplay = previousValue;
@@ -142,7 +138,7 @@ export default function ProductSalesPerformance() {
               <div>
                 <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">Total Sales (₹)</p>
                 <h3 className="text-xl font-bold text-slate-800">₹ {(dashboardData.totalSalesRevenue?.currentValue || 1248950).toLocaleString()}</h3>
-                <span className="flex items-center text-[10px] font-bold text-emerald-500 mt-1">
+                <span className="flex items-center text-[10px] font-bold text-blue-500 mt-1">
                   <ArrowUpRight className="w-3 h-3 mr-0.5" /> 18.6% <span className="text-slate-400 font-medium ml-1">vs last month</span>
                 </span>
               </div>
@@ -150,13 +146,13 @@ export default function ProductSalesPerformance() {
           </div>
           <div className="bg-white border border-slate-100 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
-                <TrendingUp className="w-6 h-6 text-emerald-500" />
+              <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                <TrendingUp className="w-6 h-6 text-blue-500" />
               </div>
               <div>
                 <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">Units Sold</p>
                 <h3 className="text-xl font-bold text-slate-800">{(dashboardData.totalUnitsDispensed?.currentValue || 18742).toLocaleString()}</h3>
-                <span className="flex items-center text-[10px] font-bold text-emerald-500 mt-1">
+                <span className="flex items-center text-[10px] font-bold text-blue-500 mt-1">
                   <ArrowUpRight className="w-3 h-3 mr-0.5" /> 14.2% <span className="text-slate-400 font-medium ml-1">vs last month</span>
                 </span>
               </div>
@@ -170,7 +166,7 @@ export default function ProductSalesPerformance() {
               <div>
                 <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">Gross Margin (%)</p>
                 <h3 className="text-xl font-bold text-slate-800">26.8%</h3>
-                <span className="flex items-center text-[10px] font-bold text-emerald-500 mt-1">
+                <span className="flex items-center text-[10px] font-bold text-blue-500 mt-1">
                   <ArrowUpRight className="w-3 h-3 mr-0.5" /> 2.9 pp <span className="text-slate-400 font-medium ml-1">vs last month</span>
                 </span>
               </div>
@@ -184,7 +180,7 @@ export default function ProductSalesPerformance() {
               <div>
                 <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">Stock Turnover</p>
                 <h3 className="text-xl font-bold text-slate-800">6.4x</h3>
-                <span className="flex items-center text-[10px] font-bold text-emerald-500 mt-1">
+                <span className="flex items-center text-[10px] font-bold text-blue-500 mt-1">
                   <ArrowUpRight className="w-3 h-3 mr-0.5" /> 1.1x <span className="text-slate-400 font-medium ml-1">vs last month</span>
                 </span>
               </div>
@@ -380,17 +376,17 @@ export default function ProductSalesPerformance() {
                 <span className="text-xs font-bold text-slate-600 w-28">Fill Rate</span>
                 <span className="text-sm font-bold text-slate-800 w-12">95.4%</span>
                 <div className="w-16 h-4 opacity-70">
-                   <svg viewBox="0 0 100 20" className="w-full h-full stroke-emerald-500 fill-none" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="0,15 20,5 40,10 60,0 80,10 100,2" /></svg>
+                   <svg viewBox="0 0 100 20" className="w-full h-full stroke-blue-500 fill-none" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="0,15 20,5 40,10 60,0 80,10 100,2" /></svg>
                 </div>
-                <span className="flex items-center text-[10px] font-bold text-emerald-500 w-14 justify-end"><ArrowUpRight className="w-3 h-3" /> 2.8 pp</span>
+                <span className="flex items-center text-[10px] font-bold text-blue-500 w-14 justify-end"><ArrowUpRight className="w-3 h-3" /> 2.8 pp</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-600 w-28">On-time Delivery</span>
                 <span className="text-sm font-bold text-slate-800 w-12">93.1%</span>
                 <div className="w-16 h-4 opacity-70">
-                   <svg viewBox="0 0 100 20" className="w-full h-full stroke-emerald-500 fill-none" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="0,10 20,12 40,5 60,8 80,2 100,5" /></svg>
+                   <svg viewBox="0 0 100 20" className="w-full h-full stroke-blue-500 fill-none" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="0,10 20,12 40,5 60,8 80,2 100,5" /></svg>
                 </div>
-                <span className="flex items-center text-[10px] font-bold text-emerald-500 w-14 justify-end"><ArrowUpRight className="w-3 h-3" /> 1.9 pp</span>
+                <span className="flex items-center text-[10px] font-bold text-blue-500 w-14 justify-end"><ArrowUpRight className="w-3 h-3" /> 1.9 pp</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-600 w-28">Purchase Variance</span>
@@ -404,9 +400,9 @@ export default function ProductSalesPerformance() {
                 <span className="text-xs font-bold text-slate-600 w-28">Return Rate</span>
                 <span className="text-sm font-bold text-slate-800 w-12">1.8%</span>
                 <div className="w-16 h-4 opacity-70">
-                   <svg viewBox="0 0 100 20" className="w-full h-full stroke-emerald-500 fill-none" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="0,8 20,5 40,10 60,12 80,4 100,8" /></svg>
+                   <svg viewBox="0 0 100 20" className="w-full h-full stroke-blue-500 fill-none" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="0,8 20,5 40,10 60,12 80,4 100,8" /></svg>
                 </div>
-                <span className="flex items-center text-[10px] font-bold text-emerald-500 w-14 justify-end"><ArrowDownRight className="w-3 h-3" /> 0.4 pp</span>
+                <span className="flex items-center text-[10px] font-bold text-blue-500 w-14 justify-end"><ArrowDownRight className="w-3 h-3" /> 0.4 pp</span>
               </div>
             </div>
             <button className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center mt-4">
@@ -541,14 +537,14 @@ export default function ProductSalesPerformance() {
           
           {/* Month B */}
           <div className="bg-white border border-slate-100 rounded-xl p-6 shadow-sm relative overflow-hidden">
-            <div className={`absolute top-0 right-0 w-32 h-32 transform translate-x-16 -translate-y-16 rounded-full opacity-10 ${isUp ? 'bg-emerald-500' : 'bg-red-500'}`}></div>
+            <div className={`absolute top-0 right-0 w-32 h-32 transform translate-x-16 -translate-y-16 rounded-full opacity-10 ${isUp ? 'bg-blue-500' : 'bg-red-500'}`}></div>
             <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4">Current Month ({monthB.monthName})</h3>
             <div className="space-y-4">
               <div>
                 <p className="text-xs text-slate-400 font-medium">Revenue</p>
                 <div className="flex items-center gap-3">
                   <p className="text-2xl font-black text-slate-800">₹{monthB.totalRevenue.toLocaleString()}</p>
-                  <span className={`flex items-center text-sm font-bold px-2 py-1 rounded-md ${isUp ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
+                  <span className={`flex items-center text-sm font-bold px-2 py-1 rounded-md ${isUp ? 'bg-blue-50 text-blue-600' : 'bg-red-50 text-red-600'}`}>
                     {isUp ? <ArrowUpRight className="w-4 h-4 mr-1"/> : <ArrowDownRight className="w-4 h-4 mr-1"/>}
                     {revenuePercentageChange.toFixed(2)}%
                   </span>
@@ -580,6 +576,7 @@ export default function ProductSalesPerformance() {
   );
 
   return (
+    
     <div className="space-y-6 pb-10">
       <div className="flex items-start justify-between">
         <div className="flex flex-col gap-1">
@@ -627,5 +624,6 @@ export default function ProductSalesPerformance() {
       {activeTab === 'mom' && renderMoM()}
       {['categories', 'wards', 'reports'].includes(activeTab) && renderComingSoon(TABS.find(t => t.id === activeTab)?.label)}
     </div>
+    
   );
 }

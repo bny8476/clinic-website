@@ -1,14 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import logger from '../../utils/logger';
 import { useShallow } from 'zustand/react/shallow';
-import { AlertTriangle, RefreshCw, Clock } from 'lucide-react';
-import DataTable from '../../components/pharmacy/ui/DataTable';
-import Pagination from '../../components/pharmacy/ui/Pagination';
-import TableSkeleton from '../../components/pharmacy/ui/TableSkeleton';
-import ErrorBanner from '../../components/pharmacy/ui/ErrorBanner';
-import Badge from '../../components/pharmacy/ui/Badge';
 import { toast } from 'react-hot-toast';
 import { useStockStore } from '../../store/useStockStore';
+
+
 
 export default function LowStockAlerts() {
   const [lastUpdated, setLastUpdated] = useState(new Date());
@@ -88,6 +84,7 @@ export default function LowStockAlerts() {
   };
 
   return (
+    
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="flex flex-col gap-1">
@@ -124,9 +121,9 @@ export default function LowStockAlerts() {
           <TableSkeleton rows={5} columns={7} />
         ) : !isLoading && !isError && items.length === 0 ? (
           <div className="p-10 text-center text-slate-500 font-semibold flex flex-col items-center justify-center">
-            <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mb-4">
+            <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mb-4">
               <Badge variant="success" className="p-2 border-0 shadow-none">
-                <AlertTriangle className="w-8 h-8 text-green-500" />
+                <AlertTriangle className="w-8 h-8 text-blue-500" />
               </Badge>
             </div>
             <p className="text-lg">All caught up!</p>
@@ -152,5 +149,6 @@ export default function LowStockAlerts() {
         )}
       </div>
     </div>
+    
   );
 }

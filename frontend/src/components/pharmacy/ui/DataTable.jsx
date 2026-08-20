@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import { useRef } from 'react';
 import PropTypes from 'prop-types';
 import { cn } from "../../../utils/pharmacy/cn";
 import { useVirtualizer } from '@tanstack/react-virtual';

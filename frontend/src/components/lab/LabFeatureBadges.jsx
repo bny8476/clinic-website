@@ -1,4 +1,3 @@
-import React from 'react';
 import { FileBadge, ShieldCheck, Clock, Lock } from 'lucide-react';
 
 const badges = [

@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import logger from '../../utils/logger';
 import api from '../../utils/pharmacy/api';
-import { ArrowLeft, Loader2, Plus, RefreshCw, FileText } from 'lucide-react';
-import Badge from '../../components/ui/Badge';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
+
+
 
 export default function SupplierReturns({ onBack }) {
   const [returns, setReturns] = useState([]);
@@ -41,6 +41,7 @@ export default function SupplierReturns({ onBack }) {
   };
 
   return (
+    
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -111,7 +112,7 @@ export default function SupplierReturns({ onBack }) {
                       <td className="px-5 py-4 whitespace-nowrap text-sm font-bold text-slate-900">{ret.returnNumber}</td>
                       <td className="px-5 py-4 whitespace-nowrap text-sm text-slate-600">{ret.supplier?.name || 'Unknown'}</td>
                       <td className="px-5 py-4 whitespace-nowrap text-sm text-slate-600">{ret.reason}</td>
-                      <td className="px-5 py-4 whitespace-nowrap text-sm font-medium text-emerald-600">₹{ret.expectedCreditValue?.toLocaleString() || '0'}</td>
+                      <td className="px-5 py-4 whitespace-nowrap text-sm font-medium text-blue-600">₹{ret.expectedCreditValue?.toLocaleString() || '0'}</td>
                       <td className="px-5 py-4 whitespace-nowrap text-sm">{getStatusBadge(ret.status)}</td>
                       <td className="px-5 py-4 whitespace-nowrap text-sm text-right">
                         <button className="text-indigo-600 hover:text-indigo-800 font-medium">View</button>
@@ -125,5 +126,6 @@ export default function SupplierReturns({ onBack }) {
         )}
       </div>
     </div>
+    
   );
 }

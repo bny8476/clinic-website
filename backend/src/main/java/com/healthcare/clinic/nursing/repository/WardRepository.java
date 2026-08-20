@@ -1,6 +1,6 @@
 package com.healthcare.clinic.nursing.repository;
 
-import com.healthcare.clinic.nursing.entity.Ward;
+import com.healthcare.clinic.inpatient.entity.Ward;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -13,9 +13,13 @@ import java.util.List;
 
 @Repository
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"doctor"})
     List<Appointment> findByPatientId(Long patientId);
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"patient"})
     List<Appointment> findByDoctorId(Long doctorId);
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"doctor"})
     List<Appointment> findByPatient_UserId(Long userId);
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"patient"})
     List<Appointment> findByDoctor_UserId(Long userId);
     List<Appointment> findAllByStatus(com.healthcare.clinic.appointment.entity.AppointmentStatus status);
     java.util.Optional<Appointment> findByIdempotencyKey(String idempotencyKey);

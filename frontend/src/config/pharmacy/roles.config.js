@@ -116,14 +116,12 @@ export const getBaseRoleForUI = (role) => {
 
 
 import { 
-  Building2, ShoppingCart, RotateCcw, LayoutDashboard, CreditCard,
-  Settings, ArrowLeftRight, ClipboardList, Store, Undo2, Syringe,
-  Banknote, Receipt, FileCheck, Stethoscope, RefreshCw, Box,
-  BarChart3, ListTodo, Pill, LogOut, ChevronDown, Truck, Users,
-  FileText, AlertTriangle, CalendarX, ShieldAlert, Thermometer,
-  ShieldCheck, ScanBarcode, Shield, PlusCircle, Calendar,
-  TrendingUp, ClipboardCheck, FilePlus, ShoppingBag, BarChart2, UserCog, Zap, Package,
-  UserCircle, KeyRound, Menu, UserRound
+  Building2, ShoppingCart, RotateCcw, LayoutDashboard, ClipboardList,
+  Banknote, Receipt, FileCheck, RefreshCw,
+  BarChart3, Pill, Truck, Users, AlertTriangle, Thermometer,
+  ShieldCheck, ScanBarcode, Shield, Calendar,
+  TrendingUp, FilePlus, ShoppingBag, BarChart2, UserCog, Zap, Package,
+  UserCircle, KeyRound, UserRound
 } from 'lucide-react';
 
 export const NAV_BY_ROLE = {

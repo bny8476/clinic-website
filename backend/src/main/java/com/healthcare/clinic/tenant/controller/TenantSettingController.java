@@ -5,11 +5,13 @@ import com.healthcare.clinic.tenant.service.TenantSettingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/tenants/tenantsettings")
+@PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
 @RequiredArgsConstructor
 public class TenantSettingController {
 

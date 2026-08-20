@@ -119,6 +119,39 @@
   color: var(--color-text-muted);
 }
 
+/* Global Form Element Enhancements for consistency */
+select:not([class*="bg-transparent"]), 
+textarea, 
+input[type="date"], 
+input[type="time"], 
+input[type="text"]:not([class*="bg-transparent"]):not(.input-field),
+input[type="email"]:not([class*="bg-transparent"]):not(.input-field),
+input[type="password"]:not([class*="bg-transparent"]):not(.input-field) {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+select:focus:not([class*="bg-transparent"]), 
+textarea:focus, 
+input[type="date"]:focus, 
+input[type="time"]:focus,
+input[type="text"]:focus:not([class*="bg-transparent"]):not(.input-field),
+input[type="email"]:focus:not([class*="bg-transparent"]):not(.input-field),
+input[type="password"]:focus:not([class*="bg-transparent"]):not(.input-field) {
+  outline: none !important;
+  border-color: var(--color-navy-600) !important;
+  box-shadow: 0 0 0 3px rgba(15, 42, 74, 0.1) !important;
+}
+
+/* Base custom styling for selects to ensure chevron visibility and consistent padding */
+select:not([class*="bg-transparent"]) {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1em 1em;
+  padding-right: 2.5rem !important;
+}
+
 /* Cards */
 .card {
   background-color: var(--color-surface);

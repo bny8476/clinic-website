@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../../api/axios';
-import { Plus, X, Activity } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const HistorySection = ({ patientId, title, endpoint, icon: Icon, columns, formFields, renderRow }) => {

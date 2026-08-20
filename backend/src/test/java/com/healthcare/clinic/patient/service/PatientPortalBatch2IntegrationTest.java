@@ -4,7 +4,7 @@ import com.healthcare.clinic.identity.entity.Role;
 import com.healthcare.clinic.identity.entity.User;
 import com.healthcare.clinic.identity.repository.RoleRepository;
 import com.healthcare.clinic.identity.repository.UserRepository;
-import com.healthcare.clinic.homevisit.entity.HomeVisitRequest;
+import com.healthcare.clinic.patient.entity.HomeVisitRequest;
 import com.healthcare.clinic.patient.entity.PatientProfile;
 import com.healthcare.clinic.patient.entity.TeleconsultationRequest;
 import com.healthcare.clinic.patient.repository.PatientProfileRepository;
@@ -90,9 +90,9 @@ class PatientPortalBatch2IntegrationTest {
     @Test
     void testHomeVisitRequestWorkflow() {
         HomeVisitRequest request = new HomeVisitRequest();
-        request.setAddressText("123 Test St");
-        request.setPreferredDate(LocalDateTime.now().plusDays(1));
-        request.setServiceType("Nursing Care");
+        request.setAddress("123 Test St");
+        request.setPreferredDate(LocalDateTime.now().plusDays(1).toLocalDate());
+        request.setReasonForVisit("Nursing Care");
         
         // Create Request
         HomeVisitRequest saved = homeVisitService.requestHomeVisit(testPatient, request);
@@ -102,7 +102,7 @@ class PatientPortalBatch2IntegrationTest {
         // Get Requests
         List<HomeVisitRequest> requests = homeVisitService.getPatientRequests(testPatient);
         assertThat(requests).hasSize(1);
-        assertThat(requests.get(0).getServiceType()).isEqualTo("Nursing Care");
+        assertThat(requests.get(0).getReasonForVisit()).isEqualTo("Nursing Care");
 
         // Cancel Request
         HomeVisitRequest cancelled = homeVisitService.cancelRequest(testPatient, saved.getId());
@@ -112,9 +112,9 @@ class PatientPortalBatch2IntegrationTest {
     @Test
     void testHomeVisitCancelInvalidState() {
         HomeVisitRequest request = new HomeVisitRequest();
-        request.setAddressText("123 Test St");
-        request.setPreferredDate(LocalDateTime.now().plusDays(1));
-        request.setServiceType("Nursing Care");
+        request.setAddress("123 Test St");
+        request.setPreferredDate(LocalDateTime.now().plusDays(1).toLocalDate());
+        request.setReasonForVisit("Nursing Care");
         
         HomeVisitRequest saved = homeVisitService.requestHomeVisit(testPatient, request);
         

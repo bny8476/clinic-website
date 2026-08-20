@@ -1,5 +1,3 @@
-import React from 'react';
-import { Calendar as CalendarIcon, Clock, Activity, FileText, Pill, Users, UploadCloud, Video, ChevronRight, ChevronLeft, Search, CheckCircle2, Bot } from 'lucide-react';
 
 export const PatientQueueWidget = ({ appointments, navigate }) => (
   <div className="bg-white dark:bg-[#101830] rounded-2xl p-5 border border-gray-100 dark:border-[#1A263E] shadow-sm">

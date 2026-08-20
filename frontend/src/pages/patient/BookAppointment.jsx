@@ -1,11 +1,17 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { axiosPrivate } from '../../api/axios';
 import useAuthStore from '../../store/authStore';
-import { Calendar as CalendarIcon, Clock, ArrowRight, Search, MapPin, ChevronLeft, ChevronRight, Check, ArrowLeft, Filter, Shield, Headphones, Zap, Map, ChevronDown } from 'lucide-react';
-import { toast } from 'react-hot-toast';
-import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, addDays } from 'date-fns';
+import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay } from 'date-fns';
+import { AnimatePresence, motion } from 'framer-motion';
+import { pageTransition } from '../../components/ui/motion';
+import Button from '../../components/ui/Button';
+import { 
+  ArrowLeft, ArrowRight, Calendar as CalendarIcon, Check, 
+  ChevronDown, ChevronLeft, ChevronRight, Filter, Headphones, 
+  MapPin, Search, Shield, Zap 
+} from 'lucide-react';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -28,6 +34,8 @@ export default function BookAppointment() {
     const [selectedSlotId, setSelectedSlotId] = useState('');
     const [reason, setReason] = useState('');
     const [error, setError] = useState('');
+    const [holdId, setHoldId] = useState(null);
+    const [idempotencyKey] = useState(() => crypto.randomUUID());
     
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedSpecialty, setSelectedSpecialty] = useState('');
@@ -106,14 +114,17 @@ export default function BookAppointment() {
 
     const mutation = useMutation({
         mutationFn: async (data) => {
-            const payload = { ...data };
+            const payload = { ...data, idempotencyKey };
+            if (holdId) payload.holdId = holdId;
             if (patientUserId) payload.patientUserId = parseInt(patientUserId);
             
             if (rescheduleId) {
                 const res = await axiosPrivate.patch(`/appointments/${rescheduleId}/reschedule?newSlotId=${payload.slotId}`);
                 return res.data;
             } else {
-                const res = await axiosPrivate.post('/appointments/book', payload);
+                const res = await axiosPrivate.post('/appointments/book', payload, {
+                    headers: { 'Idempotency-Key': idempotencyKey }
+                });
                 return res.data;
             }
         },
@@ -137,6 +148,64 @@ export default function BookAppointment() {
         if (!reason) return setError('Please provide a reason for the visit.');
         mutation.mutate({ slotId: selectedSlotId, reasonForVisit: reason });
     };
+
+    const handleSlotSelection = async (slotId, slotStartTime) => {
+        if (slotId === selectedSlotId) return;
+        setError('');
+
+        if (holdId) {
+            try {
+                await axiosPrivate.delete(`/appointments/hold/${holdId}?doctorId=${selectedDoctorId}&slotStart=${slotStartTime}`);
+                setHoldId(null);
+            } catch (err) {
+                console.error("Failed to release old hold", err);
+            }
+        }
+
+        setSelectedSlotId(slotId);
+
+        try {
+            const res = await axiosPrivate.post('/appointments/hold', {
+                doctorId: selectedDoctorId,
+                slotStart: slotStartTime
+            });
+            setHoldId(res.data.holdId);
+        } catch (err) {
+            setError(err.response?.data?.message || 'Failed to hold slot. It might have just been taken.');
+            setSelectedSlotId('');
+            queryClient.invalidateQueries(['availableSlots', selectedDoctorId, selectedDate.toISOString()]);
+        }
+    };
+
+    const clearSelection = async () => {
+        if (holdId && selectedSlotId) {
+            const slot = slots.find(s => s.id === selectedSlotId);
+            if (slot) {
+                try {
+                    await axiosPrivate.delete(`/appointments/hold/${holdId}?doctorId=${selectedDoctorId}&slotStart=${slot.startTime}`);
+                } catch (err) {
+                    console.error("Failed to release hold", err);
+                }
+            }
+        }
+        setHoldId(null);
+        setSelectedDoctorId('');
+        setSelectedDate(null);
+        setSelectedSlotId('');
+        setCurrentStep(1);
+    };
+
+    // Release hold on unmount
+    useEffect(() => {
+        return () => {
+            if (holdId && selectedSlotId) {
+                const slot = slots.find(s => s.id === selectedSlotId);
+                if (slot) {
+                    axiosPrivate.delete(`/appointments/hold/${holdId}?doctorId=${selectedDoctorId}&slotStart=${slot.startTime}`).catch(() => {});
+                }
+            }
+        };
+    }, [holdId, selectedDoctorId, selectedSlotId, slots]);
 
     const filteredDoctors = doctors.filter(doc => {
         const fullName = `${doc.firstName} ${doc.lastName}`.toLowerCase();
@@ -186,8 +255,16 @@ export default function BookAppointment() {
                 </div>
             </div>
 
+            <AnimatePresence mode="wait">
             {currentStep === 5 ? (
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center max-w-2xl mx-auto">
+                <motion.div 
+                    key="step5"
+                    variants={pageTransition}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center max-w-2xl mx-auto"
+                >
                     <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                         <Check className="w-10 h-10 text-green-600" />
                     </div>
@@ -201,9 +278,16 @@ export default function BookAppointment() {
                     >
                         Go to Dashboard
                     </button>
-                </div>
+                </motion.div>
             ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                <motion.div 
+                    key="booking"
+                    variants={pageTransition}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start"
+                >
                     
                     {/* LEFT COLUMN */}
                     <div className="flex-1 max-w-7xl mx-auto w-full p-4 sm:p-6 lg:p-8 mt-16 sm:mt-0">
@@ -314,9 +398,8 @@ export default function BookAppointment() {
                                                             <button 
                                                                 onClick={() => {
                                                                     if (!isSelected) {
+                                                                        clearSelection();
                                                                         setSelectedDoctorId(String(doc.userId));
-                                                                        setSelectedDate(null);
-                                                                        setSelectedSlotId('');
                                                                     }
                                                                 }}
                                                                 className={`px-8 py-2.5 rounded-xl text-sm font-semibold transition-all ${isSelected ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
@@ -367,7 +450,7 @@ export default function BookAppointment() {
                                                                         return (
                                                                             <button 
                                                                                 key={slot.id}
-                                                                                onClick={() => setSelectedSlotId(slot.id)}
+                                                                                onClick={() => handleSlotSelection(slot.id, slot.startTime)}
                                                                                 className={`py-2.5 px-2 text-sm rounded-xl border font-bold transition-all
                                                                                     ${isSlotSelected ? 'bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-200' : 'bg-white border-gray-200 text-gray-700 hover:border-indigo-300 hover:text-indigo-600'}`}
                                                                             >
@@ -449,7 +532,7 @@ export default function BookAppointment() {
                                             value={reason}
                                             onChange={e => setReason(e.target.value)}
                                             rows="4"
-                                            className="w-full rounded-xl border border-gray-300 p-4 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none resize-y"
+                                            className="w-full rounded-xl border border-gray-300 p-4 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none resize-y transition-shadow"
                                             placeholder={rescheduleId ? "Reason for visit (optional for rescheduling)..." : "Please describe your symptoms or reason for visit..."}
                                         />
                                     </div>
@@ -467,13 +550,15 @@ export default function BookAppointment() {
                                         >
                                             Back to Doctor & Time
                                         </button>
-                                        <button 
+                                        <Button 
+                                            variant="primary"
                                             onClick={handleConfirm}
-                                            disabled={mutation.isPending || (!rescheduleId && !reason.trim())}
-                                            className="bg-indigo-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-indigo-700 disabled:opacity-50 flex items-center"
+                                            disabled={!rescheduleId && !reason.trim()}
+                                            isLoading={mutation.isPending}
+                                            className="px-8 py-3 text-base"
                                         >
-                                            {mutation.isPending ? 'Confirming...' : 'Review & Confirm'} <ArrowRight className="w-4 h-4 ml-2" />
-                                        </button>
+                                            Review & Confirm <ArrowRight className="w-4 h-4 ml-2" />
+                                        </Button>
                                     </div>
                                 </div>
                             </div>
@@ -487,7 +572,7 @@ export default function BookAppointment() {
                         <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.03)] p-6 relative overflow-hidden">
                             <div className="flex justify-between items-center mb-6">
                                 <h3 className="font-extrabold text-gray-900 text-[15px]">Appointment Summary</h3>
-                                <button onClick={() => { setSelectedDoctorId(''); setSelectedDate(null); setSelectedSlotId(''); setCurrentStep(1); }} className="text-indigo-600 font-semibold text-xs hover:underline">Clear All</button>
+                                <button onClick={clearSelection} className="text-indigo-600 font-semibold text-xs hover:underline">Clear All</button>
                             </div>
                             
                             <div className="space-y-4 text-[13px]">
@@ -550,7 +635,18 @@ export default function BookAppointment() {
                                             return (
                                                 <div key={day.toString()} className="flex justify-center relative">
                                                     <button
-                                                        onClick={() => { setSelectedDate(day); setSelectedSlotId(''); }}
+                                                        onClick={() => { 
+                                                            if (selectedDate && isSameDay(day, selectedDate)) return;
+                                                            if (holdId && selectedSlotId) {
+                                                                const slot = slots.find(s => s.id === selectedSlotId);
+                                                                if (slot) {
+                                                                    axiosPrivate.delete(`/appointments/hold/${holdId}?doctorId=${selectedDoctorId}&slotStart=${slot.startTime}`).catch(() => {});
+                                                                }
+                                                                setHoldId(null);
+                                                            }
+                                                            setSelectedDate(day); 
+                                                            setSelectedSlotId(''); 
+                                                        }}
                                                         disabled={isDisabled}
                                                         className={`w-[26px] h-[26px] flex items-center justify-center rounded-full text-[11px] font-bold transition-colors
                                                             ${isSelectedDay ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200' : 
@@ -569,8 +665,9 @@ export default function BookAppointment() {
                             </div>
                         )}
                     </div>
-                </div>
+                </motion.div>
             )}
+            </AnimatePresence>
         </div>
     );
 }

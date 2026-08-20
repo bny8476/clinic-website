@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import logger from '../../utils/logger';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import useAuthStore, { isTokenValid } from '../../store/authStore';
 import { getPortalConfig, PORTAL_CONFIGS } from '../../config/portalConfig';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
-
+import { Mail, Lock } from 'lucide-react';
+import { listStagger } from '../../components/ui/motion';
 /* ─── Medvice colour tokens ──────────────────────────────────────────────── */
 const BLUE   = '#2B4AFE';
 const BLUE_D = '#1648C0';
@@ -96,8 +96,7 @@ const InputField = ({ icon: Icon, rightSlot, ...props }) => (
     </span>
     <input
       {...props}
-      className="w-full border border-gray-200 bg-gray-50 rounded-xl py-3 pl-10 pr-10 text-[13px] text-gray-800 placeholder-gray-400
-                 focus:border-[#2B4AFE] focus:ring-2 focus:ring-[#2B4AFE]/10 outline-none transition-all"
+      className="input-field pl-10 pr-10 w-full py-3 text-[13px]"
     />
     {rightSlot && (
       <span className="absolute right-3.5 top-1/2 -translate-y-1/2">{rightSlot}</span>
@@ -239,10 +238,10 @@ export default function PortalLoginPage() {
               <p className="text-[12px] text-gray-500 mb-6">Enter your email to receive a reset code.</p>
               <InputField icon={Mail} type="email" required value={email}
                 onChange={e => setEmail(e.target.value)} placeholder="Email Address" />
-              <button type="submit" disabled={isLoading}
-                className="w-full mt-4 py-3 rounded-xl text-[13px] font-semibold text-white transition-all"
+              <Button type="submit" isLoading={isLoading}
+                className="w-full mt-4 py-3 rounded-xl text-[13px] font-semibold text-white transition-all shadow-md"
                 style={{ background: BLUE }}
-              >{isLoading ? 'Sending…' : 'Send Reset Code'}</button>
+              >Send Reset Code</Button>
               <button type="button" onClick={() => setForgotStep(0)}
                 className="w-full mt-3 py-2 text-[12px] font-semibold"
                 style={{ color: BLUE }}
@@ -256,10 +255,10 @@ export default function PortalLoginPage() {
               <p className="text-[12px] text-gray-500 mb-6">Enter the code sent to {email}</p>
               <div className="space-y-3">
                 <input type="text" required value={otp} onChange={e => setOtp(e.target.value)}
-                  className="w-full border border-gray-200 bg-gray-50 rounded-xl py-3 px-4 text-center tracking-widest font-mono text-[13px] focus:border-[#2B4AFE] focus:ring-2 focus:ring-[#2B4AFE]/10 outline-none"
+                  className="input-field w-full py-3 px-4 text-center tracking-widest font-mono text-[13px]"
                   placeholder="123456"/>
                 <InputField icon={Lock} type={showPass ? 'text' : 'password'} required
-                  value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="New Password"
+                  value={newPassword} onChange={e => setNewPassword(e.newPassword)} placeholder="New Password"
                   rightSlot={
                     <button type="button" onClick={() => setShowPass(!showPass)} className="text-gray-400 hover:text-gray-600">
                       {showPass ? <EyeOff size={14}/> : <Eye size={14}/>}
@@ -267,10 +266,10 @@ export default function PortalLoginPage() {
                   }
                 />
               </div>
-              <button type="submit" disabled={isLoading}
-                className="w-full mt-4 py-3 rounded-xl text-[13px] font-semibold text-white transition-all"
+              <Button type="submit" isLoading={isLoading}
+                className="w-full mt-4 py-3 rounded-xl text-[13px] font-semibold text-white transition-all shadow-md"
                 style={{ background: BLUE }}
-              >{isLoading ? 'Resetting…' : 'Reset Password'}</button>
+              >Reset Password</Button>
               <button type="button" onClick={() => { setForgotStep(0); setOtp(''); setNewPassword(''); }}
                 className="w-full mt-3 py-2 text-[12px] font-semibold" style={{ color: BLUE }}
               >Cancel</button>
@@ -282,18 +281,18 @@ export default function PortalLoginPage() {
               <h2 className="text-[22px] font-bold text-gray-900 mb-1">Security Verification</h2>
               <p className="text-[12px] text-gray-500 mb-6">Enter the code sent to {mfaEmail}</p>
               <input type="text" required value={otp} onChange={e => setOtp(e.target.value)}
-                className="w-full border border-gray-200 bg-gray-50 rounded-xl py-3 px-4 text-center tracking-widest font-mono text-lg focus:border-[#2B4AFE] focus:ring-2 focus:ring-[#2B4AFE]/10 outline-none"
+                className="input-field w-full py-3 px-4 text-center tracking-widest font-mono text-lg"
                 placeholder="123456"/>
-              <button type="submit" disabled={isLoading}
-                className="w-full mt-4 py-3 rounded-xl text-[13px] font-semibold text-white transition-all"
+              <Button type="submit" isLoading={isLoading}
+                className="w-full mt-4 py-3 rounded-xl text-[13px] font-semibold text-white transition-all shadow-md"
                 style={{ background: BLUE }}
-              >{isLoading ? 'Verifying…' : 'Verify Code'}</button>
+              >Verify Code</Button>
               <button type="button" onClick={() => window.location.reload()}
                 className="w-full mt-3 py-2 text-[12px] font-semibold" style={{ color: BLUE }}
               >Back to Login</button>
             </form>
 
-          /* ── MAIN LOGIN ── */
+          /* ── DYNAMIC FLOW ── */
           ) : (
             <form onSubmit={handleLogin}>
               <h2 className="text-[22px] font-bold text-gray-900 mb-0.5">
@@ -344,14 +343,10 @@ export default function PortalLoginPage() {
               </div>
 
               {/* Submit */}
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full py-3 rounded-xl text-[13px] font-semibold text-white shadow transition-all hover:brightness-110 active:scale-[0.98]"
+              <Button type="submit" isLoading={isLoading}
+                className="w-full mt-4 py-3 rounded-xl text-[13px] font-semibold text-white transition-all shadow-md"
                 style={{ background: BLUE }}
-              >
-                {isLoading ? 'Signing in…' : 'Sign In'}
-              </button>
+              >Sign In</Button>
 
               {/* OAuth — patient only */}
               {portalSlug === 'patient' && (

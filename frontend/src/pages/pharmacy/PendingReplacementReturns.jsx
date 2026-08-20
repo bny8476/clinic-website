@@ -2,14 +2,10 @@ import React, { useState, useEffect } from 'react';
 import logger from '../../utils/logger';
 import useDebounce from '../../hooks/pharmacy/useDebounce';
 import { useLocation } from 'react-router-dom';
-import { Eye, CheckCircle, XCircle } from 'lucide-react';
-import ModuleFilterBar from '../../components/pharmacy/ui/ModuleFilterBar';
-import DataTable from '../../components/pharmacy/ui/DataTable';
-import Pagination from '../../components/pharmacy/ui/Pagination';
-import AppModal from '../../components/pharmacy/ui/AppModal';
-import Badge from '../../components/pharmacy/ui/Badge';
 import { toast } from 'react-hot-toast';
 import pharmacyService from '../../utils/pharmacy/pharmacyService';
+
+
 
 export default function PendingReplacementReturns() {
   const location = useLocation();
@@ -87,7 +83,7 @@ export default function PendingReplacementReturns() {
             <button 
               title="Accept" 
               onClick={() => { setSelectedReturn(row); setIsModalOpen(true); }}
-              className="p-1.5 text-success hover:bg-green-50 rounded-lg transition-colors"
+              className="p-1.5 text-success hover:bg-blue-50 rounded-lg transition-colors"
             >
               <CheckCircle className="w-4 h-4" />
             </button>
@@ -105,6 +101,7 @@ export default function PendingReplacementReturns() {
   ];
 
   return (
+    
     <div className="space-y-6">
               <div className="flex flex-col gap-1">
         <h2 className="text-2xl font-bold tracking-tight text-gray-900">Replacement Return List</h2>
@@ -142,7 +139,7 @@ export default function PendingReplacementReturns() {
                   logger.error('Failed to accept return', e);
                   toast.error('Failed to accept return');
                 }
-             }} className="flex-1 px-8 py-2.5 bg-success text-white rounded-xl text-sm font-bold shadow-lg shadow-green-200 hover:bg-green-700 transition-all flex items-center justify-center gap-2">
+             }} className="flex-1 px-8 py-2.5 bg-success text-white rounded-xl text-sm font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all flex items-center justify-center gap-2">
                 <CheckCircle className="w-4 h-4"/> Confirm Accept
              </button>
           </div>
@@ -237,5 +234,6 @@ export default function PendingReplacementReturns() {
         </div>
       </AppModal>
     </div>
+    
   );
 }

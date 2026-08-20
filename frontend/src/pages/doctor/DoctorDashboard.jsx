@@ -284,6 +284,7 @@ const DoctorDashboard = () => {
   );
 
   return (
+    
     <div className="doctor-dashboard-root">
       <main className="doctor-dashboard-main">
         {/* BEGIN: QuickActionsBar */}
@@ -622,6 +623,7 @@ const DoctorDashboard = () => {
         </ModulePanel>
       )}
     </div>
+    
   );
 };
 

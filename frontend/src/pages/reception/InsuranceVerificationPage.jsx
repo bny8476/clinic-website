@@ -1,18 +1,14 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import {
-  Shield, ArrowLeft, Plus, CheckCircle2, XCircle, Loader2, ClipboardList
+  Shield, CheckCircle2, XCircle
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
-import Card from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
-import Input from '../../components/ui/Input';
-import Badge from '../../components/ui/Badge';
-import EmptyState from '../../components/ui/EmptyState';
 import { staggerChildren, fadeIn } from '../../components/ui/motion';
+
+
 
 const InsuranceVerificationPage = () => {
   const queryClient = useQueryClient();
@@ -70,6 +66,7 @@ const InsuranceVerificationPage = () => {
   };
 
   return (
+    
     <motion.div
       initial="hidden"
       animate="visible"
@@ -251,6 +248,7 @@ const InsuranceVerificationPage = () => {
         </>
       )}
     </motion.div>
+    
   );
 };
 

@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { Search, ChevronDown, Filter, Plus, Eye, Edit2, Download, MoreVertical, FileText, ArrowUp, Activity, HeartPulse } from 'lucide-react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import useAuthStore from '../../store/authStore';
+
+
 
 const DoctorPrescriptions = () => {
   const navigate = useNavigate();
@@ -46,6 +47,7 @@ const DoctorPrescriptions = () => {
   const tabs = ['All Prescriptions', 'Draft', 'Active', 'Completed', 'Discontinued'];
 
   return (
+    
     <div className="p-6 md:p-8 bg-white min-h-full font-sans">
       <div className="max-w-[1500px] mx-auto">
         
@@ -290,6 +292,7 @@ const DoctorPrescriptions = () => {
 
       </div>
     </div>
+    
   );
 };
 

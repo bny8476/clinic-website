@@ -1,14 +1,10 @@
-import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { motion, AnimatePresence } from 'framer-motion';
 import { axiosPrivate } from '../../api/axios';
-import { Bell, CheckCircle2, ArrowLeft, MailOpen } from 'lucide-react';
+import { CheckCircle2, MailOpen } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
-import Card from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
 import { fadeIn } from '../../components/ui/motion';
-import EmptyState from '../../components/ui/EmptyState';
 
 const NotificationsPage = () => {
   const queryClient = useQueryClient();

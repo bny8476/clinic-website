@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { Calendar, FileText, Activity, Phone, Mail, Droplet, MapPin, User, ChevronRight, AlertTriangle } from 'lucide-react';
 import { format, differenceInYears, parseISO } from 'date-fns';
 
 const Patient360View = ({ patientId, onBack, onNavigateToPrescription }) => {

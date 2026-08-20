@@ -1,8 +1,4 @@
-import React from 'react';
-import { Package, Warehouse, Truck, AlertTriangle, CheckCircle2 } from 'lucide-react';
-import KPICard from '../../ui/KPICard';
-import DataTable from '../../ui/DataTable';
-import Badge from '../../ui/Badge';
+import { Package, Warehouse, AlertTriangle } from 'lucide-react';
 
 export const InventoryHeaderWidget = () => (
   <div className="mb-6">

@@ -1,13 +1,11 @@
-import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { motion, AnimatePresence } from 'framer-motion';
 import { axiosPrivate } from '../../api/axios';
-import { CheckCircle2, ListTodo, Clock, ArrowLeft, Pill, FileText } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { CheckCircle2 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import Card from '../../components/ui/Card';
 import { fadeIn } from '../../components/ui/motion';
-import EmptyState from '../../components/ui/EmptyState';
+
+
 
 const TaskManagement = () => {
   const queryClient = useQueryClient();
@@ -36,6 +34,7 @@ const TaskManagement = () => {
   const completedTasks = records.filter(r => r.status === 'GIVEN' || r.status === 'COMPLETED').sort((a, b) => new Date(b.administeredAt || b.scheduledTime) - new Date(a.administeredAt || a.scheduledTime));
 
   return (
+    
     <motion.div 
       initial="hidden" 
       animate="visible" 
@@ -147,6 +146,7 @@ const TaskManagement = () => {
         </Card>
       </div>
     </motion.div>
+    
   );
 };
 

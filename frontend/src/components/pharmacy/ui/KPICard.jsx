@@ -1,12 +1,10 @@
-import React from 'react';
 import PropTypes from 'prop-types';
-import { ArrowUp, ArrowDown, Minus } from 'lucide-react';
 import { cn } from "../../../utils/pharmacy/cn";
 
 export default function KPICard({ title, value, subtext, icon: Icon, trend, iconColor = 'blue', className }) {
   const colorMap = {
     blue: 'bg-blue-50 text-blue-600',
-    green: 'bg-emerald-50 text-emerald-600',
+    green: 'bg-blue-50 text-blue-600',
     red: 'bg-rose-50 text-rose-600',
     orange: 'bg-orange-50 text-orange-500',
     amber: 'bg-amber-50 text-amber-500',
@@ -34,7 +32,7 @@ export default function KPICard({ title, value, subtext, icon: Icon, trend, icon
         {subtext && (
           <p className={cn(
             "text-[12px] mt-2 font-bold flex items-center gap-1",
-            trend === 'up' ? "text-emerald-600" : trend === 'down' ? "text-rose-600" : "text-slate-500"
+            trend === 'up' ? "text-blue-600" : trend === 'down' ? "text-rose-600" : "text-slate-500"
           )}>
             {trendIcon}
             <span className="text-slate-500 font-medium ml-0.5">{cleanSubtext}</span>

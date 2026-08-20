@@ -1,11 +1,7 @@
-import React, { useState } from 'react';
-import { Search, Star, Shield, X } from 'lucide-react';
-import OTPVerificationModal from '../../components/pharmacy/auth/OTPVerificationModal';
+import { useState } from 'react';
 import { REPORT_CATALOG, CATEGORIES } from './reports/reportCatalog';
-import ReportCard          from './reports/ReportCard';
-import ReportPreviewPanel  from './reports/ReportPreviewPanel';
-import ScheduleDrawer      from './reports/ScheduleDrawer';
-import SchedulesTab        from './reports/SchedulesTab';
+
+
 
 /**
  * Reports & Analytics page — orchestrates catalog browsing, OTP-gated access,
@@ -173,6 +169,7 @@ export default function Reports() {
         if (catReports.length === 0) return null;
         const CatIcon = cat.icon;
         return (
+    
           <div key={cat.id} className="space-y-6 mt-4">
             <div className="flex items-center justify-between pt-2">
               <div className="flex items-center gap-3">
@@ -223,5 +220,6 @@ export default function Reports() {
         />
       )}
     </div>
+    
   );
 }

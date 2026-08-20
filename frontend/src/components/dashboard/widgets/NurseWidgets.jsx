@@ -1,13 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../../api/axios';
 import { Activity, Inbox, UserSearch } from 'lucide-react';
 import toast from 'react-hot-toast';
-import Button from '../../ui/Button';
-import FormField from '../../ui/FormField';
-import Badge from '../../ui/Badge';
-import Skeleton from '../../ui/Skeleton';
-import PatientProfileCard from '../../PatientProfileCard';
 
 // Helper component for the custom empty states in the Nurse Dashboard
 const CustomEmptyState = ({ icon: IconComponent, title, description }) => (

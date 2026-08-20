@@ -1,10 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { Menu, Search, ChevronDown } from 'lucide-react';
-import CommandPalette from '../../ui/CommandPalette';
-import NotificationDropdown from './NotificationDropdown.jsx';
-import MessageDropdown from './MessageDropdown.jsx';
-import ProfileDropdown from './ProfileDropdown.jsx';
-import QuickActionDropdown from './QuickActionDropdown.jsx';
+import { useState, useEffect } from 'react';
 
 export default function TopNav({ toggleSidebar, isSidebarOpen }) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);

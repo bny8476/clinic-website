@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import useDebounce from '../../hooks/pharmacy/useDebounce';
 import { useShallow } from 'zustand/react/shallow';
-import { Search, ChevronDown, ChevronRight, AlertTriangle, ShieldAlert, Package, CheckCircle, Printer, Download, Plus, RotateCcw, Box, Tag, TrendingUp, Target, CalendarX } from 'lucide-react';
-import ModuleFilterBar from '../../components/pharmacy/ui/ModuleFilterBar';
-import Pagination from '../../components/pharmacy/ui/Pagination';
-import Badge from '../../components/pharmacy/ui/Badge';
-import AppModal from '../../components/pharmacy/ui/AppModal';
 import { toast } from 'react-hot-toast';
 import { cn } from '../../utils/pharmacy/cn';
 import { useStockStore } from '../../store/useStockStore';
 import { useQuery } from '@tanstack/react-query';
 import pharmacyService from '../../utils/pharmacy/pharmacyService';
+import { motion } from 'framer-motion';
+import { staggerContainer, fadeIn } from '../../components/ui/motion';
+import Badge from '../../components/ui/Badge';
+
+
 
 export default function MedicineStock() {
   const {
@@ -179,8 +179,13 @@ export default function MedicineStock() {
       </div>
 
       {/* VALUATION KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col gap-3">
+      <motion.div
+        variants={staggerContainer}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4"
+      >
+        <motion.div variants={fadeIn} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col gap-3 hover:shadow-md transition-shadow">
           <div className="flex items-center gap-3">
             <div className="p-2.5 bg-purple-50 rounded-xl text-purple-600 shrink-0">
               <Box className="w-5 h-5" />
@@ -188,9 +193,9 @@ export default function MedicineStock() {
             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider leading-tight">Total Stock Value<br/>(Cost)</p>
           </div>
           <p className="text-2xl font-bold text-slate-900 border-b-2 border-purple-500 pb-2 self-start inline-block">₹{valuation?.totalPurchaseValue?.toLocaleString() || '0.00'}</p>
-        </div>
+        </motion.div>
         
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col gap-3">
+        <motion.div variants={fadeIn} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col gap-3 hover:shadow-md transition-shadow">
           <div className="flex items-center gap-3">
             <div className="p-2.5 bg-blue-50 rounded-xl text-blue-600 shrink-0">
               <Tag className="w-5 h-5" />
@@ -198,19 +203,19 @@ export default function MedicineStock() {
             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider leading-tight">Total Stock Value<br/>(MRP)</p>
           </div>
           <p className="text-2xl font-bold text-slate-900 border-b-2 border-blue-500 pb-2 self-start inline-block">₹{valuation?.totalMrpValue?.toLocaleString() || '0.00'}</p>
-        </div>
+        </motion.div>
 
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col gap-3">
+        <motion.div variants={fadeIn} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col gap-3 hover:shadow-md transition-shadow">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-emerald-50 rounded-xl text-emerald-600 shrink-0">
+            <div className="p-2.5 bg-blue-50 rounded-xl text-blue-600 shrink-0">
               <TrendingUp className="w-5 h-5" />
             </div>
             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider leading-tight">Moving Stock Value</p>
           </div>
-          <p className="text-2xl font-bold text-slate-900 border-b-2 border-emerald-500 pb-2 self-start inline-block">₹{movementData?.movingValue?.toLocaleString() || '0.00'}</p>
-        </div>
+          <p className="text-2xl font-bold text-slate-900 border-b-2 border-blue-500 pb-2 self-start inline-block">₹{movementData?.movingValue?.toLocaleString() || '0.00'}</p>
+        </motion.div>
 
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col gap-3">
+        <motion.div variants={fadeIn} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col gap-3 hover:shadow-md transition-shadow">
           <div className="flex items-center gap-3">
             <div className="p-2.5 bg-slate-100 rounded-xl text-slate-600 shrink-0">
               <Target className="w-5 h-5" />
@@ -218,9 +223,9 @@ export default function MedicineStock() {
             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider leading-tight">Non-Moving Stock<br/>Value</p>
           </div>
           <p className="text-2xl font-bold text-slate-900 border-b-2 border-slate-500 pb-2 self-start inline-block">₹{movementData?.nonMovingValue?.toLocaleString() || '0.00'}</p>
-        </div>
+        </motion.div>
 
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col gap-3">
+        <motion.div variants={fadeIn} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col gap-3 hover:shadow-md transition-shadow">
           <div className="flex items-center gap-3">
             <div className="p-2.5 bg-orange-50 rounded-xl text-orange-500 shrink-0">
               <AlertTriangle className="w-5 h-5" />
@@ -228,9 +233,9 @@ export default function MedicineStock() {
             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider leading-tight">Near Expiry Risk<br/>(&lt; 30D)</p>
           </div>
           <p className="text-2xl font-bold text-slate-900 border-b-2 border-orange-400 pb-2 self-start inline-block">₹{valuation?.nearExpiryValue?.toLocaleString() || '0.00'}</p>
-        </div>
+        </motion.div>
 
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col gap-3">
+        <motion.div variants={fadeIn} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col gap-3 hover:shadow-md transition-shadow">
           <div className="flex items-center gap-3">
             <div className="p-2.5 bg-rose-50 rounded-xl text-rose-500 shrink-0">
               <CalendarX className="w-5 h-5" />
@@ -238,8 +243,8 @@ export default function MedicineStock() {
             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider leading-tight">Expired Value<br/>(Write Off)</p>
           </div>
           <p className="text-2xl font-bold text-slate-900 border-b-2 border-rose-500 pb-2 self-start inline-block">₹{valuation?.expiredValue?.toLocaleString() || '0.00'}</p>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
       <div className="bg-white p-4 rounded-xl border border-slate-200 flex gap-4 items-center shadow-sm">
         <div className="relative flex-1 max-w-md">
@@ -343,20 +348,20 @@ export default function MedicineStock() {
                     </div>
                     <div className="text-sm text-slate-600">{med.drugClass || '-'}</div>
                     <div className="text-center flex flex-col items-center">
-                      <span className={cn("inline-flex px-2.5 py-1 rounded-full text-xs font-semibold", isLowStock ? "bg-red-100 text-red-700" : "bg-emerald-100 text-emerald-700")}>
+                      <Badge variant={isLowStock ? 'danger' : 'info'}>
                         {group.totalQty} {med.unit}
-                      </span>
+                      </Badge>
                       {med.unitsPerPack > 1 && (
                         <span className="text-[10px] text-slate-400 mt-1 font-medium">= {group.totalQty * med.unitsPerPack} units</span>
                       )}
                     </div>
                     <div className="pr-4">
                       <div className="flex justify-between text-[10px] mb-1 font-medium">
-                        <span className={isLowStock ? "text-red-500" : "text-emerald-500"}>Health: {healthPct.toFixed(0)}%</span>
+                        <span className={isLowStock ? "text-red-500" : "text-blue-500"}>Health: {healthPct.toFixed(0)}%</span>
                         <span className="text-slate-300">{isLowStock ? 'Low Stock' : 'Healthy'}</span>
                       </div>
                       <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden flex">
-                        <div className={cn("h-full", isLowStock ? "bg-red-500" : "bg-emerald-500")} style={{ width: `${healthPct}%` }} />
+                        <div className={cn("h-full", isLowStock ? "bg-red-500" : "bg-blue-500")} style={{ width: `${healthPct}%` }} />
                       </div>
                     </div>
                     <div className="text-center text-sm text-slate-600">{reorderLvl} Units</div>
@@ -390,6 +395,7 @@ export default function MedicineStock() {
                           {sortedBatches.map(b => {
                             const exp = getExpiryStatus(b.expiryDate);
                             return (
+    
                               <tr key={b.id} className="hover:bg-white transition-colors">
                                 <td className="py-3 font-mono text-slate-700">{b.batchNumber}</td>
                                 <td className="py-3 text-slate-700 flex items-center gap-2">
@@ -461,7 +467,7 @@ export default function MedicineStock() {
                         <div className="text-xs text-slate-500">{med.drugClass}</div>
                       </td>
                       <td className="px-6 py-4 text-right font-medium">{med.totalUnitsDispensed}</td>
-                      <td className="px-6 py-4 text-right font-medium text-emerald-600">₹{med.totalSalesValue?.toLocaleString()}</td>
+                      <td className="px-6 py-4 text-right font-medium text-blue-600">₹{med.totalSalesValue?.toLocaleString()}</td>
                       <td className="px-6 py-4 text-right font-medium">{med.currentStockLevel}</td>
                       <td className="px-6 py-4 text-center">
                         <Badge variant={med.reorderRecommendation ? 'danger' : 'success'}>
@@ -690,5 +696,6 @@ export default function MedicineStock() {
       </AppModal>
 
     </div>
+    
   );
 }

@@ -1,7 +1,7 @@
 package com.healthcare.clinic.nursing.service;
 
 import com.healthcare.clinic.nursing.dto.MonitoredPatientDTO;
-import com.healthcare.clinic.nursing.entity.Bed;
+import com.healthcare.clinic.inpatient.entity.Bed;
 import com.healthcare.clinic.nursing.entity.BedAssignment;
 import com.healthcare.clinic.nursing.repository.BedAssignmentRepository;
 import com.healthcare.clinic.nursing.repository.BedRepository;
@@ -22,7 +22,7 @@ public class PatientMonitoringService {
 
     @Transactional(readOnly = true)
     public List<MonitoredPatientDTO> getMonitoredPatientsByWard(Long wardId) {
-        List<Bed> beds = bedRepository.findByWardIdAndIsActiveTrue(wardId);
+        List<Bed> beds = bedRepository.findByRoomWardId(wardId);
         List<Long> bedIds = beds.stream().map(Bed::getId).toList();
         Map<Long, String> bedNumberMap = beds.stream().collect(Collectors.toMap(Bed::getId, Bed::getBedNumber));
 

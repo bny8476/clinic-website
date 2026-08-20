@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import useDebounce from '../../hooks/pharmacy/useDebounce';
 import { useLocation } from 'react-router-dom';
-import { Eye, CheckCircle, XCircle, Search, FileCheck, FileText } from 'lucide-react';
-import DataTable from '../../components/pharmacy/ui/DataTable';
-import Pagination from '../../components/pharmacy/ui/Pagination';
-import AppModal from '../../components/pharmacy/ui/AppModal';
-import Badge from '../../components/pharmacy/ui/Badge';
 import { toast } from 'react-hot-toast';
 import pharmacyService from '../../utils/pharmacy/pharmacyService';
+
+
 
 export default function ReturnWorklists() {
   const location = useLocation();
@@ -98,7 +95,7 @@ export default function ReturnWorklists() {
             <button 
               title="Approve" 
               onClick={() => { setSelectedItem(row); setActionType('Approve'); setIsModalOpen(true); }}
-              className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg"
+              className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg"
             >
               <CheckCircle className="w-4 h-4" />
             </button>
@@ -118,6 +115,7 @@ export default function ReturnWorklists() {
   if (loading) return <div className="p-8 text-center text-slate-500 font-bold italic">Loading Return Worklist...</div>;
 
   return (
+    
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <div className="w-12 h-12 rounded-2xl bg-purple-50 flex items-center justify-center shrink-0">
@@ -187,7 +185,7 @@ export default function ReturnWorklists() {
              <button onClick={() => setIsModalOpen(false)} className="flex-1 px-6 py-2.5 border border-gray-200 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all">Cancel</button>
              <button 
                onClick={handleAction}
-               className={`flex-1 px-6 py-2.5 text-white rounded-xl text-sm font-bold shadow-lg ${actionType === 'Approve' ? 'bg-green-600 shadow-green-200 hover:bg-green-700' : 'bg-red-600 shadow-red-200 hover:bg-red-700'}`}
+               className={`flex-1 px-6 py-2.5 text-white rounded-xl text-sm font-bold shadow-lg ${actionType === 'Approve' ? 'bg-blue-600 shadow-blue-200 hover:bg-blue-700' : 'bg-red-600 shadow-red-200 hover:bg-red-700'}`}
              >
                 Confirm {actionType}
              </button>
@@ -252,5 +250,6 @@ export default function ReturnWorklists() {
         )}
       </AppModal>
     </div>
+    
   );
 }

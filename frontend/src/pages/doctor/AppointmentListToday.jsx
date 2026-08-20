@@ -1,15 +1,12 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { axiosPrivate } from '../../api/axios';
 import { toast } from 'react-hot-toast';
 import useAuthStore from '../../store/authStore';
-import {
-  Calendar as CalendarIcon, CheckCircle2, Clock, XCircle, Users,
-  AlertCircle, ChevronRight, ChevronLeft, Loader2,
-  Filter, Search, LayoutGrid, Eye, MoreVertical, Stethoscope,
-  ArrowUpRight, ArrowDownRight, CalendarDays, FileText
-} from 'lucide-react';
+import { motion } from 'framer-motion';
+
+
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 const formatTime = (iso) => {
@@ -40,9 +37,9 @@ const TYPE_META = {
 };
 
 const StatusBadge = ({ status }) => {
-  const meta = STATUS_META[status] || { label: status, bg: 'bg-slate-100 text-slate-600', dot: 'bg-slate-500' };
+  const meta = STATUS_META[status] || { label: status, bg: 'bg-slate-100 text-slate-600 border-slate-200', dot: 'bg-slate-500' };
   return (
-    <span className={`px-2.5 py-1 rounded-full text-[11px] font-semibold tracking-wide ${meta.bg}`}>
+    <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wide border shadow-sm ${meta.bg} ${meta.bg.replace('bg-', 'border-').split(' ')[0]}`}>
       {meta.label}
     </span>
   );
@@ -307,23 +304,38 @@ const DoctorAppointments = () => {
                       <th className="py-4 px-6 text-xs font-bold text-slate-500 text-center">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-50">
+                  <motion.tbody 
+                    className="divide-y divide-slate-50"
+                    initial="hidden"
+                    animate="visible"
+                    variants={{
+                      hidden: { opacity: 0 },
+                      visible: { opacity: 1, transition: { staggerChildren: 0.05 } }
+                    }}
+                  >
                     {filteredAppointments.map((a) => {
                       const statusInfo = STATUS_META[a.status] || { label: a.status, dot: 'bg-slate-400' };
                       const type = a.appointmentType || 'Consultation';
                       const typeMeta = TYPE_META[type] || { bg: 'bg-purple-50 text-purple-600' };
                       
                       return (
-                        <tr key={a.id} className="hover:bg-slate-50/50 transition-colors">
+                        <motion.tr 
+                          key={a.id} 
+                          variants={{
+                            hidden: { opacity: 0, y: 10 },
+                            visible: { opacity: 1, y: 0 }
+                          }}
+                          className="hover:bg-slate-50/50 transition-colors group"
+                        >
                           <td className="py-4 px-6">
                             <div className="flex items-center gap-3">
-                              <div className={`w-2 h-2 rounded-full ${statusInfo.dot}`}></div>
+                              <div className={`w-2 h-2 rounded-full ${statusInfo.dot} shadow-sm`}></div>
                               <span className="text-sm font-bold text-slate-900">{formatTime(a.startTime)}</span>
                             </div>
                           </td>
                           <td className="py-4 px-6">
                             <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200">
+                              <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200 shadow-sm">
                                 {a.patientProfilePictureUrl ? (
                                   <img loading="lazy" src={a.patientProfilePictureUrl} alt="Patient" className="w-full h-full object-cover" />
                                 ) : (
@@ -331,7 +343,7 @@ const DoctorAppointments = () => {
                                 )}
                               </div>
                               <div>
-                                <h4 className="text-sm font-bold text-slate-900">
+                                <h4 className="text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
                                   {a.patientFirstName} {a.patientLastName}
                                 </h4>
                                 <p className="text-[11px] text-slate-500 font-medium">#{a.patientId ? `PID${a.patientId.toString().substring(0,6)}` : 'N/A'}</p>
@@ -343,7 +355,7 @@ const DoctorAppointments = () => {
                             <p className="text-[11px] text-slate-500 font-medium">{a.patientGender || '—'}</p>
                           </td>
                           <td className="py-4 px-6">
-                            <span className={`px-2.5 py-1 rounded-md text-[11px] font-bold ${typeMeta.bg}`}>
+                            <span className={`px-2.5 py-1 rounded-md text-[11px] font-bold border shadow-sm ${typeMeta.bg} ${typeMeta.bg.replace('bg-', 'border-').split(' ')[0]}`}>
                               {type}
                             </span>
                           </td>
@@ -360,7 +372,7 @@ const DoctorAppointments = () => {
                               <button
                                 onClick={() => navigate(`/doctor/patients/${a.patientId}`)}
                                 title="View Patient"
-                                className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors border border-indigo-100"
+                                className="p-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 hover:shadow-sm rounded-lg transition-all border border-indigo-100"
                               >
                                 <Eye size={16} />
                               </button>
@@ -369,7 +381,7 @@ const DoctorAppointments = () => {
                                   onClick={() => startConsultationMutation.mutate(a)}
                                   disabled={startConsultationMutation.isPending}
                                   title="Start Consultation"
-                                  className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors border border-emerald-100 disabled:opacity-50"
+                                  className="p-2 text-white bg-emerald-600 hover:bg-emerald-700 hover:shadow-md rounded-lg transition-all disabled:opacity-50"
                                 >
                                   {startConsultationMutation.isPending
                                     ? <Loader2 size={16} className="animate-spin" />
@@ -378,10 +390,10 @@ const DoctorAppointments = () => {
                               )}
                             </div>
                           </td>
-                        </tr>
+                        </motion.tr>
                       );
                     })}
-                  </tbody>
+                  </motion.tbody>
                 </table>
               </div>
             )}

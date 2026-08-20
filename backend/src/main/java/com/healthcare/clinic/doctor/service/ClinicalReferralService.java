@@ -1,6 +1,6 @@
 package com.healthcare.clinic.doctor.service;
 
-import com.healthcare.clinic.doctor.entity.ClinicalReferral;
+import com.healthcare.clinic.emr.entity.ClinicalReferral;
 import com.healthcare.clinic.doctor.repository.ClinicalReferralRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

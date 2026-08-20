@@ -1,8 +1,5 @@
-import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import CdsAlertBanner from '../../components/doctor/CdsAlertBanner';
-import DataTable from '../../components/pharmacy/ui/DataTable';
 
 export default function ClinicalDecisionSupport() {
   const queryClient = useQueryClient();

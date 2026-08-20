@@ -9,6 +9,7 @@ import com.healthcare.clinic.nursing.service.NursingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,7 +18,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/nursing")
 @RequiredArgsConstructor
-@org.springframework.security.access.prepost.PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_SUPER_ADMIN','ROLE_NURSE')")
+@PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_SUPER_ADMIN','ROLE_NURSE')")
 public class NursingDashboardController {
 
     private final NursePatientAssignmentRepository assignmentRepository;

@@ -5,9 +5,11 @@ import com.healthcare.clinic.telemedicine.service.VideoProviderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/telemedicine")
+@PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_PATIENT') or hasAuthority('ROLE_SUPER_ADMIN')")
 @RequiredArgsConstructor
 public class TelemedicineController {
 

@@ -1,12 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../../api/axios';
-import { ShieldCheck, CheckCircle, AlertCircle, Shield } from 'lucide-react';
-import KPICard from '../../ui/KPICard';
-import DataTable from '../../ui/DataTable';
-import Badge from '../../ui/Badge';
-import Modal from '../../ui/Modal';
-import Button from '../../ui/Button';
+import { ShieldCheck, CheckCircle, AlertCircle } from 'lucide-react';
 
 export const InsuranceHeaderWidget = () => (
   <div className="mb-6">

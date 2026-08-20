@@ -1,5 +1,11 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import useAuthStore from '../../store/authStore';
+import { motion } from 'framer-motion';
+import { staggerContainer, fadeIn } from '../../components/ui/motion';
+import toast from 'react-hot-toast';
+import Badge from '../../components/ui/Badge';
+
+
 
 const Attendance = () => {
   const { user } = useAuthStore();
@@ -9,30 +15,42 @@ const Attendance = () => {
   ]);
 
   const handleClockInOut = () => {
-    // Simulated API call for clocking in/out
     if (clockedIn) {
-      alert("Clocked out successfully!");
+      toast.success('Clocked out successfully!');
       setClockedIn(false);
     } else {
-      alert("Clocked in successfully!");
+      toast.success('Clocked in successfully!');
       setClockedIn(true);
     }
   };
 
   return (
+    
     <div className="p-8 max-w-4xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
+      <motion.div
+        variants={fadeIn}
+        initial="hidden"
+        animate="show"
+        className="flex justify-between items-center mb-6"
+      >
         <h2 className="text-2xl font-bold text-slate-800">HR Attendance &amp; Time Tracking</h2>
         
-        <button 
+        <motion.button 
           onClick={handleClockInOut}
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
           className={`px-6 py-2 rounded-full font-bold text-white shadow-md transition-colors ${clockedIn ? 'bg-orange-500 hover:bg-orange-600' : 'bg-emerald-500 hover:bg-emerald-600'}`}
         >
           {clockedIn ? 'Clock Out' : 'Clock In'}
-        </button>
-      </div>
+        </motion.button>
+      </motion.div>
       
-      <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+      <motion.div
+        variants={fadeIn}
+        initial="hidden"
+        animate="show"
+        className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"
+      >
         <table className="w-full text-left text-sm text-slate-600">
           <thead className="bg-slate-50 text-slate-700 font-medium border-b border-slate-200">
             <tr>
@@ -42,23 +60,27 @@ const Attendance = () => {
               <th className="px-6 py-3">Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <motion.tbody
+            variants={staggerContainer}
+            initial="hidden"
+            animate="show"
+            className="divide-y divide-slate-100"
+          >
             {logs.map(log => (
-              <tr key={log.id} className="hover:bg-slate-50/50">
+              <motion.tr key={log.id} variants={fadeIn} className="hover:bg-slate-50/50 transition-colors">
                 <td className="px-6 py-4">{log.date}</td>
                 <td className="px-6 py-4 text-emerald-600 font-medium">{log.in}</td>
                 <td className="px-6 py-4 text-orange-600 font-medium">{log.out || '--'}</td>
                 <td className="px-6 py-4">
-                  <span className="bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full text-xs font-semibold">
-                    {log.status}
-                  </span>
+                  <Badge variant="success">{log.status}</Badge>
                 </td>
-              </tr>
+              </motion.tr>
             ))}
-          </tbody>
+          </motion.tbody>
         </table>
-      </div>
+      </motion.div>
     </div>
+    
   );
 };
 

@@ -1,14 +1,7 @@
-import React, { useState } from 'react';
-import { IndianRupee, RotateCcw, Stethoscope, AlertTriangle, Eye, Printer } from 'lucide-react';
-import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  Legend
-} from 'recharts';
-import KPICard from '../../ui/KPICard';
-import DataTable from '../../ui/DataTable';
-import Badge from '../../ui/Badge';
-import AppModal from '../../pharmacy/ui/AppModal';
-import PharmacyInvoice from '../../pharmacy/pharmacy/PharmacyInvoice';
+import { useState } from 'react';
+import { IndianRupee, RotateCcw, Stethoscope, AlertTriangle } from 'lucide-react';
+
+
 
 export const PharmacyKPIWidget = ({ stats, currencySymbol }) => {
   const fmt = (val) => val != null ? Number(val).toLocaleString('en-IN') : '0';

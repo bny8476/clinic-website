@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface WardReplacementRequestRepository extends JpaRepository<WardReplacementRequest, Long> {
-    List<WardReplacementRequest> findByStatusOrderByRequestDateDesc(String status);
-    List<WardReplacementRequest> findAllByOrderByRequestDateDesc();
+    List<WardReplacementRequest> findByStatusOrderByCreatedAtDesc(String status);
+    List<WardReplacementRequest> findAllByOrderByCreatedAtDesc();
 }

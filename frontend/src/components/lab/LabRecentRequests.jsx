@@ -1,13 +1,10 @@
-import React, { useState } from 'react';
-import { FileText, ArrowRight, CheckCircle, Activity, Stethoscope, FlaskConical } from 'lucide-react';
+import { useState } from 'react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import toast from 'react-hot-toast';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import Modal from '../ui/Modal';
-import Button from '../ui/Button';
 
 const resultSchema = z.object({
   resultValue: z.string().min(1, 'Result value is required'),

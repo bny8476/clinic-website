@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { Calendar as CalendarIcon, Clock, Users, Activity, Plus, FileText, CheckCircle2, X } from 'lucide-react';
 import { format, addDays, isSameDay, startOfDay } from 'date-fns';
 import toast from 'react-hot-toast';
+
+
 
 const STATUS_COLORS = {
   SCHEDULED: 'bg-blue-100 text-blue-700 border-blue-200',
@@ -202,6 +203,7 @@ const OtSchedulingCalendar = () => {
               .sort((a, b) => new Date(a.scheduledStartTime) - new Date(b.scheduledStartTime));
 
             return (
+    
               <div key={ot.id} className="flex-1 min-w-[350px] bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col overflow-hidden">
                 <div className="bg-slate-50 p-4 border-b border-slate-200 flex justify-between items-center">
                   <h3 className="font-bold text-slate-800">{ot.otName}</h3>
@@ -477,6 +479,7 @@ const OtSchedulingCalendar = () => {
       )}
 
     </div>
+    
   );
 };
 

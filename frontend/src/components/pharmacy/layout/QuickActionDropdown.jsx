@@ -1,5 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Zap, ChevronDown, ShoppingCart, Package, FileText, Truck } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
 
 export default function QuickActionDropdown() {
   const [isOpen, setIsOpen] = useState(false);
@@ -43,7 +42,7 @@ export default function QuickActionDropdown() {
             <span className="p-1 rounded bg-blue-50 text-blue-600"><FileText size={13} /></span> Purchase Order
           </button>
           <button onClick={() => { setIsOpen(false); window.location.pathname = '/pharmacy/suppliers'; }} className="w-full text-left px-3 py-2 hover:bg-slate-50 flex items-center gap-2.5 border-t border-slate-100 mt-1 pt-2">
-            <span className="p-1 rounded bg-emerald-50 text-emerald-600"><Truck size={13} /></span> Manage Suppliers
+            <span className="p-1 rounded bg-blue-50 text-blue-600"><Truck size={13} /></span> Manage Suppliers
           </button>
         </div>
       )}

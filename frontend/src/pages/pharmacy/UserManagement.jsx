@@ -1,21 +1,14 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { useShallow } from 'zustand/react/shallow';
-import { Plus, Users, Search, Shield, User, Phone, CheckCircle2, XCircle, Clock, Edit2, Mail, Building2, Calendar, Power, KeyRound, ScrollText } from 'lucide-react';
-import ModuleFilterBar from '../../components/pharmacy/ui/ModuleFilterBar';
-import DataTable from '../../components/pharmacy/ui/DataTable';
-import Badge from '../../components/pharmacy/ui/Badge';
+import { useState, useMemo } from 'react';
 import { toast } from 'react-hot-toast';
-import { useUserStore } from '../../store/useUserStore';
 import api from '../../utils/pharmacy/api'; // Kept for handleResetPassword only
-import UserFormModal from '../../components/pharmacy/ui/UserFormModal';
-import RoleManagementPanel from './RoleManagementPanel';
 import { getRoleColor, ROLE_LABELS } from '../../config/pharmacy/roles.config';
-import AppModal from '../../components/pharmacy/ui/AppModal';
 import { formatDistanceToNow, format } from 'date-fns';
 import useDebounce from '../../hooks/pharmacy/useDebounce';
 
 import { usePageData } from '../../hooks/pharmacy/usePageData';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+
+
 
 export default function UserManagement() {
   const queryClient = useQueryClient();
@@ -213,7 +206,7 @@ export default function UserManagement() {
           const ts = formatTimestamp(row.lastLogin);
           return ts ? (
             <div className="flex flex-col">
-              <span className="text-xs text-green-600 font-semibold">{ts.relative}</span>
+              <span className="text-xs text-blue-600 font-semibold">{ts.relative}</span>
               <span className="text-[10px] text-slate-400">{ts.full}</span>
             </div>
           ) : <span className="text-xs text-slate-400">Never</span>;
@@ -236,7 +229,7 @@ export default function UserManagement() {
         render: (row) => {
             const status = row.status || 'ACTIVE';
             return (
-              <div className={`flex items-center gap-1 ${status === 'ACTIVE' ? 'text-green-600' : status === 'SUSPENDED' ? 'text-red-600' : 'text-slate-400'}`}>
+              <div className={`flex items-center gap-1 ${status === 'ACTIVE' ? 'text-blue-600' : status === 'SUSPENDED' ? 'text-red-600' : 'text-slate-400'}`}>
                   {status === 'ACTIVE' ? <CheckCircle2 className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
                   <span className="text-xs font-bold capitalize">{status.toLowerCase()}</span>
               </div>
@@ -256,7 +249,7 @@ export default function UserManagement() {
                 </button>
                 <button 
                   onClick={(e) => handleToggleStatus(row, e)}
-                  className={`p-1.5 rounded-lg transition-colors ${row.status === 'ACTIVE' ? 'text-red-600 bg-red-50 hover:bg-red-100' : 'text-green-600 bg-green-50 hover:bg-green-100'}`}
+                  className={`p-1.5 rounded-lg transition-colors ${row.status === 'ACTIVE' ? 'text-red-600 bg-red-50 hover:bg-red-100' : 'text-blue-600 bg-blue-50 hover:bg-blue-100'}`}
                   title={row.status === 'ACTIVE' ? 'Suspend User' : 'Activate User'}
                 >
                   <Power className="w-4 h-4" />
@@ -435,6 +428,7 @@ export default function UserManagement() {
                         const roleName = typeof role === 'string' ? role : role.name;
                         const colorClass = getRoleColor(roleName);
                         return (
+    
                           <span key={roleName || idx} className={`text-xs px-2.5 py-1 rounded-lg font-bold border ${colorClass}`}>
                             {ROLE_LABELS[roleName] || roleName}
                           </span>
@@ -445,8 +439,8 @@ export default function UserManagement() {
 
                   <div className="space-y-3">
                     <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Login Activity</h4>
-                    <div className="bg-green-50 border border-green-100 rounded-xl p-3">
-                      <p className="text-[10px] font-bold text-green-600 uppercase tracking-widest mb-1">Last Login</p>
+                    <div className="bg-blue-50 border border-blue-100 rounded-xl p-3">
+                      <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-1">Last Login</p>
                       {formatTimestamp(selectedUser.lastLogin) ? (
                         <>
                           <p className="text-sm font-bold text-slate-800">{formatTimestamp(selectedUser.lastLogin).relative}</p>
@@ -593,5 +587,6 @@ export default function UserManagement() {
         </div>
       </AppModal>
     </div>
+    
   );
 }

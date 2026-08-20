@@ -1,13 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { 
-  Scan, ZoomIn, ZoomOut, RotateCw, Contrast, Maximize, 
-  Settings, Play, Pause, Sun, Moon, LayoutGrid, FileText, 
-  Ruler, MoreHorizontal, ArrowLeft, Download, Layers 
-} from 'lucide-react';
+
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
+
+
 
 // No mock slices allowed in production
 const MOCK_SLICES = [];
@@ -75,6 +73,7 @@ const DicomViewer = () => {
   const currentImage = null; // No image data in production until integrated
 
   return (
+    
     <div className="flex flex-col h-[calc(100vh-64px)] bg-[#030712] text-slate-300 font-sans -m-6">
       
       {/* ── Top App Bar ── */}
@@ -224,6 +223,7 @@ const DicomViewer = () => {
 
       </div>
     </div>
+    
   );
 };
 

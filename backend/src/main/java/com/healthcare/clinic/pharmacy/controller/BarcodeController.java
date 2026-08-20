@@ -5,6 +5,7 @@ import com.healthcare.clinic.common.dto.ApiResponse;
 import com.healthcare.clinic.pharmacy.service.BarcodeScanService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.Map;
 

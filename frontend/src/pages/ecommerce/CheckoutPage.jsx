@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { CreditCard, MapPin, Truck, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
+
+
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
@@ -51,6 +52,7 @@ export default function CheckoutPage() {
   }
 
   return (
+    
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in font-sans">
       <div className="flex items-center gap-2 text-[var(--color-navy-900)] mb-8">
         <ShieldCheck className="w-8 h-8 text-[var(--color-primary)]" />
@@ -172,5 +174,6 @@ export default function CheckoutPage() {
         </div>
       </div>
     </div>
+    
   );
 }

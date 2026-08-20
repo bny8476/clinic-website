@@ -7,6 +7,7 @@ import com.healthcare.clinic.pharmacy.service.AnalyticsService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.time.LocalDateTime;
 import java.time.Instant;

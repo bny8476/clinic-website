@@ -1,7 +1,7 @@
 package com.healthcare.clinic.patient.service;
 
 import com.healthcare.clinic.identity.entity.User;
-import com.healthcare.clinic.homevisit.entity.HomeVisitRequest;
+import com.healthcare.clinic.patient.entity.HomeVisitRequest;
 import com.healthcare.clinic.patient.entity.PatientProfile;
 import com.healthcare.clinic.homevisit.repository.HomeVisitRequestRepository;
 import com.healthcare.clinic.patient.repository.PatientProfileRepository;

@@ -1,6 +1,6 @@
 package com.healthcare.clinic.nursing.repository;
 
-import com.healthcare.clinic.nursing.entity.Bed;
+import com.healthcare.clinic.inpatient.entity.Bed;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -9,6 +9,6 @@ import java.util.Optional;
 
 @Repository("nursingBedRepository")
 public interface BedRepository extends JpaRepository<Bed, Long> {
-    List<Bed> findByWardIdAndIsActiveTrue(Long wardId);
-    Optional<Bed> findByWardIdAndBedNumber(Long wardId, String bedNumber);
+    List<Bed> findByRoomWardId(Long wardId);
+    Optional<Bed> findByRoomWardIdAndBedNumber(Long wardId, String bedNumber);
 }

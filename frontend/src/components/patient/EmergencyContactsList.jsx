@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { Phone, Trash2, Plus, Star } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const EmergencyContactsList = () => {
   const queryClient = useQueryClient();
   const [isAdding, setIsAdding] = useState(false);
+  const [contactToDelete, setContactToDelete] = useState(null);
   const [formData, setFormData] = useState({
     name: '', relationship: '', primaryPhone: '', alternatePhone: '', isPrimary: false, address: ''
   });
@@ -26,6 +27,10 @@ const EmergencyContactsList = () => {
       queryClient.invalidateQueries(['emergency-contacts']);
       setIsAdding(false);
       setFormData({ name: '', relationship: '', primaryPhone: '', alternatePhone: '', isPrimary: false, address: '' });
+      toast.success('Emergency contact added.');
+    },
+    onError: () => {
+      toast.error('Failed to add emergency contact.');
     }
   });
 
@@ -33,7 +38,15 @@ const EmergencyContactsList = () => {
     mutationFn: async (id) => {
       await axiosPrivate.delete(`/api/v1/patient/settings/emergency-contacts/${id}`);
     },
-    onSuccess: () => queryClient.invalidateQueries(['emergency-contacts'])
+    onSuccess: () => {
+      queryClient.invalidateQueries(['emergency-contacts']);
+      setContactToDelete(null);
+      toast.success('Contact removed successfully.');
+    },
+    onError: () => {
+      toast.error('Failed to remove contact.');
+      setContactToDelete(null);
+    }
   });
 
   const handleSubmit = (e) => {
@@ -103,29 +116,44 @@ const EmergencyContactsList = () => {
           </div>
         ) : (
           contacts?.map(contact => (
-            <div key={contact.id} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col relative group">
+            <div key={contact.id} className="bg-[var(--color-surface)] p-4 rounded-xl border border-[var(--color-border)] shadow-sm flex flex-col relative group transition-all hover:shadow-md">
               <div className="flex justify-between items-start mb-2">
                 <div className="flex items-center gap-2">
-                  <h4 className="font-semibold text-slate-800">{contact.name}</h4>
-                  {contact.isPrimary && <Star size={14} className="text-yellow-500 fill-yellow-500" title="Primary Contact" />}
+                  <h4 className="font-semibold text-[var(--color-text)]">{contact.name}</h4>
+                  {contact.isPrimary && <Star size={14} className="text-[var(--color-gold)] fill-[var(--color-gold)]" title="Primary Contact" />}
                 </div>
                 <button 
                   type="button"
-                  onClick={() => { if(window.confirm('Remove contact?')) deleteMutation.mutate(contact.id) }} 
-                  className="text-slate-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                  onClick={() => setContactToDelete(contact)} 
+                  className="text-[var(--color-text-muted)] hover:text-[var(--color-danger)] transition-colors opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-[var(--color-danger-bg)]"
+                  title="Remove contact"
                 >
                   <Trash2 size={16} />
                 </button>
               </div>
-              <p className="text-sm text-slate-500 mb-3">{contact.relationship}</p>
-              <div className="flex items-center gap-2 text-sm font-medium text-slate-700 bg-slate-50 p-2 rounded w-fit">
-                <Phone size={14} className="text-blue-500" />
+              <p className="text-sm text-[var(--color-text-muted)] mb-3">{contact.relationship}</p>
+              <div className="flex items-center gap-2 text-sm font-medium text-[var(--color-text)] bg-[var(--color-surface-alt)] p-2 rounded w-fit">
+                <Phone size={14} className="text-[var(--color-primary)]" />
                 {contact.primaryPhone}
               </div>
             </div>
           ))
         )}
       </div>
+
+      <ConfirmDialog
+        isOpen={!!contactToDelete}
+        onClose={() => setContactToDelete(null)}
+        onConfirm={() => {
+          if (contactToDelete) {
+            deleteMutation.mutate(contactToDelete.id);
+          }
+        }}
+        title="Remove Emergency Contact"
+        description={`Are you sure you want to remove ${contactToDelete?.name}? This action cannot be undone.`}
+        confirmText="Remove Contact"
+        isLoading={deleteMutation.isPending}
+      />
     </div>
   );
 };

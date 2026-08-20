@@ -1,19 +1,21 @@
 package com.healthcare.clinic.patient.controller;
 
 import com.healthcare.clinic.identity.entity.User;
-import com.healthcare.clinic.ai.entity.AiChatMessage;
-import com.healthcare.clinic.ai.entity.AiChatSession;
+import com.healthcare.clinic.patient.entity.AiChatMessage;
+import com.healthcare.clinic.patient.entity.AiChatSession;
 import com.healthcare.clinic.patient.service.AiAssistantService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/patient/assistant")
+@PreAuthorize("hasAuthority('ROLE_PATIENT') or hasAuthority('ROLE_SUPER_ADMIN')")
 @RequiredArgsConstructor
 public class AiChatController {
 

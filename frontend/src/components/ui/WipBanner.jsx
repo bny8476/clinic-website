@@ -1,5 +1,3 @@
-import React from 'react';
-import { AlertCircle } from 'lucide-react';
 
 const WipBanner = ({ feature = 'This feature', note = 'Backend endpoint status to be determined' }) => {
   return (

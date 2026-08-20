@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import toast from 'react-hot-toast';
 import { axiosPrivate } from '../../api/axios';
 import { useQuery } from '@tanstack/react-query';
+
+
 
 export default function MarketingConsent() {
   const [patientId, setPatientId] = useState('');
@@ -42,7 +45,7 @@ export default function MarketingConsent() {
       });
       refetch();
     } catch (e) {
-      alert(e?.response?.data?.message || 'Failed to capture consent');
+      toast.error(e?.response?.data?.message || 'Failed to capture consent');
     } finally {
       setCapturing(false);
     }
@@ -56,7 +59,7 @@ export default function MarketingConsent() {
       });
       refetch();
     } catch (e) {
-      alert(e?.response?.data?.message || 'Failed to withdraw consent');
+      toast.error(e?.response?.data?.message || 'Failed to withdraw consent');
     } finally {
       setWithdrawing(false);
     }
@@ -94,6 +97,7 @@ export default function MarketingConsent() {
                 const consent = latestByChannel[ch];
                 const isOptedIn = consent?.consentState === 'OPTED_IN';
                 return (
+    
                   <div key={ch} className={`rounded-lg border p-3 text-center ${isOptedIn ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-gray-50'}`}>
                     <p className="text-xs font-semibold text-gray-600 mb-1">{ch}</p>
                     <p className={`text-sm font-bold ${isOptedIn ? 'text-green-700' : 'text-gray-400'}`}>
@@ -171,5 +175,6 @@ export default function MarketingConsent() {
         </>
       )}
     </div>
+    
   );
 }

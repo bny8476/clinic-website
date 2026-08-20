@@ -1,13 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { axiosPrivate } from '../../api/axios';
-import { LifeBuoy, ArrowLeft, MessageSquare, CheckCircle2, Clock } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { MessageSquare } from 'lucide-react';
 import toast from 'react-hot-toast';
-import Card from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
 import { fadeIn } from '../../components/ui/motion';
-import EmptyState from '../../components/ui/EmptyState';
+
+
 
 const SupportTicketing = () => {
   const [filter, setFilter] = useState('ALL');
@@ -42,6 +40,7 @@ const SupportTicketing = () => {
   };
 
   return (
+    
     <motion.div 
       initial="hidden" 
       animate="visible" 
@@ -50,7 +49,7 @@ const SupportTicketing = () => {
     >
       <div className="flex items-center justify-between gap-4">
         <div>
-          <Link to="/inventory/dashboard" className="inline-flex items-center text-xs font-semibold text-[var(--color-navy-600)] hover:underline mb-2 gap-1">
+          <Link to="/backoffice" className="inline-flex items-center text-xs font-semibold text-[var(--color-navy-600)] hover:underline mb-2 gap-1">
             <ArrowLeft className="w-3.5 h-3.5" /> Back
           </Link>
           <h1 className="text-2xl sm:text-3xl font-bold font-display text-[var(--color-navy-900)] m-0 flex items-center gap-2">
@@ -149,6 +148,7 @@ const SupportTicketing = () => {
         </Card.Body>
       </Card>
     </motion.div>
+    
   );
 };
 

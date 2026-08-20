@@ -1,8 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { Bot, Check, X, FileText, ShieldAlert } from 'lucide-react';
-import Button from '../../components/ui/Button';
 
 const DoctorAiWorkspace = ({ encounterId }) => {
     const [summary, setSummary] = useState(null);

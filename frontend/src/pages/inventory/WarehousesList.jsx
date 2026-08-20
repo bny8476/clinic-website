@@ -1,10 +1,11 @@
 import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { Warehouse, Plus, MapPin, Package, X } from 'lucide-react';
-import { Dialog, Transition } from '@headlessui/react';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import { useState } from 'react';
+
+
 
 const WarehousesList = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -49,9 +50,10 @@ const WarehousesList = () => {
   ];
 
   return (
+    
     <>
     <div className="p-4 sm:p-6" style={{ maxWidth: '1000px', margin: '0 auto' }}>
-      <Toaster position="top-right" />
+
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <div>
           <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--color-text)', margin: 0 }}>Warehouse Management</h1>
@@ -156,6 +158,7 @@ const WarehousesList = () => {
         </Dialog>
       </Transition>
     </>
+    
   );
 };
 

@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { Receipt, Search, FileText, Download, Plus, ArrowLeft } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { Plus, ArrowLeft, Receipt, Search, FileText, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { motion, AnimatePresence } from 'framer-motion';
+import { fadeIn } from '../../components/ui/motion';
+import { useDebounce } from 'use-debounce';
+import { Link } from 'react-router-dom';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import FormField from '../../components/ui/FormField';
-import { fadeIn } from '../../components/ui/motion';
-import { useDebounce } from 'use-debounce';
+
+
 
 const ReceptionBilling = () => {
   const queryClient = useQueryClient();
@@ -89,6 +91,7 @@ const ReceptionBilling = () => {
   };
 
   return (
+    
     <motion.div 
       initial="hidden" 
       animate="visible" 
@@ -110,7 +113,9 @@ const ReceptionBilling = () => {
         </div>
       </div>
 
+      <AnimatePresence mode="wait">
       {!selectedPatient ? (
+        <motion.div key="search" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
         <Card>
           <Card.Header>
             <h2 className="text-lg font-bold text-[var(--color-navy-900)]">Select Patient</h2>
@@ -123,7 +128,7 @@ const ReceptionBilling = () => {
                 placeholder="Search patient to bill..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-alt)] focus:outline-none focus:ring-2 focus:ring-[var(--color-navy-500)]"
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-alt)] focus:outline-none focus:ring-2 focus:ring-[var(--color-navy-500)] transition-shadow"
                 autoFocus
               />
             </div>
@@ -133,7 +138,7 @@ const ReceptionBilling = () => {
               {searchResults.map(p => (
                 <div 
                   key={p.id} 
-                  className="p-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-alt)] cursor-pointer"
+                  className="p-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] hover:bg-[var(--color-surface-alt)] cursor-pointer hover:shadow-md transition-all"
                   onClick={() => { setSelectedPatient(p); setSearchQuery(''); }}
                 >
                   <p className="font-bold text-[var(--color-navy-900)]">{p.name}</p>
@@ -143,8 +148,9 @@ const ReceptionBilling = () => {
             </div>
           </Card.Body>
         </Card>
+        </motion.div>
       ) : (
-        <div className="space-y-6">
+        <motion.div key="billing" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-6">
           <div className="flex items-center justify-between p-4 bg-[var(--color-navy-50)] border border-[var(--color-navy-200)] rounded-xl">
             <div>
               <p className="text-xs font-bold text-[var(--color-navy-600)] uppercase tracking-wider mb-1">Selected Patient</p>
@@ -218,7 +224,7 @@ const ReceptionBilling = () => {
                         value={newInvoice.description} 
                         onChange={e => setNewInvoice({ ...newInvoice, description: e.target.value })} 
                         placeholder="e.g. OP Consultation" 
-                        className="input-field" 
+                        className="input-field focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-shadow" 
                         required
                       />
                     </FormField>
@@ -228,7 +234,7 @@ const ReceptionBilling = () => {
                         type="date"
                         value={newInvoice.dueDate} 
                         onChange={e => setNewInvoice({ ...newInvoice, dueDate: e.target.value })} 
-                        className="input-field" 
+                        className="input-field focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-shadow" 
                       />
                     </FormField>
                   </div>
@@ -247,7 +253,7 @@ const ReceptionBilling = () => {
                               newItems[idx].description = e.target.value;
                               setNewInvoice({ ...newInvoice, items: newItems });
                             }}
-                            className="input-field py-2 text-sm"
+                            className="input-field py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-shadow"
                             required
                           />
                         </div>
@@ -261,7 +267,7 @@ const ReceptionBilling = () => {
                               newItems[idx].quantity = Number(e.target.value);
                               setNewInvoice({ ...newInvoice, items: newItems });
                             }}
-                            className="input-field py-2 text-sm"
+                            className="input-field py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-shadow"
                             required min="1"
                           />
                         </div>
@@ -275,7 +281,7 @@ const ReceptionBilling = () => {
                               newItems[idx].unitPrice = Number(e.target.value);
                               setNewInvoice({ ...newInvoice, items: newItems });
                             }}
-                            className="input-field py-2 text-sm"
+                            className="input-field py-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-shadow"
                             required min="0" step="0.01"
                           />
                         </div>
@@ -300,9 +306,11 @@ const ReceptionBilling = () => {
               </Card.Body>
             </Card>
           )}
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
     </motion.div>
+    
   );
 };
 

@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import logger from '../../../utils/logger';
 import { useOutletContext } from 'react-router-dom';
 import api from '../../../utils/pharmacy/api';
-import { TrendingUp, TrendingDown, IndianRupee, Package, Activity, AlertTriangle, ArrowUpRight, ArrowDownRight, Download } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { TrendingUp, IndianRupee, Package, Activity, AlertTriangle } from 'lucide-react';
 import { exportToCSV } from '../../../utils/pharmacy/reportExport';
+
+
 
 export default function AnalyticsDashboard() {
   const { dateRange } = useOutletContext() || {};
@@ -59,7 +60,7 @@ export default function AnalyticsDashboard() {
           <h3 className="text-2xl font-semibold text-gray-800">
             {prefix}{currentValue?.toLocaleString()}{suffix}
           </h3>
-          <span className={`flex items-center text-xs font-medium ${positive ? 'text-green-600' : 'text-red-600'}`}>
+          <span className={`flex items-center text-xs font-medium ${positive ? 'text-blue-600' : 'text-red-600'}`}>
             {positive ? <ArrowUpRight className="w-3 h-3 mr-0.5" /> : <ArrowDownRight className="w-3 h-3 mr-0.5" />}
             {percentageChange?.toFixed(1)}%
           </span>
@@ -69,6 +70,7 @@ export default function AnalyticsDashboard() {
   };
 
   return (
+    
     <div className="space-y-6">
       {/* KPI Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -116,7 +118,7 @@ export default function AnalyticsDashboard() {
         <div className="bg-white p-5 rounded-lg border border-gray-200 shadow-sm flex flex-col">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-base font-semibold text-gray-800 flex items-center">
-              <TrendingUp className="w-5 h-5 text-green-500 mr-2" />
+              <TrendingUp className="w-5 h-5 text-blue-500 mr-2" />
               Fast-Moving Medicines
             </h3>
             <button 
@@ -145,7 +147,7 @@ export default function AnalyticsDashboard() {
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-semibold text-gray-800">{med.totalUnitsDispensed} units</p>
-                  <p className="text-xs text-green-600 font-medium">₹{med.totalSalesValue?.toLocaleString()}</p>
+                  <p className="text-xs text-blue-600 font-medium">₹{med.totalSalesValue?.toLocaleString()}</p>
                 </div>
               </div>
             ))}
@@ -215,5 +217,6 @@ export default function AnalyticsDashboard() {
         </div>
       </div>
     </div>
+    
   );
 }

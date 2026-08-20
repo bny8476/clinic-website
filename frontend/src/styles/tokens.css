@@ -1,16 +1,16 @@
 :root {
   /* Color */
-  --color-navy-900: #0F2A4A;   /* headings, logo mark, sidebar active state */
-  --color-navy-800: #16324F;   /* primary button bg */
-  --color-navy-600: #1E4A7A;   /* links, secondary accents, focus ring */
-  --color-bg-app: #EEF1FB;     /* app/page background */
+  --color-navy-900: #010101;   /* headings, logo mark, sidebar active state */
+  --color-navy-800: #1557FF;   /* primary button bg */
+  --color-navy-600: #165DFF;   /* links, secondary accents, focus ring */
+  --color-bg-app: #F5F8FF;     /* app/page background */
   --color-surface: #FFFFFF;    /* cards, panels, table rows */
-  --color-surface-alt: #F7F8FC;/* zebra rows, muted sections */
-  --color-input-bg: #F1F1FA;
-  --color-input-border: #DADCEB;
-  --color-border: #E4E6F1;     /* card/table borders, dividers */
-  --color-text: #1A1F36;
-  --color-text-muted: #6B7280;
+  --color-surface-alt: #F8FAFC;/* zebra rows, muted sections */
+  --color-input-bg: #FFFFFF;
+  --color-input-border: #E2E8F0;
+  --color-border: #E2E8F0;     /* card/table borders, dividers */
+  --color-text: #010101;
+  --color-text-muted: #64748B;
 
   /* Gold Accent — luxury/premium highlight */
   --color-gold: #C5A059;
@@ -31,6 +31,11 @@
   --glass-bg: rgba(255, 255, 255, 0.75);
   --glass-border: rgba(255, 255, 255, 0.4);
   --glass-blur: 12px;
+
+  /* Transitions */
+  --ease-out-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
 
   /* Radii */
   --radius-sm: 8px;

@@ -168,7 +168,7 @@ export const REPORT_CATALOG = [
 export const CATEGORIES = [
   { id: 'all',        label: 'All Reports',              icon: LayoutGrid, color: 'text-slate-600' },
   { id: 'sales',      label: 'Sales',                    icon: TrendingUp, color: 'text-blue-600' },
-  { id: 'stock',      label: 'Stock & Inventory',        icon: Package,    color: 'text-emerald-600' },
+  { id: 'stock',      label: 'Stock & Inventory',        icon: Package,    color: 'text-blue-600' },
   { id: 'purchase',   label: 'Purchase & Supplier',      icon: ShoppingCart, color: 'text-cyan-600' },
   { id: 'gst',        label: 'Financial & GST',          icon: DollarSign, color: 'text-violet-600' },
   { id: 'compliance', label: 'Compliance & Regulatory',  icon: Shield,     color: 'text-purple-600' },

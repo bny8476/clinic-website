@@ -6,12 +6,14 @@ import com.healthcare.clinic.support.service.CommunicationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.Map;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/webhooks")
+@PreAuthorize("hasAuthority('ROLE_SUPPORT') or hasAuthority('ROLE_CUSTOMER_SUPPORT') or hasAuthority('ROLE_SUPER_ADMIN')")
 @RequiredArgsConstructor
 public class OmnichannelWebhookController {
     

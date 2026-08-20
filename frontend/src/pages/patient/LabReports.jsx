@@ -1,16 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { motion } from 'framer-motion';
-import { FlaskConical, Download, CheckCircle2, Clock, AlertCircle, Calendar } from 'lucide-react';
+import { FlaskConical, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { staggerChildren, fadeIn } from '../../components/ui/motion';
-import Card from '../../components/ui/Card';
-import Badge from '../../components/ui/Badge';
-import EmptyState from '../../components/ui/EmptyState';
-import Skeleton from '../../components/ui/Skeleton';
-import Modal from '../../components/ui/Modal';
-import Button from '../../components/ui/Button';
+import { pageTransition, staggerChildren, listStagger, fadeUp } from '../../components/ui/motion';
 
 const statusConfig = {
   RELEASED:        { variant: 'success', label: 'Released',         icon: CheckCircle2 },
@@ -74,12 +68,13 @@ const LabReports = () => {
   return (
     <motion.div
       className="p-4 sm:p-6 max-w-4xl mx-auto"
+      variants={pageTransition}
       initial="hidden"
       animate="visible"
-      variants={staggerChildren}
+      exit="exit"
     >
       {/* Header */}
-      <motion.div variants={fadeIn} className="flex items-center gap-3 mb-6">
+      <motion.div variants={fadeUp} className="flex items-center gap-3 mb-6">
         <div className="p-2.5 rounded-sm bg-[var(--color-info-bg)] text-[var(--color-info)]">
           <FlaskConical className="w-5 h-5" />
         </div>
@@ -122,21 +117,21 @@ const LabReports = () => {
 
       {/* Report List */}
       {!isLoading && !isError && reports.length > 0 && (
-        <motion.div variants={staggerChildren} className="space-y-3">
-          {reports.map((r) => {
-            const cfg = statusConfig[r.status] || statusConfig.REQUESTED;
-            const testName = r.testCatalog?.testName ?? 'Lab Test';
-            const doctorName = r.doctor
-              ? `Dr. ${r.doctor.user?.firstName ?? ''} ${r.doctor.user?.lastName ?? ''}`.trim()
+        <motion.div variants={staggerChildren} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {reports.map((report) => {
+            const cfg = statusConfig[report.status] || statusConfig.REQUESTED;
+            const testName = report.testCatalog?.testName ?? 'Lab Test';
+            const doctorName = report.doctor
+              ? `Dr. ${report.doctor.user?.firstName ?? ''} ${report.doctor.user?.lastName ?? ''}`.trim()
               : 'Unknown Doctor';
-            const requestedDate = r.requestedAt
-              ? new Date(r.requestedAt).toLocaleDateString('en-IN', {
+            const requestedDate = report.requestedAt
+              ? new Date(report.requestedAt).toLocaleDateString('en-IN', {
                   day: 'numeric', month: 'short', year: 'numeric'
                 })
               : '—';
 
             return (
-              <motion.div key={r.id} variants={fadeIn}>
+              <motion.div variants={listStagger} layout key={report.id}>
                 <Card hoverable>
                   <Card.Body className="flex items-center justify-between gap-4 flex-wrap">
                     <div className="flex items-start gap-3 min-w-0">
@@ -157,31 +152,31 @@ const LabReports = () => {
                       <Badge variant={cfg.variant} icon={cfg.icon}>
                         {cfg.label}
                       </Badge>
-                      {r.status === 'RELEASED' && (
+                      {report.status === 'RELEASED' && (
                         <button
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold
                             bg-[var(--color-navy-800)] text-white rounded-sm hover:bg-[var(--color-navy-900)]
                             transition-colors focus-visible:outline-none"
-                          onClick={() => handleDownloadPdf(r.id)}
+                          onClick={() => handleDownloadPdf(report.id)}
                         >
                           <Download className="w-3.5 h-3.5" />
                           Download PDF
                         </button>
                       )}
-                      {r.status === 'REQUESTED' && (
+                      {report.status === 'REQUESTED' && (
                         <button
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold
                             bg-indigo-600 text-white rounded-sm hover:bg-indigo-700
                             transition-colors focus-visible:outline-none"
-                          onClick={() => openBookModal(r.id)}
+                          onClick={() => openBookModal(report.id)}
                         >
                           <Calendar className="w-3.5 h-3.5" />
                           Schedule
                         </button>
                       )}
-                      {r.status === 'SCHEDULED' && (
+                      {report.status === 'SCHEDULED' && (
                         <div className="text-xs text-indigo-700 font-medium bg-indigo-50 px-2 py-1 rounded">
-                          Scheduled: {new Date(r.scheduledAt).toLocaleString()}
+                          Scheduled: {new Date(report.scheduledAt).toLocaleString()}
                         </div>
                       )}
                     </div>

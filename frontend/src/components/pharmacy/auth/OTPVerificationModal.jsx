@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { Shield, Key, RefreshCcw, Check, X, Mail, ShieldCheck } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import pharmacyService from '../../../utils/pharmacy/pharmacyService';
 

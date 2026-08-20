@@ -1,15 +1,6 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { 
-  Phone, Droplet, MapPin, CalendarDays, ClipboardList, 
+import { Droplet, CalendarDays, ClipboardList, 
   CheckCircle2, Clock, XCircle, Pill, Heart
 } from 'lucide-react';
-import Card from '../../ui/Card';
-import Button from '../../ui/Button';
-import KPICard from '../../ui/KPICard';
-import Badge from '../../ui/Badge';
-import EmptyState from '../../ui/EmptyState';
-import Skeleton from '../../ui/Skeleton';
 
 export const PatientHeaderWidget = ({ patientName, today }) => (
   <div className="mb-6">

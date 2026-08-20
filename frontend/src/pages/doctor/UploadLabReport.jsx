@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { ArrowLeft, UploadCloud, Info, FileText, X, ShieldCheck, Calendar, ChevronDown, CheckCircle2 } from 'lucide-react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 

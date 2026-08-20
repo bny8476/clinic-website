@@ -1,8 +1,8 @@
 package com.healthcare.clinic.nursing.controller;
 
-import com.healthcare.clinic.nursing.entity.Bed;
+import com.healthcare.clinic.inpatient.entity.Bed;
 import com.healthcare.clinic.nursing.entity.BedAssignment;
-import com.healthcare.clinic.nursing.entity.Ward;
+import com.healthcare.clinic.inpatient.entity.Ward;
 import com.healthcare.clinic.nursing.service.BedManagementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

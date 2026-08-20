@@ -1,13 +1,16 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { Plus, Edit2, Trash2, Search, CheckCircle, XCircle } from 'lucide-react';
+import ConfirmDialog from '../../components/ui/ConfirmDialog';
+
+
 
 const LabCatalogManagement = () => {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTest, setEditingTest] = useState(null);
+  const [confirmDeactivate, setConfirmDeactivate] = useState({ isOpen: false, id: null });
 
   const { data: catalog = [], isLoading, isError } = useQuery({
     queryKey: ['lab-catalog'],
@@ -37,7 +40,8 @@ const LabCatalogManagement = () => {
   );
 
   return (
-    <div className="space-y-6">
+    <>
+    <div className="p-6 max-w-7xl mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Lab Test Catalog</h1>
@@ -120,14 +124,10 @@ const LabCatalogManagement = () => {
                           <Edit2 size={16} />
                         </button>
                         {test.isActive && (
-                          <button 
-                            onClick={() => {
-                              if(window.confirm('Are you sure you want to deactivate this test?')) {
-                                toggleStatusMutation.mutate({ id: test.id, isActive: true });
-                              }
-                            }}
-                            className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition"
-                            title="Deactivate"
+                            <button 
+                              onClick={() => setConfirmDeactivate({ isOpen: true, id: test.id })}
+                              className="text-red-600 hover:bg-red-50 p-2 rounded-lg transition"
+                              title="Deactivate Test"
                           >
                             <Trash2 size={16} />
                           </button>
@@ -148,7 +148,28 @@ const LabCatalogManagement = () => {
           onClose={() => setIsModalOpen(false)} 
         />
       )}
+
+      <ConfirmDialog 
+        isOpen={confirmDeactivate.isOpen}
+        onClose={() => setConfirmDeactivate({ isOpen: false, id: null })}
+        onConfirm={() => {
+          if (confirmDeactivate.id) {
+            // Find the test to get its current active status
+            const test = catalog.find(t => t.id === confirmDeactivate.id);
+            if (test) {
+              toggleStatusMutation.mutate({ id: test.id, isActive: test.isActive });
+            }
+            setConfirmDeactivate({ isOpen: false, id: null });
+          }
+        }}
+        title="Deactivate Test"
+        description="Are you sure you want to deactivate this test? It will no longer be available for new orders."
+        confirmText="Deactivate"
+        isDestructive={true}
+        isLoading={toggleStatusMutation.isPending}
+      />
     </div>
+    </>
   );
 };
 
@@ -201,6 +222,7 @@ const CatalogFormModal = ({ test, onClose }) => {
   };
 
   return (
+    
     <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl w-full max-w-2xl shadow-xl flex flex-col max-h-[90vh]">
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
@@ -283,6 +305,7 @@ const CatalogFormModal = ({ test, onClose }) => {
         </div>
       </div>
     </div>
+    
   );
 };
 

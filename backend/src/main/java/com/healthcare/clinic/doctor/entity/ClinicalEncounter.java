@@ -28,8 +28,9 @@ public class ClinicalEncounter {
     @Column(name = "branch_id", nullable = false)
     private Long branchId;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String status = "Draft"; // Draft, In Progress, Pending Orders, Finalized, Signed, Amended, Cancelled
+    private EncounterStatus status = EncounterStatus.DRAFT;
 
     @Column(name = "chief_complaint", columnDefinition = "TEXT")
     private String chiefComplaint;

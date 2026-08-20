@@ -1,14 +1,11 @@
-import React from 'react';
-import { Stethoscope, Users, Activity, FileText, ArrowRight } from 'lucide-react';
+import { Stethoscope, Users, Activity, ArrowRight } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import KPICard from '../../components/pharmacy/ui/KPICard';
-import { DashboardShell, DashboardGrid } from '../../components/dashboard/shared/DashboardShell';
-import Card from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
 import { useSystem } from '../../context/pharmacy/SystemContext';
 import { useConfig } from '../../context/pharmacy/ConfigContext';
 import api from '../../utils/pharmacy/api';
+
+
 
 const DashboardSkeleton = () => (
   <div className="space-y-8 animate-pulse">
@@ -45,6 +42,7 @@ export default function MedicalDashboard() {
   
 
   return (
+    
     <DashboardShell quickActions={quickActions}>
       <div className="flex flex-col gap-1 mb-6">
         <h2 className="text-2xl sm:text-3xl font-bold font-display text-[var(--color-navy-900)] m-0">
@@ -73,8 +71,8 @@ export default function MedicalDashboard() {
       <DashboardGrid
         center={
           <Card className="h-full flex flex-col items-center justify-center text-center p-12">
-            <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4 bg-emerald-100/50">
-              <FileText className="w-8 h-8 text-emerald-600" />
+            <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4 bg-blue-100/50">
+              <FileText className="w-8 h-8 text-blue-600" />
             </div>
             <h3 className="text-xl font-bold font-display text-[var(--color-navy-900)] mb-2">Clinical Workspace</h3>
             <p className="text-[var(--color-text-muted)] max-w-md mb-6">
@@ -87,5 +85,6 @@ export default function MedicalDashboard() {
         }
       />
     </DashboardShell>
+    
   );
 }

@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Search, ChevronDown, Plus, Eye, Edit2, MoreVertical, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+
 const PatientList = ({ onPatientClick }) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -87,6 +88,7 @@ const PatientList = ({ onPatientClick }) => {
   });
 
   return (
+    
     <div className="p-6 bg-white min-h-full font-sans">
       <div className="max-w-[1400px] mx-auto">
         
@@ -359,6 +361,7 @@ const PatientList = ({ onPatientClick }) => {
         </div>
       )}
     </div>
+    
   );
 };
 

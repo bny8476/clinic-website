@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { UserPlus, Save, ArrowLeft } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { Save, UserPlus, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { motion } from 'framer-motion';
+import { fadeIn, staggerContainer } from '../../components/ui/motion';
+import { Link } from 'react-router-dom';
 import Card from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
 import FormField from '../../components/ui/FormField';
-import { fadeIn } from '../../components/ui/motion';
+import Button from '../../components/ui/Button';
+
+
 
 const PatientRegistration = () => {
   const [patient, setPatient] = useState({
@@ -37,6 +39,7 @@ const PatientRegistration = () => {
   };
 
   return (
+    
     <motion.div 
       initial="hidden" 
       animate="visible" 
@@ -61,7 +64,8 @@ const PatientRegistration = () => {
       <Card>
         <Card.Body>
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <motion.div variants={fadeIn}>
               <FormField label="First Name" required id="firstName">
                 <input 
                   id="firstName"
@@ -69,11 +73,13 @@ const PatientRegistration = () => {
                   value={patient.firstName} 
                   onChange={e => setPatient({ ...patient, firstName: e.target.value })} 
                   placeholder="e.g. Ramesh" 
-                  className="input-field" 
+                  className="input-field focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-shadow" 
                   required
                 />
               </FormField>
+              </motion.div>
 
+              <motion.div variants={fadeIn}>
               <FormField label="Last Name" id="lastName">
                 <input 
                   id="lastName"
@@ -81,10 +87,12 @@ const PatientRegistration = () => {
                   value={patient.lastName} 
                   onChange={e => setPatient({ ...patient, lastName: e.target.value })} 
                   placeholder="e.g. Kumar" 
-                  className="input-field" 
+                  className="input-field focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-shadow" 
                 />
               </FormField>
+              </motion.div>
 
+              <motion.div variants={fadeIn}>
               <FormField label="Phone Number" required id="phone">
                 <input 
                   id="phone"
@@ -92,11 +100,13 @@ const PatientRegistration = () => {
                   value={patient.phone} 
                   onChange={e => setPatient({ ...patient, phone: e.target.value })} 
                   placeholder="+91 98765 43210" 
-                  className="input-field" 
+                  className="input-field focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-shadow" 
                   required
                 />
               </FormField>
+              </motion.div>
 
+              <motion.div variants={fadeIn}>
               <FormField label="Age" id="age">
                 <input 
                   id="age"
@@ -104,10 +114,12 @@ const PatientRegistration = () => {
                   value={patient.age} 
                   onChange={e => setPatient({ ...patient, age: e.target.value })} 
                   placeholder="e.g. 35"
-                  className="input-field" 
+                  className="input-field focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-shadow" 
                 />
               </FormField>
+              </motion.div>
 
+              <motion.div variants={fadeIn}>
               <FormField label="Email Address" id="email">
                 <input 
                   id="email"
@@ -115,10 +127,12 @@ const PatientRegistration = () => {
                   value={patient.email} 
                   onChange={e => setPatient({ ...patient, email: e.target.value })} 
                   placeholder="e.g. email@example.com"
-                  className="input-field" 
+                  className="input-field focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-shadow" 
                 />
               </FormField>
+              </motion.div>
 
+              <motion.div variants={fadeIn}>
               <FormField label="Address" id="address">
                 <input 
                   id="address"
@@ -126,36 +140,42 @@ const PatientRegistration = () => {
                   value={patient.address} 
                   onChange={e => setPatient({ ...patient, address: e.target.value })} 
                   placeholder="e.g. 123 Main St"
-                  className="input-field" 
+                  className="input-field focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-shadow" 
                 />
               </FormField>
+              </motion.div>
 
+              <motion.div variants={fadeIn}>
               <FormField label="Gender" id="gender">
                 <select 
                   id="gender"
                   value={patient.gender} 
                   onChange={e => setPatient({ ...patient, gender: e.target.value })} 
-                  className="input-field"
+                  className="input-field focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-shadow"
                 >
                   <option>Male</option>
                   <option>Female</option>
                   <option>Other</option>
                 </select>
               </FormField>
+              </motion.div>
 
+              <motion.div variants={fadeIn}>
               <FormField label="Blood Group" id="bloodGroup">
                 <select 
                   id="bloodGroup"
                   value={patient.bloodGroup} 
                   onChange={e => setPatient({ ...patient, bloodGroup: e.target.value })} 
-                  className="input-field"
+                  className="input-field focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-shadow"
                 >
                   {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map(bg => (
                     <option key={bg}>{bg}</option>
                   ))}
                 </select>
               </FormField>
+              </motion.div>
 
+              <motion.div variants={fadeIn}>
               <FormField label="Emergency Contact" id="emergencyContact">
                 <input 
                   id="emergencyContact"
@@ -163,10 +183,12 @@ const PatientRegistration = () => {
                   value={patient.emergencyContact} 
                   onChange={e => setPatient({ ...patient, emergencyContact: e.target.value })} 
                   placeholder="Emergency Phone Number"
-                  className="input-field" 
+                  className="input-field focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-shadow" 
                 />
               </FormField>
+              </motion.div>
 
+              <motion.div variants={fadeIn}>
               <FormField label="Reason for Visit" required id="reasonForVisit">
                 <input 
                   id="reasonForVisit"
@@ -174,11 +196,12 @@ const PatientRegistration = () => {
                   value={patient.reasonForVisit} 
                   onChange={e => setPatient({ ...patient, reasonForVisit: e.target.value })} 
                   placeholder="e.g. Fever and Cough"
-                  className="input-field" 
+                  className="input-field focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-shadow" 
                   required
                 />
               </FormField>
-            </div>
+              </motion.div>
+            </motion.div>
 
             <div className="pt-4 border-t border-[var(--color-border)] flex items-center justify-end gap-3">
               <Link to="/reception">
@@ -197,6 +220,7 @@ const PatientRegistration = () => {
         </Card.Body>
       </Card>
     </motion.div>
+    
   );
 };
 

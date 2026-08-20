@@ -1,7 +1,4 @@
-import React from 'react';
 import PropTypes from 'prop-types';
-import { Search, Calendar, Filter, X } from 'lucide-react';
-import ReactDatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import { cn } from "../../../utils/pharmacy/cn";
 
@@ -87,7 +84,7 @@ export default function ModuleFilterBar({
               action.variant === 'primary' 
                 ? "bg-[#2563EB] text-white hover:bg-blue-700 shadow-blue-200/50" 
                 : action.variant === 'success'
-                ? "bg-green-600 text-white hover:bg-green-700 shadow-green-200/50"
+                ? "bg-blue-600 text-white hover:bg-blue-700 shadow-blue-200/50"
                 : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 shadow-gray-100"
             )}
           >

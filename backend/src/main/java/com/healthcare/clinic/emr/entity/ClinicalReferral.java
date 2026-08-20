@@ -20,6 +20,9 @@ public class ClinicalReferral {
     @Column(name = "patient_id", nullable = false)
     private Long patientId;
 
+    @Column(name = "encounter_id")
+    private Long encounterId;
+
     @Column(name = "referring_doctor_id", nullable = false)
     private Long referringDoctorId;
 

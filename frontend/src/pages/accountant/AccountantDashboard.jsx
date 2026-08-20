@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { ConfigDrivenDashboard } from '../../components/dashboard/ConfigDrivenDashboard';
 import { dashboardConfig } from '../../config/dashboardConfig';
+
+
 
 const AccountantDashboard = () => {
   const [statusFilter, setStatusFilter] = useState('ALL');
@@ -30,12 +31,14 @@ const AccountantDashboard = () => {
   };
 
   return (
+    
     <ConfigDrivenDashboard 
       config={dashboardConfig.ROLE_ACCOUNTANT}
       data={data}
       activeTab={statusFilter}
       onTabChange={setStatusFilter}
     />
+    
   );
 };
 

@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Edit2, Trash2, Search, X } from 'lucide-react';
 import toast from 'react-hot-toast';
-import Modal from '../../components/ui/Modal';
-import FileUpload from '../../components/ui/FileUpload';
+
+
 
 export default function ManageMedicines() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingMedicine, setEditingMedicine] = useState(null);
+  const [medicineToDelete, setMedicineToDelete] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -65,8 +65,12 @@ export default function ManageMedicines() {
     onSuccess: () => {
       toast.success('Medicine deleted successfully');
       queryClient.invalidateQueries(['doctorMedicines']);
+      setMedicineToDelete(null);
     },
-    onError: (err) => toast.error(err.message)
+    onError: (err) => {
+      toast.error(err.message);
+      setMedicineToDelete(null);
+    }
   });
 
   const openModal = (med = null) => {
@@ -100,6 +104,7 @@ export default function ManageMedicines() {
   };
 
   return (
+    
     <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8">
       <div className="flex justify-between items-center mb-6">
         <div>
@@ -146,16 +151,12 @@ export default function ManageMedicines() {
                       </span>
                     </td>
                     <td className="p-4 flex items-center justify-end gap-2">
-                      <button onClick={() => openModal(med)} className="p-1.5 text-gray-400 hover:text-indigo-600 transition">
+                      <button onClick={() => openModal(med)} className="p-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition rounded hover:bg-[var(--color-surface-alt)]">
                         <Edit2 size={16} />
                       </button>
                       <button 
-                        onClick={() => {
-                          if(window.confirm('Are you sure you want to delete this medicine?')) {
-                            deleteMutation.mutate(med.id);
-                          }
-                        }} 
-                        className="p-1.5 text-gray-400 hover:text-red-600 transition"
+                        onClick={() => setMedicineToDelete(med)} 
+                        className="p-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-danger)] transition rounded hover:bg-[var(--color-danger-bg)]"
                       >
                         <Trash2 size={16} />
                       </button>
@@ -169,44 +170,61 @@ export default function ManageMedicines() {
       </div>
 
       <Modal isOpen={isModalOpen} onClose={closeModal} title={editingMedicine ? "Edit Medicine" : "Add Medicine"}>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-            <input required type="text" className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+            <label className="block text-sm font-medium text-[var(--color-text)] mb-1">Name</label>
+            <input required type="text" className="w-full border-[var(--color-border)] rounded-lg shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description (Composition)</label>
-            <input type="text" className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} />
+            <label className="block text-sm font-medium text-[var(--color-text)] mb-1">Description (Composition)</label>
+            <input type="text" className="w-full border-[var(--color-border)] rounded-lg shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Package Details (Unit)</label>
-            <input type="text" placeholder="e.g. Strip of 10 tablets" className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500" value={formData.unit} onChange={e => setFormData({...formData, unit: e.target.value})} />
+            <label className="block text-sm font-medium text-[var(--color-text)] mb-1">Package Details (Unit)</label>
+            <input type="text" placeholder="e.g. Strip of 10 tablets" className="w-full border-[var(--color-border)] rounded-lg shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]" value={formData.unit} onChange={e => setFormData({...formData, unit: e.target.value})} />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Price (₹)</label>
-              <input required type="number" step="0.01" className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} />
+              <label className="block text-sm font-medium text-[var(--color-text)] mb-1">Price (₹)</label>
+              <input required type="number" step="0.01" className="w-full border-[var(--color-border)] rounded-lg shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Stock Quantity</label>
-              <input required type="number" className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500" value={formData.stockQuantity} onChange={e => setFormData({...formData, stockQuantity: e.target.value})} />
+              <label className="block text-sm font-medium text-[var(--color-text)] mb-1">Stock Quantity</label>
+              <input required type="number" className="w-full border-[var(--color-border)] rounded-lg shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]" value={formData.stockQuantity} onChange={e => setFormData({...formData, stockQuantity: e.target.value})} />
             </div>
           </div>
           <div className="flex items-center mt-2">
-            <input type="checkbox" id="isActive" checked={formData.isActive} onChange={e => setFormData({...formData, isActive: e.target.checked})} className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" />
-            <label htmlFor="isActive" className="ml-2 block text-sm text-gray-900">
+            <input type="checkbox" id="isActive" checked={formData.isActive} onChange={e => setFormData({...formData, isActive: e.target.checked})} className="h-4 w-4 text-[var(--color-primary)] focus:ring-[var(--color-primary)] border-[var(--color-border)] rounded" />
+            <label htmlFor="isActive" className="ml-2 block text-sm text-[var(--color-text)]">
               Active (Visible to patients)
             </label>
           </div>
           
           <div className="pt-4 flex justify-end gap-3">
-            <button type="button" onClick={closeModal} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium">Cancel</button>
-            <button type="submit" disabled={saveMutation.isPending} className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium disabled:bg-indigo-400">
-              {saveMutation.isPending ? 'Saving...' : 'Save Medicine'}
-            </button>
+            <Button variant="secondary" type="button" onClick={closeModal} disabled={saveMutation.isPending}>
+              Cancel
+            </Button>
+            <Button variant="primary" type="submit" isLoading={saveMutation.isPending}>
+              {editingMedicine ? 'Update Medicine' : 'Save Medicine'}
+            </Button>
           </div>
         </form>
       </Modal>
+
+      <ConfirmDialog
+        isOpen={!!medicineToDelete}
+        onClose={() => setMedicineToDelete(null)}
+        onConfirm={() => {
+          if (medicineToDelete) {
+            deleteMutation.mutate(medicineToDelete.id);
+          }
+        }}
+        title="Delete Medicine"
+        description={`Are you sure you want to delete ${medicineToDelete?.name}? This action cannot be undone.`}
+        confirmText="Delete"
+        isLoading={deleteMutation.isPending}
+      />
     </div>
+    
   );
 }

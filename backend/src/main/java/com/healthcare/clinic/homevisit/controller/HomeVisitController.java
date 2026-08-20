@@ -1,7 +1,7 @@
 package com.healthcare.clinic.homevisit.controller;
 
 import com.healthcare.clinic.homevisit.entity.HomeVisitAssignment;
-import com.healthcare.clinic.homevisit.entity.HomeVisitRequest;
+import com.healthcare.clinic.patient.entity.HomeVisitRequest;
 import com.healthcare.clinic.homevisit.service.HomeVisitDispatcherService;
 import com.healthcare.clinic.homevisit.repository.HomeVisitRequestRepository;
 import com.healthcare.clinic.patient.entity.PatientProfile;
@@ -48,7 +48,7 @@ public class HomeVisitController {
         Long userId = SecurityUtils.getCurrentUserId();
         PatientProfile profile = patientProfileRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Patient profile not found"));
-        return ResponseEntity.ok(requestRepository.findByPatientIdOrderByRequestDateDesc(profile.getId()));
+        return ResponseEntity.ok(requestRepository.findByPatientIdOrderByCreatedAtDesc(profile.getId()));
     }
 
     @PostMapping("/request")
@@ -60,10 +60,10 @@ public class HomeVisitController {
 
         HomeVisitRequest request = HomeVisitRequest.builder()
                 .patient(profile)
-                .requestDate(dto.getRequestDate() != null ? dto.getRequestDate() : ZonedDateTime.now())
+                .preferredDate(dto.getRequestDate() != null ? dto.getRequestDate().toLocalDate() : java.time.LocalDate.now())
                 .status("PENDING")
-                .addressText(dto.getAddress())
-                .notes(dto.getNotes())
+                .address(dto.getAddress())
+                .reasonForVisit(dto.getNotes())
                 .build();
 
         return ResponseEntity.ok(requestRepository.save(request));

@@ -1,5 +1,4 @@
-import React, { useMemo } from 'react';
-import { ArrowRight } from 'lucide-react';
+import { useMemo } from 'react';
 
 const LabStatusSidebar = ({ summary }) => {
   const statusMap = [

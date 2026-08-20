@@ -1,13 +1,12 @@
-import React from 'react';
-import { Users, ArrowLeft, UserPlus, Clock } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import Card from '../../components/ui/Card';
+import { UserPlus, Clock } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { fadeIn } from '../../components/ui/motion';
-import EmptyState from '../../components/ui/EmptyState';
+
+
 
 const BranchLocalHR = () => {
   return (
+    
     <motion.div 
       initial="hidden" 
       animate="visible" 
@@ -92,6 +91,7 @@ const BranchLocalHR = () => {
         </div>
       </div>
     </motion.div>
+    
   );
 };
 

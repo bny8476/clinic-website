@@ -1,7 +1,5 @@
-import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { MessageSquare, Clock, AlertTriangle, CheckCircle, Search, Filter } from 'lucide-react';
 
 export default function TicketDesk() {
     const { data: tickets = [], isLoading } = useQuery({

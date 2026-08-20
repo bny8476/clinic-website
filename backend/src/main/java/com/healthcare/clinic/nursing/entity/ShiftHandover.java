@@ -1,5 +1,7 @@
 package com.healthcare.clinic.nursing.entity;
 
+import com.healthcare.clinic.inpatient.entity.Ward;
+
 import com.healthcare.clinic.identity.entity.User;
 import jakarta.persistence.*;
 import lombok.*;

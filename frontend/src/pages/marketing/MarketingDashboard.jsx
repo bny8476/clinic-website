@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import toast from 'react-hot-toast';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
+
+
 
 // Icons
 const IconCampaign = () => (
@@ -194,7 +196,7 @@ const MarketingDashboard = () => {
       await axiosPrivate.post(`/marketing/campaigns/${id}/${action}`, null, { params });
       // Invalidation handled by TanStack Query refetch
     } catch (e) {
-      alert(e?.response?.data?.message || `Failed to ${action} campaign`);
+      toast.error(e?.response?.data?.message || `Failed to ${action} campaign`);
     }
   };
 
@@ -420,6 +422,7 @@ const MarketingDashboard = () => {
                       BRONZE: 'bg-orange-400',
                     };
                     return (
+    
                       <div key={tier} className="flex items-center gap-3">
                         <span className={`w-3 h-3 rounded-full ${colors[tier]}`} />
                         <span className="text-sm text-gray-600 w-20">{tier}</span>
@@ -486,6 +489,7 @@ const MarketingDashboard = () => {
         )}
       </div>
     </div>
+    
   );
 };
 

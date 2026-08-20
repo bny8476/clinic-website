@@ -1,7 +1,7 @@
-import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { DollarSign, TrendingUp, Calendar, CreditCard } from 'lucide-react';
+
+
 
 const DoctorEarnings = () => {
   const { data: earningsData = {}, isLoading } = useQuery({
@@ -19,6 +19,7 @@ const DoctorEarnings = () => {
   const recentPayouts = earningsData.recentPayouts || [];
 
   return (
+    
     <div className="p-4 sm:p-6" style={{ maxWidth: '1000px', margin: '0 auto' }}>
       <h1 className="text-xl sm:text-2xl font-bold mb-5" style={{ color: 'var(--color-text)' }}>Earnings &amp; Consultations</h1>
 
@@ -66,6 +67,7 @@ const DoctorEarnings = () => {
         </div>{/* overflow-x-auto */}
       </div>
     </div>
+    
   );
 };
 

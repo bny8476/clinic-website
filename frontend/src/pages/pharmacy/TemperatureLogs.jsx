@@ -1,12 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { useShallow } from 'zustand/react/shallow';
-import { Thermometer, RefreshCw, AlertTriangle, CheckCircle, Plus, Sparkles, Save, Snowflake, Refrigerator, ClipboardList } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { useTemperatureStore } from '../../store/useTemperatureStore';
-import AppModal from '../../components/pharmacy/ui/AppModal';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import pharmacyService from '../../utils/pharmacy/pharmacyService';
+
+
 
 export default function TemperatureLogs() {
   const queryClient = useQueryClient();
@@ -149,6 +147,7 @@ export default function TemperatureLogs() {
   };
 
   return (
+    
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -285,7 +284,7 @@ export default function TemperatureLogs() {
                     Reading was <span className="font-bold text-red-600">{b.recordedTemperature}°C</span> (Safe: {b.minThreshold} - {b.maxThreshold}°C)
                   </div>
                   {b.correctiveAction ? (
-                    <div className="p-3 bg-emerald-50 border border-emerald-100 text-emerald-700 rounded-lg text-xs space-y-1">
+                    <div className="p-3 bg-blue-50 border border-blue-100 text-blue-700 rounded-lg text-xs space-y-1">
                       <div className="font-bold">Corrective Action Taken:</div>
                       <div>"{b.correctiveAction}"</div>
                     </div>
@@ -431,5 +430,6 @@ export default function TemperatureLogs() {
         </form>
       </AppModal>
     </div>
+    
   );
 }

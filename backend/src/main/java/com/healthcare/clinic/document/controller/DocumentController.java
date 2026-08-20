@@ -28,6 +28,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/documents")
+@PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_PATIENT') or hasAuthority('ROLE_NURSE') or hasAuthority('ROLE_SUPER_ADMIN')")
 @RequiredArgsConstructor
 public class DocumentController {
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { Inbox } from 'lucide-react';
 
 const renderIcon = (Icon, className) => {
@@ -27,7 +28,12 @@ export default function EmptyState({
   className = ''
 }) {
   return (
-    <div className={`flex flex-col items-center justify-center p-8 md:p-12 text-center rounded-md border border-dashed border-[var(--color-border)] bg-[var(--color-surface-alt)]/30 ${className}`}>
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+      className={`flex flex-col items-center justify-center p-8 md:p-12 text-center rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-surface-alt)]/30 ${className}`}
+    >
       <div className="p-3.5 rounded-full bg-[var(--color-surface-alt)] text-[var(--color-navy-600)] mb-3 shadow-sm">
         {renderIcon(IconComponent, "w-8 h-8")}
       </div>
@@ -44,6 +50,6 @@ export default function EmptyState({
           {action}
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

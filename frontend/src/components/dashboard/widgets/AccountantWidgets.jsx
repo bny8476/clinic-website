@@ -1,12 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../../api/axios';
-import { Download, CheckCircle, Clock, AlertCircle, TrendingUp, FileText } from 'lucide-react';
+import { Download, CheckCircle, Clock, AlertCircle, TrendingUp } from 'lucide-react';
 import toast from 'react-hot-toast';
-import KPICard from '../../ui/KPICard';
-import DataTable from '../../ui/DataTable';
-import Badge from '../../ui/Badge';
-import Button from '../../ui/Button';
 
 export const AccountantHeaderWidget = () => (
   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">

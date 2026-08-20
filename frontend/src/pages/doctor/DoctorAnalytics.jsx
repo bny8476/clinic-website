@@ -1,7 +1,5 @@
-import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { BarChart3, TrendingUp, Users, Star } from 'lucide-react';
 
 const DoctorAnalytics = () => {
   const { data: analytics = {}, isLoading } = useQuery({

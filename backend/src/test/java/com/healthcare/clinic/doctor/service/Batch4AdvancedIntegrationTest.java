@@ -61,10 +61,10 @@ public class Batch4AdvancedIntegrationTest {
         encounter.setPatientId(1L);
         encounter.setDoctorId(doctorUser.getId());
         encounter.setBranchId(1L);
-        encounter.setStatus("In Progress");
+        encounter.setStatus(com.healthcare.clinic.doctor.entity.EncounterStatus.DRAFT);
         encounter.setChiefComplaint("Test Complaint");
         
-        ClinicalEncounter savedEncounter = encounterService.startEncounter(doctorUser, encounter);
+        ClinicalEncounter savedEncounter = encounterService.startEncounter(doctorUser.getId(), encounter);
         Long encounterId = savedEncounter.getId();
 
         // 2. Add a prescription
@@ -95,7 +95,7 @@ public class Batch4AdvancedIntegrationTest {
         soapNoteRepository.save(note);
         
         // 3. Finalize Encounter
-        ClinicalEncounter closed = encounterService.closeEncounter(doctorUser, encounterId);
+        ClinicalEncounter closed = encounterService.closeEncounter(doctorUser.getId(), encounterId);
         
         assertThat(closed.getStatus()).isEqualTo("CLOSED");
         assertThat(closed.getFinalizedAt()).isNotNull();

@@ -1,4 +1,3 @@
-import React from 'react';
 
 export const DashboardShell = ({
   quickActions = [],
@@ -43,7 +42,7 @@ export const DashboardShell = ({
                 onClick={() => onTabChange && onTabChange(tabId)}
                 className={`whitespace-nowrap flex items-center justify-center px-5 py-2.5 rounded-[12px] border transition-all text-[15px] font-medium ${
                   isActive 
-                    ? 'border-[#2B4AFE] bg-[#2B4AFE] text-white' 
+                    ? 'border-[#165DFF] bg-[#165DFF] text-white' 
                     : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300'
                 }`}
               >

@@ -1,7 +1,8 @@
-import React from 'react';
-import { Plus } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { motion, AnimatePresence } from 'framer-motion';
 import { axiosPrivate } from '../../api/axios';
+
+
 
 const FleetManagement = () => {
   const { data: fleet = [], isLoading } = useQuery({
@@ -13,6 +14,7 @@ const FleetManagement = () => {
   });
 
   return (
+    
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
       <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
         <h5 className="font-bold text-lg mb-0 text-slate-800">Fleet & Personnel Directory</h5>
@@ -63,6 +65,7 @@ const FleetManagement = () => {
         </table>
       </div>
     </div>
+    
   );
 };
 

@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { Activity, ArrowLeft, Camera, Image as ImageIcon } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import Card from '../../components/ui/Card';
+import { Image as ImageIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { fadeIn } from '../../components/ui/motion';
-import EmptyState from '../../components/ui/EmptyState';
+
+
 
 const RadiologyRequests = () => {
   const navigate = useNavigate();
@@ -22,6 +22,7 @@ const RadiologyRequests = () => {
   });
 
   return (
+    
     <motion.div 
       initial="hidden" 
       animate="visible" 
@@ -119,6 +120,7 @@ const RadiologyRequests = () => {
         </Card.Body>
       </Card>
     </motion.div>
+    
   );
 };
 

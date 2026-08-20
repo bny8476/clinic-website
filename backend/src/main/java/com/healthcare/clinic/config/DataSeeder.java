@@ -37,6 +37,8 @@ public class DataSeeder implements CommandLineRunner {
     private final PasswordEncoder passwordEncoder;
     private final DoctorProfileRepository doctorProfileRepository;
     private final DoctorWorkingHoursRepository doctorWorkingHoursRepository;
+    private final TenantRepository tenantRepository;
+    private final BranchRepository branchRepository;
 
     @Value("${SEED_ADMIN_PASSWORD:CHANGE_ME_ADMIN}")
     private String seedAdminPassword;
@@ -67,6 +69,18 @@ public class DataSeeder implements CommandLineRunner {
             });
             adminRoles.add(role);
         }
+
+        // Seed Tenant
+        Tenant tenant = tenantRepository.findById(1L).orElseGet(() -> {
+            Tenant newTenant = Tenant.builder().name("Main Healthcare Group").email("admin@main.clinic.com").status("ACTIVE").build();
+            return tenantRepository.save(newTenant);
+        });
+
+        // Seed Branch
+        Branch branch = branchRepository.findById(1L).orElseGet(() -> {
+            Branch newBranch = Branch.builder().tenant(tenant).name("Main Clinic Branch").address("123 Health Ave").city("City").state("State").country("Country").postalCode("12345").timezone("UTC").isActive(true).build();
+            return branchRepository.save(newBranch);
+        });
 
         seedUser("superadmin@clinic.com", "Clinic@2026#Super", "Super", "Admin", Set.of("ROLE_SUPER_ADMIN"));
         
@@ -135,8 +149,10 @@ public class DataSeeder implements CommandLineRunner {
         user.setEnabled(true);
 
         Set<Role> roles = new HashSet<>();
-        for (String roleName : roleNames) {
-            roleRepository.findByName(roleName).ifPresent(roles::add);
+        if (roleNames != null) {
+            for (String roleName : roleNames) {
+                roleRepository.findByName(roleName).ifPresent(roles::add);
+            }
         }
         user.setRoles(roles);
         User savedUser = userRepository.save(user);

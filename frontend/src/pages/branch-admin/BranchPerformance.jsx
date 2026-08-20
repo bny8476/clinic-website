@@ -1,13 +1,11 @@
-import React from 'react';
-import { BarChart3, ArrowLeft, TrendingUp, Users, DollarSign } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import Card from '../../components/ui/Card';
 import { fadeIn } from '../../components/ui/motion';
-import EmptyState from '../../components/ui/EmptyState';
+import { motion, AnimatePresence } from 'framer-motion';
+
+
 
 const BranchPerformance = () => {
   return (
+    
     <motion.div 
       initial="hidden" 
       animate="visible" 
@@ -82,6 +80,7 @@ const BranchPerformance = () => {
         </Card.Body>
       </Card>
     </motion.div>
+    
   );
 };
 

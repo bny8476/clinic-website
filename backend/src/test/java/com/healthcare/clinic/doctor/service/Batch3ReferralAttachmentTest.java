@@ -2,7 +2,7 @@ package com.healthcare.clinic.doctor.service;
 
 import com.healthcare.clinic.doctor.entity.ClinicalAttachment;
 import com.healthcare.clinic.doctor.entity.ClinicalMessage;
-import com.healthcare.clinic.doctor.entity.ClinicalReferral;
+import com.healthcare.clinic.emr.entity.ClinicalReferral;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -35,7 +35,7 @@ public class Batch3ReferralAttachmentTest {
         referral.setEncounterId(10L);
         referral.setReferringDoctorId(101L);
         referral.setReferredToSpecialty("Cardiology");
-        referral.setReasonForReferral("Abnormal ECG");
+        referral.setReferralReason("Consultation for hypertension management");
         referral.setReferralReason("Abnormal ECG");
         
         ClinicalReferral savedReferral = referralService.createReferral(referral);

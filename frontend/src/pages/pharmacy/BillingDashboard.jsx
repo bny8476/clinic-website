@@ -1,21 +1,13 @@
-import React, { useState } from 'react';
-import { IndianRupee, FileText, FileSpreadsheet, CreditCard, Eye, Printer, ArrowRight, RotateCcw } from 'lucide-react';
-import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
-} from 'recharts';
+import { useState } from 'react';
+import { IndianRupee, FileText, CreditCard, RotateCcw } from 'lucide-react';
+
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import KPICard from '../../components/pharmacy/ui/KPICard';
-import DataTable from '../../components/pharmacy/ui/DataTable';
-import AppModal from '../../components/pharmacy/ui/AppModal';
-import Badge from '../../components/pharmacy/ui/Badge';
-import PharmacyInvoice from '../../components/pharmacy/pharmacy/PharmacyInvoice';
-import { DashboardShell, DashboardGrid } from '../../components/dashboard/shared/DashboardShell';
-import Card from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
 import { useSystem } from '../../context/pharmacy/SystemContext';
 import { useConfig } from '../../context/pharmacy/ConfigContext';
 import api from '../../utils/pharmacy/api';
+
+
 
 const DashboardSkeleton = () => (
   <div className="space-y-8 animate-pulse">
@@ -83,6 +75,7 @@ export default function BillingDashboard() {
   ];
 
   return (
+    
     <DashboardShell quickActions={quickActions}>
       <div className="flex-1 overflow-y-auto pr-2 pb-6 min-h-0 flex flex-col">
       <div className="flex flex-col gap-1 mb-8 mt-2">
@@ -180,7 +173,7 @@ export default function BillingDashboard() {
                       <td className="px-6 py-4 text-[13px] font-bold text-slate-900">₹ {fmt(row.netAmount)}</td>
                       <td className="px-6 py-4">
                         <span className={`inline-flex items-center px-2.5 py-1 rounded text-[11px] font-bold ${
-                          row.status === 'PAID' ? 'bg-emerald-50 text-emerald-600' : 'bg-orange-50 text-orange-500'
+                          row.status === 'PAID' ? 'bg-blue-50 text-blue-600' : 'bg-orange-50 text-orange-500'
                         }`}>
                           {row.status === 'PAID' ? 'Paid' : 'Pending'}
                         </span>
@@ -223,5 +216,6 @@ export default function BillingDashboard() {
       </AppModal>
       </div>
     </DashboardShell>
+    
   );
 }

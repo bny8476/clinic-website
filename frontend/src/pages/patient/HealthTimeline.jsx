@@ -1,7 +1,8 @@
-import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { Calendar, FileText, Activity, Home, Clock, CheckCircle, Video, FileOutput, Loader2 } from 'lucide-react';
+import { Calendar, Home, Video, Activity, FileText, FileOutput, CheckCircle, Clock, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { pageTransition, staggerChildren, listStagger, fadeUp } from '../../components/ui/motion';
 
 const getIconForType = (type) => {
     switch (type) {
@@ -56,33 +57,46 @@ const HealthTimeline = () => {
     }
 
     return (
-        <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto">
-            <div className="mb-8">
+        <motion.div 
+            variants={pageTransition}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto"
+        >
+            <motion.div variants={fadeUp} className="mb-8">
                 <h2 className="text-2xl font-bold text-slate-800">Health Timeline</h2>
                 <p className="text-slate-500 mt-1">A chronological history of your interactions and medical records.</p>
-            </div>
+            </motion.div>
 
             {timelineEvents?.length === 0 ? (
-                <div className="bg-white rounded-2xl p-8 text-center border border-slate-200 shadow-sm">
+                <motion.div variants={fadeUp} className="bg-white rounded-2xl p-8 text-center border border-slate-200 shadow-sm">
                     <Clock size={48} className="mx-auto text-slate-300 mb-4" />
                     <h3 className="text-lg font-semibold text-slate-800 mb-2">No History Found</h3>
                     <p className="text-slate-500">Your timeline is empty. Appointments and lab results will appear here.</p>
-                </div>
+                </motion.div>
             ) : (
-                <div className="relative border-l-2 border-slate-200 ml-4 md:ml-6 pb-4">
+                <motion.div 
+                    variants={staggerChildren}
+                    className="relative border-l-2 border-slate-200 ml-4 md:ml-6 pb-4"
+                >
+                    <AnimatePresence>
                     {timelineEvents?.map((event, index) => {
                         const eventDate = new Date(event.eventDate);
                         const isToday = new Date().toDateString() === eventDate.toDateString();
                         
                         return (
-                            <div key={event.id} className="mb-10 ml-8 relative group">
+                            <motion.div variants={listStagger} layout key={event.id} className="mb-10 ml-8 relative group">
                                 {/* Timeline Dot/Icon */}
                                 <div className={`absolute -left-[41px] top-1 w-10 h-10 rounded-full border-4 border-white flex items-center justify-center shadow-sm ${getColorForType(event.type)}`}>
                                     {getIconForType(event.type)}
                                 </div>
                                 
                                 {/* Card */}
-                                <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow group-hover:border-slate-300">
+                                <motion.div 
+                                    whileHover={{ scale: 1.01, x: 2 }}
+                                    className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-all group-hover:border-slate-300"
+                                >
                                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                                         <div>
                                             <div className="flex items-center gap-3 mb-2">
@@ -104,13 +118,14 @@ const HealthTimeline = () => {
                                             </span>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
+                                </motion.div>
+                            </motion.div>
                         );
                     })}
-                </div>
+                    </AnimatePresence>
+                </motion.div>
             )}
-        </div>
+        </motion.div>
     );
 };
 

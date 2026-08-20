@@ -1,8 +1,6 @@
-import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { format } from 'date-fns';
-import { Shield, Eye, Edit, Trash, FileText, Activity } from 'lucide-react';
 
 const getIcon = (action) => {
   if (action.includes('VIEW') || action.includes('SEARCH')) return <Eye size={16} className="text-blue-500" />;

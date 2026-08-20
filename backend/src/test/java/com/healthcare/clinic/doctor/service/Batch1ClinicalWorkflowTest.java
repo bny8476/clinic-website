@@ -120,7 +120,7 @@ public class Batch1ClinicalWorkflowTest {
         encounter.setBranchId(branch.getId());
         encounter.setChiefComplaint("Headache");
         
-        ClinicalEncounter savedEncounter = encounterService.startEncounter(doctorUser, encounter);
+        ClinicalEncounter savedEncounter = encounterService.startEncounter(doctorUser.getId(), encounter);
         assertThat(savedEncounter.getId()).isNotNull();
         assertThat(savedEncounter.getStatus()).isEqualTo("In Progress");
 
@@ -130,7 +130,7 @@ public class Batch1ClinicalWorkflowTest {
         note.setObjective("Vitals normal");
         note.setAssessment("Tension headache");
         note.setPlan("Rest and hydration");
-        SoapNote savedNote = soapNoteService.saveSoapNote(doctorUser, savedEncounter.getId(), note);
+        SoapNote savedNote = soapNoteService.saveSoapNote(doctorUser.getId(), savedEncounter.getId(), note);
         assertThat(savedNote.getId()).isNotNull();
 
         // 3. Add Diagnosis
@@ -153,13 +153,13 @@ public class Batch1ClinicalWorkflowTest {
         assertThat(savedAllergy.getId()).isNotNull();
 
         // 5. Finalize Encounter
-        ClinicalEncounter closedEncounter = encounterService.closeEncounter(doctorUser, savedEncounter.getId());
+        ClinicalEncounter closedEncounter = encounterService.closeEncounter(doctorUser.getId(), savedEncounter.getId());
         assertThat(closedEncounter.getStatus()).isEqualTo("CLOSED");
         assertThat(closedEncounter.getFinalizedAt()).isNotNull();
 
         // 6. Attempt to edit SOAP note after finalization (should fail)
         SoapNote updateNote = new SoapNote();
         updateNote.setSubjective("Trying to change");
-        assertThrows(RuntimeException.class, () -> soapNoteService.saveSoapNote(doctorUser, savedEncounter.getId(), updateNote));
+        assertThrows(RuntimeException.class, () -> soapNoteService.saveSoapNote(doctorUser.getId(), savedEncounter.getId(), updateNote));
     }
 }

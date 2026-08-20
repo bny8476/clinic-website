@@ -1,6 +1,4 @@
-import React, { useMemo } from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { Calendar } from 'lucide-react';
+import { useMemo } from 'react';
 
 const statusColors = {
   REQUESTED: '#f97316',      // orange-500

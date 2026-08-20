@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { toast } from 'react-hot-toast';
-import { FlaskConical, ChevronLeft, Send, Check } from 'lucide-react';
+
+
 
 const LabRequest = () => {
   const { patientId } = useParams();
@@ -58,6 +59,7 @@ const LabRequest = () => {
   });
 
   return (
+    
     <div className="p-4 sm:p-6" style={{ maxWidth: '900px', margin: '0 auto' }}>
       <div className="flex items-center gap-3 mb-5">
         <button onClick={() => navigate(-1)} style={{ background: 'var(--color-surface-alt)', border: 'none', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', flexShrink: 0 }}>
@@ -190,20 +192,19 @@ const LabRequest = () => {
             />
           </div>
 
-          <button
+          <Button
+            variant="primary"
             onClick={() => submitOrder.mutate()}
-            disabled={selectedTests.length === 0 || !effectivePatientId || submitOrder.isPending}
-            style={{
-              width: '100%', padding: '10px', background: (selectedTests.length === 0 || !effectivePatientId) ? 'var(--color-text-muted)' : '#0e7490',
-              color: 'var(--color-surface)', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '0.85rem',
-              cursor: (selectedTests.length === 0 || !effectivePatientId) ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
-            }}
+            disabled={selectedTests.length === 0 || !effectivePatientId}
+            isLoading={submitOrder.isPending}
+            className="w-full mt-2"
           >
-            <Send size={15} /> Submit Lab Order
-          </button>
+            <Send size={15} className="mr-2" /> Submit Lab Order
+          </Button>
         </div>
       </div>
     </div>
+    
   );
 };
 

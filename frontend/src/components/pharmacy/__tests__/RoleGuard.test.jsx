@@ -1,7 +1,5 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import RoleGuard from '../auth/RoleGuard';
-import { MemoryRouter } from 'react-router-dom';
 import * as AuthContext from '../../../context/pharmacy/AuthContext';
 
 describe('RoleGuard', () => {

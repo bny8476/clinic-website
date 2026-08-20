@@ -1,7 +1,7 @@
 package com.healthcare.clinic.homevisit.service;
 
 import com.healthcare.clinic.homevisit.entity.HomeVisitAssignment;
-import com.healthcare.clinic.homevisit.entity.HomeVisitRequest;
+import com.healthcare.clinic.patient.entity.HomeVisitRequest;
 import com.healthcare.clinic.homevisit.repository.HomeVisitAssignmentRepository;
 import com.healthcare.clinic.homevisit.repository.HomeVisitRequestRepository;
 import lombok.RequiredArgsConstructor;

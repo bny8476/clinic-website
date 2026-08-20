@@ -88,7 +88,7 @@ public class PrescriptionService {
         }
 
         List<String> medNames = request.getItems().stream()
-                .map(com.healthcare.clinic.doctor.dto.PrescriptionItemRequest::getMedicationName)
+                .map(item -> item != null ? item.getMedicationName() : null)
                 .collect(Collectors.toList());
 
         // 1. SYNCHRONOUS BLOCKING SAFETY GATE: Drug allergy & contraindication check BEFORE save
@@ -389,7 +389,7 @@ public class PrescriptionService {
         }
 
         List<String> medNames = prescription.getItems().stream()
-                .map(PrescriptionItem::getMedicationName)
+                .map(item -> item != null ? item.getMedicationName() : null)
                 .collect(Collectors.toList());
 
         eventPublisher.publishEvent(com.healthcare.clinic.clinicaldecision.event.PrescriptionCreatedEvent.builder()
@@ -478,6 +478,9 @@ public class PrescriptionService {
                 .items(itemResponses)
                 .createdAt(prescription.getCreatedAt())
                 .updatedAt(prescription.getUpdatedAt())
+                .refillsAllowed(prescription.getRefillsAllowed())
+                .refillsRemaining(prescription.getRefillsRemaining())
+                .refillIntervalDays(prescription.getRefillIntervalDays())
                 .build();
     }
 

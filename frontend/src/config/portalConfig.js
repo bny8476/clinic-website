@@ -1,5 +1,5 @@
 /**
- * portalConfig.js — Single source of truth for all 18 role portals.
+ * portalConfig.js — Single source of truth for all 25 role portals.
  *
  * Each entry defines:
  *   slug         — URL prefix and login route key
@@ -407,6 +407,187 @@ export const PORTAL_CONFIGS = [
       { label: 'User Management', path: '/admin/users', icon: 'Users', description: 'Manage system users' },
     ],
   },
+  {
+    slug: 'hr',
+    displayName: 'Human Resources',
+    role: 'ROLE_HR',
+    themeColor: '#8B5CF6',
+    dashboardRoute: '/hr/dashboard',
+    authConfig: {
+      heroTitle: 'HR Portal.',
+      heroSubtitle: 'Manage personnel, payroll, and recruitment.',
+      sideBadge: 'HR SECURE',
+      sideQuoteTitle: 'Empowering your workforce.',
+      sideQuoteText: 'Efficient management of staff operations.',
+      allowRegister: false,
+    },
+    dashboardTiles: [
+      { label: 'Dashboard', path: '/hr/dashboard', icon: 'LayoutDashboard', description: 'HR Overview' },
+      { label: 'Employees', path: '/hr/employees', icon: 'Users', description: 'Staff Directory' },
+      { label: 'Attendance', path: '/hr/attendance', icon: 'Clock', description: 'Time & Attendance' },
+      { label: 'Leave', path: '/hr/leave', icon: 'Calendar', description: 'Leave Management' },
+      { label: 'Payroll', path: '/hr/payroll', icon: 'DollarSign', description: 'Payroll Processing' },
+      { label: 'Recruitment', path: '/hr/recruitment', icon: 'UserPlus', description: 'Hiring Pipeline' },
+    ],
+  },
+  {
+    slug: 'marketing',
+    displayName: 'Marketing',
+    role: 'ROLE_MARKETING',
+    themeColor: '#F59E0B',
+    dashboardRoute: '/marketing/dashboard',
+    authConfig: {
+      heroTitle: 'Marketing Portal.',
+      heroSubtitle: 'Drive patient engagement and loyalty.',
+      sideBadge: 'MARKETING ACTIVE',
+      sideQuoteTitle: 'Growth and Outreach.',
+      sideQuoteText: 'Tools to expand clinic visibility and care quality.',
+      allowRegister: false,
+    },
+    dashboardTiles: [
+      { label: 'Dashboard', path: '/marketing/dashboard', icon: 'LayoutDashboard', description: 'Marketing Overview' },
+      { label: 'Campaigns', path: '/marketing/campaigns', icon: 'Megaphone', description: 'Manage Campaigns' },
+      { label: 'Leads', path: '/marketing/leads', icon: 'Target', description: 'Lead Tracking' },
+      { label: 'Loyalty', path: '/marketing/loyalty', icon: 'Award', description: 'Loyalty Programs' },
+      { label: 'NPS', path: '/marketing/nps', icon: 'Smile', description: 'Patient Satisfaction' },
+      { label: 'Consent', path: '/marketing/consent', icon: 'CheckSquare', description: 'Marketing Consent' },
+    ],
+  },
+  {
+    slug: 'finance',
+    displayName: 'Finance',
+    role: 'ROLE_FINANCE',
+    themeColor: '#10B981',
+    dashboardRoute: '/finance/dashboard',
+    authConfig: {
+      heroTitle: 'Finance Portal.',
+      heroSubtitle: 'Manage clinic revenue, claims, and expenses.',
+      sideBadge: 'FINANCE SECURE',
+      sideQuoteTitle: 'Financial Health.',
+      sideQuoteText: 'Secure tools for comprehensive accounting.',
+      allowRegister: false,
+    },
+    dashboardTiles: [
+      { label: 'Dashboard', path: '/finance/dashboard', icon: 'LayoutDashboard', description: 'Finance Overview' },
+      { label: 'Invoices', path: '/finance/invoices', icon: 'FileText', description: 'Invoice Management' },
+      { label: 'P&L', path: '/finance/pnl', icon: 'TrendingUp', description: 'Profit & Loss' },
+      { label: 'Payments', path: '/finance/payments', icon: 'CreditCard', description: 'Payment Processing' },
+      { label: 'Insurance Claims', path: '/finance/insurance-claims', icon: 'Shield', description: 'Claims Management' },
+    ],
+  },
+  {
+    slug: 'analytics',
+    displayName: 'Analytics',
+    role: 'ROLE_ADMIN',
+    themeColor: '#3B82F6',
+    dashboardRoute: '/analytics/dashboard',
+    authConfig: {
+      heroTitle: 'Analytics Portal.',
+      heroSubtitle: 'Data-driven insights for clinic management.',
+      sideBadge: 'ANALYTICS ACTIVE',
+      sideQuoteTitle: 'Intelligence at a glance.',
+      sideQuoteText: 'Visualize performance and trends clearly.',
+      allowRegister: false,
+    },
+    dashboardTiles: [
+      { label: 'Dashboard', path: '/analytics/dashboard', icon: 'LayoutDashboard', description: 'Analytics Overview' },
+      { label: 'Financial', path: '/analytics/financial', icon: 'BarChart2', description: 'Financial Reports' },
+      { label: 'Clinical', path: '/analytics/clinical', icon: 'Activity', description: 'Clinical Reports' },
+      { label: 'IPD', path: '/analytics/ipd', icon: 'Bed', description: 'IPD Reports' },
+      { label: 'Lab', path: '/analytics/lab', icon: 'FlaskConical', description: 'Lab Reports' },
+      { label: 'OPD', path: '/analytics/opd', icon: 'Users', description: 'OPD Reports' },
+    ],
+  },
+  {
+    slug: 'pharmacist',
+    displayName: 'Pharmacist',
+    role: 'ROLE_PHARMACIST',
+    themeColor: '#14B8A6',
+    dashboardRoute: '/pharmacist/dashboard',
+    authConfig: {
+      heroTitle: 'Pharmacy Portal.',
+      heroSubtitle: 'Manage prescriptions and inventory.',
+      sideBadge: 'PHARMACY SECURE',
+      sideQuoteTitle: 'Reliable dispensing.',
+      sideQuoteText: 'Streamlined tools for pharmacy operations.',
+      allowRegister: false,
+    },
+    dashboardTiles: [
+      { label: 'Dashboard', path: '/pharmacist/dashboard', icon: 'LayoutDashboard', description: 'Pharmacy Overview' },
+    ],
+  },
+  {
+    slug: 'super-admin',
+    displayName: 'Super Admin',
+    role: 'ROLE_SUPER_ADMIN',
+    themeColor: '#DC2626',
+    dashboardRoute: '/super-admin/dashboard',
+    authConfig: {
+      heroTitle: 'Super Admin Console.',
+      heroSubtitle: 'Absolute control over the healthcare system.',
+      sideBadge: 'ROOT SECURE',
+      sideQuoteTitle: 'Total System Authority.',
+      sideQuoteText: 'Unrestricted access to all configuration layers.',
+      allowRegister: false,
+    },
+    dashboardTiles: [
+      { label: 'Dashboard', path: '/super-admin/dashboard', icon: 'LayoutDashboard', description: 'System Root' },
+    ],
+  },
+  {
+    slug: 'ambulance',
+    displayName: 'Ambulance',
+    role: 'ROLE_AMBULANCE',
+    themeColor: '#EF4444',
+    dashboardRoute: '/ambulance/dashboard',
+    authConfig: {
+      heroTitle: 'Ambulance Portal.',
+      heroSubtitle: 'Fleet and dispatch management.',
+      sideBadge: 'EMERGENCY SECURE',
+      sideQuoteTitle: 'Rapid Response.',
+      sideQuoteText: 'Coordinate emergency services efficiently.',
+      allowRegister: false,
+    },
+    dashboardTiles: [
+      { label: 'Dashboard', path: '/ambulance/dashboard', icon: 'LayoutDashboard', description: 'Dispatch Overview' },
+    ],
+  },
+  {
+    slug: 'vendor',
+    displayName: 'Vendor',
+    role: 'ROLE_VENDOR',
+    themeColor: '#6366F1',
+    dashboardRoute: '/vendor/dashboard',
+    authConfig: {
+      heroTitle: 'Vendor Portal.',
+      heroSubtitle: 'Supply chain and purchase orders.',
+      sideBadge: 'VENDOR SECURE',
+      sideQuoteTitle: 'Streamlined Procurement.',
+      sideQuoteText: 'Manage inventory fulfillment and catalogs.',
+      allowRegister: false,
+    },
+    dashboardTiles: [
+      { label: 'Dashboard', path: '/vendor/dashboard', icon: 'LayoutDashboard', description: 'Vendor Overview' },
+    ],
+  },
+  {
+    slug: 'insurance',
+    displayName: 'Insurance Staff',
+    role: 'ROLE_INSURANCE',
+    themeColor: '#0EA5E9',
+    dashboardRoute: '/insurance/dashboard',
+    authConfig: {
+      heroTitle: 'Insurance Portal.',
+      heroSubtitle: 'Process claims and pre-authorizations.',
+      sideBadge: 'INSURANCE SECURE',
+      sideQuoteTitle: 'Efficient Claims.',
+      sideQuoteText: 'Manage patient coverage and approvals.',
+      allowRegister: false,
+    },
+    dashboardTiles: [
+      { label: 'Dashboard', path: '/insurance/dashboard', icon: 'LayoutDashboard', description: 'Insurance Overview' },
+    ],
+  }
 ];
 
 /** Look up a portal config by URL slug */

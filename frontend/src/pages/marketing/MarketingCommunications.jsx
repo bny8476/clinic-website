@@ -1,16 +1,13 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { Send, MessageSquare, ArrowLeft, Mail, Smartphone, Search } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { Send, MessageSquare, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
-import Card from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
-import FormField from '../../components/ui/FormField';
 import { fadeIn } from '../../components/ui/motion';
-import EmptyState from '../../components/ui/EmptyState';
 import useAuthStore from '../../store/authStore';
+
+
 
 const MarketingCommunications = () => {
   const queryClient = useQueryClient();
@@ -81,6 +78,7 @@ const MarketingCommunications = () => {
   const communications = historyData?.content || [];
 
   return (
+    
     <motion.div 
       initial="hidden" 
       animate="visible" 
@@ -220,6 +218,7 @@ const MarketingCommunications = () => {
         </div>
       </div>
     </motion.div>
+    
   );
 };
 

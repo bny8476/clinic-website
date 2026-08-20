@@ -1,14 +1,14 @@
 import React, { useState, useMemo } from 'react';
-import { Cardio } from 'ldrs/react';
-import 'ldrs/react/Cardio.css';
+
 import useDebounce from '../../hooks/pharmacy/useDebounce';
-import {
-  Plus, Search, Edit3, Trash2, X, UserRound, Phone, FileText, MapPin, Activity
-} from 'lucide-react';
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import doctorService from '../../utils/pharmacy/doctorService';
-import AppModal from '../../components/pharmacy/ui/AppModal';
+import Skeleton from '../../components/ui/Skeleton';
+import ConfirmDialog from '../../components/ui/ConfirmDialog';
+
+
 
 const EMPTY_FORM = {
   name: '', specialization: '', contactNumber: '', registrationNumber: '', clinicAddress: ''
@@ -69,6 +69,7 @@ function DoctorFormModal({ isOpen, onClose, isEditMode, initialData, onSave }) {
 
 export default function Doctors() {
   const queryClient = useQueryClient();
+  const [confirmDelete, setConfirmDelete] = useState({ isOpen: false, id: null });
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebounce(searchTerm, 300);
 
@@ -126,9 +127,8 @@ export default function Doctors() {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Delete this doctor?')) return;
-    deleteDoctorMutation.mutate(id);
+  const handleDelete = (id) => {
+    setConfirmDelete({ isOpen: true, id });
   };
 
   const openAdd = () => { setIsEditMode(false); setSelectedDoctor(null); setIsModalOpen(true); };
@@ -145,6 +145,7 @@ export default function Doctors() {
   }, [doctors, searchTerm]);
 
   return (
+    
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
@@ -175,14 +176,8 @@ export default function Doctors() {
 
       <div className="bg-white rounded-xl border border-slate-100 overflow-hidden">
         {loading ? (
-          <div className="p-12 flex flex-col items-center gap-4">
-            <Cardio
-              size="50"
-              stroke="4"
-              speed="2"
-              color="#3b82f6" 
-            />
-            <p className="text-sm text-slate-400 font-bold">Loading doctors...</p>
+          <div className="p-8">
+            <Skeleton.Table rows={5} />
           </div>
         ) : filtered.length === 0 ? (
           <div className="p-12 text-center">
@@ -242,6 +237,24 @@ export default function Doctors() {
         initialData={selectedDoctor}
         onSave={handleSave}
       />
+
+      <ConfirmDialog 
+        isOpen={confirmDelete.isOpen}
+        onClose={() => setConfirmDelete({ isOpen: false, id: null })}
+        onConfirm={() => {
+          if (confirmDelete.id) {
+            deleteDoctorMutation.mutate(confirmDelete.id, {
+              onSettled: () => setConfirmDelete({ isOpen: false, id: null })
+            });
+          }
+        }}
+        title="Delete Doctor"
+        description="Are you sure you want to delete this doctor? This action cannot be undone."
+        confirmText="Delete"
+        isDestructive={true}
+        isLoading={deleteDoctorMutation.isPending}
+      />
     </div>
+    
   );
 }

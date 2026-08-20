@@ -337,9 +337,21 @@ public class AppointmentService {
             if (entry.getDesiredDateRangeEnd() != null && slotTime.isAfter(entry.getDesiredDateRangeEnd())) continue;
             
             // Match found! Publish an event to notify this patient
-            // (In a real app, we might reserve the slot for them temporarily)
             log.info("Waitlist match found for slot {} for patient {}", slot.getId(), entry.getPatient().getId());
-            // TODO: dispatch WaitlistMatchEvent
+            
+            String doctorName = userRepository.findById(slot.getDoctor().getUserId())
+                    .map(u -> "Dr. " + u.getLastName())
+                    .orElse("Your Doctor");
+
+            eventPublisher.publishEvent(com.healthcare.clinic.appointment.event.WaitlistMatchEvent.builder()
+                .waitlistEntryId(entry.getId())
+                .patientUserId(entry.getPatient().getUserId())
+                .doctorUserId(slot.getDoctor().getUserId())
+                .slotId(slot.getId())
+                .slotStartTime(slot.getStartTime().toLocalDateTime())
+                .doctorName(doctorName)
+                .build());
+            
             break; // Notify the first one
         }
     }

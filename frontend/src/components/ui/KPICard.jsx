@@ -1,6 +1,4 @@
 import React from 'react';
-import { TrendingUp, TrendingDown } from 'lucide-react';
-import Card from './Card';
 
 const renderIcon = (Icon, className) => {
   if (!Icon) return null;
@@ -57,7 +55,7 @@ export default function KPICard({
     <Card 
       hoverable={!!onClick} 
       onClick={onClick}
-      className={`relative overflow-hidden transition-all duration-200 ${className}`}
+      className={`relative overflow-hidden transition-all duration-[var(--duration-base)] ease-[var(--ease-out-smooth)] ${className}`}
     >
       <Card.Body className="flex flex-col gap-3">
         <div className="flex items-center justify-between gap-2">

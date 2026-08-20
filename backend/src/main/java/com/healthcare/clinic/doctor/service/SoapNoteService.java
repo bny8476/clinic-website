@@ -17,31 +17,31 @@ public class SoapNoteService {
     private final SoapNoteRepository soapNoteRepository;
     private final ClinicalEncounterService encounterService;
 
-    public Optional<SoapNote> getSoapNote(User user, Long encounterId) {
-        // Validation of ownership happens inside getEncounter
-        encounterService.getEncounter(user, encounterId);
+    public Optional<SoapNote> getSoapNote(Long userId, Long encounterId) {
+        // Just verify access
+        encounterService.getEncounter(userId, encounterId);
         return soapNoteRepository.findByEncounterId(encounterId);
     }
 
     @Transactional
-    public SoapNote saveSoapNote(User user, Long encounterId, SoapNote note) {
-        ClinicalEncounter encounter = encounterService.getEncounter(user, encounterId);
-        if (encounter.getStatus().equals("Finalized") || encounter.getStatus().equals("Signed") || encounter.getStatus().equals("Completed") || encounter.getStatus().equals("CLOSED")) {
-            throw new RuntimeException("Cannot edit SOAP note for a finalized encounter");
+    public SoapNote saveSoapNote(Long userId, Long encounterId, SoapNote soapNote) {
+        ClinicalEncounter encounter = encounterService.getEncounter(userId, encounterId);
+        
+        if ("CLOSED".equals(encounter.getStatus()) || "Completed".equals(encounter.getStatus())) {
+            throw new RuntimeException("Cannot edit SOAP note for a closed encounter");
         }
-
-        Optional<SoapNote> existingOpt = soapNoteRepository.findByEncounterId(encounterId);
-        if (existingOpt.isPresent()) {
-            SoapNote existing = existingOpt.get();
-            existing.setSubjective(note.getSubjective());
-            existing.setObjective(note.getObjective());
-            existing.setAssessment(note.getAssessment());
-            existing.setPlan(note.getPlan());
-            existing.setVersion(existing.getVersion() + 1);
-            return soapNoteRepository.save(existing);
+        
+        Optional<SoapNote> existing = soapNoteRepository.findByEncounterId(encounterId);
+        if (existing.isPresent()) {
+            SoapNote current = existing.get();
+            current.setSubjective(soapNote.getSubjective());
+            current.setObjective(soapNote.getObjective());
+            current.setAssessment(soapNote.getAssessment());
+            current.setPlan(soapNote.getPlan());
+            return soapNoteRepository.save(current);
         } else {
-            note.setEncounterId(encounterId);
-            return soapNoteRepository.save(note);
+            soapNote.setEncounterId(encounterId);
+            return soapNoteRepository.save(soapNote);
         }
     }
 }

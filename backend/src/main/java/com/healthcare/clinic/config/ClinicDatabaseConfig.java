@@ -1,5 +1,6 @@
 package com.healthcare.clinic.config;
 
+import jakarta.persistence.EntityManagerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
@@ -9,38 +10,31 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
-import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-import org.springframework.core.env.Environment;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.sql.DataSource;
-import java.util.HashMap;
-
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(
         basePackages = "com.healthcare.clinic",
-        excludeFilters = @org.springframework.context.annotation.ComponentScan.Filter(
-                type = org.springframework.context.annotation.FilterType.REGEX,
-                pattern = "com\\.healthcare\\.clinic\\.pharmacy\\..*"
-        ),
+        excludeFilters = {
+                @org.springframework.context.annotation.ComponentScan.Filter(
+                        type = org.springframework.context.annotation.FilterType.REGEX,
+                        pattern = "com\\.healthcare\\.clinic\\.pharmacy\\..*"
+                )
+        },
         entityManagerFactoryRef = "clinicEntityManagerFactory",
         transactionManagerRef = "clinicTransactionManager",
         nameGenerator = org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGenerator.class
 )
 public class ClinicDatabaseConfig {
 
-    @Autowired
-    private Environment env;
-
     @Primary
     @Bean(name = "clinicDataSource")
     @ConfigurationProperties(prefix = "spring.datasource.clinic")
-    public DataSource clinicDataSource() {
+    public DataSource dataSource() {
         return DataSourceBuilder.create().build();
     }
 
@@ -49,9 +43,12 @@ public class ClinicDatabaseConfig {
     public LocalContainerEntityManagerFactoryBean clinicEntityManagerFactory(
             @Qualifier("clinicDataSource") DataSource dataSource,
             org.springframework.core.env.Environment env) {
+        
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(dataSource);
+        em.setPackagesToScan("com.healthcare.clinic");
         em.setPersistenceUnitName("clinic");
+<<<<<<< HEAD
         em.setPackagesToScan(
                 "com.healthcare.clinic.ai",
                 "com.healthcare.clinic.ambulance",
@@ -96,7 +93,10 @@ public class ClinicDatabaseConfig {
                 "com.healthcare.clinic.tenant",
                 "com.healthcare.clinic.vendor",
                 "com.healthcare.clinic.ai",
-                "com.healthcare.clinic.fhir"
+                "com.healthcare.clinic.fhir",
+                "com.healthcare.clinic.admin",
+                "com.healthcare.clinic.superadmin",
+                "com.healthcare.clinic.support"
         );
 
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
@@ -104,18 +104,29 @@ public class ClinicDatabaseConfig {
         HashMap<String, Object> properties = new HashMap<>();
         String dialect = env.getProperty("spring.jpa.database-platform", "org.hibernate.dialect.H2Dialect");
         String ddlAuto = env.getProperty("spring.jpa.hibernate.ddl-auto", "create-drop");
+=======
+                
+        em.setJpaVendorAdapter(new org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter());
+        
+        java.util.HashMap<String, Object> properties = new java.util.HashMap<>();
+        String dialect = env.getProperty("spring.jpa.database-platform", "org.hibernate.dialect.PostgreSQLDialect");
+        String ddlAuto = env.getProperty("spring.jpa.hibernate.ddl-auto", "update");
+        if (dialect.contains("H2")) {
+            ddlAuto = "update";
+        }
+>>>>>>> e9a38d1b14cc9189a3bf7c52bc8cf0e72a5cf0c1
         properties.put("hibernate.dialect", dialect);
         properties.put("hibernate.hbm2ddl.auto", ddlAuto);
         properties.put("hibernate.physical_naming_strategy", "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy");
         em.setJpaPropertyMap(properties);
-
+        
         return em;
     }
 
     @Primary
     @Bean(name = "clinicTransactionManager")
     public PlatformTransactionManager clinicTransactionManager(
-            @Qualifier("clinicEntityManagerFactory") LocalContainerEntityManagerFactoryBean clinicEntityManagerFactory) {
-        return new JpaTransactionManager(clinicEntityManagerFactory.getObject());
+            @Qualifier("clinicEntityManagerFactory") EntityManagerFactory clinicEntityManagerFactory) {
+        return new JpaTransactionManager(clinicEntityManagerFactory);
     }
 }

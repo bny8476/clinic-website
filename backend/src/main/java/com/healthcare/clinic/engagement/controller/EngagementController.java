@@ -6,11 +6,13 @@ import com.healthcare.clinic.engagement.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/engagement")
+@PreAuthorize("hasAuthority('ROLE_MARKETING') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
 @RequiredArgsConstructor
 public class EngagementController {
 

@@ -2,14 +2,11 @@ import React, { useState, useEffect } from 'react';
 import logger from '../../utils/logger';
 import useDebounce from '../../hooks/pharmacy/useDebounce';
 import { useLocation } from 'react-router-dom';
-import { Eye, CheckCircle, XCircle, Plus, Send, Search, Trash2, PlusCircle } from 'lucide-react';
-import ModuleFilterBar from '../../components/pharmacy/ui/ModuleFilterBar';
-import DataTable from '../../components/pharmacy/ui/DataTable';
-import Pagination from '../../components/pharmacy/ui/Pagination';
-import AppModal from '../../components/pharmacy/ui/AppModal';
-import Badge from '../../components/pharmacy/ui/Badge';
+import { Plus } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import pharmacyService from '../../utils/pharmacy/pharmacyService';
+
+
 
 export default function PendingIndentPrescriptions() {
   const location = useLocation();
@@ -137,7 +134,7 @@ export default function PendingIndentPrescriptions() {
           <button 
             title="Fulfill" 
             onClick={() => { setSelectedIndent(row); setIsFulfillModalOpen(true); }}
-            className="p-1.5 text-success hover:bg-green-50 rounded-lg transition-colors"
+            className="p-1.5 text-success hover:bg-blue-50 rounded-lg transition-colors"
           >
             <Send className="w-4 h-4" />
           </button>
@@ -154,6 +151,7 @@ export default function PendingIndentPrescriptions() {
   ];
 
   return (
+    
     <div className="space-y-6">
               <div className="flex flex-col gap-1">
         <h2 className="text-2xl font-bold tracking-tight text-gray-900">Indent Prescription List</h2>
@@ -186,7 +184,7 @@ export default function PendingIndentPrescriptions() {
                 setIndents(indents.map(i => i.id === selectedIndent.id ? { ...i, status: 'Fulfilled' } : i));
                 toast.success('Indent items issued successfully!'); 
                 setIsFulfillModalOpen(false); 
-             }} className="flex-1 px-8 py-2.5 bg-green-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-green-200 hover:bg-green-700 transition-all flex items-center justify-center gap-2 font-display">
+             }} className="flex-1 px-8 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all flex items-center justify-center gap-2 font-display">
                 <CheckCircle className="w-4 h-4"/> Confirm Issue
              </button>
           </div>
@@ -381,5 +379,6 @@ export default function PendingIndentPrescriptions() {
         </div>
       </AppModal>
     </div>
+    
   );
 }

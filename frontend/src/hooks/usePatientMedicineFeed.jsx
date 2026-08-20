@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 
 /**
  * Custom hook to subscribe to the patient medicines SSE endpoint.

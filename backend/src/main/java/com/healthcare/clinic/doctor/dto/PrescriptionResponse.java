@@ -40,4 +40,9 @@ public class PrescriptionResponse {
     private List<PrescriptionItemResponse> items;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    
+    // Refill properties
+    private Integer refillsAllowed;
+    private Integer refillsRemaining;
+    private Integer refillIntervalDays;
 }

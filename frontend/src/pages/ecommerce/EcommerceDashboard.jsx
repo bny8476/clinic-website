@@ -1,14 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { ShoppingBag, Truck, Package, DollarSign, Plus, Check } from 'lucide-react';
-import { DashboardShell, DashboardGrid } from '../../components/dashboard/shared/DashboardShell';
-import KPICard from '../../components/ui/KPICard';
-import DataTable from '../../components/ui/DataTable';
-import Badge from '../../components/ui/Badge';
-import Button from '../../components/ui/Button';
-import FormField from '../../components/ui/FormField';
-import Modal from '../../components/ui/Modal';
+import { ShoppingBag, Truck, Package } from 'lucide-react';
+
+
 
 const EcommerceDashboard = () => {
   const queryClient = useQueryClient();
@@ -103,6 +98,7 @@ const EcommerceDashboard = () => {
   ];
 
   return (
+    
     <DashboardShell
       tabs={tabs}
       activeTab={activeTab}
@@ -281,6 +277,7 @@ const EcommerceDashboard = () => {
         </div>
       </Modal>
     </DashboardShell>
+    
   );
 };
 

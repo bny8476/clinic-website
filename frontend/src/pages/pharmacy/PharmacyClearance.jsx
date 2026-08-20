@@ -1,15 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import useDebounce from '../../hooks/pharmacy/useDebounce';
-import { Search, Eye, Printer, CheckCircle, FileCheck } from 'lucide-react';
-import ModuleFilterBar from '../../components/pharmacy/ui/ModuleFilterBar';
-import DataTable from '../../components/pharmacy/ui/DataTable';
-import Pagination from '../../components/pharmacy/ui/Pagination';
-import AppModal from '../../components/pharmacy/ui/AppModal';
-import Badge from '../../components/pharmacy/ui/Badge';
 import { toast } from 'react-hot-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { format } from 'date-fns';
+
+
 
 const fetchClearances = async () => {
   const response = await axiosPrivate.get('/v1/pharmacy/clearances');
@@ -94,7 +90,7 @@ export default function PharmacyClearance() {
           <button 
             title="Clear" 
             onClick={() => { setSelectedPatient(row); setIsModalOpen(true); }}
-            className="p-1.5 text-success hover:bg-green-50 rounded-lg"
+            className="p-1.5 text-success hover:bg-blue-50 rounded-lg"
           >
             <CheckCircle className="w-4 h-4" />
           </button>
@@ -109,6 +105,7 @@ export default function PharmacyClearance() {
   }
 
   return (
+    
     <div className="space-y-6">
       <div className="flex flex-col gap-1">
         <h2 className="text-2xl font-bold tracking-tight text-gray-900">Pharmacy Clearance</h2>
@@ -141,7 +138,7 @@ export default function PharmacyClearance() {
              <button onClick={() => setIsModalOpen(false)} className="flex-1 px-6 py-2 border border-gray-200 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all">Cancel</button>
              <button onClick={() => { 
                 clearMutation.mutate(selectedPatient.id);
-             }} className="flex-1 px-8 py-2.5 bg-success text-white rounded-xl text-sm font-bold shadow-lg shadow-green-200 hover:bg-green-700 transition-all flex items-center justify-center gap-2" disabled={clearMutation.isLoading}>
+             }} className="flex-1 px-8 py-2.5 bg-success text-white rounded-xl text-sm font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all flex items-center justify-center gap-2" disabled={clearMutation.isLoading}>
                 <FileCheck className="w-4 h-4"/> Confirm Clearance
              </button>
           </div>
@@ -224,5 +221,6 @@ export default function PharmacyClearance() {
         )}
       </AppModal>
     </div>
+    
   );
 }

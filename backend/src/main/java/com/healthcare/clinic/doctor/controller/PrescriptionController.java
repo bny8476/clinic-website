@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.*;
 import com.healthcare.clinic.audit.annotation.AuditableAction;
 
 import java.util.List;
+import com.healthcare.clinic.doctor.dto.PrescriptionRefillRequestDTO;
+import com.healthcare.clinic.doctor.dto.PrescriptionRefillRequestPayload;
+import com.healthcare.clinic.doctor.service.PrescriptionRefillService;
 
 @RestController
 @RequestMapping("/api/prescriptions")
@@ -21,6 +24,7 @@ public class PrescriptionController {
     private final PrescriptionService prescriptionService;
     private final com.healthcare.clinic.doctor.service.PrescriptionTemplateService prescriptionTemplateService;
     private final com.healthcare.clinic.identity.repository.UserRepository userRepository;
+    private final PrescriptionRefillService prescriptionRefillService;
 
     @GetMapping("/patient/{patientId}")
     @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN') or (hasAuthority('ROLE_PATIENT') and principal.userId == #patientId)")
@@ -187,5 +191,19 @@ public class PrescriptionController {
         } catch (Exception e) {
             return ResponseEntity.ok(java.util.Map.of("safe", false, "messages", List.of(e.getMessage())));
         }
+    }
+
+    @PostMapping("/refill")
+    @PreAuthorize("hasAuthority('ROLE_PATIENT')")
+    public ResponseEntity<PrescriptionRefillRequestDTO> requestRefill(@RequestBody PrescriptionRefillRequestPayload payload) {
+        Long patientId = com.healthcare.clinic.security.SecurityUtils.getCurrentUserId();
+        return ResponseEntity.status(HttpStatus.CREATED).body(prescriptionRefillService.requestRefill(patientId, payload));
+    }
+
+    @GetMapping("/refill")
+    @PreAuthorize("hasAuthority('ROLE_PATIENT')")
+    public ResponseEntity<List<PrescriptionRefillRequestDTO>> getPatientRefillRequests() {
+        Long patientId = com.healthcare.clinic.security.SecurityUtils.getCurrentUserId();
+        return ResponseEntity.ok(prescriptionRefillService.getPatientRefillRequests(patientId));
     }
 }
