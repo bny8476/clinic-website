@@ -288,8 +288,8 @@ const Home = () => {
           >
             <motion.div variants={heroHeadingContainer} initial="hidden" animate="show" className="mb-10">
               <h1 className="text-[4rem] sm:text-[5.5rem] xl:text-[7.5rem] font-medium leading-[0.85] tracking-tight text-gray-900 mb-8" style={{ fontFamily: 'var(--font-display, Inter)' }}>
-                <div className="overflow-hidden"><motion.div variants={heroHeadingLine}>Innovation</motion.div></div>
-                <div className="overflow-hidden"><motion.div variants={heroHeadingLine}>Clinic</motion.div></div>
+                <div className="overflow-hidden pr-4"><motion.div variants={heroHeadingLine}>Innovation</motion.div></div>
+                <div className="overflow-hidden pr-4"><motion.div variants={heroHeadingLine}>Clinic</motion.div></div>
               </h1>
               <div className="overflow-hidden pl-2">
                 <motion.div variants={heroHeadingLine} className="max-w-[280px]">
@@ -404,7 +404,7 @@ const Home = () => {
           {/* Doctor Image Overlay */}
           <motion.div 
             style={{ y: parallaxY1 }}
-            className="absolute bottom-0 left-[50%] -translate-x-[50%] w-[380px] lg:w-[450px] xl:w-[580px] h-[85%] lg:h-[90%] z-40 pointer-events-none hidden md:block"
+            className="absolute bottom-0 left-[55%] -translate-x-[50%] w-[380px] lg:w-[450px] xl:w-[580px] h-[85%] lg:h-[90%] z-40 pointer-events-none hidden md:block"
           >
             <motion.div animate={{ y: [0, -3, 0] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }} className="w-full h-full">
               <motion.img 
@@ -415,6 +415,24 @@ const Home = () => {
                 className="w-full h-full object-contain object-bottom drop-shadow-[0_25px_50px_rgba(0,0,0,0.3)]" 
                 alt="Doctor" 
               />
+              
+              {/* Floating Labels */}
+              <motion.div variants={floatingLabelSequence} initial="hidden" animate="show" className="absolute inset-0">
+                {/* Experience */}
+                <motion.div variants={floatingLabel} className="absolute top-[35%] right-[10%] bg-white rounded-full px-4 py-2 shadow-lg flex items-center font-bold text-[14px] text-gray-800">
+                  Experience
+                </motion.div>
+                
+                {/* Professional */}
+                <motion.div variants={floatingLabel} className="absolute bottom-[25%] right-[0%] bg-white rounded-full px-4 py-2 shadow-lg flex items-center font-bold text-[14px] text-gray-800">
+                  Professional
+                </motion.div>
+                
+                {/* Reliability */}
+                <motion.div variants={floatingLabel} className="absolute bottom-[10%] left-[10%] bg-white rounded-full px-4 py-2 shadow-lg flex items-center font-bold text-[14px] text-gray-800">
+                  Reliability
+                </motion.div>
+              </motion.div>
             </motion.div>
           </motion.div>
 
