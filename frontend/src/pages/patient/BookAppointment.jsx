@@ -1,3 +1,4 @@
+import { BASE_URL } from '../../api/axios';
 import { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
@@ -97,8 +98,7 @@ export default function BookAppointment() {
     // Handle slot real-time updates
     useEffect(() => {
         if (!token) return;
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
-        const evtSource = new EventSource(`${baseUrl.replace('/api', '')}/api/sse/appointments?token=${token}`);
+                const evtSource = new EventSource(`${BASE_URL.replace('/api', '')}/api/sse/appointments?token=${token}`);
         
         evtSource.addEventListener('appointment-booked', (event) => {
             try {

@@ -1,3 +1,4 @@
+import { BASE_URL } from '../../api/axios';
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -18,8 +19,7 @@ const ConsultationQueue = () => {
 
   React.useEffect(() => {
     if (!token) return;
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
-    const evtSource = new EventSource(`${baseUrl.replace('/api', '')}/api/sse/appointments?token=${token}`);
+        const evtSource = new EventSource(`${BASE_URL.replace('/api', '')}/api/sse/appointments?token=${token}`);
     
     evtSource.onmessage = () => {
       queryClient.invalidateQueries(['doctor-queue']);

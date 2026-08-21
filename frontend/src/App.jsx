@@ -1,3 +1,4 @@
+import { BASE_URL } from './api/axios';
 import { useEffect, lazy, Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
@@ -237,11 +238,8 @@ const DashboardRoute = ({ path, portalSlug, allowedRoles, defaultRedirect, child
 function App() {
   useEffect(() => {
     // Wake up backend (e.g., Render free tier) on app load
-    const baseUrl =
-      (typeof window !== 'undefined' && window.__ENV__?.VITE_API_BASE_URL) ||
-      import.meta.env.VITE_API_BASE_URL ||
-      'http://localhost:8080/api';
-    fetch(`${baseUrl}/health`)
+    
+    fetch(`${BASE_URL}/health`)
       .then(res => res.json())
       .catch(() => {
         // Silently fail if unavailable
