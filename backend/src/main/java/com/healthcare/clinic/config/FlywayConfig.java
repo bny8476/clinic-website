@@ -18,8 +18,7 @@ public class FlywayConfig {
         Flyway flyway = Flyway.configure()
                 .dataSource(clinicDataSource)
                 .locations("classpath:db/migration/clinic")
-                .baselineOnMigrate(true)
-                .baselineVersion("55")
+                .baselineOnMigrate(false)
                 .ignoreMigrationPatterns("*:missing", "*:ignored", "*:pending")
                 .load();
         flyway.migrate();
