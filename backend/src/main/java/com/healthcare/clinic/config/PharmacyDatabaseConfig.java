@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.core.env.Environment;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.context.annotation.DependsOn;
 import javax.sql.DataSource;
 import java.util.HashMap;
 
@@ -37,6 +38,7 @@ public class PharmacyDatabaseConfig {
     }
 
     @Bean(name = "pharmacyEntityManagerFactory")
+    @DependsOn("pharmacyFlyway")
     public LocalContainerEntityManagerFactoryBean pharmacyEntityManagerFactory(
             @Qualifier("pharmacyDataSource") DataSource dataSource,
             org.springframework.core.env.Environment env) {
