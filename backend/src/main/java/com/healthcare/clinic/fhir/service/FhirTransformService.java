@@ -18,7 +18,18 @@ import java.util.Optional;
 public class FhirTransformService {
 
     private final UserRepository userRepository;
-    private final FhirContext fhirContext = FhirContext.forR4();
+    private volatile FhirContext fhirContext;
+
+    private FhirContext getFhirContext() {
+        if (fhirContext == null) {
+            synchronized (this) {
+                if (fhirContext == null) {
+                    fhirContext = FhirContext.forR4();
+                }
+            }
+        }
+        return fhirContext;
+    }
 
     public String exportPatientAsFhirJson(Long patientId) {
         Optional<User> userOpt = userRepository.findById(patientId);
@@ -35,7 +46,7 @@ public class FhirTransformService {
         name.addGiven(user.getFirstName());
         fhirPatient.addName(name);
 
-        IParser parser = fhirContext.newJsonParser().setPrettyPrint(true);
+        IParser parser = getFhirContext().newJsonParser().setPrettyPrint(true);
         return parser.encodeResourceToString(fhirPatient);
     }
 }
