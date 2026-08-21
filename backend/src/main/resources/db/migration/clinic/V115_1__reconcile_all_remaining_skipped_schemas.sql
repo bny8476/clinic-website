@@ -147,7 +147,8 @@ INSERT INTO consent_versions (consent_type, version_id, document_text, is_latest
 ('TELECONSULTATION', 'v1.0.0', 'I consent to receive healthcare services via telemedicine...', true),
 ('DATA_EXPORT', 'v1.0.0', 'I authorize the export of my complete medical history...', true),
 ('AI_ASSISTANT', 'v1.0.0', 'I understand this AI is not a doctor and I consent to its use...', true),
-('GENERAL_TREATMENT', 'v1.0.0', 'I consent to general medical treatment by the clinic staff...', true);
+('GENERAL_TREATMENT', 'v1.0.0', 'I consent to general medical treatment by the clinic staff...', true)
+ON CONFLICT (consent_type) DO NOTHING;
 
 
 
@@ -1777,16 +1778,6 @@ CREATE TABLE IF NOT EXISTS ec_tax_rules (
     UNIQUE (tax_class, state, effective_from)
 );
 -- Seed default GST rates
-INSERT INTO ec_tax_rules (tax_class, state, rate_percent, cgst_percent, sgst_percent, igst_percent, effective_from)
-    VALUES ('MEDICINE_12', 'ALL', 12.00, 6.00, 6.00, 12.00, '2024-01-01');
-INSERT INTO ec_tax_rules (tax_class, state, rate_percent, cgst_percent, sgst_percent, igst_percent, effective_from)
-    VALUES ('DEVICE_18', 'ALL', 18.00, 9.00, 9.00, 18.00, '2024-01-01');
-INSERT INTO ec_tax_rules (tax_class, state, rate_percent, cgst_percent, sgst_percent, igst_percent, effective_from)
-    VALUES ('WELLNESS_18', 'ALL', 18.00, 9.00, 9.00, 18.00, '2024-01-01');
-INSERT INTO ec_tax_rules (tax_class, state, rate_percent, cgst_percent, sgst_percent, igst_percent, effective_from)
-    VALUES ('SUPPLEMENT_5', 'ALL', 5.00, 2.50, 2.50, 5.00, '2024-01-01');
-INSERT INTO ec_tax_rules (tax_class, state, rate_percent, cgst_percent, sgst_percent, igst_percent, effective_from)
-    VALUES ('EXEMPT_0', 'ALL', 0.00, 0.00, 0.00, 0.00, '2024-01-01');
 
 -- ──────────────────────────────────────────────────────────────
 -- 25. COUPON APPLICATIONS (eCommerce order scope)
@@ -1835,18 +1826,6 @@ ALTER TABLE ecommerce_order_items ADD COLUMN IF NOT EXISTS prescription_id    BI
 -- ──────────────────────────────────────────────────────────────
 -- 28. SEED DEFAULT DELIVERY ZONES (sample)
 -- ──────────────────────────────────────────────────────────────
-INSERT INTO ec_delivery_zones (pincode, city, state, zone, is_serviceable, min_delivery_days, max_delivery_days, base_shipping_fee, free_shipping_above)
-    VALUES ('110001', 'New Delhi', 'Delhi', 'METRO', true, 1, 2, 0.00, 499.00);
-INSERT INTO ec_delivery_zones (pincode, city, state, zone, is_serviceable, min_delivery_days, max_delivery_days, base_shipping_fee, free_shipping_above)
-    VALUES ('400001', 'Mumbai', 'Maharashtra', 'METRO', true, 1, 2, 0.00, 499.00);
-INSERT INTO ec_delivery_zones (pincode, city, state, zone, is_serviceable, min_delivery_days, max_delivery_days, base_shipping_fee, free_shipping_above)
-    VALUES ('560001', 'Bangalore', 'Karnataka', 'METRO', true, 1, 3, 0.00, 499.00);
-INSERT INTO ec_delivery_zones (pincode, city, state, zone, is_serviceable, min_delivery_days, max_delivery_days, base_shipping_fee, free_shipping_above)
-    VALUES ('600001', 'Chennai', 'Tamil Nadu', 'METRO', true, 1, 3, 49.00, 499.00);
-INSERT INTO ec_delivery_zones (pincode, city, state, zone, is_serviceable, min_delivery_days, max_delivery_days, base_shipping_fee, free_shipping_above)
-    VALUES ('700001', 'Kolkata', 'West Bengal', 'METRO', true, 1, 3, 49.00, 499.00);
-INSERT INTO ec_delivery_zones (pincode, city, state, zone, is_serviceable, min_delivery_days, max_delivery_days, base_shipping_fee, free_shipping_above)
-    VALUES ('999999', 'REMOTE', 'REMOTE', 'NON_SERVICEABLE', false, 0, 0, 0.00, 0.00);
 
 
 
@@ -2574,7 +2553,20 @@ ALTER TABLE staff_assignments ADD COLUMN IF NOT EXISTS role_id BIGINT;
 -- assuming clean schema for simplicity or default value. 
 -- In a real migration we'd map string role to role_id.
 -- Let's drop the string role column after.
-ALTER TABLE staff_assignments DROP COLUMN role;
+
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'staff_assignments'
+          AND column_name = 'role'
+    ) THEN
+        ALTER TABLE staff_assignments DROP COLUMN role;
+    END IF;
+END $$;
+
 ALTER TABLE staff_assignments ALTER COLUMN role_id SET NOT NULL;
 DO $$
 BEGIN
