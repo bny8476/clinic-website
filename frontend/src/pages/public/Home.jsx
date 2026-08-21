@@ -266,7 +266,7 @@ const Home = () => {
               <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-11 h-11 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center hover:bg-blue-200 transition-colors shadow-sm">
                 <Bell size={18} />
               </motion.button>
-              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => navigate('/auth/login')} className="w-11 h-11 rounded-full bg-gray-900 text-white flex items-center justify-center hover:bg-gray-800 transition-colors shadow-md">
+              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => navigate('/patient/login')} className="w-11 h-11 rounded-full bg-gray-900 text-white flex items-center justify-center hover:bg-gray-800 transition-colors shadow-md">
                 <User size={18} />
               </motion.button>
             </div>
@@ -306,7 +306,7 @@ const Home = () => {
               <motion.button 
                 whileHover={{ scale: 1.02, y: -2 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => scrollTo('doctors')} 
+                onClick={() => navigate('/patient/login')} 
                 className="bg-[#2B4AFE] text-white px-8 py-4 rounded-full font-medium text-[15px] hover:bg-blue-700 transition-colors flex items-center gap-2 group shadow-[0_10px_30px_rgba(43,74,254,0.3)] hover:shadow-[0_15px_40px_rgba(43,74,254,0.4)]"
               >
                 Find Doctor
@@ -564,7 +564,7 @@ const Home = () => {
                      </div>
 
                      <div className="mt-auto flex justify-between items-end relative z-10">
-                        <button className="text-[14px] text-blue-600 font-bold hover:underline decoration-2 underline-offset-4">
+                        <button onClick={() => navigate('/patient/login')} className="text-[14px] text-blue-600 font-bold hover:underline decoration-2 underline-offset-4">
                            Make an appointment
                         </button>
                         <button className="text-[14px] font-bold text-gray-900 border-b-2 border-gray-900 hover:border-blue-600 hover:text-blue-600 transition-colors leading-tight pb-0.5">
@@ -828,7 +828,7 @@ const Home = () => {
                <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-10">
                   <span className="text-gray-400 font-bold text-[13px] tracking-widest uppercase">Aurelian Health</span>
                   <div className="hidden sm:block h-[1px] w-16 bg-gray-200"></div>
-                  <button onClick={() => navigate('/appointment')} className="bg-blue-600 text-white rounded-full pl-8 pr-2 py-2 flex items-center gap-6 hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20">
+                  <button onClick={() => navigate('/patient/login')} className="bg-blue-600 text-white rounded-full pl-8 pr-2 py-2 flex items-center gap-6 hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20">
                      <span className="font-bold text-[15px]">Make an Appointment</span>
                      <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-blue-600 shrink-0">
                         <User size={18} strokeWidth={2.5} />
@@ -871,7 +871,7 @@ const Home = () => {
                   Our team brings together expertise, empathy, and a deep passion for helping others.
                </motion.p>
                
-               <motion.button initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp} onClick={() => navigate('/doctors')} className="bg-blue-600 text-white rounded-xl px-8 py-4 text-[15px] font-bold flex items-center justify-center gap-3 hover:bg-blue-700 transition-colors w-fit mb-16 shadow-lg shadow-blue-600/20">
+               <motion.button initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp} onClick={() => navigate('/patient/login')} className="bg-blue-600 text-white rounded-xl px-8 py-4 text-[15px] font-bold flex items-center justify-center gap-3 hover:bg-blue-700 transition-colors w-fit mb-16 shadow-lg shadow-blue-600/20">
                   View All Doctors <ArrowRight size={18} />
                </motion.button>
                
@@ -1261,7 +1261,7 @@ const Home = () => {
                   </div>
                   
                   <div className="flex flex-col sm:flex-row items-center gap-6">
-                     <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white rounded-2xl px-8 py-4 font-bold text-[15px] flex items-center justify-center gap-3 transition-colors shadow-[0_8px_20px_rgba(37,99,235,0.25)]">
+                     <motion.button onClick={() => navigate('/patient/login')} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white rounded-2xl px-8 py-4 font-bold text-[15px] flex items-center justify-center gap-3 transition-colors shadow-[0_8px_20px_rgba(37,99,235,0.25)]">
                         Book an appointment
                         <ArrowRight size={18} strokeWidth={2.5} />
                      </motion.button>
