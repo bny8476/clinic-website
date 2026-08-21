@@ -1,5 +1,6 @@
 import React from 'react';
-
+import { motion } from 'framer-motion';
+import { Loader2 } from 'lucide-react';
 const renderIcon = (Icon, className) => {
   if (!Icon) return null;
   if (React.isValidElement(Icon)) return Icon;
