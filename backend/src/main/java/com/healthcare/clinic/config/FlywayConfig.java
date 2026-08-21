@@ -18,9 +18,9 @@ public class FlywayConfig {
         Flyway flyway = Flyway.configure()
                 .dataSource(clinicDataSource)
                 .locations("classpath:db/migration/clinic")
-                .table("clinic_flyway_schema_history")
+                .table("clinic_flyway_schema_history_v2")
                 .baselineOnMigrate(true)
-                .baselineVersion("55")
+                .baselineVersion("114")
                 .ignoreMigrationPatterns("*:missing", "*:ignored", "*:pending")
                 .load();
         flyway.migrate();
@@ -33,9 +33,9 @@ public class FlywayConfig {
         Flyway flyway = Flyway.configure()
                 .dataSource(pharmacyDataSource)
                 .locations("classpath:db/migration/pharmacy")
-                .table("pharmacy_flyway_schema_history")
+                .table("pharmacy_flyway_schema_history_v2")
                 .baselineOnMigrate(true)
-                .baselineVersion("54")
+                .baselineVersion("112")
                 .ignoreMigrationPatterns("*:missing", "*:ignored", "*:pending")
                 .load();
         flyway.migrate();
