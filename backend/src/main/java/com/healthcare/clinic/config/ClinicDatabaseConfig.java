@@ -12,7 +12,7 @@ import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-
+import org.springframework.context.annotation.DependsOn;
 import javax.sql.DataSource;
 
 @Configuration
@@ -40,6 +40,7 @@ public class ClinicDatabaseConfig {
 
     @Primary
     @Bean(name = "clinicEntityManagerFactory")
+    @DependsOn("clinicFlyway")
     public LocalContainerEntityManagerFactoryBean clinicEntityManagerFactory(
             @Qualifier("clinicDataSource") DataSource dataSource,
             org.springframework.core.env.Environment env) {
