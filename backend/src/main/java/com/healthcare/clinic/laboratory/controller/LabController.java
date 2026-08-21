@@ -256,6 +256,47 @@ public class LabController {
         return ResponseEntity.ok(savedResult);
     }
 
+    @PostMapping(value = "/doctor/upload-report", consumes = {"multipart/form-data"})
+    @PreAuthorize("hasRole('DOCTOR') or hasRole('SUPER_ADMIN')")
+    @AuditableAction(module = "LABORATORY", action = "UPLOAD_EXTERNAL_REPORT", resourceType = "ExternalLabReport", sensitivityLevel = "HIGH")
+    public ResponseEntity<java.util.Map<String, String>> uploadExternalReport(
+            @RequestParam("patient") Long patientId,
+            @RequestParam("reportType") String reportType,
+            @RequestParam("testName") String testName,
+            @RequestParam("testDate") String testDate,
+            @RequestParam("reportDate") String reportDate,
+            @RequestParam("labName") String labName,
+            @RequestParam(value = "refDoctor", required = false) String refDoctor,
+            @RequestParam(value = "notes", required = false) String notes,
+            @RequestPart("files") List<MultipartFile> files,
+            @AuthenticationPrincipal User doctor) {
+
+        // In a real system, we would save the files to S3 or similar and create a record in the database
+        // For now, we will create a mock upload directory
+        try {
+            java.io.File uploadDir = new java.io.File("uploads/reports");
+            if (!uploadDir.exists()) {
+                uploadDir.mkdirs();
+            }
+            
+            for (MultipartFile file : files) {
+                if (!file.isEmpty()) {
+                    String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+                    java.io.File dest = new java.io.File(uploadDir, fileName);
+                    file.transferTo(dest);
+                }
+            }
+        } catch (java.io.IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to upload files");
+        }
+
+        // Ideally we'd save an ExternalLabReport entity. We will mock the response here.
+        java.util.Map<String, String> response = new java.util.HashMap<>();
+        response.put("status", "success");
+        response.put("message", "Files uploaded successfully");
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/requests/{requestId}/verify")
     @PreAuthorize("hasRole('PATHOLOGIST') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<LabResult> verifyReport(

@@ -1,8 +1,12 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldAlert } from 'lucide-react';
+import { ShieldAlert, ArrowLeft, Building, Wrench } from 'lucide-react';
 import { fadeIn } from '../../components/ui/motion';
 import { axiosPrivate } from '../../api/axios';
+import Card from '../../components/ui/Card';
+import Button from '../../components/ui/Button';
+import EmptyState from '../../components/ui/EmptyState';
 import toast from 'react-hot-toast';
 
 
@@ -55,7 +59,7 @@ const BranchFacility = () => {
           <Card>
             <Card.Header className="flex justify-between items-center">
               <h2 className="text-lg font-bold text-[var(--color-navy-900)]">Maintenance Requests</h2>
-              <Button variant="secondary" size="sm">Report Issue</Button>
+              <Button variant="secondary" size="sm" onClick={() => toast.success('Maintenance report modal coming soon')}>Report Issue</Button>
             </Card.Header>
             <Card.Body className="p-0">
               <ul className="divide-y divide-[var(--color-border)]">

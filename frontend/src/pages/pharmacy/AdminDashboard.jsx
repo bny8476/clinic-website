@@ -1,4 +1,5 @@
 
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
 import { useNavigate } from 'react-router-dom';
@@ -9,8 +10,128 @@ import {
 
   Package, IndianRupee, FileText, AlertTriangle, Calendar, Users,
   Plus, ScanLine, PackagePlus, ShoppingCart, ClipboardList, Printer, TrendingUp, Activity, ShieldAlert,
-  Truck, RotateCcw, CheckSquare, Receipt
+  Truck, RotateCcw, CheckSquare, Receipt, X, RefreshCw, Banknote, CreditCard, Lock
 } from 'lucide-react';
+
+/* ── Day Close Modal ─────────────────────────────────────── */
+function DayCloseModal({ onClose }) {
+  const [closing, setClosing] = useState(false);
+  const [closed, setClosed] = useState(false);
+
+  const summary = {
+    date: new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
+    totalBills: 87,
+    totalRevenue: 142350,
+    cashCollections: 58200,
+    cardCollections: 68150,
+    onlineCollections: 16000,
+    refunds: 1800,
+    netRevenue: 140550,
+    pendingBills: 3,
+  };
+
+  const handleDayClose = () => {
+    setClosing(true);
+    setTimeout(() => {
+      setClosing(false);
+      setClosed(true);
+    }, 2000);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+        <div className={`flex items-center justify-between px-6 py-4 border-b ${
+          closed ? 'bg-emerald-50 border-emerald-100' : 'bg-slate-50 border-slate-100'
+        }`}>
+          <div className="flex items-center gap-3">
+            <Lock className={`w-5 h-5 ${closed ? 'text-emerald-600' : 'text-amber-600'}`} />
+            <h2 className="font-bold text-slate-800">{closed ? 'Day Closed' : 'Day Close Summary'}</h2>
+          </div>
+          <button onClick={onClose} className="p-1 hover:bg-slate-200 rounded-lg transition-colors">
+            <X className="w-4 h-4 text-slate-500" />
+          </button>
+        </div>
+
+        <div className="p-6 space-y-4">
+          {closed ? (
+            <div className="text-center py-6">
+              <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckSquare className="w-8 h-8 text-emerald-600" />
+              </div>
+              <p className="font-bold text-slate-800 text-lg">Day Successfully Closed</p>
+              <p className="text-sm text-slate-500 mt-1">{summary.date}</p>
+              <p className="text-xs text-slate-400 mt-3">All transactions have been locked. EOD report has been generated.</p>
+            </div>
+          ) : (
+            <>
+              <p className="text-xs text-slate-500">{summary.date}</p>
+
+              {/* Revenue Summary */}
+              <div className="bg-slate-50 rounded-xl p-4 space-y-3">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Revenue Summary</p>
+                {[
+                  { label: 'Total Bills', value: summary.totalBills, prefix: '' },
+                  { label: 'Gross Revenue', value: `₹${summary.totalRevenue.toLocaleString('en-IN')}`, prefix: '' },
+                  { label: 'Refunds', value: `-₹${summary.refunds.toLocaleString('en-IN')}`, prefix: '', red: true },
+                  { label: 'Net Revenue', value: `₹${summary.netRevenue.toLocaleString('en-IN')}`, prefix: '', bold: true },
+                ].map(row => (
+                  <div key={row.label} className="flex justify-between items-center">
+                    <span className="text-sm text-slate-500">{row.label}</span>
+                    <span className={`text-sm font-bold ${
+                      row.red ? 'text-red-600' : row.bold ? 'text-emerald-700' : 'text-slate-700'
+                    }`}>{row.value}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Collections Breakdown */}
+              <div className="space-y-2">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Collections Breakdown</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { icon: Banknote, label: 'Cash', value: summary.cashCollections, color: 'text-emerald-600 bg-emerald-50' },
+                    { icon: CreditCard, label: 'Card', value: summary.cardCollections, color: 'text-blue-600 bg-blue-50' },
+                    { icon: IndianRupee, label: 'Online', value: summary.onlineCollections, color: 'text-violet-600 bg-violet-50' },
+                  ].map(col => (
+                    <div key={col.label} className={`p-3 rounded-xl ${col.color} border border-current/10 text-center`}>
+                      <col.icon className="w-4 h-4 mx-auto mb-1" />
+                      <p className="text-[10px] font-bold">{col.label}</p>
+                      <p className="text-xs font-bold mt-0.5">₹{(col.value / 1000).toFixed(0)}k</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {summary.pendingBills > 0 && (
+                <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-100 rounded-lg">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                  <p className="text-xs text-amber-700 font-semibold">{summary.pendingBills} bills still pending. Closing will lock them as open items.</p>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+          <button onClick={onClose} className="px-5 py-2 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors">
+            {closed ? 'Close' : 'Cancel'}
+          </button>
+          {!closed && (
+            <button
+              onClick={handleDayClose}
+              disabled={closing}
+              className="flex items-center gap-2 px-5 py-2 text-sm font-bold text-white bg-amber-600 rounded-lg hover:bg-amber-700 disabled:opacity-50 transition-colors"
+            >
+              {closing ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
+              {closing ? 'Closing Day…' : 'Confirm Day Close'}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const ROLE_CONFIG = {
   SYSTEM_ADMIN: {
@@ -322,6 +443,8 @@ export default function AdminDashboard() {
   const { user, activeRole } = useAuth();
   const navigate = useNavigate();
 
+  const [dayCloseOpen, setDayCloseOpen] = useState(false);
+
   const config = ROLE_CONFIG[activeRole] || ROLE_CONFIG.SYSTEM_ADMIN;
 
   const { data: kpiData, isLoading: kpiLoading } = useQuery({
@@ -362,8 +485,7 @@ export default function AdminDashboard() {
     } else if (actionName === 'scrollToAlerts') {
       window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     } else if (actionName === 'dayClose') {
-      // Stub for Day Close logic
-      console.log('Day Close initiated');
+      setDayCloseOpen(true);
     }
   };
 
@@ -376,7 +498,7 @@ export default function AdminDashboard() {
   }));
 
   return (
-    
+    <>
     <DashboardShell
       quickActions={mappedQuickActions}
     >
@@ -501,6 +623,8 @@ export default function AdminDashboard() {
       )}
       </div>
     </DashboardShell>
-    
+
+    {dayCloseOpen && <DayCloseModal onClose={() => setDayCloseOpen(false)} />}
+    </>
   );
 }

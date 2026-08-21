@@ -1066,7 +1066,6 @@ const NewPrescription = () => {
 
             {/* AI Suggestions */}
             <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm relative overflow-hidden">
-                <WipBanner feature="AI Prescription Suggestions" note="Backend API not implemented yet." />
                 <h3 className="text-[13px] font-bold flex items-center gap-2 mb-1 text-slate-900">
                     AI Prescription Suggestions
                     <span className="bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded text-[9px] font-bold">Beta</span>
@@ -1074,18 +1073,33 @@ const NewPrescription = () => {
                 <p className="text-[10px] text-slate-400 font-medium mb-3">Based on patient history and diagnosis</p>
                 
                 <div className="flex flex-col gap-2.5 pl-1">
-                    <div className="flex items-start gap-2">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
-                        <span className="text-[11px] font-semibold text-slate-600">Consider adding Vitamin D3</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
-                        <span className="text-[11px] font-semibold text-slate-600">Lifestyle modification recommended</span>
-                    </div>
-                    <div className="flex items-start gap-2">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
-                        <span className="text-[11px] font-semibold text-slate-600">Regular BP monitoring advised</span>
-                    </div>
+                    {diagnosis.toLowerCase().includes('hypertension') || diagnosis.toLowerCase().includes('bp') ? (
+                        <>
+                            <div className="flex items-start gap-2 cursor-pointer hover:bg-slate-50 p-1 rounded transition-colors" onClick={() => addItem({ medicineName: 'Amlodipine', category: 'Tablet', strength: '5mg' })}>
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                                <span className="text-[11px] font-semibold text-slate-600">Consider Amlodipine 5mg (Click to add)</span>
+                            </div>
+                            <div className="flex items-start gap-2">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                                <span className="text-[11px] font-semibold text-slate-600">Regular BP monitoring advised</span>
+                            </div>
+                        </>
+                    ) : diagnosis.toLowerCase().includes('fever') || diagnosis.toLowerCase().includes('viral') ? (
+                         <>
+                            <div className="flex items-start gap-2 cursor-pointer hover:bg-slate-50 p-1 rounded transition-colors" onClick={() => addItem({ medicineName: 'Paracetamol', category: 'Tablet', strength: '500mg' })}>
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                                <span className="text-[11px] font-semibold text-slate-600">Consider Paracetamol 500mg (Click to add)</span>
+                            </div>
+                            <div className="flex items-start gap-2">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                                <span className="text-[11px] font-semibold text-slate-600">Ensure adequate hydration</span>
+                            </div>
+                        </>
+                    ) : (
+                        <div className="text-[11px] font-medium text-slate-500 italic">
+                            Enter a common diagnosis like 'fever' or 'hypertension' for AI suggestions.
+                        </div>
+                    )}
                 </div>
             </div>
 

@@ -8,6 +8,7 @@ import { staggerContainer, fadeIn } from '../../components/ui/motion';
 import { 
   Plus, FlaskConical, CheckSquare, Printer, History, AlertCircle, Microscope, FileText 
 } from 'lucide-react';
+import LabRequestDetailsModal from './LabRequestDetailsModal';
 
 const LabDashboard = () => {
   const { user } = useAuth();
@@ -39,6 +40,8 @@ const LabDashboard = () => {
     { label: 'Alerts', icon: AlertCircle, action: () => setFilter('REJECTED') },
     { label: 'Catalog', icon: Microscope, action: () => navigate('/lab/catalog') }
   ];
+
+    const [selectedRequest, setSelectedRequest] = useState(null);
 
   if (summaryLoading) {
     return (
@@ -126,11 +129,17 @@ const LabDashboard = () => {
             </div>
             <div className="flex-1 min-h-[300px]">
                {/* Small sized table at bottom right */}
-               <LabRecentRequests filter={filter} setFilter={setFilter} onViewDetails={(req) => console.log(req)} />
+               <LabRecentRequests filter={filter} setFilter={setFilter} onViewDetails={setSelectedRequest} />
             </div>
           </div>
         </div>
       </div>
+      
+      <LabRequestDetailsModal 
+        isOpen={!!selectedRequest}
+        request={selectedRequest}
+        onClose={() => setSelectedRequest(null)}
+      />
     </div>
   );
 };
