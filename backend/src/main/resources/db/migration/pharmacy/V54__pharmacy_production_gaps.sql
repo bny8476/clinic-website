@@ -14,7 +14,7 @@ ALTER TABLE pharmacy_outbox_events ADD COLUMN last_error TEXT;
 ALTER TABLE pharmacy_medicines ADD COLUMN schedule_category VARCHAR(50) DEFAULT 'NORMAL';
 
 CREATE TABLE controlled_substance_register (
-    id BIGSERIAL PRIMARY KEY,
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
     pharmacy_prescription_id BIGINT NOT NULL,
     medicine_id BIGINT NOT NULL,
     dispensed_quantity INT NOT NULL,
