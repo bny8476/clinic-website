@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { axiosPrivate } from '../../api/axios';
 
 const UploadLabReport = () => {
   const navigate = useNavigate();
@@ -42,10 +43,35 @@ const UploadLabReport = () => {
       return;
     }
 
-    // Backend endpoint for doctor-side report upload doesn't exist yet
-    // To be implemented in Phase 2
-    toast.success('Report upload stubbed. Backend integration pending.');
-    console.log('Submitting:', { formData, files });
+    try {
+      const data = new FormData();
+      // Wait! I need to know how patient selection works. The mock form data has `patient: ''` which might be the ID.
+      // I'll append the fields to formData.
+      data.append('patient', formData.patient);
+      data.append('reportType', formData.reportType);
+      data.append('testName', formData.testName);
+      data.append('testDate', formData.testDate);
+      data.append('reportDate', formData.reportDate);
+      data.append('labName', formData.labName);
+      if (formData.refDoctor) data.append('refDoctor', formData.refDoctor);
+      if (formData.notes) data.append('notes', formData.notes);
+      
+      files.forEach(file => {
+        data.append('files', file);
+      });
+
+      await axiosPrivate.post('/lab/doctor/upload-report', data, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      toast.success('Lab report uploaded successfully');
+      navigate('/doctor/lab-reports');
+    } catch (error) {
+      console.error('Error uploading report:', error);
+      toast.error('Failed to upload report');
+    }
   };
 
   return (

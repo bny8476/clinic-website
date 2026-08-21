@@ -96,7 +96,6 @@ export default function ReportPreviewPanel({ report, onClose, onSchedule }) {
 
   return (
     <div className="space-y-4">
-        <WipBanner feature="ReportPreviewPanel" note="Backend endpoint missing or unlinked" />
       {/* Panel header */}
       <div className="flex items-start justify-between gap-3">
         <div>

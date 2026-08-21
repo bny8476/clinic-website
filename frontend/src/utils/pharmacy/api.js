@@ -1,11 +1,7 @@
 import logger from '../../utils/logger';
 import axios from 'axios';
+import { BASE_URL } from '../../api/axios';
 import useAuthStore from '../../store/authStore';
-
-const BASE_URL =
-  (typeof window !== 'undefined' && window.__ENV__?.VITE_API_BASE_URL) ||
-  import.meta.env.VITE_API_BASE_URL ||
-  'http://localhost:8080/api';
 
 const api = axios.create({
   baseURL: `${BASE_URL}/pharmacy`,

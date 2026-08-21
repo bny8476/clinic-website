@@ -52,9 +52,13 @@ public class PharmacyDatabaseConfig {
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         em.setJpaVendorAdapter(vendorAdapter);
         HashMap<String, Object> properties = new HashMap<>();
-        String dialect = env.getProperty("spring.jpa.database-platform", "org.hibernate.dialect.MySQLDialect");
+        String driver = env.getProperty("spring.datasource.pharmacy.driver-class-name", "org.h2.Driver");
+        String dialect = "org.hibernate.dialect.H2Dialect";
+        if (driver.contains("mysql")) dialect = "org.hibernate.dialect.MySQLDialect";
+        else if (driver.contains("postgresql")) dialect = "org.hibernate.dialect.PostgreSQLDialect";
+        
         String ddlAuto = env.getProperty("spring.jpa.hibernate.ddl-auto", "validate");
-        if (dialect.contains("H2")) {
+        if (dialect.contains("H2") || dialect.contains("MySQL") || dialect.contains("TiDB")) {
             ddlAuto = "update";
         }
         properties.put("hibernate.dialect", dialect);

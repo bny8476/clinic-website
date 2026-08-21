@@ -1,3 +1,4 @@
+import { BASE_URL } from '../../api/axios';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -18,12 +19,11 @@ export default function ManageMedicines() {
   });
   
   const queryClient = useQueryClient();
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
-
+  
   const { data: medicines = [], isLoading } = useQuery({
     queryKey: ['doctorMedicines'],
     queryFn: async () => {
-      const res = await fetch(`${baseUrl}/doctor/medicines`, {
+      const res = await fetch(`${BASE_URL}/doctor/medicines`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       if (!res.ok) throw new Error('Failed to fetch medicines');
@@ -33,7 +33,7 @@ export default function ManageMedicines() {
 
   const saveMutation = useMutation({
     mutationFn: async (data) => {
-      const url = editingMedicine ? `${baseUrl}/doctor/medicines/${editingMedicine.id}` : `${baseUrl}/doctor/medicines`;
+      const url = editingMedicine ? `${BASE_URL}/doctor/medicines/${editingMedicine.id}` : `${BASE_URL}/doctor/medicines`;
       const method = editingMedicine ? 'PUT' : 'POST';
       const res = await fetch(url, {
         method,
@@ -56,7 +56,7 @@ export default function ManageMedicines() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id) => {
-      const res = await fetch(`${baseUrl}/doctor/medicines/${id}`, {
+      const res = await fetch(`${BASE_URL}/doctor/medicines/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });

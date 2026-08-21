@@ -1,3 +1,4 @@
+import { BASE_URL } from '../../api/axios';
 import { useState } from 'react';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -21,7 +22,7 @@ export default function OrderMedicine() {
   const { data: medicines = [], isLoading } = useQuery({
     queryKey: ['patientMedicines'],
     queryFn: async () => {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'}/patient/medicines`, {
+      const response = await fetch(`${BASE_URL}/patient/medicines`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -40,7 +41,7 @@ export default function OrderMedicine() {
   // Create Order mutation
   const createOrderMutation = useMutation({
     mutationFn: async (orderRequest) => {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'}/patient/medicines/orders`, {
+      const response = await fetch(`${BASE_URL}/patient/medicines/orders`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

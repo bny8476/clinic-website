@@ -100,9 +100,13 @@ public class ClinicDatabaseConfig {
         em.setJpaVendorAdapter(new org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter());
         
         java.util.HashMap<String, Object> properties = new java.util.HashMap<>();
-        String dialect = env.getProperty("spring.jpa.database-platform", "org.hibernate.dialect.PostgreSQLDialect");
+        String driver = env.getProperty("spring.datasource.clinic.driver-class-name", "org.postgresql.Driver");
+        String dialect = "org.hibernate.dialect.PostgreSQLDialect";
+        if (driver.contains("mysql")) dialect = "org.hibernate.dialect.MySQLDialect";
+        else if (driver.contains("h2")) dialect = "org.hibernate.dialect.H2Dialect";
+        
         String ddlAuto = env.getProperty("spring.jpa.hibernate.ddl-auto", "validate");
-        if (dialect.contains("H2")) {
+        if (dialect.contains("H2") || dialect.contains("MySQL") || dialect.contains("TiDB")) {
             ddlAuto = "update";
         }
         properties.put("hibernate.dialect", dialect);

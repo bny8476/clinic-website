@@ -1,3 +1,4 @@
+import { BASE_URL } from '../../api/axios';
 import React, { useState, useMemo, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
@@ -126,8 +127,7 @@ const DoctorDashboard = () => {
   // Subscribe to real-time appointment updates
   useEffect(() => {
       if (!token) return;
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
-      const evtSource = new EventSource(`${baseUrl.replace('/api', '')}/api/sse/appointments?token=${token}`);
+            const evtSource = new EventSource(`${BASE_URL.replace('/api', '')}/api/sse/appointments?token=${token}`);
       
       evtSource.addEventListener('appointment-booked', (event) => {
           try {

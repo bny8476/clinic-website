@@ -1,3 +1,4 @@
+import { BASE_URL } from '../api/axios';
 import { useEffect } from 'react';
 
 /**
@@ -19,8 +20,7 @@ export function usePatientMedicineFeed(onUpdate) {
     // Let's check how other SSE endpoints are accessed in this project.
     // For now, I'll pass it as a query param assuming standard fallback if needed.
     // Wait, let's look at `frontend/src/components/ui/AIAssistantWidget.jsx` or similar, or I can just pass `?token=${token}`.
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
-    const eventSource = new EventSource(`${baseUrl.replace('/api', '')}/api/sse/patient-medicines?token=${token}`);
+        const eventSource = new EventSource(`${BASE_URL.replace('/api', '')}/api/sse/patient-medicines?token=${token}`);
 
     eventSource.addEventListener('medicines_updated', (event) => {
       if (onUpdate) {
