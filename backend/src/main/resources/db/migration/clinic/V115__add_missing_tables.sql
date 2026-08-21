@@ -73,7 +73,6 @@ CREATE TABLE patient_advances (amount NUMERIC(12,2) not null, amount_used NUMERI
 
 CREATE TABLE payment_allocations (amount NUMERIC(12,2) not null, allocated_at TIMESTAMP with time zone not null, id BIGSERIAL, invoice_id BIGINT not null, payment_id BIGINT not null, PRIMARY KEY (id));
 
-CREATE TABLE pharmacy_patients (dob date, is_deleted BOOLEAN not null, preferred_delivery BOOLEAN, branch_id BIGINT not null, created_at TIMESTAMP not null, id BIGSERIAL, updated_at TIMESTAMP not null, address VARCHAR(255), created_by VARCHAR(255), delivery_address TEXT, gender VARCHAR(255), insurance_id VARCHAR(255), name VARCHAR(255) not null, phone VARCHAR(255), uhid VARCHAR(255) not null unique, PRIMARY KEY (id));
 
 CREATE TABLE radiology_annotations (author_id BIGINT not null, created_at TIMESTAMP with time zone not null, id BIGSERIAL, study_id BIGINT not null, updated_at TIMESTAMP with time zone not null, status VARCHAR(20) not null, annotation_type VARCHAR(50) not null, series_instance_uid VARCHAR(255), sop_instance_uid VARCHAR(255), annotation_data json not null, PRIMARY KEY (id));
 

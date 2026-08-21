@@ -1,7 +1,7 @@
 package com.healthcare.clinic.pharmacy.entity;
 
 import com.healthcare.clinic.inventory.entity.BaseEntity;
-import com.healthcare.clinic.inventory.entity.Patient;
+
 
 
 import jakarta.persistence.*;

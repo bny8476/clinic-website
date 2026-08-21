@@ -1,7 +1,7 @@
 package com.healthcare.clinic.pharmacy.controller;
 
 import com.healthcare.clinic.inventory.entity.BaseEntity;
-import com.healthcare.clinic.inventory.entity.Patient;
+
 
 import com.healthcare.clinic.audit.annotation.AuditableAction;
 import com.healthcare.clinic.identity.entity.User;
