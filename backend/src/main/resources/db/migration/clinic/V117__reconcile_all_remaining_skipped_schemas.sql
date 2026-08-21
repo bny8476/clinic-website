@@ -2579,7 +2579,7 @@ ALTER TABLE staff_assignments ALTER COLUMN role_id SET NOT NULL;
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_staff_assignments_role') THEN
-        ALTER TABLE staff_assignments ADD CONSTRAINT fk_staff_assignments_role FOREIGN KEY (role_id) REFERENCES roles(id);
+        ALTER TABLE staff_assignments ADD CONSTRAINT fk_staff_assignments_role FOREIGN KEY (role_id) REFERENCES roles(id) NOT VALID;
     END IF;
 END $$;
 
@@ -2605,33 +2605,33 @@ ALTER TABLE emergency_patient_records ADD COLUMN IF NOT EXISTS branch_id BIGINT;
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_appointments_tenant') THEN
-        ALTER TABLE appointments ADD CONSTRAINT fk_appointments_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id);
+        ALTER TABLE appointments ADD CONSTRAINT fk_appointments_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) NOT VALID;
     END IF;
 END $$;
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_appointments_branch') THEN
-        ALTER TABLE appointments ADD CONSTRAINT fk_appointments_branch FOREIGN KEY (branch_id) REFERENCES branches(id);
+        ALTER TABLE appointments ADD CONSTRAINT fk_appointments_branch FOREIGN KEY (branch_id) REFERENCES branches(id) NOT VALID;
     END IF;
 END $$;
 
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_patient_profiles_tenant') THEN
-        ALTER TABLE patient_profiles ADD CONSTRAINT fk_patient_profiles_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id);
+        ALTER TABLE patient_profiles ADD CONSTRAINT fk_patient_profiles_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) NOT VALID;
     END IF;
 END $$;
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_patient_profiles_branch') THEN
-        ALTER TABLE patient_profiles ADD CONSTRAINT fk_patient_profiles_branch FOREIGN KEY (branch_id) REFERENCES branches(id);
+        ALTER TABLE patient_profiles ADD CONSTRAINT fk_patient_profiles_branch FOREIGN KEY (branch_id) REFERENCES branches(id) NOT VALID;
     END IF;
 END $$;
 
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_invoices_tenant') THEN
-        ALTER TABLE invoices ADD CONSTRAINT fk_invoices_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id);
+        ALTER TABLE invoices ADD CONSTRAINT fk_invoices_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) NOT VALID;
     END IF;
 END $$;
 -- fk for invoices to branch already exists from V15
@@ -2639,13 +2639,13 @@ END $$;
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_emergency_records_tenant') THEN
-        ALTER TABLE emergency_patient_records ADD CONSTRAINT fk_emergency_records_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id);
+        ALTER TABLE emergency_patient_records ADD CONSTRAINT fk_emergency_records_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) NOT VALID;
     END IF;
 END $$;
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_emergency_records_branch') THEN
-        ALTER TABLE emergency_patient_records ADD CONSTRAINT fk_emergency_records_branch FOREIGN KEY (branch_id) REFERENCES branches(id);
+        ALTER TABLE emergency_patient_records ADD CONSTRAINT fk_emergency_records_branch FOREIGN KEY (branch_id) REFERENCES branches(id) NOT VALID;
     END IF;
 END $$;
 
@@ -2775,7 +2775,7 @@ ALTER TABLE lab_test_requests DROP CONSTRAINT IF EXISTS lab_test_requests_encoun
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'lab_test_requests_encounter_id_fkey') THEN
-        ALTER TABLE lab_test_requests ADD CONSTRAINT lab_test_requests_encounter_id_fkey FOREIGN KEY (encounter_id) REFERENCES clinical_encounters(id) ON DELETE SET NULL;
+        ALTER TABLE lab_test_requests ADD CONSTRAINT lab_test_requests_encounter_id_fkey FOREIGN KEY (encounter_id) REFERENCES clinical_encounters(id) ON DELETE SET NULL NOT VALID;
     END IF;
 END $$;
 

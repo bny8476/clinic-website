@@ -26,7 +26,6 @@ public class FlywayConfig {
                 .table("clinic_flyway_schema_history_v2")
                 .baselineOnMigrate(true)
                 .baselineVersion("114")
-                .outOfOrder(true)
                 .load();
         
         flyway.migrate();
@@ -42,7 +41,6 @@ public class FlywayConfig {
                 .table("pharmacy_flyway_schema_history_v2")
                 .baselineOnMigrate(true)
                 .baselineVersion("112")
-                .outOfOrder(true)
                 .load();
         
         flyway.migrate();
