@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import logger from '../../utils/logger';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import useAuthStore, { isTokenValid } from '../../store/authStore';
 import { getPortalConfig, PORTAL_CONFIGS } from '../../config/portalConfig';
-import { Mail, Lock } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { listStagger } from '../../components/ui/motion';
+import Button from '../../components/ui/Button';
 /* ─── Medvice colour tokens ──────────────────────────────────────────────── */
 const BLUE   = '#2B4AFE';
 const BLUE_D = '#1648C0';

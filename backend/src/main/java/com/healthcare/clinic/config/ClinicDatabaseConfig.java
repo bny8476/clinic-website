@@ -100,7 +100,7 @@ public class ClinicDatabaseConfig {
         
         java.util.HashMap<String, Object> properties = new java.util.HashMap<>();
         String dialect = env.getProperty("spring.jpa.database-platform", "org.hibernate.dialect.PostgreSQLDialect");
-        String ddlAuto = env.getProperty("spring.jpa.hibernate.ddl-auto", "update");
+        String ddlAuto = env.getProperty("spring.jpa.hibernate.ddl-auto", "validate");
         if (dialect.contains("H2")) {
             ddlAuto = "update";
         }
