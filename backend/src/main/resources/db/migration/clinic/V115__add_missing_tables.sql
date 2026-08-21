@@ -27,13 +27,13 @@ CREATE TABLE approval_requests (approved_by BIGINT, created_at TIMESTAMP not nul
 
 CREATE TABLE backup_histories (completed_at TIMESTAMP, id BIGSERIAL, size_bytes BIGINT, started_at TIMESTAMP, tenant_id BIGINT, backup_type VARCHAR(255), status VARCHAR(255), storage_location VARCHAR(255), PRIMARY KEY (id));
 
-CREATE TABLE cashier_sessions (card_collections NUMERIC(12,2), cash_collections NUMERIC(12,2), closing_float NUMERIC(12,2), digital_collections NUMERIC(12,2), opening_float NUMERIC(12,2) not null, refunds_issued NUMERIC(12,2), variance_amount NUMERIC(12,2), approved_by BIGINT, branch_id BIGINT not null, cashier_id BIGINT not null, closed_at TIMESTAMP with time zone, id BIGSERIAL, opened_at TIMESTAMP with time zone not null, status enum ('APPROVED','CLOSED','DISCREPANCY','OPEN') not null, PRIMARY KEY (id));
+CREATE TABLE cashier_sessions (card_collections NUMERIC(12,2), cash_collections NUMERIC(12,2), closing_float NUMERIC(12,2), digital_collections NUMERIC(12,2), opening_float NUMERIC(12,2) not null, refunds_issued NUMERIC(12,2), variance_amount NUMERIC(12,2), approved_by BIGINT, branch_id BIGINT not null, cashier_id BIGINT not null, closed_at TIMESTAMP with time zone, id BIGSERIAL, opened_at TIMESTAMP with time zone not null, status VARCHAR(20) not null CHECK (status IN ('APPROVED','CLOSED','DISCREPANCY','OPEN')), PRIMARY KEY (id));
 
-CREATE TABLE chart_of_accounts (is_active BOOLEAN not null, branch_id BIGINT, created_at TIMESTAMP with time zone not null, id BIGSERIAL, parent_account_id BIGINT, updated_at TIMESTAMP with time zone not null, account_code VARCHAR(20) not null unique, account_name VARCHAR(100) not null, account_type enum ('ASSET','EQUITY','EXPENSE','LIABILITY','REVENUE') not null, PRIMARY KEY (id));
+CREATE TABLE chart_of_accounts (is_active BOOLEAN not null, branch_id BIGINT, created_at TIMESTAMP with time zone not null, id BIGSERIAL, parent_account_id BIGINT, updated_at TIMESTAMP with time zone not null, account_code VARCHAR(20) not null unique, account_name VARCHAR(100) not null, account_type VARCHAR(20) not null CHECK (account_type IN ('ASSET','EQUITY','EXPENSE','LIABILITY','REVENUE')), PRIMARY KEY (id));
 
-CREATE TABLE credit_debit_notes (amount NUMERIC(12,2) not null, created_at TIMESTAMP with time zone not null, id BIGSERIAL, invoice_id BIGINT not null, issued_by BIGINT, note_number VARCHAR(50) not null unique, reason VARCHAR(255) not null, note_type enum ('CREDIT','DEBIT') not null, PRIMARY KEY (id));
+CREATE TABLE credit_debit_notes (amount NUMERIC(12,2) not null, created_at TIMESTAMP with time zone not null, id BIGSERIAL, invoice_id BIGINT not null, issued_by BIGINT, note_number VARCHAR(50) not null unique, reason VARCHAR(255) not null, note_type VARCHAR(10) not null CHECK (note_type IN ('CREDIT','DEBIT')), PRIMARY KEY (id));
 
-CREATE TABLE daily_closings (closing_date date not null, net_deposit NUMERIC(12,2) not null, total_collections NUMERIC(12,2) not null, total_refunds NUMERIC(12,2) not null, total_revenue NUMERIC(12,2) not null, approved_by BIGINT, branch_id BIGINT not null, closed_by BIGINT, created_at TIMESTAMP with time zone not null, id BIGSERIAL, status enum ('APPROVED','DRAFT','REJECTED','SUBMITTED') not null, PRIMARY KEY (id));
+CREATE TABLE daily_closings (closing_date date not null, net_deposit NUMERIC(12,2) not null, total_collections NUMERIC(12,2) not null, total_refunds NUMERIC(12,2) not null, total_revenue NUMERIC(12,2) not null, approved_by BIGINT, branch_id BIGINT not null, closed_by BIGINT, created_at TIMESTAMP with time zone not null, id BIGSERIAL, status VARCHAR(20) not null CHECK (status IN ('APPROVED','DRAFT','REJECTED','SUBMITTED')), PRIMARY KEY (id));
 
 CREATE TABLE departments (is_active BOOLEAN, head_doctor_id BIGINT, id BIGSERIAL, description TEXT, name VARCHAR(255) not null unique, PRIMARY KEY (id));
 
@@ -51,7 +51,7 @@ CREATE TABLE job_applications (created_at TIMESTAMP with time zone not null, id 
 
 CREATE TABLE job_requisitions (max_salary NUMERIC(12,2), min_salary NUMERIC(12,2), required_experience_years INTEGER, vacancy_count INTEGER not null, branch_id BIGINT not null, created_at TIMESTAMP with time zone not null, id BIGSERIAL, updated_at TIMESTAMP with time zone not null, status VARCHAR(20) not null, department VARCHAR(100) not null, title VARCHAR(100) not null, required_qualifications TEXT, interview_panel json, PRIMARY KEY (id));
 
-CREATE TABLE journal_entries (entry_date date not null, approved_by BIGINT, created_at TIMESTAMP with time zone not null, id BIGSERIAL, prepared_by BIGINT, reference_id BIGINT, journal_number VARCHAR(50) not null unique, reference_type VARCHAR(50), description VARCHAR(255) not null, status enum ('DRAFT','POSTED','REVERSED') not null, PRIMARY KEY (id));
+CREATE TABLE journal_entries (entry_date date not null, approved_by BIGINT, created_at TIMESTAMP with time zone not null, id BIGSERIAL, prepared_by BIGINT, reference_id BIGINT, journal_number VARCHAR(50) not null unique, reference_type VARCHAR(50), description VARCHAR(255) not null, status VARCHAR(20) not null CHECK (status IN ('DRAFT','POSTED','REVERSED')), PRIMARY KEY (id));
 
 CREATE TABLE lab_inventory_items (minimum_threshold INTEGER not null, quantity INTEGER not null, branch_id BIGINT not null, created_at TIMESTAMP with time zone not null, id BIGSERIAL, updated_at TIMESTAMP with time zone not null, sku VARCHAR(50) not null unique, unit VARCHAR(50), item_name VARCHAR(100) not null, PRIMARY KEY (id));
 
@@ -81,7 +81,7 @@ CREATE TABLE radiology_appointments (duration_minutes INTEGER not null, branch_i
 
 CREATE TABLE radiology_inventory_items (minimum_threshold INTEGER not null, quantity INTEGER not null, branch_id BIGINT not null, created_at TIMESTAMP with time zone not null, expiry_date TIMESTAMP with time zone, id BIGSERIAL, updated_at TIMESTAMP with time zone not null, unit VARCHAR(20) not null, batch_number VARCHAR(50), sku VARCHAR(50) not null unique, item_name VARCHAR(100) not null, PRIMARY KEY (id));
 
-CREATE TABLE refunds (amount NUMERIC(12,2) not null, approved_by BIGINT, created_at TIMESTAMP with time zone not null, id BIGSERIAL, invoice_id BIGINT, payment_id BIGINT not null, requested_by BIGINT, updated_at TIMESTAMP with time zone not null, idempotency_key VARCHAR(100), refund_reference VARCHAR(100) unique, refund_reason VARCHAR(255) not null, status enum ('APPROVED','FAILED','INITIATED','PENDING_APPROVAL','PROCESSED','REJECTED') not null, PRIMARY KEY (id));
+CREATE TABLE refunds (amount NUMERIC(12,2) not null, approved_by BIGINT, created_at TIMESTAMP with time zone not null, id BIGSERIAL, invoice_id BIGINT, payment_id BIGINT not null, requested_by BIGINT, updated_at TIMESTAMP with time zone not null, idempotency_key VARCHAR(100), refund_reference VARCHAR(100) unique, refund_reason VARCHAR(255) not null, status VARCHAR(25) not null CHECK (status IN ('APPROVED','FAILED','INITIATED','PENDING_APPROVAL','PROCESSED','REJECTED')), PRIMARY KEY (id));
 
 CREATE TABLE retention_policies (legal_hold BOOLEAN not null, retention_days INTEGER not null, id BIGSERIAL, tenant_id BIGINT, data_category VARCHAR(255) not null, PRIMARY KEY (id));
 
