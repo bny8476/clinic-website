@@ -8,7 +8,7 @@ spring:
   application:
     name: clinic-app
   flyway:
-    enabled: false
+    enabled: true
   jpa:
     hibernate:
       ddl-auto: validate
