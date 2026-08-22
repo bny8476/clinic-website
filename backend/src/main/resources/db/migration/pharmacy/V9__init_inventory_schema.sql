@@ -5,7 +5,7 @@
 -- Name: pharmacy_activity_logs; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_activity_logs (
+CREATE TABLE IF NOT EXISTS pharmacy_activity_logs (
     id bigint NOT NULL AUTO_INCREMENT,
     action VARCHAR(255),
     created_at DATETIME(6),
@@ -23,7 +23,7 @@ CREATE TABLE pharmacy_activity_logs (
 -- Name: pharmacy_barcode_scan_logs; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_barcode_scan_logs (
+CREATE TABLE IF NOT EXISTS pharmacy_barcode_scan_logs (
     scan_id VARCHAR(36) NOT NULL,
     barcode_value VARCHAR(200) NOT NULL,
     resolved_batch_id VARCHAR(255),
@@ -40,7 +40,7 @@ CREATE TABLE pharmacy_barcode_scan_logs (
 -- Name: pharmacy_batch_return_to_supplier; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_batch_return_to_supplier (
+CREATE TABLE IF NOT EXISTS pharmacy_batch_return_to_supplier (
     return_id VARCHAR(36) NOT NULL,
     actual_credit_value DECIMAL(38,2),
     batch_id VARCHAR(36) NOT NULL,
@@ -64,7 +64,7 @@ CREATE TABLE pharmacy_batch_return_to_supplier (
 -- Name: pharmacy_bill_cancellation_requests; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_bill_cancellation_requests (
+CREATE TABLE IF NOT EXISTS pharmacy_bill_cancellation_requests (
     id bigint NOT NULL AUTO_INCREMENT,
     bill_id bigint NOT NULL,
     reason VARCHAR(255) NOT NULL,
@@ -83,7 +83,7 @@ CREATE TABLE pharmacy_bill_cancellation_requests (
 -- Name: pharmacy_credit_bills; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_credit_bills (
+CREATE TABLE IF NOT EXISTS pharmacy_credit_bills (
     id bigint NOT NULL AUTO_INCREMENT,
     created_at DATETIME(6) NOT NULL,
     created_by VARCHAR(255),
@@ -105,7 +105,7 @@ CREATE TABLE pharmacy_credit_bills (
 -- Name: pharmacy_doctors; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_doctors (
+CREATE TABLE IF NOT EXISTS pharmacy_doctors (
     id bigint NOT NULL AUTO_INCREMENT,
     created_at DATETIME(6) NOT NULL,
     created_by VARCHAR(255),
@@ -126,7 +126,7 @@ CREATE TABLE pharmacy_doctors (
 -- Name: pharmacy_drug_interaction_checks; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_drug_interaction_checks (
+CREATE TABLE IF NOT EXISTS pharmacy_drug_interaction_checks (
     check_id VARCHAR(36) NOT NULL,
     bill_id bigint,
     checked_at DATETIME(6),
@@ -148,7 +148,7 @@ CREATE TABLE pharmacy_drug_interaction_checks (
 -- Name: pharmacy_drug_interactions; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_drug_interactions (
+CREATE TABLE IF NOT EXISTS pharmacy_drug_interactions (
     interaction_id VARCHAR(36) NOT NULL,
     is_active boolean,
     clinical_consequence text NOT NULL,
@@ -172,7 +172,7 @@ CREATE TABLE pharmacy_drug_interactions (
 -- Name: pharmacy_goods_receipt_note_items; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_goods_receipt_note_items (
+CREATE TABLE IF NOT EXISTS pharmacy_goods_receipt_note_items (
     id bigint NOT NULL AUTO_INCREMENT,
     created_at DATETIME(6) NOT NULL,
     created_by VARCHAR(255),
@@ -200,7 +200,7 @@ CREATE TABLE pharmacy_goods_receipt_note_items (
 -- Name: pharmacy_goods_receipt_notes; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_goods_receipt_notes (
+CREATE TABLE IF NOT EXISTS pharmacy_goods_receipt_notes (
     id bigint NOT NULL AUTO_INCREMENT,
     created_at DATETIME(6) NOT NULL,
     created_by VARCHAR(255),
@@ -226,7 +226,7 @@ CREATE TABLE pharmacy_goods_receipt_notes (
 -- Name: pharmacy_insurance_claim_line_items; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_insurance_claim_line_items (
+CREATE TABLE IF NOT EXISTS pharmacy_insurance_claim_line_items (
     claim_line_id VARCHAR(36) NOT NULL,
     bill_line_item_id bigint,
     coverage_percentage DECIMAL(38,2),
@@ -248,7 +248,7 @@ CREATE TABLE pharmacy_insurance_claim_line_items (
 -- Name: pharmacy_insurance_claims; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_insurance_claims (
+CREATE TABLE IF NOT EXISTS pharmacy_insurance_claims (
     claim_id VARCHAR(36) NOT NULL,
     approval_date date,
     approved_amount DECIMAL(38,2),
@@ -282,7 +282,7 @@ CREATE TABLE pharmacy_insurance_claims (
 -- Name: pharmacy_insurance_medicine_coverage; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_insurance_medicine_coverage (
+CREATE TABLE IF NOT EXISTS pharmacy_insurance_medicine_coverage (
     coverage_id VARCHAR(36) NOT NULL,
     coverage_notes text,
     coverage_percentage DECIMAL(38,2),
@@ -301,7 +301,7 @@ CREATE TABLE pharmacy_insurance_medicine_coverage (
 -- Name: pharmacy_insurance_providers; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_insurance_providers (
+CREATE TABLE IF NOT EXISTS pharmacy_insurance_providers (
     provider_id VARCHAR(36) NOT NULL,
     is_active boolean,
     address text,
@@ -323,7 +323,7 @@ CREATE TABLE pharmacy_insurance_providers (
 -- Name: pharmacy_medicine_return_items; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_medicine_return_items (
+CREATE TABLE IF NOT EXISTS pharmacy_medicine_return_items (
     id bigint NOT NULL AUTO_INCREMENT,
     created_at DATETIME(6) NOT NULL,
     created_by VARCHAR(255),
@@ -344,7 +344,7 @@ CREATE TABLE pharmacy_medicine_return_items (
 -- Name: pharmacy_medicine_returns; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_medicine_returns (
+CREATE TABLE IF NOT EXISTS pharmacy_medicine_returns (
     id bigint NOT NULL AUTO_INCREMENT,
     created_at DATETIME(6) NOT NULL,
     created_by VARCHAR(255),
@@ -366,7 +366,7 @@ CREATE TABLE pharmacy_medicine_returns (
 -- Name: pharmacy_medicine_stocks; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_medicine_stocks (
+CREATE TABLE IF NOT EXISTS pharmacy_medicine_stocks (
     id bigint NOT NULL AUTO_INCREMENT,
     created_at DATETIME(6) NOT NULL,
     created_by VARCHAR(255),
@@ -394,7 +394,7 @@ CREATE TABLE pharmacy_medicine_stocks (
 -- Name: pharmacy_medicines; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_medicines (
+CREATE TABLE IF NOT EXISTS pharmacy_medicines (
     id bigint NOT NULL AUTO_INCREMENT,
     created_at DATETIME(6) NOT NULL,
     created_by VARCHAR(255),
@@ -433,7 +433,7 @@ CREATE TABLE pharmacy_medicines (
 -- Name: pharmacy_narcotic_monthly_reconciliation; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_narcotic_monthly_reconciliation (
+CREATE TABLE IF NOT EXISTS pharmacy_narcotic_monthly_reconciliation (
     reconciliation_id VARCHAR(36) NOT NULL,
     approved_at DATETIME(6),
     approved_by bigint,
@@ -460,7 +460,7 @@ CREATE TABLE pharmacy_narcotic_monthly_reconciliation (
 -- Name: pharmacy_narcotic_register; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_narcotic_register (
+CREATE TABLE IF NOT EXISTS pharmacy_narcotic_register (
     entry_id bigint NOT NULL AUTO_INCREMENT,
     bed_number VARCHAR(255),
     closing_balance integer NOT NULL,
@@ -494,7 +494,7 @@ CREATE TABLE pharmacy_narcotic_register (
 -- Name: pharmacy_patients; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_patients (
+CREATE TABLE IF NOT EXISTS pharmacy_patients (
     id bigint NOT NULL AUTO_INCREMENT,
     created_at DATETIME(6) NOT NULL,
     created_by VARCHAR(255),
@@ -520,7 +520,7 @@ CREATE TABLE pharmacy_patients (
 -- Name: pharmacy_payment_transactions; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_payment_transactions (
+CREATE TABLE IF NOT EXISTS pharmacy_payment_transactions (
     id bigint NOT NULL AUTO_INCREMENT,
     created_at DATETIME(6) NOT NULL,
     created_by VARCHAR(255),
@@ -542,7 +542,7 @@ CREATE TABLE pharmacy_payment_transactions (
 -- Name: pharmacy_pharmacy_advances; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_pharmacy_advances (
+CREATE TABLE IF NOT EXISTS pharmacy_pharmacy_advances (
     id bigint NOT NULL AUTO_INCREMENT,
     created_at DATETIME(6) NOT NULL,
     created_by VARCHAR(255),
@@ -564,7 +564,7 @@ CREATE TABLE pharmacy_pharmacy_advances (
 -- Name: pharmacy_po_line_items; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_po_line_items (
+CREATE TABLE IF NOT EXISTS pharmacy_po_line_items (
     line_id VARCHAR(36) NOT NULL,
     created_at DATETIME(6),
     gst_percentage DECIMAL(38,2) NOT NULL,
@@ -587,7 +587,7 @@ CREATE TABLE pharmacy_po_line_items (
 -- Name: pharmacy_prescriptions; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_prescriptions (
+CREATE TABLE IF NOT EXISTS pharmacy_prescriptions (
     id bigint NOT NULL AUTO_INCREMENT,
     created_at DATETIME(6) NOT NULL,
     created_by VARCHAR(255),
@@ -611,7 +611,7 @@ CREATE TABLE pharmacy_prescriptions (
 -- Name: pharmacy_purchase_order_items; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_purchase_order_items (
+CREATE TABLE IF NOT EXISTS pharmacy_purchase_order_items (
     id bigint NOT NULL AUTO_INCREMENT,
     created_at DATETIME(6) NOT NULL,
     created_by VARCHAR(255),
@@ -636,7 +636,7 @@ CREATE TABLE pharmacy_purchase_order_items (
 -- Name: pharmacy_purchase_orders; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_purchase_orders (
+CREATE TABLE IF NOT EXISTS pharmacy_purchase_orders (
     po_id VARCHAR(36) NOT NULL,
     approved_at DATETIME(6),
     approved_by bigint,
@@ -673,7 +673,7 @@ CREATE TABLE pharmacy_purchase_orders (
 -- Name: pharmacy_report_schedules; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_report_schedules (
+CREATE TABLE IF NOT EXISTS pharmacy_report_schedules (
     id bigint NOT NULL AUTO_INCREMENT,
     created_at DATETIME(6) NOT NULL,
     created_by VARCHAR(255),
@@ -704,7 +704,7 @@ CREATE TABLE pharmacy_report_schedules (
 -- Name: pharmacy_return_to_supplier_items; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_return_to_supplier_items (
+CREATE TABLE IF NOT EXISTS pharmacy_return_to_supplier_items (
     id bigint NOT NULL AUTO_INCREMENT,
     created_at DATETIME(6) NOT NULL,
     created_by VARCHAR(255),
@@ -726,7 +726,7 @@ CREATE TABLE pharmacy_return_to_supplier_items (
 -- Name: pharmacy_return_to_suppliers; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_return_to_suppliers (
+CREATE TABLE IF NOT EXISTS pharmacy_return_to_suppliers (
     id bigint NOT NULL AUTO_INCREMENT,
     created_at DATETIME(6) NOT NULL,
     created_by VARCHAR(255),
@@ -751,7 +751,7 @@ CREATE TABLE pharmacy_return_to_suppliers (
 -- Name: pharmacy_roles; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_roles (
+CREATE TABLE IF NOT EXISTS pharmacy_roles (
     id bigint NOT NULL AUTO_INCREMENT,
     created_at DATETIME(6) NOT NULL,
     created_by VARCHAR(255),
@@ -771,7 +771,7 @@ CREATE TABLE pharmacy_roles (
 -- Name: pharmacy_sales_bills; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_sales_bills (
+CREATE TABLE IF NOT EXISTS pharmacy_sales_bills (
     id bigint NOT NULL AUTO_INCREMENT,
     created_at DATETIME(6) NOT NULL,
     created_by VARCHAR(255),
@@ -808,7 +808,7 @@ CREATE TABLE pharmacy_sales_bills (
 -- Name: pharmacy_sales_line_items; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_sales_line_items (
+CREATE TABLE IF NOT EXISTS pharmacy_sales_line_items (
     id bigint NOT NULL AUTO_INCREMENT,
     created_at DATETIME(6) NOT NULL,
     created_by VARCHAR(255),
@@ -831,7 +831,7 @@ CREATE TABLE pharmacy_sales_line_items (
 -- Name: pharmacy_stock_adjustments; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_stock_adjustments (
+CREATE TABLE IF NOT EXISTS pharmacy_stock_adjustments (
     id bigint NOT NULL AUTO_INCREMENT,
     created_at DATETIME(6) NOT NULL,
     created_by VARCHAR(255),
@@ -856,7 +856,7 @@ CREATE TABLE pharmacy_stock_adjustments (
 -- Name: pharmacy_stock_alerts; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_stock_alerts (
+CREATE TABLE IF NOT EXISTS pharmacy_stock_alerts (
     id bigint NOT NULL AUTO_INCREMENT,
     alert_type VARCHAR(255),
     created_at DATETIME(6),
@@ -872,7 +872,7 @@ CREATE TABLE pharmacy_stock_alerts (
 -- Name: pharmacy_stock_batches; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_stock_batches (
+CREATE TABLE IF NOT EXISTS pharmacy_stock_batches (
     batch_id VARCHAR(36) NOT NULL,
     batch_number VARCHAR(60) NOT NULL,
     created_at DATETIME(6),
@@ -905,7 +905,7 @@ CREATE TABLE pharmacy_stock_batches (
 -- Name: pharmacy_storage_units; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_storage_units (
+CREATE TABLE IF NOT EXISTS pharmacy_storage_units (
     unit_id VARCHAR(36) NOT NULL,
     is_active boolean,
     assigned_medicines text,
@@ -923,7 +923,7 @@ CREATE TABLE pharmacy_storage_units (
 -- Name: pharmacy_supplier_invoice_items; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_supplier_invoice_items (
+CREATE TABLE IF NOT EXISTS pharmacy_supplier_invoice_items (
     id bigint NOT NULL AUTO_INCREMENT,
     created_at DATETIME(6) NOT NULL,
     created_by VARCHAR(255),
@@ -949,7 +949,7 @@ CREATE TABLE pharmacy_supplier_invoice_items (
 -- Name: pharmacy_supplier_invoices; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_supplier_invoices (
+CREATE TABLE IF NOT EXISTS pharmacy_supplier_invoices (
     id bigint NOT NULL AUTO_INCREMENT,
     created_at DATETIME(6) NOT NULL,
     created_by VARCHAR(255),
@@ -977,7 +977,7 @@ CREATE TABLE pharmacy_supplier_invoices (
 -- Name: pharmacy_supplier_performance; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_supplier_performance (
+CREATE TABLE IF NOT EXISTS pharmacy_supplier_performance (
     id bigint NOT NULL AUTO_INCREMENT,
     created_at DATETIME(6) NOT NULL,
     created_by VARCHAR(255),
@@ -1005,7 +1005,7 @@ CREATE TABLE pharmacy_supplier_performance (
 -- Name: pharmacy_suppliers; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_suppliers (
+CREATE TABLE IF NOT EXISTS pharmacy_suppliers (
     id bigint NOT NULL AUTO_INCREMENT,
     created_at DATETIME(6) NOT NULL,
     created_by VARCHAR(255),
@@ -1049,7 +1049,7 @@ CREATE TABLE pharmacy_suppliers (
 -- Name: pharmacy_temperature_logs; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_temperature_logs (
+CREATE TABLE IF NOT EXISTS pharmacy_temperature_logs (
     log_id VARCHAR(36) NOT NULL,
     is_breach boolean,
     breach_notes text,
@@ -1074,7 +1074,7 @@ CREATE TABLE pharmacy_temperature_logs (
 -- Name: pharmacy_users; Type: TABLE; Schema: public; Owner: clinic_admin
 --
 
-CREATE TABLE pharmacy_users (
+CREATE TABLE IF NOT EXISTS pharmacy_users (
     id bigint NOT NULL AUTO_INCREMENT,
     created_at DATETIME(6) NOT NULL,
     created_by VARCHAR(255),

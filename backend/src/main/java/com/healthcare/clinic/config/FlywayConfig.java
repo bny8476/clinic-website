@@ -57,6 +57,7 @@ public class FlywayConfig {
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
             try {
                 baselineIfNeeded(flyway, dbName);
+                flyway.repair();
                 flyway.migrate();
                 return;
             } catch (Exception ex) {
