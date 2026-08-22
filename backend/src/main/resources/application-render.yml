@@ -1,29 +1,28 @@
 spring:
+app:
   datasource:
     clinic:
       jdbc-url: ${SPRING_DATASOURCE_CLINIC_URL}
       username: ${SPRING_DATASOURCE_CLINIC_USERNAME}
       password: ${SPRING_DATASOURCE_CLINIC_PASSWORD}
       driver-class-name: org.postgresql.Driver
-      hikari:
-        connection-timeout: 30000
-        validation-timeout: 5000
-        idle-timeout: 600000
-        max-lifetime: 1800000
-        minimum-idle: 1
-        maximum-pool-size: 5
+      connection-timeout: 30000
+      validation-timeout: 5000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      minimum-idle: 1
+      maximum-pool-size: 5
     pharmacy:
       jdbc-url: ${SPRING_DATASOURCE_PHARMACY_URL}
       username: ${SPRING_DATASOURCE_PHARMACY_USERNAME}
       password: ${SPRING_DATASOURCE_PHARMACY_PASSWORD}
       driver-class-name: com.mysql.cj.jdbc.Driver
-      hikari:
-        connection-timeout: 30000
-        validation-timeout: 5000
-        idle-timeout: 600000
-        max-lifetime: 1800000
-        minimum-idle: 1
-        maximum-pool-size: 5
+      connection-timeout: 30000
+      validation-timeout: 5000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      minimum-idle: 1
+      maximum-pool-size: 5
   jpa:
     hibernate:
       ddl-auto: validate
