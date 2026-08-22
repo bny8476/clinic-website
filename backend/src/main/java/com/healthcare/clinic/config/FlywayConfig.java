@@ -5,15 +5,22 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+
 
 import javax.sql.DataSource;
 
 
 
+import org.springframework.beans.factory.InitializingBean;
+
 @Configuration
-@ConditionalOnProperty(prefix = "spring.flyway", name = "enabled", matchIfMissing = true)
 public class FlywayConfig {
+
+    public static class FlywayMigrationRunner implements InitializingBean {
+        private final Flyway flyway;
+        public FlywayMigrationRunner(Flyway flyway) { this.flyway = flyway; }
+        @Override public void afterPropertiesSet() { flyway.migrate(); }
+    }
 
     
 
@@ -27,9 +34,12 @@ public class FlywayConfig {
                 .baselineOnMigrate(true)
                 .baselineVersion("114")
                 .load();
-        
-        flyway.migrate();
         return flyway;
+    }
+
+    @Bean
+    public FlywayMigrationRunner clinicFlywayInitializer(@Qualifier("clinicFlyway") Flyway flyway) {
+        return new FlywayMigrationRunner(flyway);
     }
 
     @Bean
@@ -42,8 +52,12 @@ public class FlywayConfig {
                 .baselineOnMigrate(true)
                 .baselineVersion("112")
                 .load();
-        
-        flyway.migrate();
         return flyway;
+    }
+
+    @Bean
+    @DependsOn("clinicFlywayInitializer")
+    public FlywayMigrationRunner pharmacyFlywayInitializer(@Qualifier("pharmacyFlyway") Flyway flyway) {
+        return new FlywayMigrationRunner(flyway);
     }
 }
