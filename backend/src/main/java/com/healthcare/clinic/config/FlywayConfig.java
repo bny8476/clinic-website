@@ -17,12 +17,15 @@ public class FlywayConfig {
 
     @Bean
     public Flyway clinicFlyway(@Qualifier("clinicDataSource") DataSource clinicDataSource, org.springframework.core.env.Environment env) {
+        boolean baselineOnMigrate = env.getProperty("app.flyway.baseline-on-migrate", Boolean.class, false);
+        String baselineVersion = env.getProperty("app.flyway.baseline-version-clinic", "0");
+        
         Flyway flyway = Flyway.configure()
                 .dataSource(clinicDataSource)
                 .locations("classpath:db/migration/clinic")
                 .table("clinic_flyway_schema_history_v2")
-                .baselineOnMigrate(true)
-                .baselineVersion("114")
+                .baselineOnMigrate(baselineOnMigrate)
+                .baselineVersion(baselineVersion)
                 .load();
         if (Boolean.parseBoolean(env.getProperty("spring.flyway.enabled", "true"))) {
             migrateWithRetry(flyway, "clinic");
@@ -32,12 +35,15 @@ public class FlywayConfig {
 
     @Bean
     public Flyway pharmacyFlyway(@Qualifier("clinicDataSource") DataSource pharmacyDataSource, org.springframework.core.env.Environment env) {
+        boolean baselineOnMigrate = env.getProperty("app.flyway.baseline-on-migrate", Boolean.class, false);
+        String baselineVersion = env.getProperty("app.flyway.baseline-version-pharmacy", "0");
+        
         Flyway flyway = Flyway.configure()
                 .dataSource(pharmacyDataSource)
                 .locations("classpath:db/migration/pharmacy")
                 .table("pharmacy_flyway_schema_history_v2")
-                .baselineOnMigrate(true)
-                .baselineVersion("112")
+                .baselineOnMigrate(baselineOnMigrate)
+                .baselineVersion(baselineVersion)
                 .load();
         if (Boolean.parseBoolean(env.getProperty("spring.flyway.enabled", "true"))) {
             migrateWithRetry(flyway, "pharmacy");

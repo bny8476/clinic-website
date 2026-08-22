@@ -51,6 +51,10 @@ twilio:
     enabled: ${TWILIO_VIDEO_ENABLED:false}
 
 app:
+  flyway:
+    baseline-on-migrate: false
+    baseline-version-clinic: "0"
+    baseline-version-pharmacy: "0"
   datasource:
     clinic:
       url: ${DB_URL:jdbc:h2:mem:clinicdb}
