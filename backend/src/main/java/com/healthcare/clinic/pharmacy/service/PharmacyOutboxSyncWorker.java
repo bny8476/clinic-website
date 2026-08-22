@@ -26,7 +26,7 @@ public class PharmacyOutboxSyncWorker {
     private static final int MAX_RETRIES = 5;
 
     @Scheduled(fixedDelay = 5000)
-    @org.springframework.transaction.annotation.Transactional(transactionManager = "pharmacyTransactionManager")
+    @org.springframework.transaction.annotation.Transactional
     public void processOutbox() {
         List<PharmacyOutboxEvent> pendingEvents = pharmacyOutboxEventRepository.findByStatus("PENDING");
         for (PharmacyOutboxEvent event : pendingEvents) {

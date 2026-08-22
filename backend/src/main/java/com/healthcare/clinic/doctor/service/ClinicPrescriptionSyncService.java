@@ -13,7 +13,7 @@ public class ClinicPrescriptionSyncService {
 
     private final PrescriptionRepository clinicalPrescriptionRepository;
 
-    @Transactional(transactionManager = "clinicTransactionManager")
+    @Transactional
     public void syncClinicalStatus(Long clinicalPrescriptionId, String newStatus, String performedBy, LocalDateTime dispensedAt, java.util.List<java.util.Map<String, Object>> dispensedItems) {
         if (clinicalPrescriptionId == null) return;
         clinicalPrescriptionRepository.findById(clinicalPrescriptionId).ifPresent(clinical -> {

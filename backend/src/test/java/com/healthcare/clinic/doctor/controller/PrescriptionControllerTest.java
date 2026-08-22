@@ -24,15 +24,10 @@ import static org.mockito.Mockito.when;
 import org.springframework.test.annotation.DirtiesContext;
 
 @SpringBootTest(properties = {
-    "spring.datasource.url=jdbc:h2:mem:testdb", 
-    "spring.datasource.username=sa", 
-    "spring.datasource.password=", 
-    "spring.datasource.driver-class-name=org.h2.Driver", 
-    "jwt.secret=mock-secret-key-that-is-at-least-32-chars-long-for-testing", 
+                    "jwt.secret=mock-secret-key-that-is-at-least-32-chars-long-for-testing", 
     "jwt.expirationMs=3600000", 
     "jwt.access-token-expiration-ms=3600000", 
-    "spring.jpa.database-platform=org.hibernate.dialect.H2Dialect", 
-    "spring.flyway.enabled=false"
+        "spring.flyway.enabled=false"
 })
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class PrescriptionControllerTest {

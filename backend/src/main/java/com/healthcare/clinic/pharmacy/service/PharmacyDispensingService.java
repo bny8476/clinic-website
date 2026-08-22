@@ -38,7 +38,7 @@ public class PharmacyDispensingService {
     private final com.healthcare.clinic.pharmacy.repository.PharmacyOutboxEventRepository pharmacyOutboxEventRepository;
     private final com.healthcare.clinic.pharmacy.repository.ControlledSubstanceRegisterRepository controlledSubstanceRegisterRepository;
 
-    @Transactional(transactionManager = "pharmacyTransactionManager")
+    @Transactional
     public PrescriptionDispensed dispensePrescription(DispenseRequest request, User pharmacist) {
         // 1. Fetch Prescription Record with pessimistic lock to prevent concurrent dispenses
         PharmacyPrescriptionRecord record = prescriptionRecordRepository.findByIdForUpdate(request.getPrescriptionId())
