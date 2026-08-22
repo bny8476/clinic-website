@@ -11,21 +11,11 @@ import javax.sql.DataSource;
 
 
 
-import org.springframework.beans.factory.InitializingBean;
-
 @Configuration
 public class FlywayConfig {
 
-    public static class FlywayMigrationRunner implements InitializingBean {
-        private final Flyway flyway;
-        public FlywayMigrationRunner(Flyway flyway) { this.flyway = flyway; }
-        @Override public void afterPropertiesSet() { flyway.migrate(); }
-    }
 
-    
-
-
-    @Bean
+    @Bean(initMethod = "migrate")
     public Flyway clinicFlyway(@Qualifier("clinicDataSource") DataSource clinicDataSource, org.springframework.core.env.Environment env) {
         Flyway flyway = Flyway.configure()
                 .dataSource(clinicDataSource)
@@ -37,12 +27,7 @@ public class FlywayConfig {
         return flyway;
     }
 
-    @Bean
-    public FlywayMigrationRunner clinicFlywayInitializer(@Qualifier("clinicFlyway") Flyway flyway) {
-        return new FlywayMigrationRunner(flyway);
-    }
-
-    @Bean
+    @Bean(initMethod = "migrate")
     @DependsOn("clinicFlyway")
     public Flyway pharmacyFlyway(@Qualifier("pharmacyDataSource") DataSource pharmacyDataSource, org.springframework.core.env.Environment env) {
         Flyway flyway = Flyway.configure()
@@ -53,11 +38,5 @@ public class FlywayConfig {
                 .baselineVersion("112")
                 .load();
         return flyway;
-    }
-
-    @Bean
-    @DependsOn("clinicFlywayInitializer")
-    public FlywayMigrationRunner pharmacyFlywayInitializer(@Qualifier("pharmacyFlyway") Flyway flyway) {
-        return new FlywayMigrationRunner(flyway);
     }
 }
