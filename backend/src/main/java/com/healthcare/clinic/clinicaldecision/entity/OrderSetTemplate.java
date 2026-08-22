@@ -28,12 +28,12 @@ public class OrderSetTemplate {
     private String category;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "diagnosis_codes", nullable = false, columnDefinition = "json")
+    @Column(name = "diagnosis_codes", nullable = false, columnDefinition = "jsonb")
     @Builder.Default
     private String diagnosisCodes = "[]";
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(nullable = false, columnDefinition = "json")
+    @Column(nullable = false, columnDefinition = "jsonb")
     @Builder.Default
     private String items = "[]";
 
