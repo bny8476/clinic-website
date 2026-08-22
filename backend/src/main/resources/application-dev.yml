@@ -3,6 +3,10 @@ spring:
     enabled: false
   main:
     allow-bean-definition-overriding: true
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
 app:
   datasource:
     clinic:
@@ -15,10 +19,6 @@ app:
       driver-class-name: org.h2.Driver
       username: sa
       password: password
-  jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
-    hibernate:
-      ddl-auto: update
 
 jwt:
   secret: default_dev_secret_key_that_is_long_enough_for_hs256_algorithm_12345

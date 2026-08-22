@@ -9,17 +9,6 @@ spring:
     name: clinic-app
   flyway:
     enabled: false
-    clinic:
-      jdbc-url: ${SPRING_DATASOURCE_CLINIC_URL:jdbc:h2:mem:clinicdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;NON_KEYWORDS=VALUE}
-      username: ${SPRING_DATASOURCE_CLINIC_USERNAME:sa}
-      password: ${SPRING_DATASOURCE_CLINIC_PASSWORD:}
-      driver-class-name: ${SPRING_DATASOURCE_CLINIC_DRIVER_CLASS_NAME:org.h2.Driver}
-
-    pharmacy:
-      jdbc-url: ${SPRING_DATASOURCE_PHARMACY_URL:jdbc:h2:mem:pharmacydb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;NON_KEYWORDS=VALUE}
-      username: ${SPRING_DATASOURCE_PHARMACY_USERNAME:sa}
-      password: ${SPRING_DATASOURCE_PHARMACY_PASSWORD:}
-      driver-class-name: ${SPRING_DATASOURCE_PHARMACY_DRIVER_CLASS_NAME:org.h2.Driver}
   jpa:
     hibernate:
       ddl-auto: validate

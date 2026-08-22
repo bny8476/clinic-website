@@ -1,4 +1,9 @@
 spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: false
 app:
   datasource:
     clinic:
@@ -23,8 +28,3 @@ app:
       max-lifetime: 1800000
       minimum-idle: 1
       maximum-pool-size: 5
-  jpa:
-    hibernate:
-      ddl-auto: validate
-  flyway:
-    enabled: false

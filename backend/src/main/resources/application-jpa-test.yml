@@ -1,4 +1,9 @@
 spring:
+  flyway:
+    enabled: false
+  jpa:
+    hibernate:
+      ddl-auto: update
 app:
   datasource:
     clinic:
@@ -11,8 +16,3 @@ app:
       username: eakhalaivan
       password: ""
       driver-class-name: com.mysql.cj.jdbc.Driver
-  flyway:
-    enabled: false
-  jpa:
-    hibernate:
-      ddl-auto: update

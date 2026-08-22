@@ -1,18 +1,6 @@
 spring:
   main:
     web-application-type: none
-app:
-  datasource:
-    clinic:
-      jdbc-url: ${SPRING_DATASOURCE_CLINIC_URL}
-      username: ${SPRING_DATASOURCE_CLINIC_USERNAME}
-      password: ${SPRING_DATASOURCE_CLINIC_PASSWORD}
-      driver-class-name: org.postgresql.Driver
-    pharmacy:
-      jdbc-url: ${SPRING_DATASOURCE_PHARMACY_URL}
-      username: ${SPRING_DATASOURCE_PHARMACY_USERNAME}
-      password: ${SPRING_DATASOURCE_PHARMACY_PASSWORD}
-      driver-class-name: org.h2.Driver
   jpa:
     hibernate:
       ddl-auto: none
@@ -27,3 +15,15 @@ app:
               action: none
   flyway:
     enabled: true
+app:
+  datasource:
+    clinic:
+      jdbc-url: ${SPRING_DATASOURCE_CLINIC_URL}
+      username: ${SPRING_DATASOURCE_CLINIC_USERNAME}
+      password: ${SPRING_DATASOURCE_CLINIC_PASSWORD}
+      driver-class-name: org.postgresql.Driver
+    pharmacy:
+      jdbc-url: ${SPRING_DATASOURCE_PHARMACY_URL}
+      username: ${SPRING_DATASOURCE_PHARMACY_USERNAME}
+      password: ${SPRING_DATASOURCE_PHARMACY_PASSWORD}
+      driver-class-name: org.h2.Driver
