@@ -1,6 +1,7 @@
 spring:
   main:
     web-application-type: none
+app:
   datasource:
     clinic:
       jdbc-url: ${SPRING_DATASOURCE_CLINIC_URL}

@@ -4,7 +4,6 @@ import org.flywaydb.core.Flyway;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
 
 
 import javax.sql.DataSource;
@@ -28,7 +27,6 @@ public class FlywayConfig {
     }
 
     @Bean(initMethod = "migrate")
-    @DependsOn("clinicFlyway")
     public Flyway pharmacyFlyway(@Qualifier("pharmacyDataSource") DataSource pharmacyDataSource, org.springframework.core.env.Environment env) {
         Flyway flyway = Flyway.configure()
                 .dataSource(pharmacyDataSource)

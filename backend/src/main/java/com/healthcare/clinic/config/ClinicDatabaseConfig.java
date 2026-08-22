@@ -33,7 +33,7 @@ public class ClinicDatabaseConfig {
 
     @Primary
     @Bean(name = "clinicDataSource")
-    @ConfigurationProperties(prefix = "spring.datasource.clinic")
+    @ConfigurationProperties(prefix = "app.datasource.clinic")
     public DataSource dataSource() {
         return DataSourceBuilder.create().type(com.zaxxer.hikari.HikariDataSource.class).build();
     }

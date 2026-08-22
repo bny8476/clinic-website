@@ -32,7 +32,7 @@ public class PharmacyDatabaseConfig {
     private Environment env;
 
     @Bean(name = "pharmacyDataSource")
-    @ConfigurationProperties(prefix = "spring.datasource.pharmacy")
+    @ConfigurationProperties(prefix = "app.datasource.pharmacy")
     public DataSource pharmacyDataSource() {
         return DataSourceBuilder.create().type(com.zaxxer.hikari.HikariDataSource.class).build();
     }

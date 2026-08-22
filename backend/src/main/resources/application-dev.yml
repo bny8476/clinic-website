@@ -3,6 +3,7 @@ spring:
     enabled: false
   main:
     allow-bean-definition-overriding: true
+app:
   datasource:
     clinic:
       jdbc-url: jdbc:h2:mem:clinicdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
