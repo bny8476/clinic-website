@@ -12,7 +12,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_activity_logs (
     description VARCHAR(500),
     ip_address VARCHAR(255),
     module VARCHAR(255),
-    user_id bigint
+    user_id bigint,
+    PRIMARY KEY (id)
 );
 
 
@@ -32,7 +33,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_barcode_scan_logs (
     scan_result VARCHAR(30) NOT NULL,
     scan_type VARCHAR(30) NOT NULL,
     scanned_at DATETIME(6),
-    scanned_by bigint NOT NULL
+    scanned_by bigint NOT NULL,
+    PRIMARY KEY (scan_id)
 );
 
 
@@ -56,7 +58,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_batch_return_to_supplier (
     returned_quantity integer NOT NULL,
     updated_at DATETIME(6),
     medicine_id bigint NOT NULL,
-    supplier_id bigint NOT NULL
+    supplier_id bigint NOT NULL,
+    PRIMARY KEY (return_id)
 );
 
 
@@ -72,7 +75,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_bill_cancellation_requests (
     requested_by VARCHAR(255) NOT NULL,
     reviewed_at DATETIME(6),
     reviewed_by VARCHAR(255),
-    status VARCHAR(255) NOT NULL
+    status VARCHAR(255) NOT NULL,
+    PRIMARY KEY (id)
 );
 
 
@@ -94,7 +98,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_credit_bills (
     status VARCHAR(255),
     total_amount DECIMAL(38,2) NOT NULL,
     bill_id bigint NOT NULL,
-    CONSTRAINT pharmacy_credit_bills_status_check CHECK (status IN ('PAID', 'PARTIAL', 'UNPAID', 'CANCELLED'))
+    CONSTRAINT pharmacy_credit_bills_status_check CHECK (status IN ('PAID', 'PARTIAL', 'UNPAID', 'CANCELLED')),
+    PRIMARY KEY (id)
 );
 
 
@@ -115,7 +120,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_doctors (
     contact_number VARCHAR(255),
     name VARCHAR(255) NOT NULL,
     registration_number VARCHAR(255),
-    specialization VARCHAR(255)
+    specialization VARCHAR(255),
+    PRIMARY KEY (id)
 );
 
 
@@ -140,7 +146,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_drug_interaction_checks (
     interaction_id VARCHAR(36),
     medicine_a_id bigint NOT NULL,
     medicine_b_id bigint NOT NULL,
-    override_by bigint
+    override_by bigint,
+    PRIMARY KEY (check_id)
 );
 
 
@@ -164,7 +171,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_drug_interactions (
     severity VARCHAR(20) NOT NULL,
     updated_at DATETIME(6),
     medicine_a_id bigint NOT NULL,
-    medicine_b_id bigint NOT NULL
+    medicine_b_id bigint NOT NULL,
+    PRIMARY KEY (interaction_id)
 );
 
 
@@ -189,7 +197,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_goods_receipt_note_items (
     rejected_quantity integer,
     rejection_reason VARCHAR(255),
     grn_id bigint NOT NULL,
-    medicine_id bigint NOT NULL
+    medicine_id bigint NOT NULL,
+    PRIMARY KEY (id)
 );
 
 
@@ -215,7 +224,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_goods_receipt_notes (
     supplier_invoice_number VARCHAR(255),
     vehicle_number VARCHAR(255),
     purchase_order_id VARCHAR(36) NOT NULL,
-    supplier_id bigint NOT NULL
+    supplier_id bigint NOT NULL,
+    PRIMARY KEY (id)
 );
 
 
@@ -240,7 +250,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_insurance_claim_line_items (
     quantity integer NOT NULL,
     unit_price DECIMAL(38,2) NOT NULL,
     claim_id VARCHAR(36) NOT NULL,
-    medicine_id bigint NOT NULL
+    medicine_id bigint NOT NULL,
+    PRIMARY KEY (claim_line_id)
 );
 
 
@@ -274,7 +285,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_insurance_claims (
     updated_at DATETIME(6),
     bill_id bigint,
     patient_id bigint,
-    insurance_provider_id VARCHAR(36) NOT NULL
+    insurance_provider_id VARCHAR(36) NOT NULL,
+    PRIMARY KEY (claim_id)
 );
 
 
@@ -293,7 +305,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_insurance_medicine_coverage (
     max_coverage_amount DECIMAL(38,2),
     medicine_name VARCHAR(150) NOT NULL,
     medicine_id bigint NOT NULL,
-    provider_id VARCHAR(36) NOT NULL
+    provider_id VARCHAR(36) NOT NULL,
+    PRIMARY KEY (coverage_id)
 );
 
 
@@ -315,7 +328,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_insurance_providers (
     provider_code VARCHAR(20) NOT NULL,
     provider_name VARCHAR(150) NOT NULL,
     provider_type VARCHAR(30) NOT NULL,
-    turnaround_days integer
+    turnaround_days integer,
+    PRIMARY KEY (provider_id)
 );
 
 
@@ -333,7 +347,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_medicine_return_items (
     quantity integer NOT NULL,
     return_amount DECIMAL(38,2) NOT NULL,
     return_id bigint NOT NULL,
-    stock_id bigint NOT NULL
+    stock_id bigint NOT NULL,
+    PRIMARY KEY (id)
 );
 
 
@@ -355,7 +370,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_medicine_returns (
     status VARCHAR(255),
     total_return_amount DECIMAL(38,2) NOT NULL,
     original_bill_id bigint NOT NULL,
-    CONSTRAINT pharmacy_medicine_returns_status_check CHECK (status IN ('PENDING', 'APPROVED', 'REJECTED'))
+    CONSTRAINT pharmacy_medicine_returns_status_check CHECK (status IN ('PENDING', 'APPROVED', 'REJECTED')),
+    PRIMARY KEY (id)
 );
 
 
@@ -383,7 +399,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_medicine_stocks (
     quantity_received integer NOT NULL,
     selling_rate DECIMAL(38,2) NOT NULL,
     medicine_id bigint NOT NULL,
-    supplier_id bigint
+    supplier_id bigint,
+    PRIMARY KEY (id)
 );
 
 
@@ -422,7 +439,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_medicines (
     tax_percentage DECIMAL(38,2) NOT NULL,
     unit VARCHAR(255),
     units_per_pack integer DEFAULT 1,
-    supplier_id bigint
+    supplier_id bigint,
+    PRIMARY KEY (id)
 );
 
 
@@ -452,7 +470,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_narcotic_monthly_reconciliation (
     total_returned integer,
     total_written_off integer,
     variance integer,
-    medicine_id bigint NOT NULL
+    medicine_id bigint NOT NULL,
+    PRIMARY KEY (reconciliation_id)
 );
 
 
@@ -483,7 +502,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_narcotic_register (
     ward_name VARCHAR(255),
     batch_id bigint NOT NULL,
     medicine_id bigint NOT NULL,
-    patient_id bigint
+    patient_id bigint,
+    PRIMARY KEY (entry_id)
 );
 
 
@@ -509,7 +529,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_patients (
     name VARCHAR(255) NOT NULL,
     phone VARCHAR(255),
     preferred_delivery boolean,
-    uhid VARCHAR(255) NOT NULL
+    uhid VARCHAR(255) NOT NULL,
+    PRIMARY KEY (id)
 );
 
 
@@ -531,7 +552,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_payment_transactions (
     payment_mode VARCHAR(255) NOT NULL,
     transaction_reference VARCHAR(255),
     credit_bill_id bigint NOT NULL,
-    CONSTRAINT pharmacy_payment_transactions_payment_mode_check CHECK (payment_mode IN ('CASH', 'CARD', 'UPI', 'ADVANCE', 'CREDIT'))
+    CONSTRAINT pharmacy_payment_transactions_payment_mode_check CHECK (payment_mode IN ('CASH', 'CARD', 'UPI', 'ADVANCE', 'CREDIT')),
+    PRIMARY KEY (id)
 );
 
 
@@ -553,7 +575,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_pharmacy_advances (
     balance_amount DECIMAL(38,2) NOT NULL,
     branch_id bigint NOT NULL,
     patient_id bigint,
-    patient_name VARCHAR(255) NOT NULL
+    patient_name VARCHAR(255) NOT NULL,
+    PRIMARY KEY (id)
 );
 
 
@@ -579,7 +602,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_po_line_items (
     received_quantity integer,
     unit_price DECIMAL(38,2) NOT NULL,
     medicine_id bigint NOT NULL,
-    po_id VARCHAR(36) NOT NULL
+    po_id VARCHAR(36) NOT NULL,
+    PRIMARY KEY (line_id)
 );
 
 
@@ -600,7 +624,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_prescriptions (
     verification_status VARCHAR(255) NOT NULL,
     verified_at DATETIME(6),
     verified_by VARCHAR(255),
-    doctor_id bigint
+    doctor_id bigint,
+    PRIMARY KEY (id)
 );
 
 
@@ -625,7 +650,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_purchase_order_items (
     negotiated_price DECIMAL(38,2),
     quantity integer NOT NULL,
     medicine_id bigint NOT NULL,
-    purchase_order_id VARCHAR(36) NOT NULL
+    purchase_order_id VARCHAR(36) NOT NULL,
+    PRIMARY KEY (id)
 );
 
 
@@ -665,7 +691,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_purchase_orders (
     terms_and_conditions text,
     total_value DECIMAL(38,2),
     updated_at DATETIME(6),
-    supplier_id bigint NOT NULL
+    supplier_id bigint NOT NULL,
+    PRIMARY KEY (po_id)
 );
 
 
@@ -693,7 +720,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_report_schedules (
     report_params VARCHAR(2000),
     report_type VARCHAR(255) NOT NULL,
     schedule_name VARCHAR(255) NOT NULL,
-    whatsapp_numbers VARCHAR(500)
+    whatsapp_numbers VARCHAR(500),
+    PRIMARY KEY (id)
 );
 
 
@@ -715,7 +743,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_return_to_supplier_items (
     return_quantity integer,
     unit_price DECIMAL(38,2),
     medicine_id bigint NOT NULL,
-    return_id bigint NOT NULL
+    return_id bigint NOT NULL,
+    PRIMARY KEY (id)
 );
 
 
@@ -740,7 +769,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_return_to_suppliers (
     status VARCHAR(255) NOT NULL,
     transport_details VARCHAR(500),
     grn_id bigint NOT NULL,
-    supplier_id bigint NOT NULL
+    supplier_id bigint NOT NULL,
+    PRIMARY KEY (id)
 );
 
 
@@ -760,7 +790,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_roles (
     color VARCHAR(255) NOT NULL,
     is_system_default boolean,
     name VARCHAR(255) NOT NULL,
-    permissions_json text
+    permissions_json text,
+    PRIMARY KEY (id)
 );
 
 
@@ -797,7 +828,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_sales_bills (
     total_gst_amount DECIMAL(38,2),
     doctor_id bigint,
     patient_id bigint,
-    CONSTRAINT pharmacy_sales_bills_payment_status_check CHECK (payment_status IN ('PAID', 'PARTIAL', 'UNPAID', 'CANCELLED'))
+    CONSTRAINT pharmacy_sales_bills_payment_status_check CHECK (payment_status IN ('PAID', 'PARTIAL', 'UNPAID', 'CANCELLED')),
+    PRIMARY KEY (id)
 );
 
 
@@ -820,7 +852,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_sales_line_items (
     tax_amount DECIMAL(38,2),
     unit_price DECIMAL(38,2) NOT NULL,
     bill_id bigint NOT NULL,
-    stock_id bigint NOT NULL
+    stock_id bigint NOT NULL,
+    PRIMARY KEY (id)
 );
 
 
@@ -845,7 +878,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_stock_adjustments (
     "timestamp" DATETIME(6) NOT NULL,
     adjusted_by_user_id bigint NOT NULL,
     medicine_id bigint NOT NULL,
-    medicine_stock_id bigint NOT NULL
+    medicine_stock_id bigint NOT NULL,
+    PRIMARY KEY (id)
 );
 
 
@@ -861,7 +895,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_stock_alerts (
     alert_type VARCHAR(255),
     created_at DATETIME(6),
     sent_to VARCHAR(255),
-    medicine_id bigint NOT NULL
+    medicine_id bigint NOT NULL,
+    PRIMARY KEY (id)
 );
 
 
@@ -897,7 +932,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_stock_batches (
     supplier_name VARCHAR(150),
     updated_at DATETIME(6),
     medicine_id bigint NOT NULL,
-    supplier_id bigint
+    supplier_id bigint,
+    PRIMARY KEY (batch_id)
 );
 
 
@@ -915,7 +951,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_storage_units (
     max_threshold DECIMAL(38,2) NOT NULL,
     min_threshold DECIMAL(38,2) NOT NULL,
     unit_name VARCHAR(100) NOT NULL,
-    unit_type VARCHAR(30) NOT NULL
+    unit_type VARCHAR(30) NOT NULL,
+    PRIMARY KEY (unit_id)
 );
 
 
@@ -938,7 +975,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_supplier_invoice_items (
     line_total DECIMAL(38,2),
     po_item_id bigint,
     medicine_id bigint NOT NULL,
-    invoice_id bigint NOT NULL
+    invoice_id bigint NOT NULL,
+    PRIMARY KEY (id)
 );
 
 
@@ -966,7 +1004,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_supplier_invoices (
     total_amount DECIMAL(38,2),
     grn_id bigint,
     purchase_order_id VARCHAR(36),
-    supplier_id bigint NOT NULL
+    supplier_id bigint NOT NULL,
+    PRIMARY KEY (id)
 );
 
 
@@ -994,7 +1033,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_supplier_performance (
     price_variance_rate double precision,
     quality_rejection_rate double precision,
     return_rate double precision,
-    supplier_id bigint NOT NULL
+    supplier_id bigint NOT NULL,
+    PRIMARY KEY (id)
 );
 
 
@@ -1038,7 +1078,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_suppliers (
     state VARCHAR(255),
     status VARCHAR(255),
     supplier_code VARCHAR(255) NOT NULL,
-    supplier_type VARCHAR(255)
+    supplier_type VARCHAR(255),
+    PRIMARY KEY (id)
 );
 
 
@@ -1066,7 +1107,8 @@ CREATE TABLE IF NOT EXISTS pharmacy_temperature_logs (
     recorded_temperature DECIMAL(38,2) NOT NULL,
     unit_name VARCHAR(100) NOT NULL,
     unit_type VARCHAR(30),
-    unit_id VARCHAR(36) NOT NULL
+    unit_id VARCHAR(36) NOT NULL,
+    PRIMARY KEY (log_id)
 );
 
 
@@ -1093,355 +1135,141 @@ CREATE TABLE IF NOT EXISTS pharmacy_users (
     profile_photo_url text,
     shift VARCHAR(255),
     status VARCHAR(255),
-    username VARCHAR(255) NOT NULL
+    username VARCHAR(255) NOT NULL,
+    PRIMARY KEY (id)
 );
 
 
 --
 
 
---
--- Name: pharmacy_activity_logs pharmacy_activity_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_activity_logs
-    ADD CONSTRAINT pharmacy_activity_logs_pkey PRIMARY KEY (id);
 
 
---
--- Name: pharmacy_barcode_scan_logs pharmacy_barcode_scan_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_barcode_scan_logs
-    ADD CONSTRAINT pharmacy_barcode_scan_logs_pkey PRIMARY KEY (scan_id);
 
 
---
--- Name: pharmacy_batch_return_to_supplier pharmacy_batch_return_to_supplier_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_batch_return_to_supplier
-    ADD CONSTRAINT pharmacy_batch_return_to_supplier_pkey PRIMARY KEY (return_id);
 
 
---
--- Name: pharmacy_bill_cancellation_requests pharmacy_bill_cancellation_requests_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_bill_cancellation_requests
-    ADD CONSTRAINT pharmacy_bill_cancellation_requests_pkey PRIMARY KEY (id);
 
 
---
--- Name: pharmacy_credit_bills pharmacy_credit_bills_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_credit_bills
-    ADD CONSTRAINT pharmacy_credit_bills_pkey PRIMARY KEY (id);
 
 
---
--- Name: pharmacy_doctors pharmacy_doctors_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_doctors
-    ADD CONSTRAINT pharmacy_doctors_pkey PRIMARY KEY (id);
 
 
---
--- Name: pharmacy_drug_interaction_checks pharmacy_drug_interaction_checks_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_drug_interaction_checks
-    ADD CONSTRAINT pharmacy_drug_interaction_checks_pkey PRIMARY KEY (check_id);
 
 
---
--- Name: pharmacy_drug_interactions pharmacy_drug_interactions_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_drug_interactions
-    ADD CONSTRAINT pharmacy_drug_interactions_pkey PRIMARY KEY (interaction_id);
 
 
---
--- Name: pharmacy_goods_receipt_note_items pharmacy_goods_receipt_note_items_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_goods_receipt_note_items
-    ADD CONSTRAINT pharmacy_goods_receipt_note_items_pkey PRIMARY KEY (id);
 
 
---
--- Name: pharmacy_goods_receipt_notes pharmacy_goods_receipt_notes_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_goods_receipt_notes
-    ADD CONSTRAINT pharmacy_goods_receipt_notes_pkey PRIMARY KEY (id);
 
 
---
--- Name: pharmacy_insurance_claim_line_items pharmacy_insurance_claim_line_items_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_insurance_claim_line_items
-    ADD CONSTRAINT pharmacy_insurance_claim_line_items_pkey PRIMARY KEY (claim_line_id);
 
 
---
--- Name: pharmacy_insurance_claims pharmacy_insurance_claims_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_insurance_claims
-    ADD CONSTRAINT pharmacy_insurance_claims_pkey PRIMARY KEY (claim_id);
 
 
---
--- Name: pharmacy_insurance_medicine_coverage pharmacy_insurance_medicine_coverage_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_insurance_medicine_coverage
-    ADD CONSTRAINT pharmacy_insurance_medicine_coverage_pkey PRIMARY KEY (coverage_id);
 
 
---
--- Name: pharmacy_insurance_providers pharmacy_insurance_providers_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_insurance_providers
-    ADD CONSTRAINT pharmacy_insurance_providers_pkey PRIMARY KEY (provider_id);
 
 
---
--- Name: pharmacy_medicine_return_items pharmacy_medicine_return_items_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_medicine_return_items
-    ADD CONSTRAINT pharmacy_medicine_return_items_pkey PRIMARY KEY (id);
 
 
---
--- Name: pharmacy_medicine_returns pharmacy_medicine_returns_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_medicine_returns
-    ADD CONSTRAINT pharmacy_medicine_returns_pkey PRIMARY KEY (id);
 
 
---
--- Name: pharmacy_medicine_stocks pharmacy_medicine_stocks_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_medicine_stocks
-    ADD CONSTRAINT pharmacy_medicine_stocks_pkey PRIMARY KEY (id);
 
 
---
--- Name: pharmacy_medicines pharmacy_medicines_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_medicines
-    ADD CONSTRAINT pharmacy_medicines_pkey PRIMARY KEY (id);
 
 
---
--- Name: pharmacy_narcotic_monthly_reconciliation pharmacy_narcotic_monthly_reconciliation_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_narcotic_monthly_reconciliation
-    ADD CONSTRAINT pharmacy_narcotic_monthly_reconciliation_pkey PRIMARY KEY (reconciliation_id);
 
 
---
--- Name: pharmacy_narcotic_register pharmacy_narcotic_register_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_narcotic_register
-    ADD CONSTRAINT pharmacy_narcotic_register_pkey PRIMARY KEY (entry_id);
 
 
---
--- Name: pharmacy_patients pharmacy_patients_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_patients
-    ADD CONSTRAINT pharmacy_patients_pkey PRIMARY KEY (id);
 
 
---
--- Name: pharmacy_payment_transactions pharmacy_payment_transactions_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_payment_transactions
-    ADD CONSTRAINT pharmacy_payment_transactions_pkey PRIMARY KEY (id);
 
 
---
--- Name: pharmacy_pharmacy_advances pharmacy_pharmacy_advances_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_pharmacy_advances
-    ADD CONSTRAINT pharmacy_pharmacy_advances_pkey PRIMARY KEY (id);
 
 
---
--- Name: pharmacy_po_line_items pharmacy_po_line_items_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_po_line_items
-    ADD CONSTRAINT pharmacy_po_line_items_pkey PRIMARY KEY (line_id);
 
 
---
--- Name: pharmacy_prescriptions pharmacy_prescriptions_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_prescriptions
-    ADD CONSTRAINT pharmacy_prescriptions_pkey PRIMARY KEY (id);
 
 
---
--- Name: pharmacy_purchase_order_items pharmacy_purchase_order_items_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_purchase_order_items
-    ADD CONSTRAINT pharmacy_purchase_order_items_pkey PRIMARY KEY (id);
 
 
---
--- Name: pharmacy_purchase_orders pharmacy_purchase_orders_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_purchase_orders
-    ADD CONSTRAINT pharmacy_purchase_orders_pkey PRIMARY KEY (po_id);
 
 
---
--- Name: pharmacy_report_schedules pharmacy_report_schedules_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_report_schedules
-    ADD CONSTRAINT pharmacy_report_schedules_pkey PRIMARY KEY (id);
 
 
---
--- Name: pharmacy_return_to_supplier_items pharmacy_return_to_supplier_items_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_return_to_supplier_items
-    ADD CONSTRAINT pharmacy_return_to_supplier_items_pkey PRIMARY KEY (id);
 
 
---
--- Name: pharmacy_return_to_suppliers pharmacy_return_to_suppliers_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_return_to_suppliers
-    ADD CONSTRAINT pharmacy_return_to_suppliers_pkey PRIMARY KEY (id);
 
 
---
--- Name: pharmacy_roles pharmacy_roles_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_roles
-    ADD CONSTRAINT pharmacy_roles_pkey PRIMARY KEY (id);
 
 
---
--- Name: pharmacy_sales_bills pharmacy_sales_bills_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_sales_bills
-    ADD CONSTRAINT pharmacy_sales_bills_pkey PRIMARY KEY (id);
 
 
---
--- Name: pharmacy_sales_line_items pharmacy_sales_line_items_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_sales_line_items
-    ADD CONSTRAINT pharmacy_sales_line_items_pkey PRIMARY KEY (id);
 
 
---
--- Name: pharmacy_stock_adjustments pharmacy_stock_adjustments_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_stock_adjustments
-    ADD CONSTRAINT pharmacy_stock_adjustments_pkey PRIMARY KEY (id);
 
 
---
--- Name: pharmacy_stock_alerts pharmacy_stock_alerts_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_stock_alerts
-    ADD CONSTRAINT pharmacy_stock_alerts_pkey PRIMARY KEY (id);
 
 
---
--- Name: pharmacy_stock_batches pharmacy_stock_batches_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_stock_batches
-    ADD CONSTRAINT pharmacy_stock_batches_pkey PRIMARY KEY (batch_id);
 
 
---
--- Name: pharmacy_storage_units pharmacy_storage_units_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_storage_units
-    ADD CONSTRAINT pharmacy_storage_units_pkey PRIMARY KEY (unit_id);
 
 
---
--- Name: pharmacy_supplier_invoice_items pharmacy_supplier_invoice_items_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_supplier_invoice_items
-    ADD CONSTRAINT pharmacy_supplier_invoice_items_pkey PRIMARY KEY (id);
 
 
---
--- Name: pharmacy_supplier_invoices pharmacy_supplier_invoices_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_supplier_invoices
-    ADD CONSTRAINT pharmacy_supplier_invoices_pkey PRIMARY KEY (id);
 
 
---
--- Name: pharmacy_supplier_performance pharmacy_supplier_performance_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_supplier_performance
-    ADD CONSTRAINT pharmacy_supplier_performance_pkey PRIMARY KEY (id);
 
 
---
--- Name: pharmacy_suppliers pharmacy_suppliers_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_suppliers
-    ADD CONSTRAINT pharmacy_suppliers_pkey PRIMARY KEY (id);
 
 
---
--- Name: pharmacy_temperature_logs pharmacy_temperature_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_temperature_logs
-    ADD CONSTRAINT pharmacy_temperature_logs_pkey PRIMARY KEY (log_id);
 
 
---
--- Name: pharmacy_users pharmacy_users_pkey; Type: CONSTRAINT; Schema: public; Owner: clinic_admin
---
 
-ALTER TABLE pharmacy_users
-    ADD CONSTRAINT pharmacy_users_pkey PRIMARY KEY (id);
 
 
 --
