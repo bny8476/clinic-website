@@ -54,10 +54,19 @@ public class PharmacyDatabaseConfig {
         dataSource.setUsername(username);
         dataSource.setPassword(password);
         dataSource.setDriverClassName(driver);
-        
         dataSource.setKeepaliveTime(120000);       // 2 min proactive ping
         dataSource.setConnectionTestQuery("SELECT 1");
-        dataSource.setInitializationFailTimeout(-1); // don't crash context if DB is briefly unreachable at boot
+
+        try (java.sql.Connection testConn = dataSource.getConnection()) {
+            System.out.println("[Pharmacy DB] Test connection succeeded: "
+                + testConn.getMetaData().getURL());
+        } catch (java.sql.SQLException e) {
+            System.err.println("[Pharmacy DB] FAILED to establish test connection: "
+                + e.getMessage());
+            e.printStackTrace();
+            throw new IllegalStateException(
+                "Pharmacy datasource is unreachable at startup: " + e.getMessage(), e);
+        }
 
         System.out.println("Configured Pharmacy DataSource URL: " + url);
         return dataSource;
