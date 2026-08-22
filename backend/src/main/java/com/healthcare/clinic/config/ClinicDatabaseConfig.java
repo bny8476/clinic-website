@@ -36,32 +36,39 @@ public class ClinicDatabaseConfig {
         if (url == null || url.trim().isEmpty()) {
             url = environment.getProperty("SPRING_DATASOURCE_CLINIC_URL");
         }
+        
         String username = environment.getProperty("app.datasource.clinic.username");
         if (username == null || username.trim().isEmpty()) {
             username = environment.getProperty("SPRING_DATASOURCE_CLINIC_USERNAME");
         }
+        
         String password = environment.getProperty("app.datasource.clinic.password");
         if (password == null || password.trim().isEmpty()) {
             password = environment.getProperty("SPRING_DATASOURCE_CLINIC_PASSWORD");
         }
+        
         String driver = environment.getProperty("app.datasource.clinic.driver-class-name");
         if (driver == null || driver.trim().isEmpty()) {
             driver = environment.getProperty("SPRING_DATASOURCE_CLINIC_DRIVER_CLASS_NAME");
         }
 
         boolean isRender = java.util.Arrays.asList(environment.getActiveProfiles()).contains("render");
+        boolean isH2Fallback = url == null || url.trim().isEmpty() || url.contains("jdbc:h2");
+        
         if (isRender) {
-            if (url == null || url.trim().isEmpty()) throw new IllegalStateException("FATAL: Database URL is missing in production.");
+            if (isH2Fallback) throw new IllegalStateException("FATAL: SPRING_DATASOURCE_CLINIC_URL is missing in production.");
             if (username == null || username.trim().isEmpty()) throw new IllegalStateException("FATAL: Database username is missing in production.");
         }
 
-        url = (url != null && !url.trim().isEmpty()) ? url : "jdbc:h2:mem:clinicdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;NON_KEYWORDS=VALUE";
+        if (isH2Fallback) {
+            url = "jdbc:h2:mem:clinicdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;NON_KEYWORDS=VALUE";
+            driver = "org.h2.Driver"; // Force driver to match URL
+        } else {
+            driver = (driver != null && !driver.trim().isEmpty()) ? driver : (url.startsWith("jdbc:postgresql") ? "org.postgresql.Driver" : (url.startsWith("jdbc:tc:postgresql") ? "org.testcontainers.jdbc.ContainerDatabaseDriver" : "org.postgresql.Driver"));
+        }
+
         username = (username != null && !username.trim().isEmpty()) ? username : "sa";
         password = (password != null) ? password : "";
-        driver = (driver != null && !driver.trim().isEmpty()) ? driver : (url.startsWith("jdbc:postgresql") ? "org.postgresql.Driver" : (url.startsWith("jdbc:tc:postgresql") ? "org.testcontainers.jdbc.ContainerDatabaseDriver" : "org.h2.Driver"));
-
-        System.out.println("RESOLVED URL: " + url);
-        System.out.println("RESOLVED DRIVER: " + driver);
 
         com.zaxxer.hikari.HikariDataSource dataSource = new com.zaxxer.hikari.HikariDataSource();
         dataSource.setJdbcUrl(url);
