@@ -23,7 +23,7 @@ import com.healthcare.clinic.exception.ResourceNotFoundException;
  * Extracted from AuthController to enforce the single-responsibility principle.
  */
 @Service("pharmacyUserService")
-@Transactional(transactionManager = "pharmacyTransactionManager")
+@Transactional
 public class UserService {
 
     private final PharmacyUserRepository userRepository;
@@ -42,7 +42,7 @@ public class UserService {
     }
 
     /** Returns all non-deleted users mapped to response DTOs. */
-    @Transactional(readOnly = true, transactionManager = "pharmacyTransactionManager")
+    @Transactional(readOnly = true)
     public List<UserResponseDTO> getAllUsers() {
         return userRepository.findAll()
                 .stream()
@@ -68,7 +68,7 @@ public class UserService {
     }
 
     /** Updates a user's profile (name, email, phone, branch, shift). */
-    @Transactional(transactionManager = "pharmacyTransactionManager")
+    @Transactional
     public UserResponseDTO updateProfile(Long id, String name, String email,
                                          String phone, String branch, String shift) {
         PharmacyUser user = findUserById(id);

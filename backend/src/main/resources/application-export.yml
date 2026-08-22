@@ -18,4 +18,3 @@ spring:
 app:
   datasource:
     clinic:
-    pharmacy:

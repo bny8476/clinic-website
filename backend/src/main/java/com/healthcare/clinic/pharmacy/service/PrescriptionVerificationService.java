@@ -71,7 +71,7 @@ public class PrescriptionVerificationService {
         return saved;
     }
 
-    @Transactional(transactionManager = "pharmacyTransactionManager")
+    @Transactional
     public PharmacyPrescriptionRecord updateVerificationStatus(Long id, String verificationStatus, String pharmacistUsername, String status) {
         PharmacyPrescriptionRecord p = prescriptionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Prescription not found"));
@@ -85,7 +85,7 @@ public class PrescriptionVerificationService {
         return prescriptionRepository.save(p);
     }
 
-    @Transactional(transactionManager = "pharmacyTransactionManager")
+    @Transactional
     public PharmacyPrescriptionRecord updateVerificationStatusForDispense(Long id, String pharmacistUsername) {
         PharmacyPrescriptionRecord p = prescriptionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Prescription not found"));

@@ -1,0 +1,11 @@
+spring:
+  flyway:
+    enabled: false
+  jpa:
+    hibernate:
+      ddl-auto: update
+app:
+  datasource:
+    clinic:
+      url: jdbc:tc:postgresql:16-alpine:///clinic_test
+      driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver

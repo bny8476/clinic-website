@@ -17,7 +17,7 @@ public class PharmacyPrescriptionSyncService {
 
     private final PrescriptionRepository pharmacyPrescriptionRepository;
 
-    @Transactional(transactionManager = "pharmacyTransactionManager")
+    @Transactional
     public void syncNewPrescription(String patientName, String doctorName, Long clinicalPrescriptionId, 
                                     List<PharmacyPrescriptionItem> items) {
         PharmacyPrescriptionRecord pharmRx = pharmacyPrescriptionRepository.findAll().stream()
@@ -40,7 +40,7 @@ public class PharmacyPrescriptionSyncService {
         pharmacyPrescriptionRepository.save(pharmRx);
     }
 
-    @Transactional(transactionManager = "pharmacyTransactionManager")
+    @Transactional
     public void syncSendPrescription(String patientName, String doctorName, Long clinicalPrescriptionId, 
                                      Long pharmacyUserId, List<PharmacyPrescriptionItem> items) {
         PharmacyPrescriptionRecord pharmRx = pharmacyPrescriptionRepository.findAll().stream()
@@ -63,7 +63,7 @@ public class PharmacyPrescriptionSyncService {
         pharmacyPrescriptionRepository.save(pharmRx);
     }
 
-    @Transactional(transactionManager = "pharmacyTransactionManager")
+    @Transactional
     public void syncVoidPrescription(Long clinicalPrescriptionId) {
         pharmacyPrescriptionRepository.findAll().stream()
                 .filter(p -> clinicalPrescriptionId.equals(p.getClinicalPrescriptionId()))
@@ -73,7 +73,7 @@ public class PharmacyPrescriptionSyncService {
                 });
     }
 
-    @Transactional(readOnly = true, transactionManager = "pharmacyTransactionManager")
+    @Transactional(readOnly = true)
     public java.util.Map<String, Object> getPharmacyPrescriptionStatus(Long clinicalPrescriptionId) {
         return pharmacyPrescriptionRepository.findAll().stream()
                 .filter(p -> p.getClinicalPrescriptionId().equals(clinicalPrescriptionId))

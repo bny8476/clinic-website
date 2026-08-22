@@ -24,12 +24,14 @@ public class FlywayConfig {
                 .baselineOnMigrate(true)
                 .baselineVersion("114")
                 .load();
-        migrateWithRetry(flyway, "clinic");
+        if (Boolean.parseBoolean(env.getProperty("spring.flyway.enabled", "true"))) {
+            migrateWithRetry(flyway, "clinic");
+        }
         return flyway;
     }
 
     @Bean
-    public Flyway pharmacyFlyway(@Qualifier("pharmacyDataSource") DataSource pharmacyDataSource, org.springframework.core.env.Environment env) {
+    public Flyway pharmacyFlyway(@Qualifier("clinicDataSource") DataSource pharmacyDataSource, org.springframework.core.env.Environment env) {
         Flyway flyway = Flyway.configure()
                 .dataSource(pharmacyDataSource)
                 .locations("classpath:db/migration/pharmacy")
@@ -37,7 +39,9 @@ public class FlywayConfig {
                 .baselineOnMigrate(true)
                 .baselineVersion("112")
                 .load();
-        migrateWithRetry(flyway, "pharmacy");
+        if (Boolean.parseBoolean(env.getProperty("spring.flyway.enabled", "true"))) {
+            migrateWithRetry(flyway, "pharmacy");
+        }
         return flyway;
     }
 

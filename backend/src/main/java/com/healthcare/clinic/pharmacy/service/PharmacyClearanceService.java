@@ -19,12 +19,12 @@ public class PharmacyClearanceService {
     private final PharmacyClearanceRepository pharmacyClearanceRepository;
     private final UserRepository userRepository;
 
-    @Transactional(readOnly = true, transactionManager = "pharmacyTransactionManager")
+    @Transactional(readOnly = true)
     public List<PharmacyClearance> getAllClearances() {
         return pharmacyClearanceRepository.findAll();
     }
 
-    @Transactional(readOnly = true, transactionManager = "clinicTransactionManager")
+    @Transactional(readOnly = true)
     public User fetchUserByEmail(String userEmail) {
         return userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -36,7 +36,7 @@ public class PharmacyClearanceService {
         return updateClearanceRecord(id, user);
     }
 
-    @Transactional(transactionManager = "pharmacyTransactionManager")
+    @Transactional
     public PharmacyClearance updateClearanceRecord(Long id, User user) {
         PharmacyClearance clearance = pharmacyClearanceRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Clearance record not found"));

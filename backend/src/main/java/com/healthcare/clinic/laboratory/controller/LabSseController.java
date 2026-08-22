@@ -23,7 +23,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Slf4j
 public class LabSseController {
 
-    private static class ClientConnection {
+    public static class ClientConnection {
         final SseEmitter emitter;
         final Long userId;
         final boolean isPrivilegedLabUser;

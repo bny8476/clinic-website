@@ -4,14 +4,11 @@ spring:
   main:
     allow-bean-definition-overriding: true
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: update
 app:
   datasource:
     clinic:
-    pharmacy:
-
 jwt:
   secret: default_dev_secret_key_that_is_long_enough_for_hs256_algorithm_12345
   access-token-expiration-ms: 86400000

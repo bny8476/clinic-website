@@ -33,7 +33,7 @@ public class AnalyticsService {
     private final MedicineRepository medicineRepository;
     private final MedicineReturnRepository returnRepository;
     
-    @jakarta.persistence.PersistenceContext(unitName = "pharmacy")
+    @jakarta.persistence.PersistenceContext
     private EntityManager entityManager;
 
     public AnalyticsService(PharmacyBillRepository billRepository, 

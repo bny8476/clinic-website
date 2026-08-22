@@ -19,12 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 @EnableTransactionManagement
 @EnableJpaRepositories(
         basePackages = "com.healthcare.clinic",
-        excludeFilters = {
-                @org.springframework.context.annotation.ComponentScan.Filter(
-                        type = org.springframework.context.annotation.FilterType.REGEX,
-                        pattern = "com\\.healthcare\\.clinic\\.pharmacy\\..*"
-                )
-        },
         entityManagerFactoryRef = "clinicEntityManagerFactory",
         transactionManagerRef = "clinicTransactionManager",
         nameGenerator = org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGenerator.class
@@ -38,21 +32,36 @@ public class ClinicDatabaseConfig {
     @Bean(name = "clinicDataSource")
     @ConfigurationProperties(prefix = "app.datasource.clinic")
     public DataSource dataSource() {
-        String url = environment.getProperty("SPRING_DATASOURCE_CLINIC_URL");
-        String username = environment.getProperty("SPRING_DATASOURCE_CLINIC_USERNAME");
-        String password = environment.getProperty("SPRING_DATASOURCE_CLINIC_PASSWORD");
-        String driver = environment.getProperty("SPRING_DATASOURCE_CLINIC_DRIVER_CLASS_NAME");
+        String url = environment.getProperty("app.datasource.clinic.url");
+        if (url == null || url.trim().isEmpty()) {
+            url = environment.getProperty("SPRING_DATASOURCE_CLINIC_URL");
+        }
+        String username = environment.getProperty("app.datasource.clinic.username");
+        if (username == null || username.trim().isEmpty()) {
+            username = environment.getProperty("SPRING_DATASOURCE_CLINIC_USERNAME");
+        }
+        String password = environment.getProperty("app.datasource.clinic.password");
+        if (password == null || password.trim().isEmpty()) {
+            password = environment.getProperty("SPRING_DATASOURCE_CLINIC_PASSWORD");
+        }
+        String driver = environment.getProperty("app.datasource.clinic.driver-class-name");
+        if (driver == null || driver.trim().isEmpty()) {
+            driver = environment.getProperty("SPRING_DATASOURCE_CLINIC_DRIVER_CLASS_NAME");
+        }
 
         boolean isRender = java.util.Arrays.asList(environment.getActiveProfiles()).contains("render");
         if (isRender) {
-            if (url == null || url.trim().isEmpty()) throw new IllegalStateException("FATAL: SPRING_DATASOURCE_CLINIC_URL is missing in production.");
-            if (username == null || username.trim().isEmpty()) throw new IllegalStateException("FATAL: SPRING_DATASOURCE_CLINIC_USERNAME is missing in production.");
+            if (url == null || url.trim().isEmpty()) throw new IllegalStateException("FATAL: Database URL is missing in production.");
+            if (username == null || username.trim().isEmpty()) throw new IllegalStateException("FATAL: Database username is missing in production.");
         }
 
         url = (url != null && !url.trim().isEmpty()) ? url : "jdbc:h2:mem:clinicdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;NON_KEYWORDS=VALUE";
         username = (username != null && !username.trim().isEmpty()) ? username : "sa";
         password = (password != null) ? password : "";
-        driver = (driver != null && !driver.trim().isEmpty()) ? driver : "org.h2.Driver";
+        driver = (driver != null && !driver.trim().isEmpty()) ? driver : (url.startsWith("jdbc:postgresql") ? "org.postgresql.Driver" : (url.startsWith("jdbc:tc:postgresql") ? "org.testcontainers.jdbc.ContainerDatabaseDriver" : "org.h2.Driver"));
+
+        System.out.println("RESOLVED URL: " + url);
+        System.out.println("RESOLVED DRIVER: " + driver);
 
         com.zaxxer.hikari.HikariDataSource dataSource = new com.zaxxer.hikari.HikariDataSource();
         dataSource.setJdbcUrl(url);
@@ -79,7 +88,7 @@ public class ClinicDatabaseConfig {
 
     @Primary
     @Bean(name = "clinicEntityManagerFactory")
-    @DependsOn("clinicFlyway")
+    @DependsOn({"clinicFlyway", "pharmacyFlyway"})
     public LocalContainerEntityManagerFactoryBean clinicEntityManagerFactory(
             @Qualifier("clinicDataSource") DataSource dataSource,
             org.springframework.core.env.Environment env) {
@@ -133,7 +142,8 @@ public class ClinicDatabaseConfig {
                 "com.healthcare.clinic.vendor",
                 "com.healthcare.clinic.admin",
                 "com.healthcare.clinic.superadmin",
-                "com.healthcare.clinic.support"
+                "com.healthcare.clinic.support",
+                "com.healthcare.clinic.pharmacy"
         );
 
         em.setJpaVendorAdapter(new org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter());
