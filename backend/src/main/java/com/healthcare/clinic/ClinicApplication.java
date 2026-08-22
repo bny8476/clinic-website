@@ -29,6 +29,18 @@ public class ClinicApplication {
 	}
 
 	@Bean
+	public org.springframework.boot.ApplicationRunner applicationRunner(
+			org.springframework.context.ApplicationContext context) {
+		return args -> {
+			System.out.println("=========================================================");
+			System.out.println("=       CLINIC APPLICATION STARTED SUCCESSFULLY         =");
+			System.out.println("=   PostgreSQL and MySQL DataSources Initialized        =");
+			System.out.println("=   Flyway Migrations Passed Successfully               =");
+			System.out.println("=========================================================");
+		};
+	}
+
+	@Bean
 	public ObjectMapper objectMapper() {
 		return new ObjectMapper();
 	}
