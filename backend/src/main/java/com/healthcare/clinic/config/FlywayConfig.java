@@ -41,12 +41,22 @@ public class FlywayConfig {
         return flyway;
     }
 
+    private void baselineIfNeeded(Flyway flyway, String label) {
+        try {
+            flyway.baseline();
+            logger.info("{} Flyway: baseline applied", label);
+        } catch (org.flywaydb.core.api.FlywayException e) {
+            logger.info("{} Flyway: baseline skipped ({})", label, e.getMessage());
+        }
+    }
+
     private void migrateWithRetry(Flyway flyway, String dbName) {
         int maxAttempts = 5;
         long backoffMs = 2000;
         
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
             try {
+                baselineIfNeeded(flyway, dbName);
                 flyway.migrate();
                 return;
             } catch (Exception ex) {

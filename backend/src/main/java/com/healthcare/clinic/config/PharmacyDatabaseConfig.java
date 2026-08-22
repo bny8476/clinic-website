@@ -49,6 +49,10 @@ public class PharmacyDatabaseConfig {
         password = (password != null) ? password : "";
         driver = (driver != null && !driver.trim().isEmpty()) ? driver : "org.h2.Driver";
 
+        if (url != null && !url.startsWith("jdbc:h2:") && !url.contains("connectTimeout")) {
+            url += (url.contains("?") ? "&" : "?") + "connectTimeout=10000&socketTimeout=30000";
+        }
+
         com.zaxxer.hikari.HikariDataSource dataSource = new com.zaxxer.hikari.HikariDataSource();
         dataSource.setJdbcUrl(url);
         dataSource.setUsername(username);
