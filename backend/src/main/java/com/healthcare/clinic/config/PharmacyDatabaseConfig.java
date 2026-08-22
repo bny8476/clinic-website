@@ -34,11 +34,11 @@ public class PharmacyDatabaseConfig {
     @Bean(name = "pharmacyDataSource")
     @ConfigurationProperties(prefix = "spring.datasource.pharmacy")
     public DataSource pharmacyDataSource() {
-        return DataSourceBuilder.create().build();
+        return DataSourceBuilder.create().type(com.zaxxer.hikari.HikariDataSource.class).build();
     }
 
     @Bean(name = "pharmacyEntityManagerFactory")
-    @DependsOn("pharmacyFlywayInitializer")
+    @DependsOn("pharmacyFlyway")
     public LocalContainerEntityManagerFactoryBean pharmacyEntityManagerFactory(
             @Qualifier("pharmacyDataSource") DataSource dataSource,
             org.springframework.core.env.Environment env) {
@@ -58,9 +58,6 @@ public class PharmacyDatabaseConfig {
         else if (driver.contains("postgresql")) dialect = "org.hibernate.dialect.PostgreSQLDialect";
         
         String ddlAuto = env.getProperty("spring.jpa.hibernate.ddl-auto", "validate");
-        if (dialect.contains("H2") || dialect.contains("MySQL") || dialect.contains("TiDB")) {
-            ddlAuto = "update";
-        }
         properties.put("hibernate.dialect", dialect);
         properties.put("hibernate.hbm2ddl.auto", ddlAuto);
         properties.put("hibernate.physical_naming_strategy", "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy");

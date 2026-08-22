@@ -35,12 +35,12 @@ public class ClinicDatabaseConfig {
     @Bean(name = "clinicDataSource")
     @ConfigurationProperties(prefix = "spring.datasource.clinic")
     public DataSource dataSource() {
-        return DataSourceBuilder.create().build();
+        return DataSourceBuilder.create().type(com.zaxxer.hikari.HikariDataSource.class).build();
     }
 
     @Primary
     @Bean(name = "clinicEntityManagerFactory")
-    @DependsOn("clinicFlywayInitializer")
+    @DependsOn("clinicFlyway")
     public LocalContainerEntityManagerFactoryBean clinicEntityManagerFactory(
             @Qualifier("clinicDataSource") DataSource dataSource,
             org.springframework.core.env.Environment env) {
@@ -106,9 +106,6 @@ public class ClinicDatabaseConfig {
         else if (driver.contains("h2")) dialect = "org.hibernate.dialect.H2Dialect";
         
         String ddlAuto = env.getProperty("spring.jpa.hibernate.ddl-auto", "validate");
-        if (dialect.contains("H2") || dialect.contains("MySQL") || dialect.contains("TiDB")) {
-            ddlAuto = "update";
-        }
         properties.put("hibernate.dialect", dialect);
         properties.put("hibernate.hbm2ddl.auto", ddlAuto);
         properties.put("hibernate.physical_naming_strategy", "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy");
