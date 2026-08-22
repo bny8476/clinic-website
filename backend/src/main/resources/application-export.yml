@@ -1,13 +1,20 @@
 spring:
+  main:
+    web-application-type: none
   datasource:
     clinic:
       jdbc-url: ${SPRING_DATASOURCE_CLINIC_URL}
       username: ${SPRING_DATASOURCE_CLINIC_USERNAME}
       password: ${SPRING_DATASOURCE_CLINIC_PASSWORD}
       driver-class-name: org.postgresql.Driver
+    pharmacy:
+      jdbc-url: ${SPRING_DATASOURCE_PHARMACY_URL}
+      username: ${SPRING_DATASOURCE_PHARMACY_USERNAME}
+      password: ${SPRING_DATASOURCE_PHARMACY_PASSWORD}
+      driver-class-name: org.h2.Driver
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: none
     properties:
       jakarta:
         persistence:
@@ -15,5 +22,7 @@ spring:
             scripts:
               action: create
               create-target: /Users/eakhalaivan/Downloads/clinic-website/schema-create.sql
+            database:
+              action: none
   flyway:
-    enabled: false
+    enabled: true
