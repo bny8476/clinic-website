@@ -2,7 +2,6 @@ package com.healthcare.clinic.config;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
@@ -34,7 +33,29 @@ public class PharmacyDatabaseConfig {
     @Bean(name = "pharmacyDataSource")
     @ConfigurationProperties(prefix = "app.datasource.pharmacy")
     public DataSource pharmacyDataSource() {
-        return DataSourceBuilder.create().type(com.zaxxer.hikari.HikariDataSource.class).build();
+        String url = env.getProperty("SPRING_DATASOURCE_PHARMACY_URL");
+        String username = env.getProperty("SPRING_DATASOURCE_PHARMACY_USERNAME");
+        String password = env.getProperty("SPRING_DATASOURCE_PHARMACY_PASSWORD");
+        String driver = env.getProperty("SPRING_DATASOURCE_PHARMACY_DRIVER_CLASS_NAME");
+
+        boolean isRender = java.util.Arrays.asList(env.getActiveProfiles()).contains("render");
+        if (isRender) {
+            if (url == null || url.trim().isEmpty()) throw new IllegalStateException("FATAL: SPRING_DATASOURCE_PHARMACY_URL is missing in production.");
+            if (username == null || username.trim().isEmpty()) throw new IllegalStateException("FATAL: SPRING_DATASOURCE_PHARMACY_USERNAME is missing in production.");
+        }
+
+        url = (url != null && !url.trim().isEmpty()) ? url : "jdbc:h2:mem:pharmacydb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;NON_KEYWORDS=VALUE";
+        username = (username != null && !username.trim().isEmpty()) ? username : "sa";
+        password = (password != null) ? password : "";
+        driver = (driver != null && !driver.trim().isEmpty()) ? driver : "org.h2.Driver";
+
+        com.zaxxer.hikari.HikariDataSource dataSource = new com.zaxxer.hikari.HikariDataSource();
+        dataSource.setJdbcUrl(url);
+        dataSource.setUsername(username);
+        dataSource.setPassword(password);
+        dataSource.setDriverClassName(driver);
+        System.out.println("Configured Pharmacy DataSource URL: " + url);
+        return dataSource;
     }
 
     @Bean(name = "pharmacyEntityManagerFactory")

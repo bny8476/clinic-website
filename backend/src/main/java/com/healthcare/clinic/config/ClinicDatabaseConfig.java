@@ -3,7 +3,6 @@ package com.healthcare.clinic.config;
 import jakarta.persistence.EntityManagerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -14,6 +13,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.context.annotation.DependsOn;
 import javax.sql.DataSource;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Configuration
 @EnableTransactionManagement
@@ -31,11 +31,36 @@ import javax.sql.DataSource;
 )
 public class ClinicDatabaseConfig {
 
+    @Autowired
+    private org.springframework.core.env.Environment environment;
+
     @Primary
     @Bean(name = "clinicDataSource")
     @ConfigurationProperties(prefix = "app.datasource.clinic")
     public DataSource dataSource() {
-        return DataSourceBuilder.create().type(com.zaxxer.hikari.HikariDataSource.class).build();
+        String url = environment.getProperty("SPRING_DATASOURCE_CLINIC_URL");
+        String username = environment.getProperty("SPRING_DATASOURCE_CLINIC_USERNAME");
+        String password = environment.getProperty("SPRING_DATASOURCE_CLINIC_PASSWORD");
+        String driver = environment.getProperty("SPRING_DATASOURCE_CLINIC_DRIVER_CLASS_NAME");
+
+        boolean isRender = java.util.Arrays.asList(environment.getActiveProfiles()).contains("render");
+        if (isRender) {
+            if (url == null || url.trim().isEmpty()) throw new IllegalStateException("FATAL: SPRING_DATASOURCE_CLINIC_URL is missing in production.");
+            if (username == null || username.trim().isEmpty()) throw new IllegalStateException("FATAL: SPRING_DATASOURCE_CLINIC_USERNAME is missing in production.");
+        }
+
+        url = (url != null && !url.trim().isEmpty()) ? url : "jdbc:h2:mem:clinicdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;NON_KEYWORDS=VALUE";
+        username = (username != null && !username.trim().isEmpty()) ? username : "sa";
+        password = (password != null) ? password : "";
+        driver = (driver != null && !driver.trim().isEmpty()) ? driver : "org.h2.Driver";
+
+        com.zaxxer.hikari.HikariDataSource dataSource = new com.zaxxer.hikari.HikariDataSource();
+        dataSource.setJdbcUrl(url);
+        dataSource.setUsername(username);
+        dataSource.setPassword(password);
+        dataSource.setDriverClassName(driver);
+        System.out.println("Configured Clinic DataSource URL: " + url);
+        return dataSource;
     }
 
     @Primary
