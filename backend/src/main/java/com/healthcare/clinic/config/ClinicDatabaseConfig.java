@@ -59,6 +59,11 @@ public class ClinicDatabaseConfig {
         dataSource.setUsername(username);
         dataSource.setPassword(password);
         dataSource.setDriverClassName(driver);
+        
+        dataSource.setKeepaliveTime(120000);       // 2 min proactive ping
+        dataSource.setConnectionTestQuery("SELECT 1");
+        dataSource.setInitializationFailTimeout(-1); // don't crash context if DB is briefly unreachable at boot
+
         System.out.println("Configured Clinic DataSource URL: " + url);
         return dataSource;
     }
