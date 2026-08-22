@@ -40,7 +40,7 @@ public class ClinicDatabaseConfig {
 
     @Primary
     @Bean(name = "clinicEntityManagerFactory")
-    @DependsOn("clinicFlyway")
+    @DependsOn("clinicFlywayInitializer")
     public LocalContainerEntityManagerFactoryBean clinicEntityManagerFactory(
             @Qualifier("clinicDataSource") DataSource dataSource,
             org.springframework.core.env.Environment env) {
