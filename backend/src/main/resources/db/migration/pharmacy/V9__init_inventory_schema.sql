@@ -875,7 +875,7 @@ CREATE TABLE IF NOT EXISTS pharmacy_stock_adjustments (
     batch_id bigint NOT NULL,
     reason VARCHAR(255) NOT NULL,
     remarks VARCHAR(255),
-    "timestamp" DATETIME(6) NOT NULL,
+    `timestamp` DATETIME(6) NOT NULL,
     adjusted_by_user_id bigint NOT NULL,
     medicine_id bigint NOT NULL,
     medicine_stock_id bigint NOT NULL,
