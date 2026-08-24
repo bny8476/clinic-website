@@ -1,10 +1,9 @@
+import pharmacyService from '../../utils/pharmacy/pharmacyService';
+import Modal from '../../components/ui/Modal';
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
-
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import pharmacyService from '../../utils/pharmacy/pharmacyService';
-
-
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { AlertTriangle, Check, CheckCircle, Plus, RefreshCw, Refrigerator, Save, Snowflake, Thermometer } from 'lucide-react';
 
 export default function TemperatureLogs() {
   const queryClient = useQueryClient();
@@ -351,7 +350,7 @@ export default function TemperatureLogs() {
       </div>
 
       {/* Unit Form Modal */}
-      <AppModal
+      <Modal
         isOpen={showUnitForm}
         onClose={() => setShowUnitForm(false)}
         title={
@@ -428,7 +427,7 @@ export default function TemperatureLogs() {
             </div>
           </div>
         </form>
-      </AppModal>
+      </Modal>
     </div>
     
   );

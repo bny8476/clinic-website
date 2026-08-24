@@ -1,8 +1,9 @@
+import pharmacyService from '../../utils/pharmacy/pharmacyService';
+import Button from '../../components/ui/Button';
+import Card from '../../components/ui/Card';
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
-import pharmacyService from '../../utils/pharmacy/pharmacyService';
-
-
+import { ArrowRight, Check, Eye, EyeOff, KeyRound, Lock, Settings, Shield } from 'lucide-react';
 
 export default function ResetPassword() {
   const [formData, setFormData] = useState({

@@ -14,6 +14,7 @@ public class SubscriptionService {
 
     private final SubscriptionRepository repository;
 
+    @org.springframework.cache.annotation.Cacheable("subscriptions")
     public List<Subscription> findAll() {
         return repository.findAll();
     }
@@ -22,10 +23,12 @@ public class SubscriptionService {
         return repository.findById(id);
     }
 
+    @org.springframework.cache.annotation.CacheEvict(value = "subscriptions", allEntries = true)
     public Subscription save(Subscription entity) {
         return repository.save(entity);
     }
 
+    @org.springframework.cache.annotation.CacheEvict(value = "subscriptions", allEntries = true)
     public void deleteById(Long id) {
         repository.deleteById(id);
     }

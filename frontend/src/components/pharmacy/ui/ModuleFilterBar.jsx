@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import "react-datepicker/dist/react-datepicker.css";
-import { cn } from "../../../utils/pharmacy/cn";
+import { cn } from '../../../utils/pharmacy/cn';
+import { Calendar, Search } from 'lucide-react';
 
 export default function ModuleFilterBar({ 
   onSearch, 

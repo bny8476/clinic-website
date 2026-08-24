@@ -1,11 +1,9 @@
-import { useState, useEffect } from 'react';
+import clsx from 'clsx';
+import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import clsx from 'clsx';
-
-
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { ArrowLeft, Contrast, Download, FileText, Image, Layers, LayoutGrid, Maximize, Pause, Play, RotateCw, Ruler, Scan, Sun, ZoomIn } from 'lucide-react';
 
 // No mock slices allowed in production
 const MOCK_SLICES = [];

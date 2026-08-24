@@ -1,20 +1,21 @@
-import { useState, useEffect } from 'react';
 import logger from '../../utils/logger';
+import pharmacyService from '../../utils/pharmacy/pharmacyService';
+import ErrorBanner from '../../components/pharmacy/ui/ErrorBanner';
+import ModuleFilterBar from '../../components/pharmacy/ui/ModuleFilterBar';
+import TableSkeleton from '../../components/pharmacy/ui/TableSkeleton';
+import Modal from '../../components/ui/Modal';
+import DataTable from '../../components/ui/DataTable';
+import Pagination from '../../components/ui/Pagination';
+import ConfirmDialog from '../../components/ui/ConfirmDialog';
+import { useEffect, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { toast } from 'react-hot-toast';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Plus, Eye, Trash2, FileText } from 'lucide-react';
-import pharmacyService from '../../utils/pharmacy/pharmacyService';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { usePurchaseStore } from '../../store/usePurchaseStore';
 import { useAuth } from '../../context/pharmacy/AuthContext';
 import { ROLES } from '../../config/pharmacy/roles.config';
-import ConfirmDialog from '../../components/ui/ConfirmDialog';
-import Badge from '../../components/ui/Badge';
-import ModuleFilterBar from '../../components/pharmacy/ui/ModuleFilterBar';
-import TableSkeleton from '../../components/pharmacy/ui/TableSkeleton';
-import ErrorBanner from '../../components/pharmacy/ui/ErrorBanner';
-
-
+import { Check, Eye, FileText, Loader2, Plus, Search, Trash2 } from 'lucide-react';
+import { Badge } from '../../components/ui/Badge';
 
 export default function PurchaseOrders() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -279,7 +280,7 @@ export default function PurchaseOrders() {
       </div>
 
       {/* New PO Modal */}
-      <AppModal
+      <Modal
         isOpen={isModalOpen}
         onClose={() => { setIsModalOpen(false); resetModal(); }}
         title="Create Purchase Order"
@@ -426,7 +427,7 @@ export default function PurchaseOrders() {
             </div>
           </div>
         </div>
-      </AppModal>
+      </Modal>
 
       <ConfirmDialog 
         isOpen={confirmDelete.isOpen}

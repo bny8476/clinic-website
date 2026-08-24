@@ -47,11 +47,13 @@ public class SuperAdminService {
     // ── System Configuration ──────────────────────────────────────────────────
 
     @Transactional(readOnly = true)
+    @org.springframework.cache.annotation.Cacheable("systemConfigs")
     public List<SystemConfiguration> getAllConfigs() {
         return configRepo.findAll();
     }
 
     @Transactional
+    @org.springframework.cache.annotation.CacheEvict(value = "systemConfigs", allEntries = true)
     public SystemConfiguration updateConfig(Long id, String value, String updatedBy) {
         SystemConfiguration config = configRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Config not found: " + id));

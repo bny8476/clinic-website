@@ -1,13 +1,15 @@
+import api from '../../utils/pharmacy/api';
+import DashboardShell from '../../components/dashboard/shared/DashboardShell';
+import KPICard from '../../components/ui/KPICard';
+import PharmacyInvoice from '../../components/pharmacy/pharmacy/PharmacyInvoice';
+import Modal from '../../components/ui/Modal';
 import { useState } from 'react';
-import { IndianRupee, FileText, CreditCard, RotateCcw } from 'lucide-react';
-
+import { ArrowRight, CreditCard, Eye, FileText, IndianRupee, RotateCcw } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useSystem } from '../../context/pharmacy/SystemContext';
 import { useConfig } from '../../context/pharmacy/ConfigContext';
-import api from '../../utils/pharmacy/api';
-
-
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 const DashboardSkeleton = () => (
   <div className="space-y-8 animate-pulse">
@@ -211,9 +213,9 @@ export default function BillingDashboard() {
         </div>
       </div>
 
-      <AppModal isOpen={isInvoiceModalOpen} onClose={() => setIsInvoiceModalOpen(false)} maxWidth="sm:max-w-4xl" padding={false}>
+      <Modal isOpen={isInvoiceModalOpen} onClose={() => setIsInvoiceModalOpen(false)} maxWidth="sm:max-w-4xl" padding={false}>
         <PharmacyInvoice bill={selectedInvoice} onClose={() => setIsInvoiceModalOpen(false)} />
-      </AppModal>
+      </Modal>
       </div>
     </DashboardShell>
     

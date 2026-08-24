@@ -38,9 +38,43 @@ public class TeleconsultationService {
         return teleconsultationRequestRepository.save(request);
     }
 
-    public List<TeleconsultationRequest> getPatientRequests(User user) {
-        PatientProfile profile = getPatientProfileForUser(user);
+    public List<TeleconsultationRequest> getPatientRequestsForUserId(Long userId) {
+        if (userId == null) return List.of();
+        PatientProfile profile = patientProfileRepository.findByUserId(userId).orElse(null);
+        if (profile == null) return List.of();
         return teleconsultationRequestRepository.findByPatientIdOrderByCreatedAtDesc(profile.getId());
+    }
+
+    @Transactional
+    public TeleconsultationRequest requestTeleconsultationForUserId(Long userId, TeleconsultationRequest request) {
+        PatientProfile profile = patientProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Patient profile not found"));
+        request.setPatientId(profile.getId());
+        request.setStatus("Requested");
+        Long mockEncounterId = 1L;
+        request.setJoinLink("/teleconsultation/room/" + mockEncounterId);
+        return teleconsultationRequestRepository.save(request);
+    }
+
+    @Transactional
+    public TeleconsultationRequest cancelRequestForUserId(Long userId, Long requestId) {
+        PatientProfile profile = patientProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Patient profile not found"));
+        TeleconsultationRequest request = teleconsultationRequestRepository.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("Request not found"));
+        if (!request.getPatientId().equals(profile.getId())) {
+            throw new RuntimeException("Unauthorized");
+        }
+        if (!"Requested".equals(request.getStatus())) {
+            throw new RuntimeException("Cannot cancel a request that is already " + request.getStatus());
+        }
+        request.setStatus("Cancelled");
+        return teleconsultationRequestRepository.save(request);
+    }
+
+    public List<TeleconsultationRequest> getPatientRequests(User user) {
+        if (user == null) return List.of();
+        return getPatientRequestsForUserId(user.getId());
     }
     
     @Transactional

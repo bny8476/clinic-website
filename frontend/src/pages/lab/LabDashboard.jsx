@@ -1,14 +1,20 @@
+import LabTopKpis from '../../components/lab/LabTopKpis';
+import LabStatusDonut from '../../components/lab/LabStatusDonut';
+import LabPriorityDonut from '../../components/lab/LabPriorityDonut';
+import LabDailyTrend from '../../components/lab/LabDailyTrend';
+import LabTurnaroundTime from '../../components/lab/LabTurnaroundTime';
+import LabStatusSidebar from '../../components/lab/LabStatusSidebar';
+import LabAlerts from '../../components/lab/LabAlerts';
+import LabRecentRequests from '../../components/lab/LabRecentRequests';
+import LabRequestDetailsModal from '../../pages/lab/LabRequestDetailsModal';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { fadeIn, staggerContainer } from '../../components/ui/motion';
+import { AlertCircle, CheckSquare, FileText, FlaskConical, History, Microscope, Plus, Printer } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { staggerContainer, fadeIn } from '../../components/ui/motion';
-import { 
-  Plus, FlaskConical, CheckSquare, Printer, History, AlertCircle, Microscope, FileText 
-} from 'lucide-react';
-import LabRequestDetailsModal from './LabRequestDetailsModal';
 
 const LabDashboard = () => {
   const { user } = useAuth();
@@ -66,14 +72,14 @@ const LabDashboard = () => {
             key={idx}
             onClick={action.action}
             variants={fadeIn}
-            whileHover={{ y: -2, boxShadow: '0 8px 24px rgba(0,0,0,0.08)' }}
-            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-            className="min-w-[120px] flex-1 flex flex-col items-center justify-center gap-3 bg-white border border-[var(--color-border)] rounded-xl py-6 hover:shadow-md transition-shadow"
+            whileHover={{ y: -4, scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="min-w-[120px] flex-1 flex flex-col items-center justify-center gap-3 bg-white/50 backdrop-blur-md border border-slate-200/50 rounded-2xl py-6 shadow-sm hover:shadow-xl hover:shadow-blue-500/10 hover:border-blue-200 transition-all group"
           >
-            <div className="w-12 h-12 rounded-full bg-[var(--color-info-bg)] flex items-center justify-center text-[var(--color-navy-600)]">
-              <action.icon size={24} strokeWidth={2} />
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform duration-300">
+              <action.icon size={26} strokeWidth={1.5} />
             </div>
-            <span className="font-bold text-[13px] text-[var(--color-text)] text-center leading-tight">
+            <span className="font-bold text-[13px] text-slate-700 text-center leading-tight group-hover:text-blue-700 transition-colors">
               {action.label}
             </span>
           </motion.button>

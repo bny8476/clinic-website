@@ -1,10 +1,9 @@
+import api from '../../utils/pharmacy/api';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/pharmacy/AuthContext';
-import api from '../../utils/pharmacy/api';
 import { toast } from 'react-hot-toast';
-
-
+import { ArrowRight, KeyRound, Loader2, Shield } from 'lucide-react';
 
 export default function ForceChangePasswordPage() {
   const [newPassword, setNewPassword] = useState('');

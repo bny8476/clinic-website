@@ -1,7 +1,8 @@
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { axiosPrivate } from '../../../api/axios';
 import toast from 'react-hot-toast';
+import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { axiosPrivate } from '../../../api/axios';
+import { Check } from 'lucide-react';
 
 export const ChecklistsTab = ({ patientId }) => {
   const queryClient = useQueryClient();
@@ -105,3 +106,5 @@ export const ChecklistsTab = ({ patientId }) => {
     </div>
   );
 };
+
+export default ChecklistsTab;

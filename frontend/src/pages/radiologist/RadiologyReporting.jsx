@@ -1,11 +1,10 @@
+import toast from 'react-hot-toast';
 import { useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { useForm } from 'react-hook-form';
-import toast from 'react-hot-toast';
-
-
+import { ArrowLeft, FileCheck, Save, User } from 'lucide-react';
 
 const RadiologyReporting = () => {
   const { requestId } = useParams();
@@ -133,7 +132,7 @@ const RadiologyReporting = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column - Context */}
         <div className="space-y-6">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="bg-white/40 backdrop-blur-md rounded-2xl shadow-sm border border-slate-200/50 overflow-hidden">
             <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex items-center gap-2">
               <User size={16} className="text-indigo-500" />
               <h3 className="font-bold text-gray-900 text-sm">Patient Context</h3>
@@ -164,7 +163,7 @@ const RadiologyReporting = () => {
 
         {/* Right Column - Editor */}
         <div className="lg:col-span-2">
-          <form className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <form className="lg:col-span-2 bg-white/40 backdrop-blur-md rounded-2xl shadow-sm border border-slate-200/50 flex flex-col h-[700px]">
             <div className="p-4 border-b border-gray-100 bg-gray-50/50">
               <h3 className="font-bold text-gray-900 text-sm">Report Editor</h3>
             </div>

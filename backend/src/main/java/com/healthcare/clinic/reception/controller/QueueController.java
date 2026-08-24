@@ -41,7 +41,7 @@ public class QueueController {
 
     @PostMapping("/branches/{branchId}/walk-ins")
     public ResponseEntity<WalkInRegistration> registerWalkIn(@PathVariable Long branchId, @RequestBody WalkInRegistration registration) {
-        Branch branch = branchRepository.findById(branchId).orElseGet(() -> branchRepository.findAll().stream().findFirst().orElseThrow());
+        Branch branch = branchRepository.findById(branchId).orElseGet(() -> branchRepository.findFirstByOrderByIdAsc().orElseThrow());
         registration.setBranch(branch);
         registration.setStatus("WAITING");
         
@@ -64,13 +64,13 @@ public class QueueController {
 
     @GetMapping("/branches/{branchId}/walk-ins")
     public ResponseEntity<List<WalkInRegistration>> getWalkIns(@PathVariable Long branchId) {
-        Long resolvedBranchId = branchRepository.findById(branchId).map(Branch::getId).orElseGet(() -> branchRepository.findAll().stream().findFirst().map(Branch::getId).orElse(branchId));
+        Long resolvedBranchId = branchRepository.findById(branchId).map(Branch::getId).orElseGet(() -> branchRepository.findFirstByOrderByIdAsc().map(Branch::getId).orElse(branchId));
         return ResponseEntity.ok(walkInRegistrationRepository.findByBranchIdAndStatus(resolvedBranchId, "WAITING"));
     }
 
     @PostMapping("/branches/{branchId}/queue/generate")
     public ResponseEntity<QueueToken> generateToken(@PathVariable Long branchId, @RequestParam(required = false) Long walkInId, @RequestParam(required = false) Long appointmentId) {
-        Branch branch = branchRepository.findById(branchId).orElseGet(() -> branchRepository.findAll().stream().findFirst().orElseThrow());
+        Branch branch = branchRepository.findById(branchId).orElseGet(() -> branchRepository.findFirstByOrderByIdAsc().orElseThrow());
         
         WalkInRegistration walkIn = null;
         if (walkInId != null) {
@@ -95,7 +95,7 @@ public class QueueController {
 
     @GetMapping("/branches/{branchId}/queue")
     public ResponseEntity<List<QueueToken>> getQueue(@PathVariable Long branchId) {
-        Long resolvedBranchId = branchRepository.findById(branchId).map(Branch::getId).orElseGet(() -> branchRepository.findAll().stream().findFirst().map(Branch::getId).orElse(branchId));
+        Long resolvedBranchId = branchRepository.findById(branchId).map(Branch::getId).orElseGet(() -> branchRepository.findFirstByOrderByIdAsc().map(Branch::getId).orElse(branchId));
         return ResponseEntity.ok(queueTokenRepository.findByBranchIdAndStatusOrderByTokenNumberAsc(resolvedBranchId, "WAITING"));
     }
 }

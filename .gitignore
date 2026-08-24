@@ -48,3 +48,12 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 frontend/.env
+dump.rdb
+*.json
+!frontend/package.json
+!frontend/package-lock.json
+!backend/pom.json
+!**/tsconfig*.json
+!**/jsconfig*.json
+frontend/fix-imports.cjs
+

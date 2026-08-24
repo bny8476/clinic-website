@@ -1,8 +1,14 @@
+import KPICard from '../../components/ui/KPICard';
+import ChartContainer from '../../components/analytics/ChartContainer';
+import AnalyticsFilterBar from '../../components/analytics/AnalyticsFilterBar';
+import ExportMenu from '../../components/analytics/ExportMenu';
+import Modal from '../../components/ui/Modal';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { Activity, Users, XCircle, CheckCircle, X, Calendar, Clock } from 'lucide-react';
+import { Activity, CheckCircle, Clock, Users, X, XCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, Tooltip as RechartsTooltip, XAxis, YAxis } from 'recharts';
 
 /* ── KPI Drill-Down Modal ────────────────────────────────── */
 const MOCK_DRILL_DOWN = {

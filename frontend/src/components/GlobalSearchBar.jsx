@@ -1,9 +1,10 @@
-import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
+import useDebounce from '../hooks/pharmacy/useDebounce';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { axiosPrivate } from '../api/axios';
 import { useQuery } from '@tanstack/react-query';
-import useDebounce from '../hooks/pharmacy/useDebounce';
+import { Search, UserRound, X } from 'lucide-react';
 
 /**
  * GlobalSearchBar — stub component.

@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types';
+import { AlertCircle, RefreshCw } from 'lucide-react';
 
 export default function ErrorBanner({ message = "Failed to load data. Please try again.", onRetry }) {
   return (

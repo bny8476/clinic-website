@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
 import useDebounce from '../../hooks/pharmacy/useDebounce';
+import pharmacyService from '../../utils/pharmacy/pharmacyService';
+import TableSkeleton from '../../components/pharmacy/ui/TableSkeleton';
+import Card from '../../components/ui/Card';
+import Modal from '../../components/ui/Modal';
+import DataTable from '../../components/ui/DataTable';
+import Pagination from '../../components/ui/Pagination';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import pharmacyService from '../../utils/pharmacy/pharmacyService';
 import { usePageData } from '../../hooks/pharmacy/usePageData';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-
-
+import { ClipboardList, CreditCard, Eye, FileText, Filter, IndianRupee, Plus, Printer, Scan, Search, Users, Wallet } from 'lucide-react';
+import { Badge } from '../../components/ui/Badge';
 
 export default function MedicineCreditBills() {
   const location = useLocation();
@@ -261,7 +266,7 @@ export default function MedicineCreditBills() {
         )}
       </div>
 
-      <AppModal 
+      <Modal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)}
         title="Collect Credit Payment"
@@ -321,7 +326,7 @@ export default function MedicineCreditBills() {
             </div>
           </div>
         )}
-      </AppModal>
+      </Modal>
     </div>
     
   );

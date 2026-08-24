@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Download, File, FileUpload, Upload, UploadCloud, X } from 'lucide-react';
 
 export default function FileUpload({
   accept = "*",

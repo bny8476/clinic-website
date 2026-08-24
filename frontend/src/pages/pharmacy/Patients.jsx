@@ -1,15 +1,18 @@
 import React, { useState, useMemo } from 'react';
 import useDebounce from '../../hooks/pharmacy/useDebounce';
 import useAuthStore from '../../store/authStore';
-import { Plus, Trash2, Edit3 } from 'lucide-react';
+import pharmacyService from '../../utils/pharmacy/pharmacyService';
+import ModuleFilterBar from '../../components/pharmacy/ui/ModuleFilterBar';
+import TableSkeleton from '../../components/pharmacy/ui/TableSkeleton';
+import Modal from '../../components/ui/Modal';
+import DataTable from '../../components/ui/DataTable';
+import Pagination from '../../components/ui/Pagination';
+import ConfirmDialog from '../../components/ui/ConfirmDialog';
+import { Calendar, CreditCard, Edit, Edit3, Info, MapPin, Phone, Plus, Save, Search, Trash2, User } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { usePageData } from '../../hooks/pharmacy/usePageData';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import pharmacyService from '../../utils/pharmacy/pharmacyService';
-import ConfirmDialog from '../../components/ui/ConfirmDialog';
-import Badge from '../../components/ui/Badge';
-
-
+import { Badge } from '../../components/ui/Badge';
 
 export default function Patients() {
   const queryClient = useQueryClient();
@@ -238,7 +241,7 @@ export default function Patients() {
       </div>
 
       {/* Add/Edit Modal */}
-      <AppModal 
+      <Modal 
         isOpen={isModalOpen} 
         onClose={closeModal}
         title={isEditMode ? "Update Patient Details" : "New Patient Registration"}
@@ -337,7 +340,7 @@ export default function Patients() {
               </div>
            </div>
         </div>
-      </AppModal>
+      </Modal>
 
       <ConfirmDialog 
         isOpen={confirmDelete.isOpen}

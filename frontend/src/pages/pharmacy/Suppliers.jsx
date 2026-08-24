@@ -1,17 +1,16 @@
-import { useState, useEffect, useMemo } from 'react';
-
 import useDebounce from '../../hooks/pharmacy/useDebounce';
-import { FileText, User, Shield, Package, BarChart3,
-  Banknote, Receipt, RotateCcw
-} from 'lucide-react';
-import { toast } from 'react-hot-toast';
+import pharmacyService from '../../utils/pharmacy/pharmacyService';
+import Modal from '../../components/ui/Modal';
 import Skeleton from '../../components/ui/Skeleton';
+import ConfirmDialog from '../../components/ui/ConfirmDialog';
+import GRNEntry from '../../pages/pharmacy/GRNEntry';
+import InvoiceMatching from '../../pages/pharmacy/InvoiceMatching';
+import SupplierReturns from '../../pages/pharmacy/SupplierReturns';
+import { useEffect, useMemo, useState } from 'react';
+import { ArrowLeft, Banknote, BarChart3, ChevronRight, Edit, Edit3, Eye, FileText, Info, Package, Phone, Plus, Receipt, RotateCcw, Save, Search, Shield, Trash2, Truck, User, X } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import { usePageData } from '../../hooks/pharmacy/usePageData';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import pharmacyService from '../../utils/pharmacy/pharmacyService';
-import ConfirmDialog from '../../components/ui/ConfirmDialog';
-
-
 
 // ── Status helpers ──────────────────────────────────────────────
 const statusConfig = {
@@ -114,7 +113,7 @@ function SupplierFormModal({ isOpen, onClose, isEditMode, initialData, onSave })
   ];
 
   return (
-    <AppModal isOpen={isOpen} onClose={onClose}
+    <Modal isOpen={isOpen} onClose={onClose}
       title={isEditMode ? 'Edit Supplier' : 'Register New Supplier'}
       maxWidth="sm:max-w-3xl"
       footer={
@@ -280,7 +279,7 @@ function SupplierFormModal({ isOpen, onClose, isEditMode, initialData, onSave })
           </div>
         )}
       </div>
-    </AppModal>
+    </Modal>
   );
 }
 
@@ -529,7 +528,7 @@ export default function Suppliers() {
       const matchStatus = !filterStatus || s.status === filterStatus;
       return matchSearch && matchType && matchStatus;
     });
-  }, [suppliers, searchTerm, filterType, filterStatus]);
+  }, [suppliers, debouncedSearch, filterType, filterStatus]);
 
   // Sub-view routing
   if (view === 'grn') return <GRNEntry onBack={() => setView('list')} />;

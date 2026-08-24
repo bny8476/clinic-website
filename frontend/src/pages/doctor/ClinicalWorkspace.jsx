@@ -1,15 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import useAuthStore from '../../store/authStore';
+import Card from '../../components/ui/Card';
+import { useNavigate, useParams } from 'react-router-dom';
 import { axiosPrivate } from '../../api/axios';
 import { toast } from 'react-hot-toast';
-import useAuthStore from '../../store/authStore';
-import { motion, AnimatePresence } from 'framer-motion';
-
-import { 
-  ArrowLeft, Stethoscope, Lock, Save, CheckCircle, AlertTriangle, 
-  Activity, Video, FileText, List, Pill, Send, Paperclip, MessageSquare,
-  Mic, MicOff
-} from 'lucide-react';
+import { Activity, AlertTriangle, ArrowLeft, CheckCircle, File, FileText, List, Lock, MessageSquare, Mic, MicOff, Paperclip, Pill, Plus, Save, Search, Send, Stethoscope, Upload, Video } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const ClinicalWorkspace = () => {
   const { id } = useParams(); // encounterId
@@ -30,7 +26,8 @@ const ClinicalWorkspace = () => {
   const [recordingField, setRecordingField] = useState(null);
   const recognitionRef = useRef(null);
   const [teleconsultation, setTeleconsultation] = useState(null);
-  const [confirmFinalize, setConfirmFinalize] = useState(false);
+  const [showFollowUpPrompt, setShowFollowUpPrompt] = useState(false);
+  const [followUpDate, setFollowUpDate] = useState('');
 
   useEffect(() => {
     fetchWorkspaceData();
@@ -198,15 +195,19 @@ const ClinicalWorkspace = () => {
   };
 
   const handleFinalize = async () => {
-    if (!confirmFinalize) {
-      setConfirmFinalize(true);
+    if (!showFollowUpPrompt) {
+      setShowFollowUpPrompt(true);
       return;
     }
-    setConfirmFinalize(false);
+    setShowFollowUpPrompt(false);
     try {
       await axiosPrivate.post(`/v1/doctor/encounters/${id}/finalize`, {});
+      if (followUpDate) {
+         // Create a follow-up record (assuming endpoint exists, or just save it in notes for now)
+         await axiosPrivate.post(`/v1/doctor/encounters/${id}/soap-note`, { ...soapNote, plan: soapNote.plan + `\nFollow-up scheduled for: ${followUpDate}` });
+      }
       toast.success('Encounter finalized successfully.');
-      fetchWorkspaceData();
+      navigate('/doctor/queue');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to finalize encounter.');
     }
@@ -248,19 +249,17 @@ const ClinicalWorkspace = () => {
           >
             <Save size={16} /> {saving ? 'Saving...' : 'Save Draft'}
           </button>
-          {confirmFinalize ? (
+          {showFollowUpPrompt ? (
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-red-700 bg-red-50 px-3 py-2 rounded-xl border border-red-200">
-                Finalize? Cannot undo.
-              </span>
+              <input type="date" value={followUpDate} onChange={e => setFollowUpDate(e.target.value)} className="px-3 py-2 border border-slate-300 rounded-lg text-sm" />
               <button
                 onClick={handleFinalize}
-                className="px-4 py-2 bg-red-600 text-white font-bold rounded-xl text-sm hover:bg-red-700 transition shadow-sm"
+                className="px-4 py-2 bg-indigo-600 text-white font-bold rounded-xl text-sm hover:bg-indigo-700 transition shadow-sm"
               >
-                Confirm
+                Complete
               </button>
               <button
-                onClick={() => setConfirmFinalize(false)}
+                onClick={() => setShowFollowUpPrompt(false)}
                 className="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-xl text-sm hover:bg-slate-200 transition"
               >
                 Cancel

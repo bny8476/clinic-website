@@ -1,6 +1,8 @@
-import { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { cn } from "../../../utils/pharmacy/cn";
+import { Fragment } from 'react';
+import { Dialog, Transition } from '@headlessui/react';
+import { cn } from '../../../utils/pharmacy/cn';
+import { X } from 'lucide-react';
 
 export default function AppModal({ 
   isOpen, 

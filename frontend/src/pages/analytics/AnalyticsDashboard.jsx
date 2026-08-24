@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-
-
+import { Activity, BarChart2, FileText, IndianRupee, TrendingUp, Users } from 'lucide-react';
+import { PieChart } from 'recharts';
 
 const AnalyticsDashboard = () => {
   const [dateRange, setDateRange] = useState('7d'); // 7d, 30d, 90d

@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import useDebounce from '../../hooks/pharmacy/useDebounce';
-import { useLocation } from 'react-router-dom';
-import { Plus } from 'lucide-react';
-import { toast } from 'react-hot-toast';
 import pharmacyService from '../../utils/pharmacy/pharmacyService';
-
+import ModuleFilterBar from '../../components/pharmacy/ui/ModuleFilterBar';
+import TableSkeleton from '../../components/pharmacy/ui/TableSkeleton';
+import Modal from '../../components/ui/Modal';
+import DataTable from '../../components/ui/DataTable';
+import Pagination from '../../components/ui/Pagination';
+import { useLocation } from 'react-router-dom';
+import { Eye, Plus, Printer, RotateCcw, Save, Search } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import { usePageData } from '../../hooks/pharmacy/usePageData';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-
-
+import { Badge } from '../../components/ui/Badge';
 
 export default function MedicineCreditReturns() {
   const location = useLocation();
@@ -168,7 +171,7 @@ export default function MedicineCreditReturns() {
         )}
       </div>
 
-      <AppModal 
+      <Modal 
         isOpen={isModalOpen} 
         onClose={() => { setIsModalOpen(false); resetForm(); }}
         title="New Credit Return Request"
@@ -239,10 +242,10 @@ export default function MedicineCreditReturns() {
              </div>
           )}
         </div>
-      </AppModal>
+      </Modal>
 
       {/* View Modal */}
-      <AppModal 
+      <Modal 
         isOpen={isViewModalOpen} 
         onClose={() => setIsViewModalOpen(false)}
         title="Credit Return Details"
@@ -273,10 +276,10 @@ export default function MedicineCreditReturns() {
             </div>
           </div>
         )}
-      </AppModal>
+      </Modal>
 
       {/* Delete Confirmation */}
-      <AppModal
+      <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         title="Confirm Deletion"
@@ -292,7 +295,7 @@ export default function MedicineCreditReturns() {
           <p className="font-bold text-gray-900 mb-2">Delete this return record?</p>
           <p className="text-sm text-gray-500">This action cannot be undone.</p>
         </div>
-      </AppModal>
+      </Modal>
     </div>
     
   );

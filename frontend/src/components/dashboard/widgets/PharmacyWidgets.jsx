@@ -1,7 +1,11 @@
+import KPICard from '../../../components/ui/KPICard';
+import PharmacyInvoice from '../../../components/pharmacy/pharmacy/PharmacyInvoice';
+import Modal from '../../../components/ui/Modal';
+import DataTable from '../../../components/ui/DataTable';
 import { useState } from 'react';
-import { IndianRupee, RotateCcw, Stethoscope, AlertTriangle } from 'lucide-react';
-
-
+import { AlertTriangle, Eye, IndianRupee, Printer, RotateCcw, Stethoscope } from 'lucide-react';
+import { Area, AreaChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Badge } from '../../../components/ui/Badge';
 
 export const PharmacyKPIWidget = ({ stats, currencySymbol }) => {
   const fmt = (val) => val != null ? Number(val).toLocaleString('en-IN') : '0';
@@ -88,9 +92,9 @@ export const PharmacyRecentBillsWidget = ({ recentBills }) => {
           )}
         ]}
       />
-      <AppModal isOpen={isInvoiceModalOpen} onClose={() => setIsInvoiceModalOpen(false)} maxWidth="sm:max-w-4xl" padding={false}>
+      <Modal isOpen={isInvoiceModalOpen} onClose={() => setIsInvoiceModalOpen(false)} maxWidth="sm:max-w-4xl" padding={false}>
         <PharmacyInvoice bill={selectedInvoice} onClose={() => setIsInvoiceModalOpen(false)} />
-      </AppModal>
+      </Modal>
     </div>
   );
 };

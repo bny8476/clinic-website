@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-
-
+import { BedDouble } from 'lucide-react';
 
 const WardManagement = () => {
 

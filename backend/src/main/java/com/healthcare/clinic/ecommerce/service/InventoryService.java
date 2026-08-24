@@ -34,9 +34,7 @@ public class InventoryService {
                 .orElseThrow(() -> new IllegalArgumentException("Product not found"));
 
         // Find or create batch
-        EcStockBatch batch = batchRepository.findAll().stream()
-                .filter(b -> b.getProductId().equals(productId) && b.getBatchNumber().equals(batchNumber))
-                .findFirst()
+        EcStockBatch batch = batchRepository.findByProductIdAndBatchNumber(productId, batchNumber)
                 .orElseGet(() -> EcStockBatch.builder()
                         .productId(productId)
                         .branchId(branchId)
@@ -74,13 +72,7 @@ public class InventoryService {
     @Transactional
     public void reserveStockForCart(Long cartId, Long productId, int quantity) {
         // Find active unexpired, non-quarantined batches
-        List<EcStockBatch> availableBatches = batchRepository.findAll().stream()
-                .filter(b -> b.getProductId().equals(productId) 
-                          && !b.getIsQuarantined() 
-                          && !b.getIsRecalled()
-                          && b.getQuantityAvailable() > 0)
-                .sorted(Comparator.comparing(EcStockBatch::getExpiryDate, Comparator.nullsLast(Comparator.naturalOrder()))) // FEFO
-                .collect(Collectors.toList());
+        List<EcStockBatch> availableBatches = batchRepository.findByProductIdAndIsQuarantinedFalseAndIsRecalledFalseAndQuantityAvailableGreaterThanOrderByExpiryDateAsc(productId, 0);
 
         int remainingToReserve = quantity;
         
@@ -111,9 +103,7 @@ public class InventoryService {
 
     @Transactional
     public void releaseExpiredReservations() {
-        List<EcStockReservation> expired = reservationRepository.findAll().stream()
-                .filter(r -> "ACTIVE".equals(r.getStatus()) && r.getExpiresAt().isBefore(ZonedDateTime.now()))
-                .toList();
+        List<EcStockReservation> expired = reservationRepository.findByStatusAndExpiresAtBefore("ACTIVE", ZonedDateTime.now());
 
         for (EcStockReservation res : expired) {
             res.setStatus("RELEASED");
@@ -131,15 +121,13 @@ public class InventoryService {
 
     @Transactional
     public void convertReservationToSale(Long cartId, Long orderId) {
-        List<EcStockReservation> activeReservations = reservationRepository.findAll().stream()
-                .filter(r -> r.getCartId().equals(cartId) && "ACTIVE".equals(r.getStatus()))
-                .toList();
+        List<EcStockReservation> activeReservations = reservationRepository.findByCartIdAndStatus(cartId, "ACTIVE");
 
         for (EcStockReservation res : activeReservations) {
             res.setStatus("CONVERTED");
             reservationRepository.save(res);
 
-            EcStockBatch batch = batchRepository.findById(res.getBatchId()).orElseThrow();
+            EcStockBatch batch = batchRepository.findByIdWithLock(res.getBatchId()).orElseThrow();
             batch.setQuantityReserved(batch.getQuantityReserved() - res.getQuantity());
             batch.setQuantityTotal(batch.getQuantityTotal() - res.getQuantity());
             batchRepository.save(batch);

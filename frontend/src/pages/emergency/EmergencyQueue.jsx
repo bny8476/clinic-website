@@ -1,14 +1,17 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { axiosPrivate } from '../../api/axios';
-import { AlertCircle, UserPlus, ArrowRight, Syringe } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
 import toast from 'react-hot-toast';
-
+import Button from '../../components/ui/Button';
+import Card from '../../components/ui/Card';
+import FormField from '../../components/ui/FormField';
+import Modal from '../../components/ui/Modal';
+import DataTable from '../../components/ui/DataTable';
+import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { axiosPrivate } from '../../api/axios';
+import { AlertCircle, Ambulance, ArrowRight, Clock, Home, Syringe, UserPlus } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
 import { staggerChildren } from '../../components/ui/motion';
-
-
+import { motion } from 'framer-motion';
+import { Badge } from '../../components/ui/Badge';
 
 const EmergencyQueue = () => {
   const [filter, setFilter] = useState('ALL');

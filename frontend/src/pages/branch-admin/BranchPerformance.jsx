@@ -1,18 +1,13 @@
+import toast from 'react-hot-toast';
+import Card from '../../components/ui/Card';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { motion } from 'framer-motion';
 import { fadeIn } from '../../components/ui/motion';
-import {
-  BarChart3, ArrowLeft, Users, IndianRupee, Clock, Download, RefreshCw
-} from 'lucide-react';
-import Card from '../../components/ui/Card';
-import toast from 'react-hot-toast';
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  LineChart, Line, Legend
-} from 'recharts';
+import { ArrowLeft, BarChart3, Clock, Download, IndianRupee, RefreshCw, Sun, Users } from 'lucide-react';
+import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 /* ── Mocked chart data (used when API returns nothing) ─────── */
 const MOCK_DAILY = [

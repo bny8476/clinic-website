@@ -118,7 +118,9 @@ public class PaymentService {
                 Map<String, Object> data = objectMapper.readValue(payload, Map.class);
                 String providerRef = (String) data.get("providerRef");
                 String status = (String) data.get("status");
-                processPaymentOutcome(providerRef, status, payload);
+                EcPayment payment = paymentRepository.findByProviderRef(providerRef)
+                        .orElseThrow(() -> new IllegalArgumentException("Unknown payment reference"));
+                processPaymentOutcome(payment, status, payload);
             } catch (Exception e) {
                 log.error("Failed to process mock payment webhook", e);
                 throw new RuntimeException("Webhook processing failed", e);
@@ -140,28 +142,21 @@ public class PaymentService {
                 if (session != null && session.getClientReferenceId() != null && session.getClientReferenceId().startsWith("ECOMM_")) {
                     Long orderId = Long.parseLong(session.getClientReferenceId().substring(6));
                     
-                    EcPayment payment = paymentRepository.findAll().stream()
-                            .filter(p -> orderId.equals(p.getOrderId()) && "STRIPE".equals(p.getPaymentMethod()))
-                            .findFirst()
+                    EcPayment payment = paymentRepository.findByOrderIdAndPaymentMethod(orderId, "STRIPE")
                             .orElse(null);
                     
                     if (payment != null) {
                         // Store actual session ID for refunds later
                         payment.setProviderRef(session.getId());
-                        processPaymentOutcome(session.getId(), "SUCCESS", payload);
+                        processPaymentOutcome(payment, "SUCCESS", payload);
                     }
                 }
             }
         }
     }
 
-    private void processPaymentOutcome(String providerRef, String status, String payload) {
+    private void processPaymentOutcome(EcPayment payment, String status, String payload) {
         try {
-            EcPayment payment = paymentRepository.findAll().stream()
-                    .filter(p -> providerRef.equals(p.getProviderRef()) || 
-                                ("STRIPE".equalsIgnoreCase(p.getPaymentMethod()) && p.getProviderRef() != null && p.getProviderRef().contains("checkout.stripe.com")))
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException("Unknown payment reference"));
 
             if ("CAPTURED".equals(payment.getStatus()) || "FAILED".equals(payment.getStatus())) {
                 log.info("Payment {} already processed. Idempotent return.", payment.getId());

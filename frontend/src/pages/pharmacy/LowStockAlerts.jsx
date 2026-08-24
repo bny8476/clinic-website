@@ -1,10 +1,14 @@
-import { useState, useEffect } from 'react';
 import logger from '../../utils/logger';
+import ErrorBanner from '../../components/pharmacy/ui/ErrorBanner';
+import TableSkeleton from '../../components/pharmacy/ui/TableSkeleton';
+import DataTable from '../../components/ui/DataTable';
+import Pagination from '../../components/ui/Pagination';
+import { useEffect, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { toast } from 'react-hot-toast';
 import { useStockStore } from '../../store/useStockStore';
-
-
+import { AlertTriangle, Clock, RefreshCw } from 'lucide-react';
+import { Badge } from '../../components/ui/Badge';
 
 export default function LowStockAlerts() {
   const [lastUpdated, setLastUpdated] = useState(new Date());

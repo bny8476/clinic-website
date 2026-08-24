@@ -1,8 +1,7 @@
-import { useState } from 'react';
-import { useLocation, Link, Outlet } from 'react-router-dom';
-import ErrorBoundary from '../components/ui/ErrorBoundary';
-
 import './PublicLayout.css';
+import ErrorBoundary from '../components/ui/ErrorBoundary';
+import { useState } from 'react';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 
 const PublicLayout = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

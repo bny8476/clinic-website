@@ -1,8 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
 import { axiosPrivate } from '../../api/axios';
-
-
+import { Ambulance } from 'lucide-react';
 
 const TripHistory = () => {
   const { data: requests = [], isLoading } = useQuery({

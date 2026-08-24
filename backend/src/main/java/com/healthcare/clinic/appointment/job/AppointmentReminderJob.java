@@ -33,9 +33,7 @@ public class AppointmentReminderJob {
         ZonedDateTime start = now.plusHours(23);
         ZonedDateTime end = now.plusHours(25);
         
-        List<Appointment> appointments = appointmentRepository.findAllByStatus(AppointmentStatus.BOOKED).stream()
-                .filter(a -> a.getSlot().getStartTime().isAfter(start) && a.getSlot().getStartTime().isBefore(end))
-                .toList();
+        List<Appointment> appointments = appointmentRepository.findByStatusAndSlotTimeBetween(AppointmentStatus.BOOKED, start, end);
                 
         for (Appointment a : appointments) {
             // Need a way to ensure we don't send multiple reminders. 
@@ -53,9 +51,7 @@ public class AppointmentReminderJob {
         ZonedDateTime start = now.plusMinutes(45);
         ZonedDateTime end = now.plusMinutes(75);
         
-        List<Appointment> appointments = appointmentRepository.findAllByStatus(AppointmentStatus.BOOKED).stream()
-                .filter(a -> a.getSlot().getStartTime().isAfter(start) && a.getSlot().getStartTime().isBefore(end))
-                .toList();
+        List<Appointment> appointments = appointmentRepository.findByStatusAndSlotTimeBetween(AppointmentStatus.BOOKED, start, end);
                 
         for (Appointment a : appointments) {
             createReminderEvent(a, "1h");

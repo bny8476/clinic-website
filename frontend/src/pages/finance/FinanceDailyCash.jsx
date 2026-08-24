@@ -1,18 +1,16 @@
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { axiosPrivate } from '../../api/axios';
-import { Lock, Unlock, BarChart3, TrendingUp, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { motion } from 'framer-motion';
-import { fadeIn, staggerContainer } from '../../components/ui/motion';
 import useAuthStore from '../../store/authStore';
-import { Link } from 'react-router-dom';
-import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
+import Card from '../../components/ui/Card';
 import Modal from '../../components/ui/Modal';
-import Badge from '../../components/ui/Badge';
-
-
+import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { axiosPrivate } from '../../api/axios';
+import { ArrowLeft, BarChart3, Lock, TrendingUp, Unlock } from 'lucide-react';
+import { fadeIn, staggerContainer } from '../../components/ui/motion';
+import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { Badge } from '../../components/ui/Badge';
 
 const FinanceDailyCash = () => {
   const { user } = useAuthStore();

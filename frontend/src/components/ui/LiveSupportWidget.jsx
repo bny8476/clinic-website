@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { axiosPrivate } from '../../api/axios';
+import { HelpCircle, MessageSquare, Send, X } from 'lucide-react';
 
 export default function LiveSupportWidget() {
     const [isOpen, setIsOpen] = useState(false);

@@ -1,11 +1,10 @@
+import Pagination from '../../components/ui/Pagination';
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { format } from 'date-fns';
 import { toast } from 'react-hot-toast';
-
-
+import { AlertTriangle, CheckCircle, Download, ShieldAlert, Target, User, XCircle } from 'lucide-react';
 
 const AuditDashboard = () => {
   const [page, setPage] = useState(0);

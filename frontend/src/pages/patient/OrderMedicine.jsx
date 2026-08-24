@@ -1,11 +1,13 @@
+import toast from 'react-hot-toast';
+import Pagination from '../../components/ui/Pagination';
 import { BASE_URL } from '../../api/axios';
 import { useState } from 'react';
-
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import toast from 'react-hot-toast';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { usePatientMedicineFeed } from '../../hooks/usePatientMedicineFeed';
-import { motion, AnimatePresence } from 'framer-motion';
-import { pageTransition, staggerChildren, listStagger, fadeUp } from '../../components/ui/motion';
+import { fadeUp, listStagger, pageTransition, staggerChildren } from '../../components/ui/motion';
+import { CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, Filter, HeadphonesIcon, Heart, Info, LayoutGrid, List, Minus, Plus, RefreshCcw, Search, ShieldCheck, ShoppingBag, Trash2, Truck } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Badge } from '../../components/ui/Badge';
 
 // Mock data (kept for fallback)
 const categories = [

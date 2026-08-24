@@ -1,10 +1,9 @@
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { axiosPrivate } from '../../api/axios';
-import { Users } from 'lucide-react';
 import toast from 'react-hot-toast';
-
-
+import EmptyState from '../../components/ui/EmptyState';
+import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { axiosPrivate } from '../../api/axios';
+import { Activity, ArrowRightLeft, Clock, FileOutput, Users, X } from 'lucide-react';
 
 const NursingStationDashboard = () => {
   const [filter, setFilter] = useState('ALL'); // ALL, ADMITTED, DISCHARGED

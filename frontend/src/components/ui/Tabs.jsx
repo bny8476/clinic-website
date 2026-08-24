@@ -1,4 +1,5 @@
 import React from 'react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const renderIcon = (Icon, className) => {

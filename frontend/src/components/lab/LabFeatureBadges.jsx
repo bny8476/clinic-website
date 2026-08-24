@@ -1,4 +1,4 @@
-import { FileBadge, ShieldCheck, Clock, Lock } from 'lucide-react';
+import { Clock, FileBadge, Lock, ShieldCheck } from 'lucide-react';
 
 const badges = [
   {

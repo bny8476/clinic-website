@@ -1,12 +1,14 @@
-import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { FileText, Activity, AlertTriangle, Pill, ClipboardList, CheckCircle } from 'lucide-react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { axiosPrivate } from '../../api/axios';
 import toast from 'react-hot-toast';
-
-
-
+import CarePlansTab from './workspace/CarePlansTab';
+import TasksTab from './workspace/TasksTab';
+import AssessmentsTab from './workspace/AssessmentsTab';
+import IncidentsTab from './workspace/IncidentsTab';
+import ChecklistsTab from './workspace/ChecklistsTab';
+import { useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Activity, AlertTriangle, ArrowLeft, CheckCircle, ClipboardList, FileText, Pill, Save } from 'lucide-react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { axiosPrivate } from '../../api/axios';
 
 const NurseWorkspace = () => {
   const { patientId } = useParams();

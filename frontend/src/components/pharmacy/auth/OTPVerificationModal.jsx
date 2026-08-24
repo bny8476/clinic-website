@@ -1,6 +1,7 @@
+import pharmacyService from '../../../utils/pharmacy/pharmacyService';
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
-import pharmacyService from '../../../utils/pharmacy/pharmacyService';
+import { Check, Mail, RefreshCcw, Send, Shield, ShieldCheck, X } from 'lucide-react';
 
 export default function OTPVerificationModal({ isOpen, onClose, onVerifySuccess }) {
   const [email, setEmail] = useState('');

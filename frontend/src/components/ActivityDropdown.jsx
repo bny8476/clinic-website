@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
-import { ShieldAlert, LogIn, CheckCircle, Clock, Activity } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
+import { Activity, Check, CheckCircle, Clock, LogIn, ShieldAlert } from 'lucide-react';
 import { scaleIn } from './ui/motion';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const DUMMY_ACTIVITIES = [
   {

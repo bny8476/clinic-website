@@ -1,12 +1,11 @@
-import { useState, useEffect } from 'react';
+import PageLoadingSkeleton from '../../components/ui/PageLoadingSkeleton';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { axiosPrivate as axios } from '../../api/axios';
 import { format } from 'date-fns';
-import { CheckCircle, Truck, Clock, Package, AlertCircle, ShoppingBag } from 'lucide-react';
+import { fadeUp, listStagger, staggerChildren } from '../../components/ui/motion';
+import { AlertCircle, CheckCircle, Clock, Package, ShoppingBag, Truck } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { staggerChildren, fadeUp, listStagger } from '../../components/ui/motion';
-
-import PageLoadingSkeleton from '../../components/ui/PageLoadingSkeleton';
 
 export default function Orders() {
   const [orders, setOrders] = useState([]);

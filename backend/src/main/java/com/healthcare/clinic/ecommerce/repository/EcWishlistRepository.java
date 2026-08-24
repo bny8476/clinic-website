@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface EcWishlistRepository extends JpaRepository<EcWishlist, Long> {
+    java.util.List<EcWishlist> findByPatientId(Long patientId);
+    java.util.Optional<EcWishlist> findByPatientIdAndProductId(Long patientId, Long productId);
 }

@@ -1,13 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
-
-import { toast } from 'react-hot-toast';
-import Skeleton from '../../../components/ui/Skeleton';
 import pharmacyService from "../../../utils/pharmacy/pharmacyService";
-import { fmtDate } from './reportCatalog';
+import Skeleton from '../../../components/ui/Skeleton';
 import ConfirmDialog from '../../../components/ui/ConfirmDialog';
-import { ToggleRight, ToggleLeft, Trash2, Bell } from 'lucide-react';
-
-
+import { useCallback, useEffect, useState } from 'react';
+import { toast } from 'react-hot-toast';
+import { fmtDate } from './reportCatalog';
+import { Bell, ToggleLeft, ToggleRight, Trash2 } from 'lucide-react';
 
 const CHANNEL_BADGE  = { EMAIL: '✉️ Email', WHATSAPP: '💬 WhatsApp', BOTH: '✉️+💬 Both' };
 const STATUS_BADGE   = {

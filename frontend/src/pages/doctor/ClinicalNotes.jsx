@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-
-
+import { ChevronLeft, FileText, FlaskConical, HeartPulse, Pill, Save } from 'lucide-react';
 
 const ClinicalNotes = () => {
   const { patientId } = useParams();

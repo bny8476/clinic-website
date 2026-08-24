@@ -1,10 +1,10 @@
+import Button from '../../components/ui/Button';
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { toast } from 'react-hot-toast';
-
-
+import { Check, ChevronLeft, FlaskConical, Search, Send } from 'lucide-react';
 
 const LabRequest = () => {
   const { patientId } = useParams();

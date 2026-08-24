@@ -1,14 +1,16 @@
+import toast from 'react-hot-toast';
+import Card from '../../components/ui/Card';
+import Badge from '../../components/ui/Badge';
+import Button from '../../components/ui/Button';
+import Modal from '../../components/ui/Modal';
+import FormField from '../../components/ui/FormField';
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { format, isPast } from 'date-fns';
-import { FileText, Play } from 'lucide-react';
-
+import { AlertCircle, Barcode, Beaker, FileText, Play, Save, Search, Upload } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { staggerChildren, fadeIn } from '../../components/ui/motion';
-import toast from 'react-hot-toast';
-
-
+import { fadeIn, staggerChildren } from '../../components/ui/motion';
 
 const ResultEntryModal = ({ request, onClose, onSuccess }) => {
   const [resultValue, setResultValue] = useState('');
@@ -89,17 +91,20 @@ const ResultEntryModal = ({ request, onClose, onSuccess }) => {
     <Modal isOpen={true} onClose={onClose} title={`Result Entry - ${request.testCatalog?.testName}`}>
       <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-4">
         
-        <FormField label="Result Value" required>
-          <input type="text" value={resultValue} onChange={e => setResultValue(e.target.value)} required className="input-field" />
-        </FormField>
+        <div className="space-y-1.5">
+          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Result Value *</label>
+          <input type="text" value={resultValue} onChange={e => setResultValue(e.target.value)} required className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white/50 backdrop-blur-md outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm font-bold text-lg" />
+        </div>
         
         <div className="grid grid-cols-2 gap-4">
-          <FormField label="Reference Range">
-            <input type="text" value={referenceRange} onChange={e => setReferenceRange(e.target.value)} className="input-field" />
-          </FormField>
-          <FormField label="Unit">
-            <input type="text" value={unit} onChange={e => setUnit(e.target.value)} className="input-field" />
-          </FormField>
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Reference Range</label>
+            <input type="text" value={referenceRange} onChange={e => setReferenceRange(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white/50 backdrop-blur-md outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm" />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Unit</label>
+            <input type="text" value={unit} onChange={e => setUnit(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white/50 backdrop-blur-md outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm" />
+          </div>
         </div>
         
         <div className="flex items-center space-x-4 p-4 bg-[var(--color-surface-alt)] rounded-lg border border-[var(--color-border)]">
@@ -122,9 +127,10 @@ const ResultEntryModal = ({ request, onClose, onSuccess }) => {
           )}
         </div>
         
-        <FormField label="Upload PDF Report (Optional)">
-          <input type="file" accept="application/pdf" onChange={e => setFile(e.target.files[0])} className="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[var(--color-navy-800)] file:text-white hover:file:opacity-90"/>
-        </FormField>
+        <div className="space-y-1.5">
+          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Upload PDF Report (Optional)</label>
+          <input type="file" accept="application/pdf" onChange={e => setFile(e.target.files[0])} className="w-full text-sm file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors cursor-pointer border border-slate-200 rounded-xl px-2 py-2 bg-white/50"/>
+        </div>
         
         <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-[var(--color-border)]">
           <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
@@ -234,15 +240,15 @@ const LabWorklist = () => {
                 
                 return (
     
-                  <motion.li variants={fadeIn} key={req.id} className="p-4 hover:bg-[var(--color-surface-alt)] transition-colors flex flex-col sm:flex-row justify-between gap-4">
+                  <motion.li variants={fadeIn} key={req.id} className="p-4 bg-white hover:bg-slate-50/80 transition-colors flex flex-col sm:flex-row justify-between gap-4 border-b border-slate-100 last:border-0 rounded-lg sm:rounded-none">
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-2">
                         <Badge variant={req.priority === 'STAT' ? 'danger' : req.priority === 'URGENT' ? 'warning' : 'info'}>
                           {req.priority}
                         </Badge>
-                        <span className="font-bold text-[var(--color-navy-900)]">{req.testCatalog?.testName}</span>
-                        <span className="text-xs text-[var(--color-text-muted)]">#{req.labRequestNumber}</span>
-                        {isOverdue && <Badge variant="danger" className="animate-pulse flex items-center gap-1"><AlertCircle size={10} /> OVERDUE</Badge>}
+                        <span className="font-bold text-slate-900 text-lg">{req.testCatalog?.testName}</span>
+                        <span className="text-xs font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">#{req.labRequestNumber}</span>
+                        {isOverdue && <Badge variant="danger" className="animate-pulse flex items-center gap-1 shadow-sm shadow-red-500/20"><AlertCircle size={10} /> OVERDUE</Badge>}
                       </div>
                       <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-[var(--color-text-muted)]">
                         <span><strong className="text-[var(--color-text)]">Patient:</strong> {req.patient?.user?.firstName} {req.patient?.user?.lastName}</span>

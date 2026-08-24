@@ -1,10 +1,13 @@
+import KPICard from '../../components/ui/KPICard';
+import ChartContainer from '../../components/analytics/ChartContainer';
+import AnalyticsFilterBar from '../../components/analytics/AnalyticsFilterBar';
+import ExportMenu from '../../components/analytics/ExportMenu';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { Activity, Bed, Users, UserCheck } from 'lucide-react';
+import { Activity, Bed, UserCheck, Users } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-
-
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, Tooltip as RechartsTooltip, XAxis, YAxis } from 'recharts';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 

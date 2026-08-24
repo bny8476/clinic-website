@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import logger from '../../utils/logger';
 import useDebounce from '../../hooks/pharmacy/useDebounce';
+import ModuleFilterBar from '../../components/pharmacy/ui/ModuleFilterBar';
+import Modal from '../../components/ui/Modal';
+import DataTable from '../../components/ui/DataTable';
+import Pagination from '../../components/ui/Pagination';
 import { useLocation } from 'react-router-dom';
-import { Plus } from 'lucide-react';
+import { Eye, Layers, Plus, Printer, Search } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-
-
+import { Badge } from '../../components/ui/Badge';
 
 export default function ConsolidatedBills() {
   const location = useLocation();
@@ -146,7 +149,7 @@ export default function ConsolidatedBills() {
         <Pagination totalRecords={filteredConsolidated.length} currentPage={currentPage} pageSize={pageSize} onPageChange={setCurrentPage} onPageSizeChange={setPageSize} />
       </div>
 
-      <AppModal 
+      <Modal 
         isOpen={isModalOpen} 
         onClose={() => { setIsModalOpen(false); resetForm(); }}
         title="Merge Pending Bills"
@@ -217,10 +220,10 @@ export default function ConsolidatedBills() {
              <p className="text-2xl font-black text-blue-400 animate-in fade-in zoom-in duration-300">₹{calculateSelectedTotal().toFixed(2)}</p>
           </div>
         </div>
-      </AppModal>
+      </Modal>
 
       {/* View Modal */}
-      <AppModal isOpen={isViewModalOpen} onClose={() => setIsViewModalOpen(false)} title="Consolidated Bill Details" maxWidth="sm:max-w-2xl">
+      <Modal isOpen={isViewModalOpen} onClose={() => setIsViewModalOpen(false)} title="Consolidated Bill Details" maxWidth="sm:max-w-2xl">
          {selectedConsolidated && (
            <div className="space-y-6">
               <div className="grid grid-cols-2 gap-4 p-5 bg-slate-50 rounded-xl border border-slate-100">
@@ -242,7 +245,7 @@ export default function ConsolidatedBills() {
               </div>
            </div>
          )}
-      </AppModal>
+      </Modal>
     </div>
     
   );

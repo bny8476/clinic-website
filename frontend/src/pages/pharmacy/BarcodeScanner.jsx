@@ -1,10 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
-import { ShoppingCart, Truck, Package } from 'lucide-react';
-import { toast } from 'react-hot-toast';
 import pharmacyService from '../../utils/pharmacy/pharmacyService';
+import Input from '../../components/ui/Input';
+import { useEffect, useRef, useState } from 'react';
+import { Barcode, Camera, ClipboardList, Clock, Package, Plus, QrCode, RefreshCw, Scan, Send, ShoppingCart, Square, Truck, X } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-
-
 
 export default function BarcodeScanner() {
   const [barcodeValue, setBarcodeValue] = useState('');

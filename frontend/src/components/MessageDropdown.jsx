@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
 import { scaleIn } from './ui/motion';
+import { Check, MessageSquare } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const DUMMY_MESSAGES = [
   {

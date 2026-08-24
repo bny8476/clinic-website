@@ -1,9 +1,7 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-
-
+import { Briefcase, UserPlus } from 'lucide-react';
 
 const Recruitment = () => {
   const [activeTab, setActiveTab] = useState('requisitions'); // requisitions or applications

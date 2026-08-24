@@ -1,8 +1,8 @@
-import { createContext, useContext, useCallback, useMemo, useEffect, useState } from 'react';
 import logger from '../../utils/logger';
 import useAuthStore from '../../store/authStore';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { ROLES } from '../../config/pharmacy/roles.config';
-import { axiosPublic, axiosPrivate } from '../../api/axios';
+import { axiosPrivate, axiosPublic } from '../../api/axios';
 
 const AuthContext = createContext();
 
@@ -168,3 +168,4 @@ export function AuthProvider({ children }) {
 }
 
 export const useAuth = () => useContext(AuthContext);
+export { AuthProvider as PharmacyAuthProvider };

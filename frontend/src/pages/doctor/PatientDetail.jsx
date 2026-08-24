@@ -1,15 +1,16 @@
+import ChartBanner from './emr/ChartBanner';
+import EMRChart from './emr/EMRChart';
+import CarePlan from './emr/CarePlan';
+import ClinicalTimeline from './ClinicalTimeline';
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { Calendar, Pill, FlaskConical, CreditCard,
-  FolderOpen, Loader2, AlertCircle, ChevronRight, ArrowLeft,
-  User, Phone, Mail, Droplet, MapPin, HeartPulse, Activity, FileText
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Activity, AlertCircle, ArrowLeft, Calendar, ChevronRight, ClipboardList, CreditCard, Droplet, FileText, FlaskConical, FolderOpen, HeartPulse, Info, List, Loader2, Mail, MapPin, Phone, Pill, User } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const TABS = [
-  'Overview', 'Appointments', 'Prescriptions', 'Lab Reports',
+  'Overview', 'Timeline', 'Appointments', 'Prescriptions', 'Lab Reports',
   'Medical History', 'Care Plans', 'Documents', 'Billing & Payments'
 ];
 
@@ -682,6 +683,10 @@ const PatientDetail = ({ patientIdOverride }) => {
                     </div>
                   </div>
                 </>
+              )}
+
+              {activeTab === 'Timeline' && (
+                <ClinicalTimeline patientId={patientId} />
               )}
 
               {activeTab === 'Appointments' && (

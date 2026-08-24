@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
 import logger from '../../utils/logger';
+import Modal from '../../components/ui/Modal';
+import { useEffect, useState } from 'react';
 import { useClinicalDecisionStore } from '../../store/useClinicalDecisionStore';
 
 export default function OrderSetPicker({ isOpen, onClose, patientId = 1, diagnosisCode = '', onApplied }) {
@@ -26,7 +27,7 @@ export default function OrderSetPicker({ isOpen, onClose, patientId = 1, diagnos
   };
 
   return (
-    <AppModal
+    <Modal
       isOpen={isOpen}
       onClose={onClose}
       title={`Smart Order Sets ${diagnosisCode ? `(Diagnosis: ${diagnosisCode})` : ''}`}
@@ -113,6 +114,6 @@ export default function OrderSetPicker({ isOpen, onClose, patientId = 1, diagnos
           </>
         )}
       </div>
-    </AppModal>
+    </Modal>
   );
 }

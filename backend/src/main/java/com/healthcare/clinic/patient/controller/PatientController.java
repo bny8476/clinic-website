@@ -111,28 +111,22 @@ public class PatientController {
         if (query == null || query.trim().isEmpty()) {
             return ResponseEntity.ok(java.util.List.of());
         }
-        String lowerQuery = query.toLowerCase();
-        java.util.List<PatientProfile> allPatients = patientRepository.findAll();
+        
+        org.springframework.data.domain.Page<com.healthcare.clinic.identity.entity.User> users = userRepository.searchByNameOrEmail(query, org.springframework.data.domain.PageRequest.of(0, 20));
         java.util.List<java.util.Map<String, Object>> result = new java.util.ArrayList<>();
         
-        for (PatientProfile p : allPatients) {
-            com.healthcare.clinic.identity.entity.User u = p.getUserId() != null ? 
-                userRepository.findById(p.getUserId()).orElse(null) : null;
-            if (u != null) {
-                String fName = u.getFirstName() != null ? u.getFirstName() : "";
-                String lName = u.getLastName() != null ? u.getLastName() : "";
-                String fullName = (fName + " " + lName).toLowerCase();
-                String phone = u.getPhoneNumber() != null ? u.getPhoneNumber() : "";
-                if (fullName.contains(lowerQuery) || phone.contains(lowerQuery)) {
+        for (com.healthcare.clinic.identity.entity.User u : users.getContent()) {
+            if (u.getRoles().stream().anyMatch(r -> r.getName().equals("ROLE_PATIENT"))) {
+                patientRepository.findByUserId(u.getId()).ifPresent(p -> {
                     java.util.Map<String, Object> map = new java.util.HashMap<>();
                     map.put("id", p.getId());
                     map.put("patientId", p.getUserId());
-                    map.put("firstName", fName);
-                    map.put("lastName", lName);
-                    map.put("phone", phone);
+                    map.put("firstName", u.getFirstName() != null ? u.getFirstName() : "");
+                    map.put("lastName", u.getLastName() != null ? u.getLastName() : "");
+                    map.put("phone", u.getPhoneNumber() != null ? u.getPhoneNumber() : "");
                     map.put("gender", p.getGender());
                     result.add(map);
-                }
+                });
             }
         }
         return ResponseEntity.ok(result);

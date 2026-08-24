@@ -1,8 +1,9 @@
+import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import { format } from 'date-fns';
 import { axiosPrivate } from '../../api/axios';
 import { toast } from 'react-hot-toast';
 import { useState } from 'react';
-import ConfirmDialog from '../ui/ConfirmDialog';
+import { AlertTriangle, CheckCircle, Download, File, FileText, ImageIcon, Trash2 } from 'lucide-react';
 
 const DocumentList = ({ documents, onRefresh, readOnly = false }) => {
   const [confirmDelete, setConfirmDelete] = useState({ isOpen: false, docId: null });

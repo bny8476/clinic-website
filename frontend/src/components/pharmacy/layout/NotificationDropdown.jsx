@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { AlertTriangle, Bell, Check, CheckCircle2, Info, Package, Receipt } from 'lucide-react';
 
 const DUMMY_NOTIFICATIONS = [
   {

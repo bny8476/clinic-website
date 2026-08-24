@@ -1,6 +1,7 @@
+import useAuthStore from '../../store/authStore';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import useAuthStore from '../../store/authStore';
+import { Filter } from 'lucide-react';
 
 /**
  * Universal Analytics Filter Bar.

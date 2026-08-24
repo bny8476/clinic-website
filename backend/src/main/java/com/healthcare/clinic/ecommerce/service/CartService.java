@@ -26,16 +26,12 @@ public class CartService {
     @Transactional
     public EcCart getOrCreateCart(Long patientId, String sessionKey) {
         if (patientId != null) {
-            Optional<EcCart> patientCart = cartRepository.findAll().stream()
-                    .filter(c -> patientId.equals(c.getPatientId()) && "ACTIVE".equals(c.getStatus()))
-                    .findFirst();
+            Optional<EcCart> patientCart = cartRepository.findByPatientIdAndStatus(patientId, "ACTIVE");
             if (patientCart.isPresent()) return patientCart.get();
         }
 
         if (sessionKey != null) {
-            Optional<EcCart> sessionCart = cartRepository.findAll().stream()
-                    .filter(c -> sessionKey.equals(c.getSessionKey()) && "ACTIVE".equals(c.getStatus()))
-                    .findFirst();
+            Optional<EcCart> sessionCart = cartRepository.findBySessionKeyAndStatus(sessionKey, "ACTIVE");
             if (sessionCart.isPresent()) return sessionCart.get();
         }
 
@@ -88,9 +84,7 @@ public class CartService {
 
     @Transactional
     public void mergeSessionCart(Long patientId, String sessionKey) {
-        EcCart sessionCart = cartRepository.findAll().stream()
-                .filter(c -> sessionKey.equals(c.getSessionKey()) && "ACTIVE".equals(c.getStatus()))
-                .findFirst().orElse(null);
+        EcCart sessionCart = cartRepository.findBySessionKeyAndStatus(sessionKey, "ACTIVE").orElse(null);
 
         if (sessionCart == null || sessionCart.getItems().isEmpty()) return;
 

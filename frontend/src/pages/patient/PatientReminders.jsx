@@ -1,9 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { axiosPrivate } from '../../api/axios';
 import toast from 'react-hot-toast';
-import { Bell, XCircle, CheckCircle, Loader2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { pageTransition, staggerChildren, listStagger, fadeUp } from '../../components/ui/motion';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { axiosPrivate } from '../../api/axios';
+import { fadeUp, listStagger, pageTransition, staggerChildren } from '../../components/ui/motion';
+import { Bell, CheckCircle, Loader2, XCircle } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const PatientReminders = () => {
   const queryClient = useQueryClient();

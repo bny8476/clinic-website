@@ -38,3 +38,5 @@ export function usePatientMedicineFeed(onUpdate) {
     };
   }, [onUpdate]);
 }
+
+export default usePatientMedicineFeed;

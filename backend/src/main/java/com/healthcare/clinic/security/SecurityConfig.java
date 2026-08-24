@@ -63,7 +63,7 @@ public class SecurityConfig {
             .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> {
-                auth.requestMatchers("/api/auth/**", "/api/health", "/api/pharmacy/config/public").permitAll();
+                auth.requestMatchers("/api/auth/**", "/api/health", "/api/pharmacy/config/public", "/api/ai/**").permitAll();
                 auth.requestMatchers(org.springframework.http.HttpMethod.GET, "/api/sse/appointments").permitAll();
                 auth.requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/finance/payments/webhook/stripe").permitAll();
                 if (!isProd) {

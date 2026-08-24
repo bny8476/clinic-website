@@ -39,6 +39,7 @@ public class SaleService {
     private final com.healthcare.clinic.inventory.service.StockAlertService alertService;
     private final MeterRegistry meterRegistry;
     private final com.healthcare.clinic.pharmacy.repository.PrescriptionRepository prescriptionRepository;
+    private final InventoryMovementRepository movementRepository;
 
     public SaleService(MedicineStockRepository stockRepository, 
                        PharmacyBillRepository billRepository, 
@@ -47,7 +48,8 @@ public class SaleService {
                        MedicineRepository medicineRepository,
                        com.healthcare.clinic.inventory.service.StockAlertService alertService,
                        MeterRegistry meterRegistry,
-                       com.healthcare.clinic.pharmacy.repository.PrescriptionRepository prescriptionRepository) {
+                       com.healthcare.clinic.pharmacy.repository.PrescriptionRepository prescriptionRepository,
+                       InventoryMovementRepository movementRepository) {
         this.stockRepository = stockRepository;
         this.billRepository = billRepository;
         this.creditBillRepository = creditBillRepository;
@@ -56,6 +58,7 @@ public class SaleService {
         this.alertService = alertService;
         this.meterRegistry = meterRegistry;
         this.prescriptionRepository = prescriptionRepository;
+        this.movementRepository = movementRepository;
         
         Gauge.builder("pharmacy_stock_low_count", alertService, 
             svc -> svc.getLowStockCount())
@@ -132,6 +135,16 @@ public class SaleService {
                 billItem.setTaxAmount(lineTax);
                 billItem.setNetAmount(lineTotal.add(lineTax));
                 bill.getItems().add(billItem);
+                
+                InventoryMovement movement = InventoryMovement.builder()
+                        .medicineId(stock.getMedicine().getId())
+                        .batchId(stock.getBatchNumber())
+                        .movementType("POS_SALE")
+                        .quantity(-quantityToDeduct)
+                        .referenceId(bill.getBillNumber())
+                        .referenceType("BILL")
+                        .build();
+                movementRepository.save(movement);
             } else if (itemDto.getMedicineId() != null) {
                 // Fetch FEFO batches dynamically with PESSIMISTIC_WRITE lock
                 List<MedicineStock> batches = stockRepository.findBatchesForDispensingWithLock(itemDto.getMedicineId());
@@ -162,6 +175,16 @@ public class SaleService {
                     billItem.setTaxAmount(lineTax);
                     billItem.setNetAmount(lineTotal.add(lineTax));
                     bill.getItems().add(billItem);
+                    
+                    InventoryMovement movement = InventoryMovement.builder()
+                            .medicineId(stock.getMedicine().getId())
+                            .batchId(stock.getBatchNumber())
+                            .movementType("POS_SALE")
+                            .quantity(-deductAmount)
+                            .referenceId(bill.getBillNumber())
+                            .referenceType("BILL")
+                            .build();
+                    movementRepository.save(movement);
 
                     remainingToDeduct -= deductAmount;
                 }
@@ -268,6 +291,15 @@ public class SaleService {
                 stock.setQuantityAvailable(stock.getQuantityAvailable() + item.getQuantity());
                 stockRepository.save(stock);
                 
+                InventoryMovement movement = InventoryMovement.builder()
+                        .medicineId(stock.getMedicine().getId())
+                        .batchId(stock.getBatchNumber())
+                        .movementType("POS_SALE_CANCEL")
+                        .quantity(item.getQuantity()) // Add back
+                        .referenceId(bill.getBillNumber())
+                        .referenceType("BILL_CANCEL")
+                        .build();
+                movementRepository.save(movement);
             }
         }
 

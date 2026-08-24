@@ -1,9 +1,10 @@
+import Card from '../../components/ui/Card';
 import { useQuery } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
 import { axiosPrivate } from '../../api/axios';
 import { fadeIn } from '../../components/ui/motion';
-
-
+import { ArrowLeft, CheckCircle2, Clock, Map, Monitor, Truck } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Link, Route } from 'react-router-dom';
 
 const AmbulanceTracking = () => {
   const { data: fleet = [], isLoading } = useQuery({

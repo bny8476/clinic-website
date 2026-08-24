@@ -1,7 +1,8 @@
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { axiosPrivate } from '../../../api/axios';
 import toast from 'react-hot-toast';
+import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { axiosPrivate } from '../../../api/axios';
+import { Filter } from 'lucide-react';
 
 export const TasksTab = ({ patientId }) => {
   const queryClient = useQueryClient();
@@ -101,3 +102,5 @@ export const TasksTab = ({ patientId }) => {
     </div>
   );
 };
+
+export default TasksTab;

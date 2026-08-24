@@ -1,6 +1,7 @@
-import { useRef } from 'react';
 import PropTypes from 'prop-types';
-import { cn } from "../../../utils/pharmacy/cn";
+import Skeleton from '../../../components/ui/Skeleton';
+import { useRef } from 'react';
+import { cn } from '../../../utils/pharmacy/cn';
 import { useVirtualizer } from '@tanstack/react-virtual';
 
 export default function DataTable({ 

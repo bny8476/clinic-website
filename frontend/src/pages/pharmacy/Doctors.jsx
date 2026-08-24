@@ -1,14 +1,12 @@
 import React, { useState, useMemo } from 'react';
-
 import useDebounce from '../../hooks/pharmacy/useDebounce';
-
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'react-hot-toast';
 import doctorService from '../../utils/pharmacy/doctorService';
+import Modal from '../../components/ui/Modal';
 import Skeleton from '../../components/ui/Skeleton';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
-
-
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'react-hot-toast';
+import { Edit, Edit3, Plus, Save, Search, Trash2, UserRound, X } from 'lucide-react';
 
 const EMPTY_FORM = {
   name: '', specialization: '', contactNumber: '', registrationNumber: '', clinicAddress: ''
@@ -27,7 +25,7 @@ function DoctorFormModal({ isOpen, onClose, isEditMode, initialData, onSave }) {
   const labelCls = "text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1";
 
   return (
-    <AppModal isOpen={isOpen} onClose={onClose}
+    <Modal isOpen={isOpen} onClose={onClose}
       title={isEditMode ? 'Edit Doctor' : 'Register New Doctor'}
       maxWidth="sm:max-w-2xl"
       footer={
@@ -63,7 +61,7 @@ function DoctorFormModal({ isOpen, onClose, isEditMode, initialData, onSave }) {
           </div>
         </div>
       </div>
-    </AppModal>
+    </Modal>
   );
 }
 
@@ -135,14 +133,14 @@ export default function Doctors() {
   const openEdit = (d) => { setIsEditMode(true); setSelectedDoctor(d); setIsModalOpen(true); };
 
   const filtered = useMemo(() => {
-    const list = doctors || [];
+    const list = doctorsPage?.content || [];
     return list.filter(d => {
       return !debouncedSearch || 
         (d.name?.toLowerCase() || '').includes(debouncedSearch.toLowerCase()) ||
         (d.specialization?.toLowerCase() || '').includes(debouncedSearch.toLowerCase()) ||
         (d.contactNumber?.toLowerCase() || '').includes(debouncedSearch.toLowerCase());
     });
-  }, [doctors, searchTerm]);
+  }, [doctorsPage?.content, debouncedSearch]);
 
   return (
     

@@ -14,6 +14,7 @@ public class FeaturePlanService {
 
     private final FeaturePlanRepository repository;
 
+    @org.springframework.cache.annotation.Cacheable("featurePlans")
     public List<FeaturePlan> findAll() {
         return repository.findAll();
     }
@@ -22,10 +23,12 @@ public class FeaturePlanService {
         return repository.findById(id);
     }
 
+    @org.springframework.cache.annotation.CacheEvict(value = "featurePlans", allEntries = true)
     public FeaturePlan save(FeaturePlan entity) {
         return repository.save(entity);
     }
 
+    @org.springframework.cache.annotation.CacheEvict(value = "featurePlans", allEntries = true)
     public void deleteById(Long id) {
         repository.deleteById(id);
     }

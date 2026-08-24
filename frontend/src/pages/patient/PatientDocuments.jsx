@@ -1,14 +1,13 @@
+import useAuthStore from '../../store/authStore';
+import PageLoadingSkeleton from '../../components/ui/PageLoadingSkeleton';
+import DocumentUploader from '../../components/common/DocumentUploader';
+import DocumentList from '../../components/common/DocumentList';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import useAuthStore from '../../store/authStore';
-import { FileText, Shield, Search, Filter } from 'lucide-react';
-import DocumentUploader from '../../components/common/DocumentUploader';
-import DocumentList from '../../components/common/DocumentList';
+import { fadeUp, staggerChildren } from '../../components/ui/motion';
+import { FileText, Filter, List, Search, Shield, Upload } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { staggerChildren, fadeUp, listStagger } from '../../components/ui/motion';
-
-import PageLoadingSkeleton from '../../components/ui/PageLoadingSkeleton';
 
 const PatientDocuments = () => {
   const { user } = useAuthStore();

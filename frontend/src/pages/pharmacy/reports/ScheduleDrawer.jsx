@@ -1,9 +1,9 @@
-import { useState } from 'react';
 import PropTypes from 'prop-types';
-import { toast } from 'react-hot-toast';
 import pharmacyService from '../../../utils/pharmacy/pharmacyService';
-
-
+import Modal from '../../../components/ui/Modal';
+import { useState } from 'react';
+import { toast } from 'react-hot-toast';
+import { Bell, File, Save } from 'lucide-react';
 
 const INPUT_CLS = 'w-full px-3 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 bg-white';
 
@@ -42,7 +42,7 @@ export default function ScheduleDrawer({ report, onClose, onSaved }) {
 
   return (
     
-    <AppModal
+    <Modal
       isOpen
       onClose={onClose}
       title={
@@ -132,7 +132,7 @@ export default function ScheduleDrawer({ report, onClose, onSaved }) {
           <strong>Note:</strong> WhatsApp delivery sends a PDF attachment with a summary message. Failed deliveries auto-retry after 30 minutes.
         </div>
       </div>
-    </AppModal>
+    </Modal>
     
   );
 }

@@ -1,12 +1,10 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
-
 import { toast } from 'react-hot-toast';
-import { today, monthStart, fmtDateTime, fmtDateTimeEnd, fmtDate, urgencyBadge } from './reportCatalog';
-import { doExportPDF, doExportExcel, doExportCSV, doExportImage } from './reportExportUtils';
-
-
+import { fmtDate, fmtDateTime, fmtDateTimeEnd, monthStart, today, urgencyBadge } from './reportCatalog';
+import { doExportCSV, doExportExcel, doExportImage, doExportPDF } from './reportExportUtils';
+import { BarChart2, Bell, Calendar, FileSpreadsheet, FileText, FileType, Filter, Image, RefreshCcw, X } from 'lucide-react';
 
 /**
  * Inline panel that shows the report filter controls, fetches data,

@@ -1,7 +1,7 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { axiosPrivate } from '../../api/axios';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
-import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { axiosPrivate } from '../../api/axios';
+import { CheckCircle, Shield, XCircle } from 'lucide-react';
 
 const PatientConsent = () => {
   const queryClient = useQueryClient();

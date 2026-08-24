@@ -1,8 +1,10 @@
+import DashboardShell from '../../components/dashboard/shared/DashboardShell';
+import DashboardGrid from '../../components/dashboard/DashboardGrid';
+import Card from '../../components/ui/Card';
+import DataTable from '../../components/ui/DataTable';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { Pill, Activity } from 'lucide-react';
-
-
+import { Activity, Check, Pill } from 'lucide-react';
 
 const PharmacistDashboard = () => {
   const { data: dispensed = [], isLoading } = useQuery({

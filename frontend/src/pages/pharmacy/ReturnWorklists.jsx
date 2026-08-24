@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import useDebounce from '../../hooks/pharmacy/useDebounce';
+import pharmacyService from '../../utils/pharmacy/pharmacyService';
+import Modal from '../../components/ui/Modal';
+import DataTable from '../../components/ui/DataTable';
+import Pagination from '../../components/ui/Pagination';
 import { useLocation } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import pharmacyService from '../../utils/pharmacy/pharmacyService';
-
-
+import { CheckCircle, Eye, FileCheck, FileText, Search, XCircle } from 'lucide-react';
+import { Badge } from '../../components/ui/Badge';
 
 export default function ReturnWorklists() {
   const location = useLocation();
@@ -175,7 +178,7 @@ export default function ReturnWorklists() {
         <Pagination totalRecords={filteredRequests.length} currentPage={currentPage} pageSize={pageSize} onPageChange={setCurrentPage} onPageSizeChange={setPageSize} />
       </div>
 
-      <AppModal 
+      <Modal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)}
         title={`${actionType} Return Request`}
@@ -215,9 +218,9 @@ export default function ReturnWorklists() {
             </div>
           </div>
         )}
-      </AppModal>
+      </Modal>
 
-      <AppModal
+      <Modal
         isOpen={isViewModalOpen}
         onClose={() => setIsViewModalOpen(false)}
         title="Return Request Details"
@@ -248,7 +251,7 @@ export default function ReturnWorklists() {
             </div>
           </div>
         )}
-      </AppModal>
+      </Modal>
     </div>
     
   );

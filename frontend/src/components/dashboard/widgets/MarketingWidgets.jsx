@@ -1,7 +1,12 @@
+import KPICard from '../../../components/ui/KPICard';
+import Button from '../../../components/ui/Button';
+import FormField from '../../../components/ui/FormField';
+import DataTable from '../../../components/ui/DataTable';
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../../api/axios';
-import { Megaphone, Ticket, Share2, Send } from 'lucide-react';
+import { Megaphone, Save, Search, Send, Share2, Ticket, User } from 'lucide-react';
+import { Badge } from '../../../components/ui/Badge';
 
 export const MarketingHeaderWidget = () => (
   <div className="mb-6">

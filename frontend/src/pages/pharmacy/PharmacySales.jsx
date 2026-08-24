@@ -1,15 +1,21 @@
-import { useState, useEffect, useRef } from 'react';
-import { toast } from 'react-hot-toast';
 import pharmacyService from '../../utils/pharmacy/pharmacyService';
+import Badge from '../../components/ui/Badge';
+import DataTable from '../../components/ui/DataTable';
+import Pagination from '../../components/ui/Pagination';
+import ErrorBanner from '../../components/pharmacy/ui/ErrorBanner';
+import TableSkeleton from '../../components/pharmacy/ui/TableSkeleton';
+import AppModal from '../../components/pharmacy/ui/AppModal';
+import PharmacyInvoice from '../../components/pharmacy/pharmacy/PharmacyInvoice';
+import Modal from '../../components/ui/Modal';
+import Card from '../../components/ui/Card';
+import { useEffect, useRef, useState } from 'react';
+import { toast } from 'react-hot-toast';
 import { usePharmacySalesStore } from '../../store/usePharmacySalesStore';
 import { usePOSStore } from '../../store/usePOSStore';
 import { useShallow } from 'zustand/react/shallow';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { fadeIn } from '../../components/ui/motion';
-
-
+import { BarChart, Barcode, Calendar, ClipboardList, Eye, Filter, Home, IndianRupee, Info, List, Phone, Plus, Printer, Receipt, Save, Scan, Search, ShoppingCart, Trash2, Users, XCircle } from 'lucide-react';
 
 export default function PharmacySales() {
   const {
@@ -364,7 +370,7 @@ export default function PharmacySales() {
       </div>
 
       {/* New Sale Modal */}
-      <AppModal
+      <Modal
         isOpen={isModalOpen}
         onClose={() => { setIsModalOpen(false); posStore.resetForm(); }}
         title="Create New Pharmacy Sale"
@@ -428,7 +434,7 @@ export default function PharmacySales() {
                         posStore.setField('patientName', e.target.value);
                         posStore.searchPatients(e.target.value);
                       }}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 outline-none"
+                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 bg-white outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm"
                     />
                     <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
                     {posStore.patientSearchResults?.length > 0 && (
@@ -483,7 +489,7 @@ export default function PharmacySales() {
                     placeholder="e.g. Rahul Sharma"
                     value={posStore.newPatientForm.name}
                     onChange={(e) => posStore.setField('newPatientForm', { ...posStore.newPatientForm, name: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white/50 backdrop-blur-md outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -493,7 +499,7 @@ export default function PharmacySales() {
                     placeholder="+91 98765 43210"
                     value={posStore.newPatientForm.phone}
                     onChange={(e) => posStore.setField('newPatientForm', { ...posStore.newPatientForm, phone: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white/50 backdrop-blur-md outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -727,13 +733,13 @@ export default function PharmacySales() {
             </div>
           </div>
         </div>
-      </AppModal>
+      </Modal>
 
-      <AppModal isOpen={isInvoiceModalOpen} onClose={() => setIsInvoiceModalOpen(false)} maxWidth="sm:max-w-4xl" padding={false}>
+      <Modal isOpen={isInvoiceModalOpen} onClose={() => setIsInvoiceModalOpen(false)} maxWidth="sm:max-w-4xl" padding={false}>
         <PharmacyInvoice bill={selectedInvoice} onClose={() => setIsInvoiceModalOpen(false)} />
-      </AppModal>
+      </Modal>
 
-      <AppModal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} title="Confirm Cancellation" maxWidth="sm:max-w-md" footer={
+      <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} title="Confirm Cancellation" maxWidth="sm:max-w-md" footer={
           <div className="flex gap-3 w-full">
             <button onClick={() => setIsDeleteModalOpen(false)} className="flex-1 px-6 py-2 border rounded-xl font-bold text-gray-500">No, Keep Bill</button>
             <button onClick={cancelBill} className="flex-1 px-6 py-2 bg-red-600 text-white rounded-xl font-bold shadow-lg shadow-red-200">Yes, Cancel Bill</button>
@@ -744,7 +750,7 @@ export default function PharmacySales() {
           <h3 className="text-xl font-bold mb-2">Are you sure?</h3>
           <p className="text-gray-500 text-sm">This action will cancel the bill and return stock to inventory.</p>
         </div>
-      </AppModal>
+      </Modal>
     </div>
     
   );

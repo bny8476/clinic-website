@@ -1,10 +1,12 @@
+import Card from '../../components/ui/Card';
 import { useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { fadeIn } from '../../components/ui/motion';
-
-
+import { ArrowLeft, MailOpen, MousePointerClick, TrendingUp, Users } from 'lucide-react';
+import { BarChart } from 'recharts';
+import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 const MarketingAnalytics = () => {
   const { data: campaigns = [], isLoading } = useQuery({

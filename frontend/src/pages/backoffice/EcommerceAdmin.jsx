@@ -1,11 +1,14 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Package } from 'lucide-react';
 import toast from 'react-hot-toast';
+import Button from '../../components/ui/Button';
+import Card from '../../components/ui/Card';
+import FormField from '../../components/ui/FormField';
+import EmptyState from '../../components/ui/EmptyState';
+import { useEffect, useState } from 'react';
+import { ArrowLeft, Package, Plus, Save, ShoppingCart } from 'lucide-react';
 import { fadeIn } from '../../components/ui/motion';
 import { axiosPrivate } from '../../api/axios';
-
-
+import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 const EcommerceAdmin = () => {
   const [showAdd, setShowAdd] = useState(false);

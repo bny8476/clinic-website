@@ -1,7 +1,11 @@
+import ReportCard from '../../pages/pharmacy/reports/ReportCard';
+import OTPVerificationModal from '../../components/pharmacy/auth/OTPVerificationModal';
+import ReportPreviewPanel from '../../pages/pharmacy/reports/ReportPreviewPanel';
+import SchedulesTab from '../../pages/pharmacy/reports/SchedulesTab';
+import ScheduleDrawer from '../../pages/pharmacy/reports/ScheduleDrawer';
 import { useState } from 'react';
-import { REPORT_CATALOG, CATEGORIES } from './reports/reportCatalog';
-
-
+import { CATEGORIES, REPORT_CATALOG } from './reports/reportCatalog';
+import { Search, Shield, Star, X } from 'lucide-react';
 
 /**
  * Reports & Analytics page — orchestrates catalog browsing, OTP-gated access,

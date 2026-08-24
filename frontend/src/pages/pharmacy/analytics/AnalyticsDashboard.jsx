@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react';
 import logger from '../../../utils/logger';
-import { useOutletContext } from 'react-router-dom';
 import api from '../../../utils/pharmacy/api';
-import { TrendingUp, IndianRupee, Package, Activity, AlertTriangle } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useOutletContext } from 'react-router-dom';
+import { Activity, AlertTriangle, ArrowDownRight, ArrowUpRight, Download, IndianRupee, Package, TrendingDown, TrendingUp } from 'lucide-react';
 import { exportToCSV } from '../../../utils/pharmacy/reportExport';
-
-
+import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 export default function AnalyticsDashboard() {
   const { dateRange } = useOutletContext() || {};
@@ -151,7 +150,7 @@ export default function AnalyticsDashboard() {
                 </div>
               </div>
             ))}
-            {(data.fastMovingMedicines?.length === 0 && false) && (
+            {(data.fastMovingMedicines?.length === 0) && (
               <p className="text-sm text-gray-500">No data available</p>
             )}
           </div>
@@ -207,7 +206,7 @@ export default function AnalyticsDashboard() {
                   </td>
                 </tr>
               ))}
-              {(data.slowMovingMedicines?.length === 0 && false) && (
+              {(data.slowMovingMedicines?.length === 0) && (
                 <tr>
                   <td colSpan="6" className="px-4 py-4 text-center text-sm text-gray-500">No slow moving medicines found</td>
                 </tr>

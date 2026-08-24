@@ -1,5 +1,6 @@
-import { AlertCircle, Droplet, Activity, Syringe, HeartPulse, ActivitySquare } from 'lucide-react';
 import format from 'date-fns/format';
+import HistorySection from '../../../pages/doctor/emr/HistorySection';
+import { Activity, ActivitySquare, AlertCircle, Droplet, Heart, HeartPulse, Syringe } from 'lucide-react';
 
 const EMRChart = ({ patientId }) => {
   return (

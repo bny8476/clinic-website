@@ -1,9 +1,8 @@
-import { useState } from 'react';
 import toast from 'react-hot-toast';
+import Pagination from '../../components/ui/Pagination';
+import { useState } from 'react';
 import { axiosPrivate } from '../../api/axios';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-
-
 
 export default function MarketingNps() {
   const qc = useQueryClient();

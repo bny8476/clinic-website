@@ -1,3 +1,4 @@
+import { Loader } from 'lucide-react';
 
 /**
  * Enterprise Skeleton Shimmer Loader Primitive

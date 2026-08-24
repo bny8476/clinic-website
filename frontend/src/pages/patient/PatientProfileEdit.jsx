@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react';
+import useAuthStore from '../../store/authStore';
+import toast from 'react-hot-toast';
+import PageLoadingSkeleton from '../../components/ui/PageLoadingSkeleton';
+import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import useAuthStore from '../../store/authStore';
 import { useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
+import { fadeUp, staggerChildren } from '../../components/ui/motion';
+import { Edit, Info, Save } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { staggerChildren, fadeUp } from '../../components/ui/motion';
-import PageLoadingSkeleton from '../../components/ui/PageLoadingSkeleton';
 
 const PatientProfileEdit = () => {
     const { user } = useAuthStore();

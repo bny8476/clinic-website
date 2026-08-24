@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react';
-
 import logger from '../../utils/logger';
-import { MODULE_PERMISSIONS } from '../../config/pharmacy/roles.config';
 import api from '../../utils/pharmacy/api';
+import Modal from '../../components/ui/Modal';
+import { useEffect, useState } from 'react';
+import { MODULE_PERMISSIONS } from '../../config/pharmacy/roles.config';
 import { toast } from 'react-hot-toast';
-
-
+import { BarChart2, Check, ChevronDown, ClipboardPlus, Edit, Edit2, FileText, Loader2, Package, Plus, Save, Shield, ShieldCheck, User, Users, X } from 'lucide-react';
 
 export default function RoleManagementPanel({ onBack }) {
   const [roles, setRoles] = useState([]);

@@ -112,22 +112,16 @@ public class ReceptionPatientService {
             return List.of();
         }
         
-        String lowerQuery = query.toLowerCase();
+        // Use optimized DB search
+        org.springframework.data.domain.Page<User> users = userRepository.searchByNameOrEmail(query, org.springframework.data.domain.PageRequest.of(0, 20));
         
-        List<PatientProfile> allProfiles = patientProfileRepository.findAll();
         List<Map<String, Object>> results = new ArrayList<>();
         
-        for (PatientProfile p : allProfiles) {
-            User u = p.getUserId() != null ? userRepository.findById(p.getUserId()).orElse(null) : null;
-            if (u != null) {
-                String fName = u.getFirstName() != null ? u.getFirstName() : "";
-                String lName = u.getLastName() != null ? u.getLastName() : "";
-                String fullName = (fName + " " + lName).toLowerCase();
-                String phone = u.getPhoneNumber() != null ? u.getPhoneNumber() : "";
-                
-                if (fullName.contains(lowerQuery) || phone.contains(lowerQuery)) {
+        for (User u : users.getContent()) {
+            if (u.getRoles().stream().anyMatch(r -> r.getName().equals("ROLE_PATIENT"))) {
+                patientProfileRepository.findByUserId(u.getId()).ifPresent(p -> {
                     results.add(mapToSearchResult(p, u));
-                }
+                });
             }
         }
         return results;

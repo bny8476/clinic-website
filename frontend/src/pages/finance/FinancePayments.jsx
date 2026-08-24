@@ -1,16 +1,16 @@
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { axiosPrivate } from '../../api/axios';
-import { CheckCircle2, Search, ArrowLeft, CreditCard } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { motion, AnimatePresence } from 'framer-motion';
-import { fadeIn, staggerContainer } from '../../components/ui/motion';
-import { Link } from 'react-router-dom';
 import Card from '../../components/ui/Card';
+import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import FormField from '../../components/ui/FormField';
-
-
+import DataTable from '../../components/ui/DataTable';
+import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { axiosPrivate } from '../../api/axios';
+import { ArrowLeft, CheckCircle2, CreditCard, Search } from 'lucide-react';
+import { fadeIn, staggerContainer } from '../../components/ui/motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 const FinancePayments = () => {
   const queryClient = useQueryClient();

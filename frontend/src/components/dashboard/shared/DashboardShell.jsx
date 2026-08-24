@@ -1,3 +1,4 @@
+import { Navigation } from 'lucide-react';
 
 export const DashboardShell = ({
   quickActions = [],
@@ -78,3 +79,5 @@ export const BottomRow = ({ recentActivities, aiAssistant, quickSearch, pharmacy
     {pharmacyLowStock && <div className="lg:col-span-6">{pharmacyLowStock}</div>}
   </div>
 );
+
+export default DashboardShell;

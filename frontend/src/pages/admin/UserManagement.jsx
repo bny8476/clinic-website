@@ -1,10 +1,15 @@
+import toast from 'react-hot-toast';
+import Button from '../../components/ui/Button';
+import FormField from '../../components/ui/FormField';
+import Modal from '../../components/ui/Modal';
+import DataTable from '../../components/ui/DataTable';
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useDebounce } from 'use-debounce';
 import { axiosPrivate } from '../../api/axios';
-import toast from 'react-hot-toast';
 import { fadeIn } from '../../components/ui/motion';
+import { ChevronDown, Edit, MoreHorizontal, Save, Search, User, UserPlus, Users } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const UserManagement = () => {
     const queryClient = useQueryClient();
@@ -218,7 +223,7 @@ const UserManagement = () => {
     ];
 
     return (
-        <motion.div initial="hidden" animate="visible" variants={fadeIn} className="bg-white border border-gray-100 rounded-[20px] shadow-sm overflow-hidden mb-8">
+        <motion.div initial="hidden" animate="visible" variants={fadeIn} className="bg-white/40 backdrop-blur-md border border-slate-200/50 rounded-[20px] shadow-sm overflow-hidden mb-8">
             <div className="flex flex-col sm:flex-row sm:items-start sm:items-center justify-between gap-4 p-6 sm:p-8 border-b border-gray-100">
                 <div>
                     <h1 className="text-xl font-bold text-gray-900 m-0 flex items-center gap-2">
@@ -242,7 +247,7 @@ const UserManagement = () => {
                 </Button>
             </div>
 
-            <div className="bg-white">
+            <div className="bg-white/40 backdrop-blur-sm">
                 <div className="px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row items-center gap-4">
                     <div className="relative flex-1 max-w-md">
                         <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />

@@ -1,5 +1,6 @@
 import React from 'react';
 import logger from '../../../utils/logger';
+import { AlertCircle, RefreshCcw } from 'lucide-react';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {

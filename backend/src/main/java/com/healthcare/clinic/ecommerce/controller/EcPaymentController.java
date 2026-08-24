@@ -8,9 +8,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 import java.util.UUID;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 @RestController
 @RequestMapping("/api/ecommerce/payments")
 @RequiredArgsConstructor
+@PreAuthorize("hasAuthority('ROLE_ADMIN')")
 public class EcPaymentController {
 
     private final PaymentService paymentService;
@@ -21,9 +24,7 @@ public class EcPaymentController {
         String status = (String) request.get("status");
         Long orderId = Long.valueOf(request.get("orderId").toString());
         
-        com.healthcare.clinic.ecommerce.entity.EcPayment payment = paymentRepository.findAll().stream()
-                .filter(p -> orderId.equals(p.getOrderId()))
-                .findFirst()
+        com.healthcare.clinic.ecommerce.entity.EcPayment payment = paymentRepository.findFirstByOrderId(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Payment not found for order"));
                 
         String providerRef = payment.getProviderRef();

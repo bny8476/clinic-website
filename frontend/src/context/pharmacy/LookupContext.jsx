@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
 import api from '../../utils/pharmacy/api';
+import { useQuery } from '@tanstack/react-query';
 
 export const useLookup = (lookupType) => {
   const { data: lookups = {}, isLoading: loading } = useQuery({

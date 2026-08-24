@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import logger from '../../utils/logger';
 import useDebounce from '../../hooks/pharmacy/useDebounce';
-import { useLocation } from 'react-router-dom';
-import { Plus } from 'lucide-react';
-import { toast } from 'react-hot-toast';
 import pharmacyService from '../../utils/pharmacy/pharmacyService';
-
-
+import ModuleFilterBar from '../../components/pharmacy/ui/ModuleFilterBar';
+import Modal from '../../components/ui/Modal';
+import DataTable from '../../components/ui/DataTable';
+import Pagination from '../../components/ui/Pagination';
+import { useLocation } from 'react-router-dom';
+import { CheckCircle, Eye, Filter, List, Plus, PlusCircle, Search, Send, Trash2, XCircle } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import { Badge } from '../../components/ui/Badge';
 
 export default function PendingPharmacyReplacement() {
   const location = useLocation();
@@ -207,7 +210,7 @@ export default function PendingPharmacyReplacement() {
       </div>
 
       {/* New Request Modal */}
-      <AppModal 
+      <Modal 
         isOpen={isModalOpen} 
         onClose={() => { setIsModalOpen(false); resetForm(); }}
         title="New Replacement Request"
@@ -310,10 +313,10 @@ export default function PendingPharmacyReplacement() {
               </div>
            </div>
         </div>
-      </AppModal>
+      </Modal>
 
       {/* View Modal */}
-      <AppModal isOpen={isViewModalOpen} onClose={() => setIsViewModalOpen(false)} title="Replacement Request Details" maxWidth="sm:max-w-2xl">
+      <Modal isOpen={isViewModalOpen} onClose={() => setIsViewModalOpen(false)} title="Replacement Request Details" maxWidth="sm:max-w-2xl">
          {selectedReplacement && (
            <div className="space-y-6">
               <div className="grid grid-cols-2 gap-4 p-5 bg-slate-50 rounded-xl border border-slate-100">
@@ -335,10 +338,10 @@ export default function PendingPharmacyReplacement() {
               </div>
            </div>
          )}
-      </AppModal>
+      </Modal>
 
       {/* Delete/Cancel Confirmation Modal */}
-      <AppModal 
+      <Modal 
         isOpen={isDeleteModalOpen} 
         onClose={() => setIsDeleteModalOpen(false)} 
         title="Confirm Rejection" 
@@ -355,7 +358,7 @@ export default function PendingPharmacyReplacement() {
            <p className="font-bold text-slate-900 mb-1 text-lg">Are you sure?</p>
            <p className="text-sm text-slate-500">This will reject the replacement request. This action cannot be undone.</p>
         </div>
-      </AppModal>
+      </Modal>
     </div>
     
   );

@@ -1,8 +1,9 @@
+import useAuthStore from '../../store/authStore';
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { toast } from 'react-hot-toast';
-import useAuthStore from '../../store/authStore';
+import { Calendar, CheckCircle2, Clock, FileText, Phone, User } from 'lucide-react';
 
 const NewAppointmentPanel = ({ onClose }) => {
   const { user } = useAuthStore();

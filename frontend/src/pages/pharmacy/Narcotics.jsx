@@ -1,11 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
-import { useVirtualizer } from '@tanstack/react-virtual';
-import { ShieldCheck, Users, FileText, Clock } from 'lucide-react';
-import { toast } from 'react-hot-toast';
-import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
 import pharmacyService from '../../utils/pharmacy/pharmacyService';
-
-
+import Card from '../../components/ui/Card';
+import OTPVerificationModal from '../../components/pharmacy/auth/OTPVerificationModal';
+import { useEffect, useRef, useState } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
+import { Box, CheckCircle2, Clock, FileText, Info, Lock, RefreshCw, ShieldAlert, ShieldCheck, Unlock, User, Users, X } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 export default function Narcotics() {
   const [isVerified, setIsVerified] = useState(false);

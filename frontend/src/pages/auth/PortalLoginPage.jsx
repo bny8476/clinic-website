@@ -1,17 +1,19 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import logger from '../../utils/logger';
-import { useParams, useNavigate, Link } from 'react-router-dom';
 import useAuthStore, { isTokenValid } from '../../store/authStore';
-import { getPortalConfig, PORTAL_CONFIGS } from '../../config/portalConfig';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
-import { listStagger } from '../../components/ui/motion';
+import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
+import Card from '../../components/ui/Card';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { PORTAL_CONFIGS, getPortalConfig } from '../../config/portalConfig';
+import { Eye, EyeOff, Lock, Mail, Send, Shield, Stethoscope } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+
 /* ─── Medvice colour tokens ──────────────────────────────────────────────── */
 const BLUE   = '#2B4AFE';
 const BLUE_D = '#1648C0';
-const BG     = '#EEF2FB';   // page background
-const CARD   = '#FFFFFF';
+const BG     = 'linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)';   // vibrant background
+const CARD   = 'rgba(255, 255, 255, 0.45)'; // glassmorphic card
 
 /* ─── Tiny SVG logo mark (shield + H2) ─────────────────────────────────── */
 const MedviceLogo = () => (
@@ -176,14 +178,13 @@ export default function PortalLoginPage() {
     >
       {/* Card container */}
       <div
-        className="w-full max-w-[920px] flex rounded-3xl overflow-hidden shadow-2xl"
+        className="w-full max-w-[920px] flex rounded-3xl overflow-hidden shadow-[0_8px_32px_0_rgba(31,38,135,0.37)] backdrop-blur-xl border border-white/50"
         style={{ background: CARD }}
       >
 
         {/* ── LEFT PANE ─────────────────────────────────────────────────── */}
         <div
-          className="hidden lg:flex lg:w-[44%] flex-col p-10"
-          style={{ background: BG }}
+          className="hidden lg:flex lg:w-[44%] flex-col p-10 bg-white/30 backdrop-blur-md"
         >
           {/* Logo */}
           <MedviceLogo />

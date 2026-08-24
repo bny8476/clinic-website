@@ -1,7 +1,6 @@
 import { useAuth } from '../../context/pharmacy/AuthContext';
 import { getRoleColor } from '../../config/pharmacy/roles.config';
-
-
+import { Shield } from 'lucide-react';
 
 export default function RoleDashboard({ title, description }) {
   const { activeRole } = useAuth();

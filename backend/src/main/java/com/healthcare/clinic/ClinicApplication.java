@@ -47,6 +47,10 @@ public class ClinicApplication {
 
 	@Bean
 	public org.springframework.cache.CacheManager cacheManager() {
-		return new org.springframework.cache.concurrent.ConcurrentMapCacheManager();
+		org.springframework.cache.caffeine.CaffeineCacheManager cacheManager = new org.springframework.cache.caffeine.CaffeineCacheManager();
+		cacheManager.setCaffeine(com.github.benmanes.caffeine.cache.Caffeine.newBuilder()
+				.expireAfterWrite(java.time.Duration.ofMinutes(30))
+				.maximumSize(1000));
+		return cacheManager;
 	}
 }

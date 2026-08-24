@@ -35,10 +35,7 @@ public class InAppNotificationService {
 
     @Transactional
     public void sendToRole(String roleName, String title, String body, String type, Long referenceId) {
-        List<User> users = userRepository.findAll().stream()
-                .filter(u -> u.getRoles() != null &&
-                        u.getRoles().stream().anyMatch(r -> r.getName().equals(roleName)))
-                .toList();
+        List<User> users = userRepository.findUsersByRoleName(roleName);
         for (User user : users) {
             sendToUser(user.getId(), title, body, type, referenceId);
         }

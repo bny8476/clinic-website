@@ -1,16 +1,14 @@
+import toast from 'react-hot-toast';
+import Button from '../../components/ui/Button';
+import Card from '../../components/ui/Card';
+import FormField from '../../components/ui/FormField';
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { Save, UserPlus, ArrowLeft } from 'lucide-react';
-import toast from 'react-hot-toast';
-import { motion } from 'framer-motion';
+import { ArrowLeft, Phone, Save, UserPlus } from 'lucide-react';
 import { fadeIn, staggerContainer } from '../../components/ui/motion';
+import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import Card from '../../components/ui/Card';
-import FormField from '../../components/ui/FormField';
-import Button from '../../components/ui/Button';
-
-
 
 const PatientRegistration = () => {
   const [patient, setPatient] = useState({

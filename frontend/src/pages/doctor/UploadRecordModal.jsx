@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
+import { Save, X } from 'lucide-react';
 
 const UploadRecordModal = ({ isOpen, onClose, patientId }) => {
   const queryClient = useQueryClient();

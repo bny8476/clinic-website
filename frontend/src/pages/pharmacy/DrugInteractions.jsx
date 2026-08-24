@@ -1,11 +1,10 @@
-import { useState } from 'react';
 import useDebounce from '../../hooks/pharmacy/useDebounce';
-import { toast } from 'react-hot-toast';
 import pharmacyService from '../../utils/pharmacy/pharmacyService';
-
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-
-
+import Input from '../../components/ui/Input';
+import { useState } from 'react';
+import { toast } from 'react-hot-toast';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Activity, ClipboardList, Clock, List, Pill, Plus, RefreshCw, Search, ShieldCheck, Trash2 } from 'lucide-react';
 
 export default function DrugInteractions() {
   const queryClient = useQueryClient();

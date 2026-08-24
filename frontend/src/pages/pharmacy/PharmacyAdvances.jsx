@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
 import useDebounce from '../../hooks/pharmacy/useDebounce';
-import { toast } from 'react-hot-toast';
 import pharmacyService from '../../utils/pharmacy/pharmacyService';
+import TableSkeleton from '../../components/pharmacy/ui/TableSkeleton';
+import Card from '../../components/ui/Card';
+import Modal from '../../components/ui/Modal';
+import DataTable from '../../components/ui/DataTable';
+import Pagination from '../../components/ui/Pagination';
+import { toast } from 'react-hot-toast';
 import { usePageData } from '../../hooks/pharmacy/usePageData';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-
-
+import { ArrowRight, Eye, FileText, IndianRupee, Plus, RotateCcw, Save, Search } from 'lucide-react';
+import { Badge } from '../../components/ui/Badge';
 
 export default function PharmacyAdvances() {
   const queryClient = useQueryClient();
@@ -183,7 +188,7 @@ export default function PharmacyAdvances() {
       </div>
 
       {/* New Advance Modal */}
-      <AppModal 
+      <Modal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)}
         title="Add New Pharmacy Advance"
@@ -262,10 +267,10 @@ export default function PharmacyAdvances() {
             </select>
           </div>
         </div>
-      </AppModal>
+      </Modal>
 
       {/* View Modal */}
-      <AppModal 
+      <Modal 
         isOpen={isViewModalOpen} 
         onClose={() => setIsViewModalOpen(false)}
         title="Advance Payment Details"
@@ -296,7 +301,7 @@ export default function PharmacyAdvances() {
             </div>
           </div>
         )}
-      </AppModal>
+      </Modal>
     </div>
     
   );

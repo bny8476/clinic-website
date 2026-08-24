@@ -1,6 +1,9 @@
+import KPICard from '../../../components/ui/KPICard';
+import DataTable from '../../../components/ui/DataTable';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../../api/axios';
-import { CreditCard, DollarSign, ShieldAlert } from 'lucide-react';
+import { Banknote, CreditCard, DollarSign, ShieldAlert } from 'lucide-react';
+import { Badge } from '../../../components/ui/Badge';
 
 export const FinanceHeaderWidget = () => (
   <div className="mb-6">

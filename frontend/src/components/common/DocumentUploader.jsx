@@ -1,6 +1,7 @@
-import { useState, useRef } from 'react';
+import { useRef, useState } from 'react';
 import { axiosPrivate } from '../../api/axios';
 import { toast } from 'react-hot-toast';
+import { FileIcon, Upload, X } from 'lucide-react';
 
 const DOCUMENT_TYPES = [
   'ID_PROOF',

@@ -1,17 +1,14 @@
-
+import api from '../../utils/pharmacy/api';
+import KPICard from '../../components/ui/KPICard';
+import DashboardShell from '../../components/dashboard/shared/DashboardShell';
+import Card from '../../components/ui/Card';
+import Modal from '../../components/ui/Modal';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/pharmacy/AuthContext';
-import api from '../../utils/pharmacy/api';
-import {
-
-
-  Package, IndianRupee, FileText, AlertTriangle, Calendar, Users,
-  Plus, ScanLine, PackagePlus, ShoppingCart, ClipboardList, Printer, TrendingUp, Activity, ShieldAlert,
-  Truck, RotateCcw, CheckSquare, Receipt, X, RefreshCw, Banknote, CreditCard, Lock
-} from 'lucide-react';
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Activity, AlertTriangle, Banknote, Barcode, Calendar, CheckSquare, ClipboardList, CreditCard, FileText, IndianRupee, Lock, Package, Plus, Printer, Receipt, RefreshCw, RotateCcw, Scan, ShieldAlert, ShoppingCart, TrendingUp, Truck, Users, X } from 'lucide-react';
 
 /* ── Day Close Modal ─────────────────────────────────────── */
 function DayCloseModal({ onClose }) {

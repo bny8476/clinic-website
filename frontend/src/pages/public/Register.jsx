@@ -1,8 +1,9 @@
+import Card from '../../components/ui/Card';
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { axiosPublic } from '../../api/axios';
-import { Mail, Phone, Lock, User } from 'lucide-react';
+import { Eye, EyeOff, Heart, Lock, Mail, Phone, Stethoscope, User } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 /* ─── Medvice colour tokens ──────────────────────────────────────────────── */
 const BLUE = '#2B4AFE';

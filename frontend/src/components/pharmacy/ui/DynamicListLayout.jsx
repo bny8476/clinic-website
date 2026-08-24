@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import DataTable from '../../../components/ui/DataTable';
+import { Download, Filter, Printer, Search } from 'lucide-react';
 
 export default function DynamicListLayout({ 
   title, 

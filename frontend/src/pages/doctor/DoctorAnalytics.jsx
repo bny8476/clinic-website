@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
+import { Star } from 'lucide-react';
 
 const DoctorAnalytics = () => {
   const { data: analytics = {}, isLoading } = useQuery({

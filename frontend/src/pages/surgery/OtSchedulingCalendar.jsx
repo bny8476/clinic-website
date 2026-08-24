@@ -1,10 +1,9 @@
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { axiosPrivate } from '../../api/axios';
-import { format, addDays, isSameDay, startOfDay } from 'date-fns';
 import toast from 'react-hot-toast';
-
-
+import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { axiosPrivate } from '../../api/axios';
+import { addDays, format, isSameDay, startOfDay } from 'date-fns';
+import { Activity, CalendarIcon, CheckCircle2, Clock, FileText, Navigation, Plus, Save, Users, X } from 'lucide-react';
 
 const STATUS_COLORS = {
   SCHEDULED: 'bg-blue-100 text-blue-700 border-blue-200',

@@ -1,7 +1,7 @@
+import toast from 'react-hot-toast';
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import toast from 'react-hot-toast';
 
 // In a real implementation this might load template questions dynamically.
 // For now, a generic satisfaction survey UI.

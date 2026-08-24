@@ -1,8 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
 import { axiosPrivate } from '../../api/axios';
-
-
+import { CalendarX } from 'lucide-react';
 
 const LeaveManagement = () => {
   const { data: leaves = [] } = useQuery({

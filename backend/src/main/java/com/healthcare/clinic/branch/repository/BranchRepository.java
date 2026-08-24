@@ -13,4 +13,6 @@ public interface BranchRepository extends JpaRepository<Branch, Long> {
     @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
     @org.springframework.data.jpa.repository.Query("SELECT b FROM Branch b WHERE b.id = :id")
     java.util.Optional<Branch> findByIdForUpdate(@org.springframework.data.repository.query.Param("id") Long id);
+
+    java.util.Optional<Branch> findFirstByOrderByIdAsc();
 }

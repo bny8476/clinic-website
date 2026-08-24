@@ -1,3 +1,5 @@
+import Card from '../../components/ui/Card';
+import { FlaskConical, TrendingDown, TrendingUp } from 'lucide-react';
 
 const LabCollectionOverview = () => {
   return (

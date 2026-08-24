@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import useAuthStore from '../../store/authStore';
+import Button from '../../components/ui/Button';
+import Card from '../../components/ui/Card';
+import PageHeader from '../../pages/doctor/PageHeader';
+import { useEffect, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { toast } from 'react-hot-toast';
-
-
+import { CalendarOff, Clock, Plus, Save, Settings } from 'lucide-react';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const SLOT_DURATIONS = [10, 15, 20, 30, 45, 60];

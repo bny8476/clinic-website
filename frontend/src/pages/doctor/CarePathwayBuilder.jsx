@@ -1,7 +1,10 @@
-import { useState, useEffect } from 'react';
 import logger from '../../utils/logger';
-import { useClinicalDecisionStore } from '../../store/useClinicalDecisionStore';
 import useAuthStore from '../../store/authStore';
+import Modal from '../../components/ui/Modal';
+import DataTable from '../../components/ui/DataTable';
+import { useEffect, useState } from 'react';
+import { useClinicalDecisionStore } from '../../store/useClinicalDecisionStore';
+import { Save } from 'lucide-react';
 
 export default function CarePathwayBuilder() {
   const { user } = useAuthStore();
@@ -101,7 +104,7 @@ export default function CarePathwayBuilder() {
         <DataTable columns={columns} data={pathwayTemplates} loading={loading} hover striped />
       </div>
 
-      <AppModal
+      <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title="Build New Care Pathway Template"
@@ -228,7 +231,7 @@ export default function CarePathwayBuilder() {
             </button>
           </div>
         </form>
-      </AppModal>
+      </Modal>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
 import { slideInRight } from './motion';
+import { X } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 /**
  * Enterprise Slide-in Drawer Primitive

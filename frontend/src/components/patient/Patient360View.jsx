@@ -1,7 +1,9 @@
+import Card from '../../components/ui/Card';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { format, differenceInYears, parseISO } from 'date-fns';
+import { differenceInYears, format, parseISO } from 'date-fns';
+import { Activity, AlertTriangle, Calendar, Droplet, FileText, Heart, Info, List, Mail, MapPin, Phone, User } from 'lucide-react';
 
 const Patient360View = ({ patientId, onBack, onNavigateToPrescription }) => {
   const [activeTab, setActiveTab] = useState('Overview');

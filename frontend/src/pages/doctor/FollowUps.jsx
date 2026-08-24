@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { useNavigate } from 'react-router-dom';
+import { Phone } from 'lucide-react';
 
 const FollowUps = () => {
   const navigate = useNavigate();

@@ -1,6 +1,7 @@
 import logger from '../../../utils/logger';
-import { numberToWords } from "../../../utils/pharmacy/numberToWords";
 import api from "../../../utils/pharmacy/api";
+import { numberToWords } from '../../../utils/pharmacy/numberToWords';
+import { Download, MessageCircle, Printer, Send, Square, X } from 'lucide-react';
 
 export default function PharmacyInvoice({ bill, onClose }) {
   if (!bill) return null;
@@ -13,7 +14,7 @@ export default function PharmacyInvoice({ bill, onClose }) {
       const d = new Date(dateStr);
       if (isNaN(d.getTime())) return 'N/A';
       return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-    } catch (e) { return 'N/A'; }
+    } catch { return 'N/A'; }
   };
 
   const handlePrint = () => { 

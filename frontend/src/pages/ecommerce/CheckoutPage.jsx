@@ -1,10 +1,10 @@
+import toast from 'react-hot-toast';
+import Card from '../../components/ui/Card';
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { useNavigate, useLocation } from 'react-router-dom';
-import toast from 'react-hot-toast';
-
-
+import { useLocation, useNavigate } from 'react-router-dom';
+import { CheckCircle2, CreditCard, MapPin, ShieldCheck, Truck } from 'lucide-react';
 
 export default function CheckoutPage() {
   const navigate = useNavigate();

@@ -1,4 +1,6 @@
-import { Activity, AlertTriangle, ShieldAlert } from 'lucide-react';
+import KPICard from '../../../components/ui/KPICard';
+import { Activity, AlertTriangle, Clock, ShieldAlert } from 'lucide-react';
+import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 export const AdminHeaderWidget = ({ greeting, subtitle, activeRole, formattedDate, branchName }) => (
   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">

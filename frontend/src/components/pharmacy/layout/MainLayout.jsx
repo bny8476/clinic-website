@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../../../context/pharmacy/AuthContext';
 import { NAV_BY_ROLE, getBaseRoleForUI } from '../../../config/pharmacy/roles.config';
+import { Outlet } from 'react-router-dom';
 
 export default function MainLayout() {
   const { activeRole, roles } = useAuth();

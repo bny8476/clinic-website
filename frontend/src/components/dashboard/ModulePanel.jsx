@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { cn } from '../../utils/pharmacy/cn';
+import { X } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 export default function ModulePanel({ 
   isOpen, 

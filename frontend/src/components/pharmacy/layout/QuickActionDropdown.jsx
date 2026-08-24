@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { ChevronDown, FileText, Package, ShoppingCart, Truck, Zap } from 'lucide-react';
 
 export default function QuickActionDropdown() {
   const [isOpen, setIsOpen] = useState(false);

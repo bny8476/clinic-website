@@ -1,22 +1,15 @@
 import React, { useState } from 'react';
-import { useLocation, useNavigate, Link, Navigate, Outlet } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
-import { axiosPrivate } from '../api/axios';
-import ErrorBoundary from '../components/ui/ErrorBoundary';
-import { 
-  LogOut, ChevronDown, Search, Bell, Moon, MessageSquare, 
-  Stethoscope, ShieldPlus, Plus, Zap, Activity, ArrowLeft
-} from 'lucide-react';
-import DashboardGrid from '../components/dashboard/DashboardGrid';
-import ThemeToggle from '../components/ui/ThemeToggle';
-import CommandPalette from '../components/ui/CommandPalette';
-import NotificationBell from '../components/NotificationBell';
-import MessageDropdown from '../components/MessageDropdown';
-import ActivityDropdown from '../components/ActivityDropdown';
-
-import { getPortalConfig } from '../config/portalConfig';
 import useAuthStore, { isTokenValid } from '../store/authStore';
+import ErrorBoundary from '../components/ui/ErrorBoundary';
+import NotificationBell from '../components/NotificationBell';
+import ActivityDropdown from '../components/ActivityDropdown';
+import MessageDropdown from '../components/pharmacy/layout/MessageDropdown';
+import CommandPalette from '../components/ui/CommandPalette';
+import { Link, Navigate, Outlet, Route, Routes, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { axiosPrivate } from '../api/axios';
+import { getPortalConfig } from '../config/portalConfig';
+import { ArrowLeft, Bell, ChevronDown, LogOut, Search, Stethoscope, User, Zap } from 'lucide-react';
 
 const DashboardLayout = ({ portalSlug, allowedRoles }) => {
   const [isQuickActionOpen, setIsQuickActionOpen] = useState(false);

@@ -38,4 +38,8 @@ public interface StockBatchRepository extends JpaRepository<StockBatch, String> 
     java.math.BigDecimal sumExpiredStockValue(@Param("today") java.time.LocalDate today);
     
     List<StockBatch> findByExpiryDateBeforeAndExpiredFalse(java.time.LocalDate today);
+
+    List<StockBatch> findByExpiryDateBeforeAndQuantityAvailableGreaterThan(java.time.LocalDate maxDate, Integer minQuantity);
+
+    List<StockBatch> findByQuantityAvailableBetween(Integer minQuantity, Integer maxQuantity);
 }

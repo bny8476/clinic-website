@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
+
 const renderIcon = (Icon, className) => {
   if (!Icon) return null;
   if (React.isValidElement(Icon)) return Icon;
@@ -28,6 +29,7 @@ export default function Button({
   isLoading = false,
   fullWidth = false,
   icon: IconComponent,
+  iconPosition = 'left',
   disabled,
   className = '',
   type = 'button',
@@ -92,6 +94,12 @@ export default function Button({
     }
   };
 
+  const iconNode = isLoading ? (
+    <Loader2 className="w-4 h-4 animate-spin text-current shrink-0" />
+  ) : (
+    renderIcon(IconComponent, "w-4 h-4 text-current shrink-0")
+  );
+
   return (
     <motion.button
       type={type}
@@ -104,16 +112,13 @@ export default function Button({
       {...rest}
     >
       <motion.div 
-        className="flex items-center justify-center gap-inherit"
+        className="flex items-center justify-center gap-2"
         initial={false}
         animate={{ opacity: 1 }}
       >
-        {isLoading ? (
-          <Loader2 className="w-4 h-4 animate-spin text-current shrink-0" />
-        ) : (
-          renderIcon(IconComponent, "w-4 h-4 text-current shrink-0")
-        )}
+        {iconPosition === 'left' && iconNode}
         {children && <span>{children}</span>}
+        {iconPosition === 'right' && iconNode}
       </motion.div>
     </motion.button>
   );

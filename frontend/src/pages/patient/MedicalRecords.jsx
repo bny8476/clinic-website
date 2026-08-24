@@ -1,12 +1,11 @@
+import useAuthStore from '../../store/authStore';
+import './MedicalRecords.css';
+import PageLoadingSkeleton from '../../components/ui/PageLoadingSkeleton';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import useAuthStore from '../../store/authStore';
+import { fadeUp, listStagger, staggerChildren } from '../../components/ui/motion';
 import { ClipboardList, FileText, Stethoscope } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { staggerChildren, fadeUp, listStagger } from '../../components/ui/motion';
-
-import PageLoadingSkeleton from '../../components/ui/PageLoadingSkeleton';
-import './MedicalRecords.css';
 
 const MedicalRecords = () => {
   const { user } = useAuthStore();

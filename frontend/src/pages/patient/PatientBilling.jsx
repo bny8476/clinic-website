@@ -1,9 +1,10 @@
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { axiosPrivate } from '../../api/axios';
 import useAuthStore from '../../store/authStore';
-import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import './PatientBilling.css';
+import ConfirmDialog from '../../components/ui/ConfirmDialog';
+import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { axiosPrivate } from '../../api/axios';
+import { CheckCircle2, Clock, CreditCard, Download, FileText, Receipt, XCircle } from 'lucide-react';
 
 const PatientBilling = () => {
   const { user } = useAuthStore();

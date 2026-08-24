@@ -1,6 +1,5 @@
-
-import { motion } from 'framer-motion';
 import { tapScale } from './motion';
+import { AnimatePresence, motion } from 'framer-motion';
 
 /**
  * Enterprise Card Primitive
@@ -15,10 +14,10 @@ export default function Card({
   className = '',
   ...rest
 }) {
-  const baseStyles = "bg-[var(--color-surface)] border border-[var(--color-border)] dark:border-white/[0.07] rounded-xl transition-all duration-[var(--duration-base)] ease-[var(--ease-out-smooth)]";
+  const baseStyles = "bg-white/40 backdrop-blur-md border border-white/50 dark:border-white/[0.07] rounded-xl transition-all duration-[var(--duration-base)] ease-[var(--ease-out-smooth)]";
 
   const variants = {
-    flat: "shadow-none bg-[var(--color-surface-alt)]",
+    flat: "shadow-none bg-white/20 backdrop-blur-sm",
     card: "shadow-card",
     elevated: "shadow-elevated border-opacity-60 dark:shadow-[0_20px_60px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.06)]",
     glass: "backdrop-blur-glass bg-[var(--glass-bg)] border-[var(--glass-border)] shadow-md"

@@ -1,5 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
-import { FileText, User, Calendar, Activity } from 'lucide-react';
+import Input from '../../components/ui/Input';
+import Modal from '../../components/ui/Modal';
+import { useEffect, useRef, useState } from 'react';
+import { Activity, Calendar, FileText, Search, User, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { axiosPrivate } from '../../api/axios';
 

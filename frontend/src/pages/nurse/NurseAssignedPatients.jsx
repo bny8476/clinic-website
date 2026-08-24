@@ -1,11 +1,10 @@
+import EmptyState from '../../components/ui/EmptyState';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { useNavigate } from 'react-router-dom';
-import { UserRound, HeartPulse } from 'lucide-react';
+import { HeartPulse, UserRound } from 'lucide-react';
 import { motion } from 'framer-motion';
-import EmptyState from '../../components/ui/EmptyState';
-
 
 const NurseAssignedPatients = () => {
   const navigate = useNavigate();

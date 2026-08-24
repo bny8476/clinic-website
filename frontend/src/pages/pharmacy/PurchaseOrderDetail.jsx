@@ -1,13 +1,12 @@
-import { useState, useRef } from 'react';
-
-import { useParams, useNavigate } from 'react-router-dom';
 import pharmacyService from '../../utils/pharmacy/pharmacyService';
+import { useRef, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../context/pharmacy/AuthContext';
 import { ROLES } from '../../config/pharmacy/roles.config';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-
-
+import { ArrowLeft, CheckCircle, Info, List, Loader2, PackageCheck, Printer, XCircle } from 'lucide-react';
+import { Badge } from '../../components/ui/Badge';
 
 export default function PurchaseOrderDetail() {
   const { id } = useParams();

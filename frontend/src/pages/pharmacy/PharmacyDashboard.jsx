@@ -1,25 +1,12 @@
-import { useQuery } from '@tanstack/react-query';
 import api from '../../utils/pharmacy/api';
 import KPICard from '../../components/ui/KPICard';
-import Card from '../../components/ui/Card';
-import Badge from '../../components/ui/Badge';
-import Button from '../../components/ui/Button';
-import { motion, AnimatePresence } from 'framer-motion';
-import { staggerContainer, fadeIn } from '../../components/ui/motion';
-import { 
-  Package, Database, ShoppingCart, FileText, AlertOctagon, 
-  ChevronDown, Calendar, PlusCircle, ArrowRightLeft, 
-  FileOutput, ArrowDownToLine, Settings2 
-} from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { fadeIn, staggerContainer } from '../../components/ui/motion';
+import { AlertOctagon, ArrowDownToLine, ArrowRightLeft, Calendar, ChevronDown, Database, FileOutput, FileText, Package, PlusCircle, Settings2, ShoppingCart, Sun } from 'lucide-react';
+import { Area, AreaChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import {
-
-
-  ResponsiveContainer, AreaChart, XAxis, YAxis, Tooltip, Area, 
-  CartesianGrid, PieChart, Pie, Cell
-} from 'recharts';
-
-
+import { Badge } from '../../components/ui/Badge';
 
 export default function PharmacyDashboard() {
   const { data: stats } = useQuery({
@@ -169,7 +156,7 @@ export default function PharmacyDashboard() {
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 mb-6 shrink-0">
         
         {/* Stock Overview Chart */}
-        <div className="xl:col-span-5 bg-white rounded-xl p-6 border border-[var(--color-border)] shadow-sm">
+        <div className="xl:col-span-5 glass-panel p-6">
           <div className="flex justify-between items-center mb-6">
             <h3 className="font-bold text-[var(--color-text)] text-[16px]">Stock Overview</h3>
             <button className="flex items-center gap-1 text-[12px] font-bold text-[var(--color-navy-800)] bg-white px-3 py-1.5 rounded-lg border border-[var(--color-border)]">
@@ -196,7 +183,7 @@ export default function PharmacyDashboard() {
         </div>
 
         {/* Stock Summary Donut */}
-        <div className="xl:col-span-3 bg-white rounded-xl p-6 border border-[var(--color-border)] shadow-sm">
+        <div className="xl:col-span-3 glass-panel p-6">
           <h3 className="font-bold text-[var(--color-text)] text-[16px] mb-2">Stock Summary</h3>
           <div className="relative h-[200px] flex items-center justify-center">
             <ResponsiveContainer width="100%" height="100%">
@@ -237,14 +224,14 @@ export default function PharmacyDashboard() {
         </div>
 
         {/* Low Stock Alert */}
-        <div className="xl:col-span-4 bg-white rounded-xl p-6 border border-[var(--color-border)] shadow-sm flex flex-col">
+        <div className="xl:col-span-4 glass-panel p-6 flex flex-col">
           <div className="flex justify-between items-center mb-4">
             <h3 className="font-bold text-[var(--color-text)] text-[16px]">Low Stock Alert</h3>
             <button className="text-[var(--color-navy-800)] text-[12px] font-bold hover:underline">View All</button>
           </div>
           <div className="flex-1 space-y-4">
             {lowStockAlerts.map((item, idx) => (
-              <div key={idx} className="flex items-center justify-between group bg-slate-50 p-3 rounded-lg border border-[var(--color-border)]">
+              <div key={idx} className="flex items-center justify-between group bg-[var(--color-surface-alt)] p-3 rounded-lg border border-[var(--color-border)] data-grid-row">
                 <div className="flex items-center gap-3 overflow-hidden">
                   <div className="w-9 h-9 bg-[var(--color-info-bg)] rounded-full flex items-center justify-center text-[var(--color-navy-600)] shrink-0">
                     <Package className="w-4 h-4" />
@@ -269,7 +256,7 @@ export default function PharmacyDashboard() {
         
         {/* Recently Added Medicines */}
         <motion.div
-          className="xl:col-span-6 bg-white rounded-xl p-6 border border-[var(--color-border)] shadow-sm overflow-hidden"
+          className="xl:col-span-6 glass-panel p-6 overflow-hidden"
           variants={fadeIn}
           initial="hidden"
           animate="show"
@@ -299,7 +286,7 @@ export default function PharmacyDashboard() {
                 className="divide-y divide-[var(--color-border)]"
               >
                 {recentlyAdded.map((item, idx) => (
-                  <motion.tr key={idx} variants={fadeIn} className="hover:bg-slate-50 transition-colors">
+                  <motion.tr key={idx} variants={fadeIn} className="data-grid-row">
                     <td className="py-3 px-2">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-[var(--color-info-bg)] rounded-full flex items-center justify-center text-[var(--color-navy-600)] shrink-0">
@@ -334,57 +321,69 @@ export default function PharmacyDashboard() {
         </motion.div>
 
         {/* Quick Actions */}
-        <div className="xl:col-span-3 bg-white rounded-xl p-6 border border-[var(--color-border)] shadow-sm">
+        <div className="xl:col-span-3 glass-panel p-6">
           <h3 className="font-bold text-[var(--color-text)] text-[16px] mb-6">Quick Actions</h3>
           <div className="grid grid-cols-2 gap-3">
-            <Link to="/pharmacy/medicine-master" className="flex flex-col items-center justify-center gap-2.5 p-4 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors border border-[var(--color-border)] group">
-              <div className="w-10 h-10 rounded-full bg-[var(--color-info-bg)] text-[var(--color-navy-600)] flex items-center justify-center group-hover:scale-110 transition-transform">
-                <PlusCircle className="w-5 h-5" />
-              </div>
-              <span className="text-[11px] font-bold text-[var(--color-text)] text-center">Add Medicine</span>
-            </Link>
-            <Link to="/pharmacy/purchase-orders" className="flex flex-col items-center justify-center gap-2.5 p-4 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors border border-[var(--color-border)] group">
-              <div className="w-10 h-10 rounded-full bg-[var(--color-info-bg)] text-[var(--color-navy-600)] flex items-center justify-center group-hover:scale-110 transition-transform">
-                <ShoppingCart className="w-5 h-5" />
-              </div>
-              <span className="text-[11px] font-bold text-[var(--color-text)] text-center">Purchase Order</span>
-            </Link>
-            <Link to="/pharmacy/medicine-stock" className="flex flex-col items-center justify-center gap-2.5 p-4 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors border border-[var(--color-border)] group">
-              <div className="w-10 h-10 rounded-full bg-[var(--color-info-bg)] text-[var(--color-navy-600)] flex items-center justify-center group-hover:scale-110 transition-transform">
-                <ArrowRightLeft className="w-5 h-5" />
-              </div>
-              <span className="text-[11px] font-bold text-[var(--color-text)] text-center">Stock Transfer</span>
-            </Link>
-            <Link to="/pharmacy/direct-pharmacy-sales" className="flex flex-col items-center justify-center gap-2.5 p-4 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors border border-[var(--color-border)] group">
-              <div className="w-10 h-10 rounded-full bg-[var(--color-info-bg)] text-[var(--color-navy-600)] flex items-center justify-center group-hover:scale-110 transition-transform">
-                <FileOutput className="w-5 h-5" />
-              </div>
-              <span className="text-[11px] font-bold text-[var(--color-text)] text-center">Sales Invoice</span>
-            </Link>
-            <Link to="/pharmacy/grnentry" className="flex flex-col items-center justify-center gap-2.5 p-4 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors border border-[var(--color-border)] group">
-              <div className="w-10 h-10 rounded-full bg-[var(--color-info-bg)] text-[var(--color-navy-600)] flex items-center justify-center group-hover:scale-110 transition-transform">
-                <ArrowDownToLine className="w-5 h-5" />
-              </div>
-              <span className="text-[11px] font-bold text-[var(--color-text)] text-center">GRN Entry</span>
-            </Link>
-            <Link to="/pharmacy/medicine-stock" className="flex flex-col items-center justify-center gap-2.5 p-4 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors border border-[var(--color-border)] group">
-              <div className="w-10 h-10 rounded-full bg-[var(--color-info-bg)] text-[var(--color-navy-600)] flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Settings2 className="w-5 h-5" />
-              </div>
-              <span className="text-[11px] font-bold text-[var(--color-text)] text-center">Stock Adjust</span>
-            </Link>
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Link to="/pharmacy/medicine-master" className="flex flex-col items-center justify-center gap-2.5 p-4 rounded-xl bg-white/50 backdrop-blur-sm hover:bg-white/80 hover:shadow-lg transition-all border border-slate-200/60 group data-grid-row">
+                <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <PlusCircle className="w-5 h-5" />
+                </div>
+                <span className="text-[11px] font-bold text-slate-700 text-center">Add Medicine</span>
+              </Link>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Link to="/pharmacy/purchase-orders" className="flex flex-col items-center justify-center gap-2.5 p-4 rounded-xl bg-white/50 backdrop-blur-sm hover:bg-white/80 hover:shadow-lg transition-all border border-slate-200/60 group data-grid-row">
+                <div className="w-10 h-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <ShoppingCart className="w-5 h-5" />
+                </div>
+                <span className="text-[11px] font-bold text-slate-700 text-center">Purchase Order</span>
+              </Link>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Link to="/pharmacy/medicine-stock" className="flex flex-col items-center justify-center gap-2.5 p-4 rounded-xl bg-white/50 backdrop-blur-sm hover:bg-white/80 hover:shadow-lg transition-all border border-slate-200/60 group data-grid-row">
+                <div className="w-10 h-10 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <ArrowRightLeft className="w-5 h-5" />
+                </div>
+                <span className="text-[11px] font-bold text-slate-700 text-center">Stock Transfer</span>
+              </Link>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Link to="/pharmacy/direct-pharmacy-sales" className="flex flex-col items-center justify-center gap-2.5 p-4 rounded-xl bg-white/50 backdrop-blur-sm hover:bg-white/80 hover:shadow-lg transition-all border border-slate-200/60 group data-grid-row">
+                <div className="w-10 h-10 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <FileOutput className="w-5 h-5" />
+                </div>
+                <span className="text-[11px] font-bold text-slate-700 text-center">Sales Invoice</span>
+              </Link>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Link to="/pharmacy/grnentry" className="flex flex-col items-center justify-center gap-2.5 p-4 rounded-xl bg-white/50 backdrop-blur-sm hover:bg-white/80 hover:shadow-lg transition-all border border-slate-200/60 group data-grid-row">
+                <div className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <ArrowDownToLine className="w-5 h-5" />
+                </div>
+                <span className="text-[11px] font-bold text-slate-700 text-center">GRN Entry</span>
+              </Link>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Link to="/pharmacy/medicine-stock" className="flex flex-col items-center justify-center gap-2.5 p-4 rounded-xl bg-white/50 backdrop-blur-sm hover:bg-white/80 hover:shadow-lg transition-all border border-slate-200/60 group data-grid-row">
+                <div className="w-10 h-10 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Settings2 className="w-5 h-5" />
+                </div>
+                <span className="text-[11px] font-bold text-slate-700 text-center">Stock Adjust</span>
+              </Link>
+            </motion.div>
           </div>
         </div>
 
         {/* Expiry Alert */}
-        <div className="xl:col-span-3 bg-white rounded-xl p-6 border border-[var(--color-border)] shadow-sm flex flex-col">
+        <div className="xl:col-span-3 glass-panel p-6 flex flex-col">
           <div className="flex justify-between items-center mb-6">
             <h3 className="font-bold text-[var(--color-text)] text-[16px]">Expiry Alert</h3>
             <button className="text-[var(--color-navy-800)] text-[12px] font-bold hover:underline">View All</button>
           </div>
           <div className="flex-1 space-y-5">
             {expiryAlerts.map((item, idx) => (
-              <div key={idx} className="flex items-center justify-between group p-3 rounded-lg border border-[var(--color-border)] bg-slate-50">
+              <div key={idx} className="flex items-center justify-between group p-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-alt)] data-grid-row">
                 <div className="flex items-center gap-3 overflow-hidden">
                   <div className="w-9 h-9 bg-[var(--color-info-bg)] rounded-full flex items-center justify-center text-[var(--color-navy-600)] shrink-0">
                     <Package className="w-4 h-4" />

@@ -1,6 +1,11 @@
-import { Droplet, CalendarDays, ClipboardList, 
-  CheckCircle2, Clock, XCircle, Pill, Heart
-} from 'lucide-react';
+import KPICard from '../../../components/ui/KPICard';
+import Button from '../../../components/ui/Button';
+import Card from '../../../components/ui/Card';
+import EmptyState from '../../../components/ui/EmptyState';
+import Skeleton from '../../../components/ui/Skeleton';
+import { CalendarDays, CheckCircle2, ClipboardList, Clock, Droplet, Edit, Heart, MapPin, Phone, Pill, XCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Badge } from '../../../components/ui/Badge';
 
 export const PatientHeaderWidget = ({ patientName, today }) => (
   <div className="mb-6">

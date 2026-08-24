@@ -1,11 +1,10 @@
+import useAuthStore from '../../store/authStore';
+import Pagination from '../../components/ui/Pagination';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import useAuthStore from '../../store/authStore';
-
-
+import { Activity, ArrowUp, ChevronDown, Download, Edit2, Eye, FileText, Filter, HeartPulse, MoreVertical, Plus, Search } from 'lucide-react';
 
 const DoctorPrescriptions = () => {
   const navigate = useNavigate();

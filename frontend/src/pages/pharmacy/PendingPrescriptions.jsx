@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
 import useDebounce from '../../hooks/pharmacy/useDebounce';
+import ModuleFilterBar from '../../components/pharmacy/ui/ModuleFilterBar';
+import TableSkeleton from '../../components/pharmacy/ui/TableSkeleton';
+import Modal from '../../components/ui/Modal';
+import DataTable from '../../components/ui/DataTable';
+import Pagination from '../../components/ui/Pagination';
 import { usePageData } from '../../hooks/pharmacy/usePageData';
 import { axiosPrivate } from '../../api/axios';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
-
-
+import { CheckCircle, Eye, Pill, Search, ShieldCheck, XCircle } from 'lucide-react';
+import { Badge } from '../../components/ui/Badge';
 
 export default function PendingPrescriptions() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -171,7 +176,7 @@ export default function PendingPrescriptions() {
       </div>
 
       {/* View Details Modal */}
-      <AppModal
+      <Modal
         isOpen={isViewModalOpen}
         onClose={() => setIsViewModalOpen(false)}
         title="Prescription Details"
@@ -290,7 +295,7 @@ export default function PendingPrescriptions() {
             )}
           </div>
         )}
-      </AppModal>
+      </Modal>
     </div>
     
   );

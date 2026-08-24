@@ -25,9 +25,7 @@ public class InventoryAlertService {
         
         LocalDate thirtyDaysFromNow = LocalDate.now().plusDays(30);
 
-        List<StockBatch> nearExpiryBatches = stockBatchRepository.findAll().stream()
-                .filter(b -> b.getExpiryDate() != null && !b.getExpiryDate().isAfter(thirtyDaysFromNow) && b.getQuantityAvailable() > 0)
-                .collect(Collectors.toList());
+        List<StockBatch> nearExpiryBatches = stockBatchRepository.findByExpiryDateBeforeAndQuantityAvailableGreaterThan(thirtyDaysFromNow, 0);
 
         if (!nearExpiryBatches.isEmpty()) {
             log.warn("Found {} batches near expiry or expired.", nearExpiryBatches.size());
@@ -38,9 +36,7 @@ public class InventoryAlertService {
             }
         }
 
-        List<StockBatch> lowStockBatches = stockBatchRepository.findAll().stream()
-                .filter(b -> b.getQuantityAvailable() > 0 && b.getQuantityAvailable() < 20) // Assuming 20 is reorder level for simplicity
-                .collect(Collectors.toList());
+        List<StockBatch> lowStockBatches = stockBatchRepository.findByQuantityAvailableBetween(1, 19);
 
         if (!lowStockBatches.isEmpty()) {
             log.warn("Found {} batches with low stock.", lowStockBatches.size());

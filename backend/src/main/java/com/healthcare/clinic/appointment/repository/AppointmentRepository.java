@@ -22,6 +22,13 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"patient"})
     List<Appointment> findByDoctor_UserId(Long userId);
     List<Appointment> findAllByStatus(com.healthcare.clinic.appointment.entity.AppointmentStatus status);
+    
+    @Query("SELECT a FROM Appointment a JOIN FETCH a.slot s WHERE a.status = :status AND s.startTime > :start AND s.startTime < :end")
+    List<Appointment> findByStatusAndSlotTimeBetween(
+        @Param("status") com.healthcare.clinic.appointment.entity.AppointmentStatus status, 
+        @Param("start") ZonedDateTime start, 
+        @Param("end") ZonedDateTime end);
+        
     java.util.Optional<Appointment> findByIdempotencyKey(String idempotencyKey);
 
     @Query("SELECT new com.healthcare.clinic.appointment.dto.AppointmentResponseDto(" +

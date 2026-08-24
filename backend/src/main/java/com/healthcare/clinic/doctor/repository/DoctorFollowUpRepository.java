@@ -11,4 +11,5 @@ import java.util.List;
 public interface DoctorFollowUpRepository extends JpaRepository<DoctorFollowUp, Long> {
     List<DoctorFollowUp> findByDoctorIdOrderByFollowUpDateAsc(Long doctorId);
     List<DoctorFollowUp> findByDoctorIdAndStatusOrderByFollowUpDateAsc(Long doctorId, FollowUpStatus status);
+    List<DoctorFollowUp> findByStatusIn(List<FollowUpStatus> statuses);
 }

@@ -1,14 +1,18 @@
-import { useState, useMemo } from 'react';
-import { toast } from 'react-hot-toast';
 import api from '../../utils/pharmacy/api'; // Kept for handleResetPassword only
-import { getRoleColor, ROLE_LABELS } from '../../config/pharmacy/roles.config';
-import { formatDistanceToNow, format } from 'date-fns';
 import useDebounce from '../../hooks/pharmacy/useDebounce';
-
+import Card from '../../components/ui/Card';
+import Modal from '../../components/ui/Modal';
+import DataTable from '../../components/ui/DataTable';
+import Pagination from '../../components/ui/Pagination';
+import RoleManagementPanel from '../../pages/pharmacy/RoleManagementPanel';
+import UserFormModal from '../../components/pharmacy/ui/UserFormModal';
+import { useMemo, useState } from 'react';
+import { toast } from 'react-hot-toast';
+import { ROLE_LABELS, getRoleColor } from '../../config/pharmacy/roles.config';
+import { format, formatDistanceToNow } from 'date-fns';
 import { usePageData } from '../../hooks/pharmacy/usePageData';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-
-
+import { Activity, Building2, Calendar, CheckCircle2, Clock, Edit, Edit2, Filter, Info, KeyRound, Mail, Phone, Plus, Power, ScrollText, Search, Shield, User, Users, XCircle } from 'lucide-react';
 
 export default function UserManagement() {
   const queryClient = useQueryClient();
@@ -527,7 +531,7 @@ export default function UserManagement() {
       )}
 
       {/* Credential Card Modal */}
-      <AppModal
+      <Modal
         isOpen={isCredentialModalOpen}
         onClose={() => setIsCredentialModalOpen(false)}
         title={isResetMode ? "Password Reset Successfully" : "Staff Credentials Created"}
@@ -585,7 +589,7 @@ export default function UserManagement() {
             Done, I've Noted it
           </button>
         </div>
-      </AppModal>
+      </Modal>
     </div>
     
   );

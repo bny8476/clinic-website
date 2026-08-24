@@ -1,6 +1,12 @@
+import DashboardShell from '../../components/dashboard/shared/DashboardShell';
+import DashboardGrid from '../../components/dashboard/DashboardGrid';
+import Button from '../../components/ui/Button';
+import DataTable from '../../components/ui/DataTable';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { useNavigate } from 'react-router-dom';
+import { Home, Plus } from 'lucide-react';
+import { Badge } from '../../components/ui/Badge';
 
 const HomeVisits = () => {
   const navigate = useNavigate();

@@ -1,4 +1,6 @@
 import React from 'react';
+import Card from '../../components/ui/Card';
+import { TrendingDown, TrendingUp } from 'lucide-react';
 
 const renderIcon = (Icon, className) => {
   if (!Icon) return null;

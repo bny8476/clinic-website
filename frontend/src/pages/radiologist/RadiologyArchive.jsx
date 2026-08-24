@@ -1,10 +1,10 @@
+import Card from '../../components/ui/Card';
 import { useQuery } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
 import { axiosPrivate } from '../../api/axios';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { fadeIn } from '../../components/ui/motion';
-
-
+import { Archive, ArrowLeft, FileText } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const RadiologyArchive = () => {
   const [searchParams] = useSearchParams();

@@ -1,6 +1,6 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { Inbox } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const renderIcon = (Icon, className) => {
   if (!Icon) return null;

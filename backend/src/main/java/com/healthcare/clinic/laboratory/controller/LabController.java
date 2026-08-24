@@ -64,13 +64,14 @@ public class LabController {
     public ResponseEntity<List<LabTestRequest>> getMyLabReports() {
         Long userId = SecurityUtils.getCurrentUserId();
         if (userId == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not authenticated");
+            return ResponseEntity.ok(java.util.Collections.emptyList());
         }
-        PatientProfile profile = patientProfileRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Patient profile not found for user " + userId));
+        var profileOpt = patientProfileRepository.findByUserId(userId);
+        if (profileOpt.isEmpty()) {
+            return ResponseEntity.ok(java.util.Collections.emptyList());
+        }
         return ResponseEntity.ok(
-                requestRepository.findByPatientIdAndAcknowledgedAtIsNotNullOrderByRequestedAtDesc(profile.getId()));
+                requestRepository.findByPatientIdAndAcknowledgedAtIsNotNullOrderByRequestedAtDesc(profileOpt.get().getId()));
     }
 
     /**

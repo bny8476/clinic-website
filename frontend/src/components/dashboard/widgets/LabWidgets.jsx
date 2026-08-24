@@ -1,8 +1,13 @@
+import toast from 'react-hot-toast';
+import KPICard from '../../../components/ui/KPICard';
+import Button from '../../../components/ui/Button';
+import Modal from '../../../components/ui/Modal';
+import DataTable from '../../../components/ui/DataTable';
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../../api/axios';
-import { FlaskConical, CheckCircle2, Activity, ArrowRight } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { Activity, ArrowRight, CheckCircle2, FlaskConical, Save, Search, Upload } from 'lucide-react';
+import { Badge } from '../../../components/ui/Badge';
 
 export const LabHeaderWidget = () => (
   <div className="mb-6">

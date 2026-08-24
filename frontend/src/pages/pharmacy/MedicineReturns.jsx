@@ -1,12 +1,18 @@
 import React, { useState } from 'react';
 import useDebounce from '../../hooks/pharmacy/useDebounce';
+import pharmacyService from '../../utils/pharmacy/pharmacyService';
+import TableSkeleton from '../../components/pharmacy/ui/TableSkeleton';
+import PharmacyInvoice from '../../components/pharmacy/pharmacy/PharmacyInvoice';
+import Card from '../../components/ui/Card';
+import Modal from '../../components/ui/Modal';
+import DataTable from '../../components/ui/DataTable';
+import Pagination from '../../components/ui/Pagination';
 import { useLocation } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import pharmacyService from '../../utils/pharmacy/pharmacyService';
 import { usePageData } from '../../hooks/pharmacy/usePageData';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-
-
+import { CheckCircle, ClipboardList, Eye, FileText, Filter, IndianRupee, List, Plus, RotateCcw, Save, Search, Ticket, Users, Wallet } from 'lucide-react';
+import { Badge } from '../../components/ui/Badge';
 
 export default function MedicineReturns() {
   const location = useLocation();
@@ -313,7 +319,7 @@ export default function MedicineReturns() {
         )}
       </div>
 
-      <AppModal 
+      <Modal 
         isOpen={isModalOpen} 
         onClose={() => { setIsModalOpen(false); setSelectedBill(null); setReturnItems([]); setBillNumber(''); }}
         title="Process Medicine Return"
@@ -462,10 +468,10 @@ export default function MedicineReturns() {
           </div>
 
         </div>
-      </AppModal>
+      </Modal>
 
       {/* Invoice Print Modal */}
-      <AppModal
+      <Modal
         isOpen={isInvoiceModalOpen}
         onClose={() => setIsInvoiceModalOpen(false)}
         size="xl"
@@ -475,7 +481,7 @@ export default function MedicineReturns() {
           bill={invoiceToView} 
           onClose={() => setIsInvoiceModalOpen(false)} 
         />
-      </AppModal>
+      </Modal>
     </div>
     
   );

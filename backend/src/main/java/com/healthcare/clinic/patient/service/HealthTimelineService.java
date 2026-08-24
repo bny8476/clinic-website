@@ -33,14 +33,23 @@ public class HealthTimelineService {
     private final LabTestRequestRepository labTestRequestRepository;
     private final LabResultRepository labResultRepository;
 
-    private PatientProfile getPatientProfile(User user) {
-        return patientProfileRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new RuntimeException("Patient profile not found for user"));
+    public List<TimelineEventDTO> getTimelineEventsForUserId(Long userId) {
+        if (userId == null) return new ArrayList<>();
+        PatientProfile profile = patientProfileRepository.findByUserId(userId).orElse(null);
+        if (profile == null) {
+            return new ArrayList<>();
+        }
+        return getTimelineEventsForPatient(profile);
     }
 
     public List<TimelineEventDTO> getTimelineEvents(User user) {
-        PatientProfile profile = getPatientProfile(user);
+        if (user == null) return new ArrayList<>();
+        return getTimelineEventsForUserId(user.getId());
+    }
+
+    public List<TimelineEventDTO> getTimelineEventsForPatient(PatientProfile profile) {
         List<TimelineEventDTO> events = new ArrayList<>();
+        if (profile == null) return events;
 
         // 1. Appointments
         List<Appointment> appointments = appointmentRepository.findByPatientId(profile.getId());
@@ -51,7 +60,7 @@ public class HealthTimelineService {
                     .title("Clinic Appointment")
                     .description("Status: " + appt.getStatus().name())
                     .status(appt.getStatus().name())
-                    .eventDate(appt.getSlot().getStartTime())
+                    .eventDate(appt.getSlot() != null ? appt.getSlot().getStartTime() : java.time.ZonedDateTime.now())
                     .referenceId(appt.getId())
                     .build());
         }

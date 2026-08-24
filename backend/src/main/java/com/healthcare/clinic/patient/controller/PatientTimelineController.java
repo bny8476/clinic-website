@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -37,6 +38,13 @@ public class PatientTimelineController {
         
         List<TimelineEventDTO> timeline = patientTimelineService.getTimelineForPatient(patientId);
         
+        return ResponseEntity.ok(timeline);
+    }
+    
+    @GetMapping("/{patientId}")
+    @PreAuthorize("hasAnyAuthority('ROLE_DOCTOR', 'ROLE_NURSE', 'ROLE_ADMIN')")
+    public ResponseEntity<List<TimelineEventDTO>> getPatientTimeline(@PathVariable Long patientId) {
+        List<TimelineEventDTO> timeline = patientTimelineService.getTimelineForPatient(patientId);
         return ResponseEntity.ok(timeline);
     }
 }

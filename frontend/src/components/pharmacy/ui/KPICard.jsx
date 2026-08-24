@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
-import { cn } from "../../../utils/pharmacy/cn";
+import { cn } from '../../../utils/pharmacy/cn';
+import { ArrowDown, ArrowUp, Minus } from 'lucide-react';
 
 export default function KPICard({ title, value, subtext, icon: Icon, trend, iconColor = 'blue', className }) {
   const colorMap = {

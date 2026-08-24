@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ChevronUp, ChevronDown, ArrowUpDown } from 'lucide-react';
-import Card from './Card';
-import Skeleton from './Skeleton';
-import EmptyState from './EmptyState';
+import Card from '../../components/ui/Card';
+import Skeleton from '../../components/ui/Skeleton';
+import EmptyState from '../../components/ui/EmptyState';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ChevronDown, ChevronUp, Search } from 'lucide-react';
 
 /**
  * Enterprise DataTable Primitive
@@ -130,7 +130,7 @@ export default function DataTable({
                       exit={{ opacity: 0, transition: { duration: 0.1 } }}
                       transition={{ duration: 0.2, delay: Math.min(index * 0.02, 0.2) }}
                       key={row.id || index} 
-                      className="hover:bg-slate-50 dark:hover:bg-[var(--color-surface-alt)] transition-colors bg-[var(--color-surface)]"
+                      className="hover:bg-white/20 dark:hover:bg-white/10 transition-colors bg-transparent"
                     >
                       {columns.map((col) => (
                         <td 

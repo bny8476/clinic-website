@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { toast } from 'react-hot-toast';
-import { CheckCircle, AlertCircle, Clock, Loader2, Plus, Shield } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { pageTransition, staggerChildren, fadeUp, listStagger } from '../../components/ui/motion';
+import { fadeUp, listStagger, pageTransition, staggerChildren } from '../../components/ui/motion';
+import { AlertCircle, CheckCircle, Clock, Loader2, Plus, Shield } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const Insurance = () => {
     const queryClient = useQueryClient();

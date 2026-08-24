@@ -1,8 +1,11 @@
+import DataTable from '../../components/ui/DataTable';
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { fadeIn } from '../../components/ui/motion';
+import { Phone, UserCheck } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Badge } from '../../components/ui/Badge';
 
 const PatientManagement = () => {
     const [page, setPage] = useState(0);

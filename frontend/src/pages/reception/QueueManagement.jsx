@@ -1,18 +1,16 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { axiosPrivate } from '../../api/axios';
-import { Ticket, CheckCircle2, UserCheck, Play, ArrowLeft, Users, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { motion } from 'framer-motion';
-import { fadeIn, staggerChildren } from '../../components/ui/motion';
-import { Link } from 'react-router-dom';
+import useAuthStore from '../../store/authStore';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
-import Badge from '../../components/ui/Badge';
-import Skeleton from '../../components/ui/Skeleton';
 import EmptyState from '../../components/ui/EmptyState';
-import useAuthStore from '../../store/authStore';
-
-
+import Skeleton from '../../components/ui/Skeleton';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { axiosPrivate } from '../../api/axios';
+import { ArrowLeft, CheckCircle2, Clock, Monitor, Play, Ticket, UserCheck, Users } from 'lucide-react';
+import { fadeIn, staggerChildren } from '../../components/ui/motion';
+import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { Badge } from '../../components/ui/Badge';
 
 const QueueManagement = () => {
   const queryClient = useQueryClient();

@@ -1,11 +1,9 @@
-import { useState, useMemo } from 'react';
+import toast from 'react-hot-toast';
+import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import toast from 'react-hot-toast';
-import { HeartPulse, AlertTriangle, Save } from 'lucide-react';
-
-
+import { AlertTriangle, Heart, HeartPulse, Save } from 'lucide-react';
 
 const VitalSignsEntry = () => {
   const queryClient = useQueryClient();

@@ -1,9 +1,10 @@
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'react-hot-toast';
 import pharmacyService from '../../utils/pharmacy/pharmacyService';
-
-
+import Card from '../../components/ui/Card';
+import Modal from '../../components/ui/Modal';
+import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'react-hot-toast';
+import { CheckCircle, File, FileText, Hourglass, Inbox, IndianRupee, Plus, RefreshCw, ShieldCheck, XCircle } from 'lucide-react';
 
 export default function InsuranceClaims() {
   const queryClient = useQueryClient();
@@ -277,7 +278,7 @@ export default function InsuranceClaims() {
       </div>
 
       {/* Claim Form Modal */}
-      <AppModal
+      <Modal
         isOpen={showClaimForm}
         onClose={() => setShowClaimForm(false)}
         title={
@@ -409,7 +410,7 @@ export default function InsuranceClaims() {
             </div>
           </div>
         </form>
-      </AppModal>
+      </Modal>
     </div>
     
   );

@@ -1,13 +1,14 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { axiosPrivate } from '../../api/axios';
-import { Save } from 'lucide-react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import Button from '../../components/ui/Button';
+import Card from '../../components/ui/Card';
+import FormField from '../../components/ui/FormField';
+import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { axiosPrivate } from '../../api/axios';
+import { ArrowLeft, FileImage, Save, Upload, UploadCloud } from 'lucide-react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { fadeIn } from '../../components/ui/motion';
-
-
+import { motion } from 'framer-motion';
 
 const RadiologyUpload = () => {
   const queryClient = useQueryClient();

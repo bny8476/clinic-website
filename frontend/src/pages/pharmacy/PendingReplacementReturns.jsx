@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import logger from '../../utils/logger';
 import useDebounce from '../../hooks/pharmacy/useDebounce';
+import pharmacyService from '../../utils/pharmacy/pharmacyService';
+import ModuleFilterBar from '../../components/pharmacy/ui/ModuleFilterBar';
+import Modal from '../../components/ui/Modal';
+import DataTable from '../../components/ui/DataTable';
+import Pagination from '../../components/ui/Pagination';
 import { useLocation } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import pharmacyService from '../../utils/pharmacy/pharmacyService';
-
-
+import { CheckCircle, Eye, List, Search, XCircle } from 'lucide-react';
+import { Badge } from '../../components/ui/Badge';
 
 export default function PendingReplacementReturns() {
   const location = useLocation();
@@ -121,7 +125,7 @@ export default function PendingReplacementReturns() {
         <Pagination totalRecords={filteredReturns.length} currentPage={currentPage} pageSize={pageSize} onPageChange={setCurrentPage} onPageSizeChange={setPageSize} />
       </div>
 
-      <AppModal 
+      <Modal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)}
         title="Verify & Accept Return"
@@ -181,9 +185,9 @@ export default function PendingReplacementReturns() {
             </div>
           </div>
         )}
-      </AppModal>
+      </Modal>
 
-      <AppModal 
+      <Modal 
         isOpen={isViewModalOpen} 
         onClose={() => setIsViewModalOpen(false)}
         title="Replacement Return Details"
@@ -214,9 +218,9 @@ export default function PendingReplacementReturns() {
             </div>
           </div>
         )}
-      </AppModal>
+      </Modal>
 
-      <AppModal
+      <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         title="Confirm Rejection"
@@ -232,7 +236,7 @@ export default function PendingReplacementReturns() {
           <p className="font-bold text-gray-900 mb-2">Reject this replacement return?</p>
           <p className="text-sm text-gray-500">This action will return the request to the ward for correction.</p>
         </div>
-      </AppModal>
+      </Modal>
     </div>
     
   );

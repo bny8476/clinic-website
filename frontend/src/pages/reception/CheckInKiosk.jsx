@@ -1,12 +1,11 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
-
 import toast from 'react-hot-toast';
-import { staggerChildren, fadeIn } from '../../components/ui/motion';
-
-
+import Card from '../../components/ui/Card';
+import { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { fadeIn, staggerChildren } from '../../components/ui/motion';
+import { AlertCircle, ArrowRight, Calendar, Check, CheckCircle2, Loader2, Monitor, Phone, Search, User } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const KIOSK_STATION = 'KIOSK-1';
 const BRANCH_ID = 1; // Fixed for this kiosk terminal

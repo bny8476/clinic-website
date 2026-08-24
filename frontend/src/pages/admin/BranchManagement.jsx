@@ -1,7 +1,13 @@
+import Button from '../../components/ui/Button';
+import FormField from '../../components/ui/FormField';
+import Modal from '../../components/ui/Modal';
+import DataTable from '../../components/ui/DataTable';
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
+import { Building2, Edit, Edit2, Phone, Plus, Save } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Badge } from '../../components/ui/Badge';
 import { fadeIn } from '../../components/ui/motion';
 
 const BranchManagement = () => {

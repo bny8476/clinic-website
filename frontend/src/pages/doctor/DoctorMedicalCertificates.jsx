@@ -1,5 +1,7 @@
+import Pagination from '../../components/ui/Pagination';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Activity, ArrowUp, Briefcase, ChevronDown, Download, Eye, FileText, MoreVertical, PenTool, Plane, Plus, Search, Trash2 } from 'lucide-react';
 
 const DoctorMedicalCertificates = () => {
   const navigate = useNavigate();

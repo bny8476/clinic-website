@@ -1,10 +1,8 @@
-import { useState, useEffect } from 'react';
-
 import logger from '../../utils/logger';
 import api from '../../utils/pharmacy/api';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
-
-
+import { AlertCircle, ArrowLeft, CheckCircle2, FileText, Loader2, RefreshCw } from 'lucide-react';
 
 const STATUS_STYLES = {
   PENDING:  'bg-amber-50 text-amber-700 border border-amber-200',

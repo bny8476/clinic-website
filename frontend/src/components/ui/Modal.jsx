@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
 import { scaleIn } from './motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import { X } from 'lucide-react';
 
 /**
  * Enterprise Modal Primitive — fully accessible dialog
@@ -126,7 +126,7 @@ export default function Modal({
             initial="hidden"
             animate="visible"
             exit="exit"
-            className={`relative w-full ${sizes[size] || sizes.md} bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl shadow-elevated z-10 flex flex-col max-h-[90vh] overflow-hidden ${className}`}
+            className={`relative w-full ${sizes[size] || sizes.md} bg-white/50 backdrop-blur-2xl border border-white/40 rounded-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] z-10 flex flex-col max-h-[90vh] overflow-hidden ${className}`}
           >
             {/* Visually-hidden description for screen readers */}
             {description && (

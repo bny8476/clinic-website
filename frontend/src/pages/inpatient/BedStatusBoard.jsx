@@ -1,11 +1,10 @@
+import EmptyState from '../../components/ui/EmptyState';
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { BedDouble } from 'lucide-react';
-import { staggerChildren, fadeIn } from '../../components/ui/motion';
-
-
+import { BedDouble, Filter, Search } from 'lucide-react';
+import { fadeIn, staggerChildren } from '../../components/ui/motion';
+import { motion } from 'framer-motion';
 
 const STATUS_COLORS = {
   AVAILABLE: 'bg-[var(--color-success-bg)] text-[var(--color-success)] border-[var(--color-success)]/30',

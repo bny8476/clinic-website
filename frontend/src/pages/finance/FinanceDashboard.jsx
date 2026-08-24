@@ -1,11 +1,11 @@
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { axiosPrivate } from '../../api/axios';
-import { TrendingUp, TrendingDown, DollarSign, ArrowRight } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { fadeIn, staggerContainer } from '../../components/ui/motion';
 import KPICard from '../../components/ui/KPICard';
 import Button from '../../components/ui/Button';
+import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { axiosPrivate } from '../../api/axios';
+import { DollarSign, TrendingDown, TrendingUp } from 'lucide-react';
+import { fadeIn, staggerContainer } from '../../components/ui/motion';
+import { motion } from 'framer-motion';
 
 export default function FinanceDashboard() {
     const queryClient = useQueryClient();
@@ -52,30 +52,42 @@ export default function FinanceDashboard() {
             </div>
 
             {/* Top Stats */}
-            <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                <motion.div variants={fadeIn}>
-                    <KPICard 
-                        label="Total Revenue" 
-                        value={`₹${totalRevenue.toLocaleString()}`} 
-                        icon={TrendingUp} 
-                        colorToken="success" 
-                    />
+            <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                <motion.div variants={fadeIn} className="relative group" whileHover={{ y: -4, scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    <div className="absolute inset-0 bg-white/40 backdrop-blur-md border border-slate-200/50 rounded-2xl shadow-sm group-hover:shadow-xl group-hover:shadow-success/10 transition-all z-0"></div>
+                    <div className="relative z-10 p-1">
+                        <KPICard 
+                            label="Total Revenue" 
+                            value={`₹${totalRevenue.toLocaleString()}`} 
+                            icon={TrendingUp} 
+                            colorToken="success" 
+                            className="bg-transparent border-0 shadow-none"
+                        />
+                    </div>
                 </motion.div>
-                <motion.div variants={fadeIn}>
-                    <KPICard 
-                        label="Total Expenses" 
-                        value={`₹${totalExpenses.toLocaleString()}`} 
-                        icon={TrendingDown} 
-                        colorToken="danger" 
-                    />
+                <motion.div variants={fadeIn} className="relative group" whileHover={{ y: -4, scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    <div className="absolute inset-0 bg-white/40 backdrop-blur-md border border-slate-200/50 rounded-2xl shadow-sm group-hover:shadow-xl group-hover:shadow-danger/10 transition-all z-0"></div>
+                    <div className="relative z-10 p-1">
+                        <KPICard 
+                            label="Total Expenses" 
+                            value={`₹${totalExpenses.toLocaleString()}`} 
+                            icon={TrendingDown} 
+                            colorToken="danger" 
+                            className="bg-transparent border-0 shadow-none"
+                        />
+                    </div>
                 </motion.div>
-                <motion.div variants={fadeIn}>
-                    <KPICard 
-                        label="Net Income" 
-                        value={`₹${netIncome.toLocaleString()}`} 
-                        icon={DollarSign} 
-                        colorToken="info" 
-                    />
+                <motion.div variants={fadeIn} className="relative group" whileHover={{ y: -4, scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    <div className="absolute inset-0 bg-white/40 backdrop-blur-md border border-slate-200/50 rounded-2xl shadow-sm group-hover:shadow-xl group-hover:shadow-info/10 transition-all z-0"></div>
+                    <div className="relative z-10 p-1">
+                        <KPICard 
+                            label="Net Income" 
+                            value={`₹${netIncome.toLocaleString()}`} 
+                            icon={DollarSign} 
+                            colorToken="info" 
+                            className="bg-transparent border-0 shadow-none"
+                        />
+                    </div>
                 </motion.div>
             </motion.div>
 

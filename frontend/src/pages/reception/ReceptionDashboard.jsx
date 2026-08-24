@@ -1,15 +1,10 @@
+import useAuthStore from '../../store/authStore';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { useNavigate } from 'react-router-dom';
-import {
-  Users, Monitor, FileText, DollarSign, Shield, Ticket,
-  UserCheck, UserPlus, ClipboardList, TrendingUp, AlertCircle, ArrowRight, Loader2, RefreshCw
-} from 'lucide-react';
-import { motion } from 'framer-motion';
+import { AlertCircle, ArrowRight, Check, ClipboardList, DollarSign, FileText, Loader2, Monitor, RefreshCw, Shield, Ticket, TrendingUp, UserCheck, UserPlus, Users } from 'lucide-react';
 import { fadeIn, staggerContainer } from '../../components/ui/motion';
-import useAuthStore from '../../store/authStore';
-
-
+import { motion } from 'framer-motion';
 
 const BRANCH_ID = 1;
 

@@ -1,11 +1,14 @@
-import { Stethoscope, Users, Activity, ArrowRight } from 'lucide-react';
+import api from '../../utils/pharmacy/api';
+import DashboardShell from '../../components/dashboard/shared/DashboardShell';
+import DashboardGrid from '../../components/dashboard/DashboardGrid';
+import KPICard from '../../components/ui/KPICard';
+import Button from '../../components/ui/Button';
+import Card from '../../components/ui/Card';
+import { Activity, ArrowRight, FileText, Stethoscope, Users } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useSystem } from '../../context/pharmacy/SystemContext';
 import { useConfig } from '../../context/pharmacy/ConfigContext';
-import api from '../../utils/pharmacy/api';
-
-
 
 const DashboardSkeleton = () => (
   <div className="space-y-8 animate-pulse">

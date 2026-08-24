@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
 import logger from '../../utils/logger';
 import api from '../../utils/pharmacy/api';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-
-
+import { ArrowLeft, FileText, Loader2, Plus, RefreshCw } from 'lucide-react';
+import { Badge } from '../../components/ui/Badge';
 
 export default function SupplierReturns({ onBack }) {
   const [returns, setReturns] = useState([]);

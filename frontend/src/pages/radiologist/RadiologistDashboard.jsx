@@ -1,9 +1,11 @@
+import ConfigDrivenDashboard from '../../components/dashboard/ConfigDrivenDashboard';
+import RadiologyQuickActions from '../../components/radiology/RadiologyQuickActions';
+import RadiologyRequestList from '../../components/radiology/RadiologyRequestList';
+import TechnicianWorklist from '../../components/radiology/TechnicianWorklist';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { dashboardConfig } from '../../config/dashboardConfig';
-
-
 
 const RadiologistDashboard = () => {
   const [filterStatus, setFilterStatus] = useState('ALL');

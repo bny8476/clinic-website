@@ -33,18 +33,24 @@ public class PatientMedicineService {
     private final AppointmentRepository appointmentRepository;
 
     public List<DoctorMedicineDto> getAvailableMedicines(Long patientUserId) {
+        if (patientUserId == null) {
+            return doctorMedicineRepository.findByIsActiveTrue().stream()
+                    .map(this::mapToDto)
+                    .collect(Collectors.toList());
+        }
+
         List<Appointment> appointments = appointmentRepository.findByPatient_UserId(patientUserId);
         
-        // In our entity relationship, doctorId refers to the DoctorProfile id, which is often 1:1 with userId but maybe not identical.
-        // Assuming DoctorProfile ID is the one saved in Appointment.doctor. 
-        // Wait, Appointment has doctor (DoctorProfile). Let's use doctor.getId().
         List<Long> doctorProfileIds = appointments.stream()
+                .filter(a -> a.getDoctor() != null)
                 .map(a -> a.getDoctor().getId())
                 .distinct()
                 .collect(Collectors.toList());
 
         if (doctorProfileIds.isEmpty()) {
-            return new ArrayList<>();
+            return doctorMedicineRepository.findByIsActiveTrue().stream()
+                    .map(this::mapToDto)
+                    .collect(Collectors.toList());
         }
 
         return doctorMedicineRepository.findByDoctorIdInAndIsActiveTrue(doctorProfileIds).stream()

@@ -1,9 +1,12 @@
-import { useState, useEffect } from 'react';
 import logger from '../../../utils/logger';
 import PropTypes from 'prop-types';
-import { MODULE_PERMISSIONS, getRoleColor } from '../../../config/pharmacy/roles.config';
 import api from "../../../utils/pharmacy/api";
+import FormInput from '../../../components/pharmacy/ui/FormInput';
+import Modal from '../../../components/ui/Modal';
+import { useEffect, useState } from 'react';
+import { MODULE_PERMISSIONS, getRoleColor } from '../../../config/pharmacy/roles.config';
 import { toast } from 'react-hot-toast';
+import { Edit, List, Phone, Save, Shield, Users } from 'lucide-react';
 
 export default function UserFormModal({ isOpen, onClose, onSave, editingUser = null }) {
   const [availableRoles, setAvailableRoles] = useState([]);
@@ -108,7 +111,7 @@ export default function UserFormModal({ isOpen, onClose, onSave, editingUser = n
   const hasFullAccess = activePermissions.has('ALL');
 
   return (
-    <AppModal 
+    <Modal 
       isOpen={isOpen} 
       onClose={onClose}
       title={editingUser ? "Edit Staff Member" : "Add New Staff Member"}
@@ -278,7 +281,7 @@ export default function UserFormModal({ isOpen, onClose, onSave, editingUser = n
           )}
         </div>
       </div>
-    </AppModal>
+    </Modal>
   );
 }
 

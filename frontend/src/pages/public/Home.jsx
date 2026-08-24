@@ -1,16 +1,10 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence, useScroll, useTransform, useInView, useReducedMotion } from 'framer-motion';
-import { 
-  HeartPulse, Brain, Bone, Activity, FlaskConical,
-  ArrowLeft, ArrowRight, BadgeCheck, Bell, Calendar, CheckCircle, CheckCircle2,
-  ChevronDown, Clock, Headphones, Heart, Mail, MapPin, Menu, 
-  MessageCircle, MessageSquare, Monitor, Phone, PhoneCall, Play, 
-  Plus, Printer, Quote, ShieldCheck, Star, Stethoscope, Target, 
-  ThumbsUp, User, UserCheck, Users
-} from 'lucide-react';
-import { usePublicDoctors, usePublicDepartments } from '../../api/publicApi';
 import './Home.css';
+import Card from '../../components/ui/Card';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AnimatePresence, motion, useInView, useReducedMotion, useScroll, useTransform } from 'framer-motion';
+import { Activity, ArrowLeft, ArrowRight, BadgeCheck, Bell, Bone, Box, Brain, Calendar, CheckCircle2, ChevronDown, Circle, Clock, FlaskConical, Headphones, Heart, HeartPulse, HomeIcon, Image, Info, Mail, MapPin, Menu, MessageCircle, MessageSquare, Monitor, Phone, PhoneCall, Pill, Play, Plus, Printer, Quote, ShieldCheck, Star, Stethoscope, Target, ThumbsUp, User, UserCheck, Users, Video } from 'lucide-react';
+import { usePublicDepartments, usePublicDoctors } from '../../api/publicApi';
 
 /* ════════════════════════════════════════════════════════════════════════════
    STATIC DATA & TOKENS

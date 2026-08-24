@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import useDebounce from '../../hooks/pharmacy/useDebounce';
+import pharmacyService from '../../utils/pharmacy/pharmacyService';
+import Modal from '../../components/ui/Modal';
+import Pagination from '../../components/ui/Pagination';
 import { useShallow } from 'zustand/react/shallow';
 import { toast } from 'react-hot-toast';
 import { cn } from '../../utils/pharmacy/cn';
 import { useStockStore } from '../../store/useStockStore';
 import { useQuery } from '@tanstack/react-query';
-import pharmacyService from '../../utils/pharmacy/pharmacyService';
+import { fadeIn, staggerContainer } from '../../components/ui/motion';
+import { AlertTriangle, Box, CalendarX, Check, ChevronDown, ChevronRight, Download, Package, Plus, Printer, Save, Search, Settings, Tag, Target, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { staggerContainer, fadeIn } from '../../components/ui/motion';
-import Badge from '../../components/ui/Badge';
-
-
+import { Badge } from '../../components/ui/Badge';
 
 export default function MedicineStock() {
   const {
@@ -329,7 +330,7 @@ export default function MedicineStock() {
               return (
                 <React.Fragment key={med.id}>
                   {/* Medicine Row */}
-                  <div className={cn("grid grid-cols-[auto_60px_2fr_1.5fr_1.5fr_2fr_1fr_1fr] gap-4 p-4 border-b border-slate-100 hover:bg-slate-50/80 transition-colors items-center cursor-pointer min-w-[1200px]", isLowStock ? "bg-red-50/20" : "")} onClick={() => toggleExpand(med.id)}>
+                  <div className={cn("grid grid-cols-[auto_60px_2fr_1.5fr_1.5fr_2fr_1fr_1fr] gap-4 p-4 border-b border-slate-100 hover:bg-slate-50/80 transition-colors items-center cursor-pointer min-w-[1200px]", isLowStock ? "bg-red-50 border-l-4 border-red-500 shadow-[inset_0_0_15px_rgba(239,68,68,0.1)]" : "border-l-4 border-transparent")} onClick={() => toggleExpand(med.id)}>
                     <div className="w-6 flex justify-center">
                       <button className="p-1 text-slate-400 hover:text-slate-700 rounded">
                         {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
@@ -534,7 +535,7 @@ export default function MedicineStock() {
       )}
 
       {/* Adjust Stock Modal */}
-      <AppModal
+      <Modal
         isOpen={isAdjustModalOpen}
         onClose={() => setIsAdjustModalOpen(false)}
         title="Adjust Stock Quantity"
@@ -574,10 +575,10 @@ export default function MedicineStock() {
             </div>
           </div>
         )}
-      </AppModal>
+      </Modal>
 
       {/* Register Stock Inward Modal */}
-      <AppModal
+      <Modal
         isOpen={isAddStockModalOpen}
         onClose={() => setIsAddStockModalOpen(false)}
         title="Register Stock Inward"
@@ -660,10 +661,10 @@ export default function MedicineStock() {
             </div>
           </div>
         </div>
-      </AppModal>
+      </Modal>
 
       {/* Configure Reorder Points Modal */}
-      <AppModal
+      <Modal
         isOpen={isConfigModalOpen}
         onClose={() => setIsConfigModalOpen(false)}
         title="Configure Reorder Points"
@@ -693,7 +694,7 @@ export default function MedicineStock() {
             </div>
           </div>
         )}
-      </AppModal>
+      </Modal>
 
     </div>
     

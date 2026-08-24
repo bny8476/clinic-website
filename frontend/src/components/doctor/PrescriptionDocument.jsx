@@ -1,3 +1,4 @@
+import { Activity, Calendar, Info, Phone } from 'lucide-react';
 
 const PrescriptionDocument = ({ data }) => {
   if (!data) return null;

@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { ArrowRight } from 'lucide-react';
 
 const LabStatusSidebar = ({ summary }) => {
   const statusMap = [

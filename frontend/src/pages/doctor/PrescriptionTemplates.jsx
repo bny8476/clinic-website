@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { axiosPrivate } from '../../api/axios';
-import { Activity, Heart, 
-  Wind, CircleDot, Bone
-} from 'lucide-react';
 import clsx from 'clsx';
 import toast from 'react-hot-toast';
 import useDebounce from '../../hooks/pharmacy/useDebounce';
+import Button from '../../components/ui/Button';
+import Modal from '../../components/ui/Modal';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
-
-
+import { useNavigate } from 'react-router-dom';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { axiosPrivate } from '../../api/axios';
+import { Activity, Bone, ChevronDown, ChevronRight, CircleDot, FilePlus, FileText, Filter, FolderOpen, Heart, LayoutGrid, List, Menu, MoreVertical, Plus, PlusSquare, Save, Search, Trash2, Wind, X } from 'lucide-react';
+import { Dialog, Transition } from '@headlessui/react';
 
 const CATEGORIES = [
   { name: 'Respiratory', icon: Wind, color: 'blue', desc: 'Cough, Cold, Asthma, COPD' },

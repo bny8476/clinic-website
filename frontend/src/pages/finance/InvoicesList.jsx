@@ -1,18 +1,15 @@
 import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { axiosPrivate } from '../../api/axios';
-import { Download, FileText, Plus, X } from 'lucide-react';
 import toast from 'react-hot-toast';
-
-import { motion } from 'framer-motion';
-import { fadeIn } from '../../components/ui/motion';
-import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
-import DataTable from '../../components/ui/DataTable';
-import Modal from '../../components/ui/Modal';
 import FormField from '../../components/ui/FormField';
-
-
+import Modal from '../../components/ui/Modal';
+import DataTable from '../../components/ui/DataTable';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { axiosPrivate } from '../../api/axios';
+import { Download, FileText, Plus, Search, X } from 'lucide-react';
+import { fadeIn } from '../../components/ui/motion';
+import { motion } from 'framer-motion';
+import { Badge } from '../../components/ui/Badge';
 
 function useDebouncedValue(value, delay = 300) {
   const [debounced, setDebounced] = React.useState(value);
@@ -193,7 +190,7 @@ const InvoicesList = () => {
                   onChange={e => { setPatientSearch(e.target.value); setPatientDropdownOpen(true); }}
                   onFocus={() => setPatientDropdownOpen(true)}
                   placeholder="Search patient by name or UHID…"
-                  className="input-field focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-shadow"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white/50 backdrop-blur-md outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm"
                 />
                 {patientDropdownOpen && (patientResults.length > 0 || patientSearchLoading) && (
                   <div className="absolute z-10 top-full mt-2 left-0 right-0 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl shadow-lg max-h-48 overflow-y-auto overflow-hidden">
@@ -215,9 +212,10 @@ const InvoicesList = () => {
             )}
           </FormField>
 
-          <FormField label="Amount" required>
-            <input required type="number" value={formData.amount} onChange={e => setFormData({...formData, amount: Number(e.target.value)})} className="input-field focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-shadow" />
-          </FormField>
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Amount *</label>
+            <input required type="number" value={formData.amount} onChange={e => setFormData({...formData, amount: Number(e.target.value)})} className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white/50 backdrop-blur-md outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm font-bold text-lg" />
+          </div>
           
           <FormField label="Tax" required>
             <input required type="number" value={formData.tax} onChange={e => setFormData({...formData, tax: Number(e.target.value)})} className="input-field focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-shadow" />

@@ -1,23 +1,34 @@
-import { useState, useEffect } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import useAuthStore from '../../store/authStore';
-import { useSearchParams } from 'react-router-dom';
+import { useEffect, useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { axiosPrivate } from '../../api/axios';
 import { 
-  User, HeartPulse, Pill, CloudUpload, Clipboard, FlaskConical, ChevronRight,
-  UserPlus, CalendarIcon, ChevronLeft, Circle, Phone, MessageSquare
+  Activity, 
+  ArrowRight, 
+  Calendar as CalendarIcon, 
+  ChevronLeft, 
+  ChevronRight, 
+  Clipboard, 
+  CloudUpload, 
+  FlaskConical, 
+  HeartPulse, 
+  LayoutGrid, 
+  MoreHorizontal, 
+  Pill, 
+  Plus, 
+  Sparkles, 
+  UserCheck, 
+  UserPlus, 
+  Users 
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { DashboardShell, DashboardGrid, BottomRow } from '../../components/dashboard/shared/DashboardShell';
-import Card from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
-
-
 
 const NurseDashboard = () => {
-  const { user, token } = useAuthStore();
-  const [searchParams] = useSearchParams();
+  const { user } = useAuthStore();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('Dashboard');
-  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (searchParams.get('panel') === 'supplies') {
@@ -25,236 +36,396 @@ const NurseDashboard = () => {
     }
   }, [searchParams]);
 
-  const tabs = ['Dashboard', 'OP Queue', 'IP Wards', 'Inventory'];
-
+  // Quick Action cards definitions
   const quickActions = [
-    { icon: User, label: 'View Patients', color: 'text-[var(--color-navy-600)]', bg: 'bg-[var(--color-info-bg)]', action: () => {} },
-    { icon: HeartPulse, label: 'Record Vitals', color: 'text-[var(--color-navy-600)]', bg: 'bg-[var(--color-info-bg)]', action: () => {} },
-    { icon: Pill, label: 'Medication Administration', color: 'text-[var(--color-navy-600)]', bg: 'bg-[var(--color-info-bg)]', action: () => {} },
-    { icon: CloudUpload, label: 'Upload Reports', color: 'text-[var(--color-navy-600)]', bg: 'bg-[var(--color-info-bg)]', action: () => {} },
-    { icon: Clipboard, label: 'Patient Care', color: 'text-[var(--color-navy-600)]', bg: 'bg-[var(--color-info-bg)]', action: () => {} },
-    { icon: FlaskConical, label: 'Lab Collection', color: 'text-[var(--color-navy-600)]', bg: 'bg-[var(--color-info-bg)]', action: () => {} },
+    { icon: Users, label: 'View Patients', desc: 'Search and manage patient records', color: 'text-blue-600', bg: 'bg-blue-50', link: '/nurse/patients' },
+    { icon: HeartPulse, label: 'Record Vitals', desc: 'Record patient vital signs', color: 'text-pink-500', bg: 'bg-pink-50', link: '/nurse/vitals' },
+    { icon: Pill, label: 'Medication Administration', desc: 'Manage and track medications', color: 'text-purple-600', bg: 'bg-purple-50', link: '/nurse/medications' },
+    { icon: CloudUpload, label: 'Upload Reports', desc: 'Upload and manage patient reports', color: 'text-emerald-600', bg: 'bg-emerald-50', link: '/nurse/reports' },
+    { icon: Clipboard, label: 'Patient Care', desc: 'Patient care and daily notes', color: 'text-amber-600', bg: 'bg-amber-50', link: '/nurse/care' },
+    { icon: FlaskConical, label: 'Lab Collection', desc: 'Manage lab collections', color: 'text-sky-600', bg: 'bg-sky-50', link: '/nurse/lab' }
+  ];
+
+  // OP Patients Mock / Live Data
+  const opPatients = [
+    { token: '101', name: 'Pat lent', time: '09:00 AM', status: 'Waiting', statusBg: 'bg-amber-50 text-amber-600' },
+    { token: '102', name: 'James Smith', time: '09:30 AM', status: 'In Queue', statusBg: 'bg-blue-50 text-blue-600' },
+    { token: '103', name: 'Linda Brown', time: '10:00 AM', status: 'Waiting', statusBg: 'bg-amber-50 text-amber-600' }
+  ];
+
+  // Scheduled Timeline Events
+  const scheduleEvents = [
+    { time: '09:00 AM', name: 'Pat lent', reason: 'Fever', slot: '09:00 - 09:20 AM', colorBg: 'bg-blue-50/70 border-l-4 border-blue-500 text-blue-900' },
+    { time: '10:00 AM', name: 'James Smith', reason: 'Follow-up Consultation', slot: '10:00 - 10:20 AM', colorBg: 'bg-emerald-50/70 border-l-4 border-emerald-500 text-emerald-900' },
+    { time: '01:00 PM', name: 'Linda Brown', reason: 'Medication Review', slot: '01:00 - 01:20 PM', colorBg: 'bg-amber-50/70 border-l-4 border-amber-500 text-amber-900' },
+    { time: '03:00 PM', name: 'Robert Johnson', reason: 'Wound Dressing', slot: '03:00 - 03:20 PM', colorBg: 'bg-purple-50/70 border-l-4 border-purple-500 text-purple-900' }
+  ];
+
+  // Recent Shift Activities
+  const recentActivities = [
+    { icon: Clipboard, title: 'Vitals Recorded', count: '3 patients', time: '2 mins ago', iconBg: 'bg-emerald-50 text-emerald-600' },
+    { icon: Pill, title: 'Medication Given', count: '5 patients', time: '15 mins ago', iconBg: 'bg-amber-50 text-amber-600' },
+    { icon: FlaskConical, title: 'Lab Sample Collected', count: '2 patients', time: '30 mins ago', iconBg: 'bg-purple-50 text-purple-600' }
   ];
 
   return (
-    
-    <DashboardShell 
-      tabs={tabs} 
-      activeTab={activeTab} 
-      onTabChange={setActiveTab}
-      quickActions={quickActions}
-    >
-      <div className="space-y-6">
+    <div className="min-h-screen bg-slate-50 font-sans p-4 md:p-6 pb-28 max-w-[1550px] mx-auto text-slate-800 space-y-6">
+      
+      {/* ─── 1. Top Quick Action Cards Row ─── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        {quickActions.map((qa, idx) => {
+          const Icon = qa.icon;
+          return (
+            <div 
+              key={idx}
+              onClick={() => qa.link && navigate(qa.link)}
+              className="bg-white rounded-3xl border border-slate-100 p-4 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition cursor-pointer flex items-center justify-between gap-3 group"
+            >
+              <div className="flex items-center gap-3">
+                <div className={`w-11 h-11 rounded-2xl ${qa.bg} ${qa.color} flex items-center justify-center shrink-0`}>
+                  <Icon className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-extrabold text-xs text-slate-900 leading-snug group-hover:text-blue-600 transition">
+                    {qa.label}
+                  </h4>
+                  <p className="text-[10px] font-medium text-slate-400 leading-tight line-clamp-1 mt-0.5">
+                    {qa.desc}
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-blue-600 shrink-0" />
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ─── 2. Main Navigation Tabs ─── */}
+      <div className="flex items-center gap-3">
+        {[
+          { id: 'Dashboard', label: 'Dashboard', icon: LayoutGrid },
+          { id: 'OP Queue', label: 'OP Queue', icon: UserPlus },
+          { id: 'IP Wards', label: 'IP Wards', icon: UserCheck },
+          { id: 'Inventory', label: 'Inventory', icon: Clipboard }
+        ].map(tab => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-5 py-2.5 rounded-2xl font-bold text-xs flex items-center gap-2 transition ${
+                isActive
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                  : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ─── 3. Main 3-Column Content Layout ─── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
-        {/* 3 Column Layout */}
-        <div className="grid grid-cols-12 gap-6">
+        {/* ── LEFT COLUMN (3/12 = 25%) ── */}
+        <div className="lg:col-span-3 space-y-6">
           
-          {/* Left Column */}
-          <motion.div className="col-span-12 lg:col-span-3 flex flex-col gap-6" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.1 }}>
-            <Card className="flex flex-col flex-1 h-[250px] transition-all hover:shadow-md hover:-translate-y-1 duration-200">
-              <Card.Header className="flex justify-between items-center w-full border-b-0 pb-0">
-                <h3 className="font-bold text-[15px] text-[var(--color-text)] m-0">Nurse OP Patients</h3>
-                <span className="text-[var(--color-navy-800)] text-[12px] font-bold cursor-pointer">VIEW ALL</span>
-              </Card.Header>
-              <Card.Body className="flex flex-col items-center justify-center gap-4 pt-0">
-                <div className="w-14 h-14 bg-[var(--color-info-bg)] rounded-full flex items-center justify-center">
-                  <UserPlus className="text-[var(--color-navy-600)]" size={24} />
-                </div>
-                <p className="text-[14px] text-[var(--color-text-muted)] m-0">No patients today</p>
-                <Button variant="ghost" className="mt-2 w-full max-w-[200px] border border-[var(--color-border)] text-[var(--color-navy-800)] hover:bg-[var(--color-surface-alt)]">
-                  Go to OP Queue
-                </Button>
-              </Card.Body>
-            </Card>
+          {/* Nurse OP Patients Card */}
+          <div className="bg-white rounded-3xl border border-slate-100 p-5 shadow-2xs space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-black text-slate-900 text-sm">Nurse OP Patients</h3>
+              <button 
+                onClick={() => navigate('/nurse/op-queue')}
+                className="text-[11px] font-bold text-blue-600 hover:text-blue-700"
+              >
+                VIEW ALL
+              </button>
+            </div>
 
-            <Card className="flex flex-col flex-1 h-[250px] transition-all hover:shadow-md hover:-translate-y-1 duration-200">
-              <Card.Header className="flex justify-between items-center w-full border-b-0 pb-0">
-                <h3 className="font-bold text-[15px] text-[var(--color-text)] m-0">Next Appointment</h3>
-                <span className="text-[var(--color-navy-800)] text-[12px] font-bold cursor-pointer">VIEW CALENDAR</span>
-              </Card.Header>
-              <Card.Body className="flex flex-col items-center justify-center gap-4 pt-0">
-                <div className="w-14 h-14 bg-[var(--color-info-bg)] rounded-full flex items-center justify-center">
-                  <CalendarIcon className="text-[var(--color-navy-600)]" size={24} />
-                </div>
-                <p className="text-[14px] text-[var(--color-text-muted)] m-0">No upcoming appointments</p>
-                <Button variant="ghost" className="mt-2 w-full max-w-[200px] border border-[var(--color-border)] text-[var(--color-navy-800)] hover:bg-[var(--color-surface-alt)]">
-                  View All Appointments
-                </Button>
-              </Card.Body>
-            </Card>
-          </motion.div>
-
-          {/* Center Column */}
-          <motion.div className="col-span-12 lg:col-span-6 flex flex-col" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.2 }}>
-            <Card className="flex flex-col h-full hover:shadow-md transition-shadow duration-200">
-              <Card.Body>
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
-                  <div className="flex items-center gap-4">
-                    <button className="p-1 text-[var(--color-text-muted)] hover:text-[var(--color-text)]"><ChevronLeft size={20} /></button>
-                    <h2 className="font-bold text-[16px] text-[var(--color-text)] m-0">18 August 2026</h2>
-                    <button className="p-1 text-[var(--color-text-muted)] hover:text-[var(--color-text)]"><ChevronRight size={20} /></button>
-                    <span className="px-3 py-1 bg-[var(--color-info-bg)] text-[var(--color-navy-800)] text-[12px] font-bold rounded-full ml-2">Today</span>
-                  </div>
-                  <div className="flex items-center border border-[var(--color-border)] rounded-full p-1 bg-[var(--color-surface)]">
-                    <button className="px-4 py-1 text-[13px] font-bold text-[var(--color-navy-800)] rounded-full bg-[var(--color-surface-alt)]">Day</button>
-                    <button className="px-4 py-1 text-[13px] font-bold text-[var(--color-text-muted)] rounded-full hover:bg-[var(--color-surface-alt)] transition-colors">Week</button>
-                    <button className="px-4 py-1 text-[13px] font-bold text-[var(--color-text-muted)] rounded-full hover:bg-[var(--color-surface-alt)] transition-colors">Month</button>
-                  </div>
-                </div>
-
-                <motion.div 
-                  className="flex-1 relative border-l border-[var(--color-border)] ml-12 pb-6 min-h-[400px]"
-                  initial="hidden"
-                  animate="visible"
-                  variants={{
-                    hidden: { opacity: 0 },
-                    visible: { opacity: 1, transition: { staggerChildren: 0.05 } }
-                  }}
-                >
-                  {['08:00 AM','09:00 AM','10:00 AM','11:00 AM','12:00 PM','01:00 PM','02:00 PM','03:00 PM','04:00 PM','05:00 PM'].map((time, i) => (
-                    <motion.div key={i} className="flex items-center h-12 relative group" variants={{ hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0 } }}>
-                      <span className="absolute -left-16 text-[11px] text-[var(--color-text-muted)] w-12 text-right">{time}</span>
-                      <div className="w-full h-[1px] bg-[var(--color-surface-alt)] group-hover:bg-[var(--color-border)] ml-4 transition-colors"></div>
-                    </motion.div>
+            {/* Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="text-[10px] font-bold text-slate-400 border-b border-slate-50 uppercase">
+                    <th className="pb-2">Token</th>
+                    <th className="pb-2">Patient Name</th>
+                    <th className="pb-2">Time</th>
+                    <th className="pb-2 text-right">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50 font-medium">
+                  {opPatients.map((pt, pIdx) => (
+                    <tr key={pIdx} className="hover:bg-slate-50/50">
+                      <td className="py-2.5 font-bold text-slate-900">{pt.token}</td>
+                      <td className="py-2.5 font-extrabold text-slate-900">{pt.name}</td>
+                      <td className="py-2.5 text-slate-500">{pt.time}</td>
+                      <td className="py-2.5 text-right">
+                        <span className={`px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase ${pt.statusBg}`}>
+                          {pt.status}
+                        </span>
+                      </td>
+                    </tr>
                   ))}
-                  
-                  {/* Current Time Indicator */}
-                  <motion.div className="absolute top-[35%] left-0 right-0 flex items-center" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.5 }}>
-                    <span className="absolute -left-16 bg-[var(--color-navy-800)] text-white text-[10px] font-bold px-2 py-0.5 rounded-full w-[52px] text-center shadow-sm">11:29 AM</span>
-                    <div className="w-full h-[2px] bg-[var(--color-navy-800)] ml-4 relative">
-                      <div className="absolute -right-1 -top-1 w-2.5 h-2.5 rounded-full bg-[var(--color-navy-800)] shadow-sm"></div>
-                    </div>
-                  </motion.div>
+                </tbody>
+              </table>
+            </div>
 
-                  <motion.div className="absolute inset-0 flex flex-col items-center justify-center mt-12 pointer-events-none" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}>
-                    <CalendarIcon className="text-[var(--color-text-muted)] mb-3 opacity-50" size={32} />
-                    <p className="text-[14px] text-[var(--color-text-muted)] m-0">No appointments today</p>
-                  </motion.div>
-                </motion.div>
-              </Card.Body>
-            </Card>
-          </motion.div>
+            <button 
+              onClick={() => navigate('/nurse/op-queue')}
+              className="w-full py-3 bg-[#EFF4FF] hover:bg-blue-100 text-[#2B4AFE] font-bold text-xs rounded-2xl flex items-center justify-center gap-2 transition"
+            >
+              Go to OP Queue <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
 
-          {/* Right Column */}
-          <motion.div className="col-span-12 lg:col-span-3 flex flex-col gap-6" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.3 }}>
-            <Card className="flex flex-col flex-1 h-[250px] transition-all hover:shadow-md hover:-translate-y-1 duration-200">
-              <Card.Header className="flex justify-between items-center w-full border-b-0 pb-0">
-                <h3 className="font-bold text-[15px] text-[var(--color-text)] m-0">New Walk-in Patients</h3>
-                <span className="text-[var(--color-navy-800)] text-[12px] font-bold cursor-pointer">VIEW ALL</span>
-              </Card.Header>
-              <Card.Body className="flex flex-col items-center justify-center gap-4 pt-0">
-                <div className="w-14 h-14 bg-[var(--color-info-bg)] rounded-full flex items-center justify-center">
-                  <UserPlus className="text-[var(--color-navy-600)]" size={24} />
-                </div>
-                <p className="text-[14px] text-[var(--color-text-muted)] m-0">No new walk-in patients</p>
-                <Button variant="ghost" className="mt-2 w-full max-w-[200px] border border-[var(--color-border)] text-[var(--color-navy-800)] hover:bg-[var(--color-surface-alt)]">
-                  Register Walk-in
-                </Button>
-              </Card.Body>
-            </Card>
+          {/* Next Appointment Card */}
+          <div className="bg-white rounded-3xl border border-slate-100 p-5 shadow-2xs space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-black text-slate-900 text-sm">Next Appointment</h3>
+              <button 
+                onClick={() => navigate('/doctor/calendar')}
+                className="text-[11px] font-bold text-blue-600 hover:text-blue-700"
+              >
+                VIEW CALENDAR
+              </button>
+            </div>
 
-            <Card className="flex flex-col flex-1 h-[250px] transition-all hover:shadow-md hover:-translate-y-1 duration-200">
-              <Card.Header className="flex justify-between items-center w-full border-b-0 pb-0">
-                <h3 className="font-bold text-[15px] text-[var(--color-text)] m-0">Recent Shift Activities</h3>
-                <span className="text-[var(--color-navy-800)] text-[12px] font-bold cursor-pointer">VIEW ALL</span>
-              </Card.Header>
-              <Card.Body className="flex flex-col items-center justify-center gap-4 pt-0">
-                <div className="w-14 h-14 bg-[var(--color-info-bg)] rounded-full flex items-center justify-center">
-                  <Clipboard className="text-[var(--color-navy-600)]" size={24} />
-                </div>
-                <p className="text-[14px] text-[var(--color-text-muted)] m-0">No shift activities</p>
-                <Button variant="ghost" className="mt-2 w-full max-w-[200px] border border-[var(--color-border)] text-[var(--color-navy-800)] hover:bg-[var(--color-surface-alt)]">
-                  View Shift Log
-                </Button>
-              </Card.Body>
-            </Card>
-          </motion.div>
+            <div className="flex items-center gap-4">
+              {/* Date Badge Tile */}
+              <div className="w-20 h-20 bg-slate-100/70 rounded-2xl p-3 flex flex-col items-center justify-center shrink-0">
+                <span className="text-[10px] font-bold text-slate-400 uppercase">AUG</span>
+                <span className="text-2xl font-black text-slate-900 leading-none my-0.5">24</span>
+                <span className="text-[10px] font-bold text-slate-400 uppercase">MON</span>
+              </div>
+
+              {/* Text Details */}
+              <div className="space-y-0.5">
+                <span className="text-xs font-bold text-blue-600 block">09:00 - 09:20</span>
+                <h4 className="text-sm font-black text-slate-900">Pat lent</h4>
+                <p className="text-xs font-medium text-slate-600">Fever</p>
+                <p className="text-[11px] font-medium text-slate-400">ID: 14</p>
+              </div>
+            </div>
+
+            <button 
+              onClick={() => navigate('/doctor/patients/14')}
+              className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-2xl shadow-md flex items-center justify-center gap-2 transition"
+            >
+              <CalendarIcon className="w-4 h-4" /> View Details
+            </button>
+          </div>
 
         </div>
 
-        {/* Nurse Tasks */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.4 }}>
-          <Card className="hover:shadow-md transition-shadow duration-200">
-            <Card.Body>
-              <h3 className="font-bold text-[15px] text-[var(--color-text)] mb-4 mt-0">Nurse Tasks</h3>
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                {[
-                  { label: 'Record patient vitals (0 pending)', time: '08:00 AM' },
-                  { label: 'Administer medications (0 pending)', time: '10:00 AM' },
-                  { label: 'Collect lab samples (0 pending)', time: '11:30 AM' },
-                  { label: 'Update patient records (0 pending)', time: '02:00 PM' },
-                ].map((task, i) => (
-                  <div key={i} className="flex-1 min-w-[200px] flex items-center justify-between border-r border-[var(--color-border)] last:border-0 pr-4 hover:bg-[var(--color-surface-alt)] p-2 rounded-md transition-colors cursor-pointer">
-                    <div className="flex items-center gap-3">
-                      <Circle className="text-[var(--color-navy-800)]" size={16} />
-                      <span className="text-[13px] font-medium text-[var(--color-text)]">{task.label}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[12px] text-[var(--color-text-muted)]">{task.time}</span>
-                      <ChevronRight size={16} className="text-[var(--color-text-muted)]" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card.Body>
-          </Card>
-        </motion.div>
+        {/* ── CENTER COLUMN (6/12 = 50%) ── */}
+        <div className="lg:col-span-6 bg-white rounded-3xl border border-slate-100 p-6 shadow-2xs space-y-6">
+          
+          {/* Top Controls Row */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-slate-50 pb-4">
+            <div className="flex items-center gap-3">
+              <button className="p-1 text-slate-400 hover:text-slate-700"><ChevronLeft className="w-5 h-5" /></button>
+              <h2 className="text-base font-black text-slate-900">18 August 2026</h2>
+              <button className="p-1 text-slate-400 hover:text-slate-700"><ChevronRight className="w-5 h-5" /></button>
+              <span className="px-3 py-1 bg-blue-50 text-blue-600 text-xs font-bold rounded-xl border border-blue-100 ml-1">
+                Today
+              </span>
+            </div>
 
-        {/* Need Help? */}
-        <Card>
-          <Card.Body className="flex flex-wrap items-center justify-between gap-6">
-            <div className="flex items-center gap-4">
-              <img 
-                src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=300&h=300" 
-                alt="Nurse" 
-                className="w-16 h-16 rounded-full object-cover border-2 border-[var(--color-border)]"
-              />
-              <div>
-                <h3 className="font-bold text-[16px] text-[var(--color-text)] m-0">Need Help?</h3>
-                <p className="text-[13px] text-[var(--color-text-muted)] m-0 mt-1 mb-3">Contact the nursing station for immediate assistance.</p>
-                <Button variant="primary" icon={ChevronRight} iconPosition="right" size="sm">
-                  Contact Nursing Station
-                </Button>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center bg-slate-100 p-1 rounded-2xl text-xs font-bold">
+                <button className="px-3.5 py-1.5 bg-white text-blue-600 rounded-xl shadow-2xs">Day</button>
+                <button className="px-3.5 py-1.5 text-slate-500 hover:text-slate-900">Week</button>
+                <button className="px-3.5 py-1.5 text-slate-500 hover:text-slate-900">Month</button>
               </div>
+              <button className="p-2 text-slate-400 hover:text-slate-700 rounded-xl hover:bg-slate-50">
+                <MoreHorizontal className="w-4 h-4" />
+              </button>
             </div>
+          </div>
+
+          {/* Time Slots Schedule */}
+          <div className="relative space-y-6 pt-2 pl-16">
             
-            <div className="flex items-center gap-12">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-[var(--color-info-bg)] flex items-center justify-center">
-                  <Phone className="text-[var(--color-navy-800)]" size={18} />
-                </div>
+            {/* Slot: 08:00 AM */}
+            <div className="relative flex items-center min-h-[40px]">
+              <span className="absolute -left-16 text-xs font-bold text-slate-400">08:00 AM</span>
+              <div className="w-full h-[1px] bg-slate-100"></div>
+            </div>
+
+            {/* Slot: 09:00 AM */}
+            <div className="relative min-h-[56px] flex items-center">
+              <span className="absolute -left-16 text-xs font-bold text-slate-400">09:00 AM</span>
+              <div className="w-full bg-blue-50/70 border-l-4 border-blue-500 rounded-2xl p-3.5 ml-1 flex items-center justify-between">
                 <div>
-                  <p className="text-[12px] text-[var(--color-text)] font-bold m-0">Call Us</p>
-                  <p className="text-[12px] text-[var(--color-text-muted)] m-0">+1 123 456 7890</p>
+                  <h4 className="text-xs font-black text-slate-900 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-blue-500"></span> Pat lent
+                  </h4>
+                  <p className="text-[11px] font-semibold text-slate-600 pl-4">Fever</p>
                 </div>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-[var(--color-success-bg)] flex items-center justify-center">
-                  <MessageSquare className="text-[var(--color-success)]" size={18} />
-                </div>
-                <div>
-                  <p className="text-[12px] text-[var(--color-text)] font-bold m-0">WhatsApp</p>
-                  <p className="text-[12px] text-[var(--color-text-muted)] m-0">+1 123 456 7890</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-[var(--color-info-bg)] flex items-center justify-center">
-                  <MessageSquare className="text-[var(--color-navy-800)]" size={18} />
-                </div>
-                <div>
-                  <p className="text-[12px] text-[var(--color-text)] font-bold m-0">Live Chat</p>
-                  <p className="text-[12px] text-[var(--color-text-muted)] m-0">Available 24/7</p>
-                </div>
+                <span className="text-[11px] font-bold text-blue-600 bg-blue-100/60 px-2.5 py-1 rounded-lg">
+                  09:00 - 09:20 AM
+                </span>
               </div>
             </div>
-          </Card.Body>
-        </Card>
+
+            {/* Slot: 10:00 AM */}
+            <div className="relative min-h-[56px] flex items-center">
+              <span className="absolute -left-16 text-xs font-bold text-slate-400">10:00 AM</span>
+              <div className="w-full bg-emerald-50/70 border-l-4 border-emerald-500 rounded-2xl p-3.5 ml-1 flex items-center justify-between">
+                <div>
+                  <h4 className="text-xs font-black text-slate-900 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span> James Smith
+                  </h4>
+                  <p className="text-[11px] font-semibold text-slate-600 pl-4">Follow-up Consultation</p>
+                </div>
+                <span className="text-[11px] font-bold text-emerald-600 bg-emerald-100/60 px-2.5 py-1 rounded-lg">
+                  10:00 - 10:20 AM
+                </span>
+              </div>
+            </div>
+
+            {/* Current Live Indicator: 11:29 AM */}
+            <div className="relative my-4">
+              <span className="absolute -left-16 bg-blue-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-md shadow-sm z-10">
+                11:29 AM
+              </span>
+              <div className="w-full h-[2px] bg-blue-600 relative flex items-center">
+                <div className="absolute right-0 w-2.5 h-2.5 rounded-full bg-blue-600 shadow-sm"></div>
+              </div>
+            </div>
+
+            {/* Slot: 12:00 PM */}
+            <div className="relative flex items-center min-h-[40px]">
+              <span className="absolute -left-16 text-xs font-bold text-slate-400">12:00 PM</span>
+              <div className="w-full h-[1px] bg-slate-100"></div>
+            </div>
+
+            {/* Slot: 01:00 PM */}
+            <div className="relative min-h-[56px] flex items-center">
+              <span className="absolute -left-16 text-xs font-bold text-slate-400">01:00 PM</span>
+              <div className="w-full bg-amber-50/70 border-l-4 border-amber-500 rounded-2xl p-3.5 ml-1 flex items-center justify-between">
+                <div>
+                  <h4 className="text-xs font-black text-slate-900 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-amber-500"></span> Linda Brown
+                  </h4>
+                  <p className="text-[11px] font-semibold text-slate-600 pl-4">Medication Review</p>
+                </div>
+                <span className="text-[11px] font-bold text-amber-600 bg-amber-100/60 px-2.5 py-1 rounded-lg">
+                  01:00 - 01:20 PM
+                </span>
+              </div>
+            </div>
+
+            {/* Slot: 02:00 PM */}
+            <div className="relative flex items-center min-h-[40px]">
+              <span className="absolute -left-16 text-xs font-bold text-slate-400">02:00 PM</span>
+              <div className="w-full h-[1px] bg-slate-100"></div>
+            </div>
+
+            {/* Slot: 03:00 PM */}
+            <div className="relative min-h-[56px] flex items-center">
+              <span className="absolute -left-16 text-xs font-bold text-slate-400">03:00 PM</span>
+              <div className="w-full bg-purple-50/70 border-l-4 border-purple-500 rounded-2xl p-3.5 ml-1 flex items-center justify-between">
+                <div>
+                  <h4 className="text-xs font-black text-slate-900 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-purple-500"></span> Robert Johnson
+                  </h4>
+                  <p className="text-[11px] font-semibold text-slate-600 pl-4">Wound Dressing</p>
+                </div>
+                <span className="text-[11px] font-bold text-purple-600 bg-purple-100/60 px-2.5 py-1 rounded-lg">
+                  03:00 - 03:20 PM
+                </span>
+              </div>
+            </div>
+
+            {/* Slot: 04:00 PM */}
+            <div className="relative flex items-center min-h-[40px]">
+              <span className="absolute -left-16 text-xs font-bold text-slate-400">04:00 PM</span>
+              <div className="w-full h-[1px] bg-slate-100"></div>
+            </div>
+
+          </div>
+        </div>
+
+        {/* ── RIGHT COLUMN (3/12 = 25%) ── */}
+        <div className="lg:col-span-3 space-y-6">
+          
+          {/* New Walk-in Patients Card */}
+          <div className="bg-white rounded-3xl border border-slate-100 p-5 shadow-2xs space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-black text-slate-900 text-sm">New Walk-in Patients</h3>
+              <button 
+                onClick={() => navigate('/nurse/walk-in')}
+                className="text-[11px] font-bold text-blue-600 hover:text-blue-700"
+              >
+                VIEW ALL
+              </button>
+            </div>
+
+            <div className="flex flex-col items-center justify-center py-4 text-center">
+              <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-2">
+                <UserPlus className="w-6 h-6" />
+              </div>
+              <p className="text-xs font-medium text-slate-400">No new walk-in patients</p>
+            </div>
+
+            <button 
+              onClick={() => navigate('/nurse/walk-in')}
+              className="w-full py-3 bg-[#EFF4FF] hover:bg-blue-100 text-[#2B4AFE] font-bold text-xs rounded-2xl flex items-center justify-center gap-1.5 transition"
+            >
+              Register Walk-in <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Recent Shift Activities Card */}
+          <div className="bg-white rounded-3xl border border-slate-100 p-5 shadow-2xs space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-black text-slate-900 text-sm">Recent Shift Activities</h3>
+              <button 
+                onClick={() => navigate('/nurse/activities')}
+                className="text-[11px] font-bold text-blue-600 hover:text-blue-700"
+              >
+                VIEW ALL
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {recentActivities.map((act, aIdx) => {
+                const Icon = act.icon;
+                return (
+                  <div key={aIdx} className="flex items-center justify-between p-2.5 rounded-2xl hover:bg-slate-50 transition">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-9 h-9 rounded-xl ${act.iconBg} flex items-center justify-center shrink-0`}>
+                        <Icon className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-black text-slate-900">{act.title}</h4>
+                        <p className="text-[10px] font-medium text-slate-400">{act.count}</p>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-semibold text-slate-400">{act.time}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+        </div>
 
       </div>
-    </DashboardShell>
-    
+
+      {/* ── Floating Ask AI Assistant Button ── */}
+      <div className="fixed bottom-6 right-6 z-40">
+        <button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-xs px-5 py-3 rounded-2xl shadow-xl flex items-center gap-2.5 hover:scale-105 transition">
+          <Sparkles className="w-4 h-4 text-blue-200" />
+          Ask AI Assistant
+        </button>
+      </div>
+
+    </div>
   );
 };
 

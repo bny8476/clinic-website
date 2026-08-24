@@ -1,11 +1,13 @@
-import { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import DashboardShell from '../../components/dashboard/shared/DashboardShell';
+import DashboardGrid from '../../components/dashboard/DashboardGrid';
+import KPICard from '../../components/ui/KPICard';
+import Button from '../../components/ui/Button';
+import DataTable from '../../components/ui/DataTable';
+import { useEffect, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import {
-
-
-  Server, Database, Mail, Bell
-} from 'lucide-react';
+import { AlertTriangle, Bell, Database, Mail, Server, Shield, User } from 'lucide-react';
+import { Badge } from '../../components/ui/Badge';
 
 const ServiceStatusCard = ({ name, icon: Icon, colorToken }) => (
   <div className="bg-[var(--color-surface)] p-4 rounded-xl border border-[var(--color-border)] flex items-center gap-3">

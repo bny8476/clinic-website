@@ -1,14 +1,21 @@
+import pharmacyService from '../../utils/pharmacy/pharmacyService';
+import useDebounce from '../../hooks/pharmacy/useDebounce';
+import ModuleFilterBar from '../../components/pharmacy/ui/ModuleFilterBar';
+import TableSkeleton from '../../components/pharmacy/ui/TableSkeleton';
+import PharmacyInvoice from '../../components/pharmacy/pharmacy/PharmacyInvoice';
+import Card from '../../components/ui/Card';
+import Modal from '../../components/ui/Modal';
+import DataTable from '../../components/ui/DataTable';
+import Pagination from '../../components/ui/Pagination';
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
-import { Plus } from 'lucide-react';
+import { CheckCircle, Eye, Plus, Printer, Receipt, Save, Search, Trash2, XCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import pharmacyService from '../../utils/pharmacy/pharmacyService';
 import { usePOSStore } from '../../store/usePOSStore';
 import { usePageData } from '../../hooks/pharmacy/usePageData';
-import { useQueryClient, useMutation } from '@tanstack/react-query';
-import useDebounce from '../../hooks/pharmacy/useDebounce';
-
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Badge } from '../../components/ui/Badge';
 
 export default function DirectPharmacySales() {
   const queryClient = useQueryClient();
@@ -204,7 +211,7 @@ export default function DirectPharmacySales() {
       </div>
 
       {/* Entry Modal */}
-      <AppModal
+      <Modal
         isOpen={isModalOpen}
         onClose={() => { setIsModalOpen(false); posStore.resetForm(); }}
         title="Direct OTC Entry"
@@ -387,10 +394,10 @@ export default function DirectPharmacySales() {
             </div>
           </div>
         </div>
-      </AppModal>
+      </Modal>
 
       {/* Invoice Print Modal */}
-      <AppModal
+      <Modal
         isOpen={isInvoiceModalOpen}
         onClose={() => setIsInvoiceModalOpen(false)}
         size="xl"
@@ -400,10 +407,10 @@ export default function DirectPharmacySales() {
           bill={selectedInvoice} 
           onClose={() => setIsInvoiceModalOpen(false)} 
         />
-      </AppModal>
+      </Modal>
 
       {/* Delete Confirmation Modal */}
-      <AppModal
+      <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         title="Confirm Sale Cancellation"
@@ -420,7 +427,7 @@ export default function DirectPharmacySales() {
            <p className="font-bold text-gray-900 mb-1">Are you sure?</p>
            <p className="text-sm">This will cancel the OTC receipt and return items to stock. This action cannot be undone.</p>
         </div>
-      </AppModal>
+      </Modal>
     </div>
     
   );

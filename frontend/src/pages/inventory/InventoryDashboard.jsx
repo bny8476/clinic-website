@@ -1,10 +1,8 @@
+import ConfigDrivenDashboard from '../../components/dashboard/ConfigDrivenDashboard';
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { dashboardConfig } from '../../config/dashboardConfig';
-
-
 
 const InventoryDashboard = () => {
   const [activeTab, setActiveTab] = useState('stock');

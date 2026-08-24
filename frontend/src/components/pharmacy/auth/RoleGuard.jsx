@@ -1,6 +1,8 @@
 import logger from '../../../utils/logger';
 import { useAuth } from '../../../context/pharmacy/AuthContext';
-import { ROLES, DASHBOARD_ROUTES, getBaseRoleForUI } from '../../../config/pharmacy/roles.config';
+import { DASHBOARD_ROUTES, ROLES, getBaseRoleForUI } from '../../../config/pharmacy/roles.config';
+import { Link, Navigate, Outlet, Route, Routes, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Check, User } from 'lucide-react';
 
 export default function RoleGuard({ allowedRoles, children, fallback }) {
   const { user, activeRole, roles, loading } = useAuth();

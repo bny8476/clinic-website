@@ -1,8 +1,18 @@
 import React, { useState, useEffect } from 'react';
+import pharmacyService from '../../utils/pharmacy/pharmacyService';
+import useDebounce from '../../hooks/pharmacy/useDebounce';
+import TableSkeleton from '../../components/pharmacy/ui/TableSkeleton';
+import Modal from '../../components/ui/Modal';
+import DataTable from '../../components/ui/DataTable';
+import Pagination from '../../components/ui/Pagination';
+import ConfirmDialog from '../../components/ui/ConfirmDialog';
+import ReactBarcode from 'react-barcode';
 import { toast } from 'react-hot-toast';
 import { cn } from '../../utils/pharmacy/cn';
-import { motion, AnimatePresence } from 'framer-motion';
-import { staggerContainer, fadeIn } from '../../components/ui/motion';
+import { usePageData } from '../../hooks/pharmacy/usePageData';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Activity, AlertTriangle, ArrowDown, ArrowLeftRight, ArrowUp, Barcode, Box, Calendar, Download, Edit, Filter, Info, List, Pill, Plus, Printer, RotateCcw, Save, Scan, Search, Settings, ShieldAlert, ShoppingCart, Upload, X } from 'lucide-react';
+import { Badge } from '../../components/ui/Badge';
 
 const TABS = ['Basic Info', 'Pricing & Tax', 'Stock Settings', 'Clinical Details', 'Storage & Handling', 'Barcode'];
 
@@ -13,16 +23,6 @@ const CATEGORIES = ['Tablet', 'Capsule', 'Syrup', 'Injection', 'Ointment', 'Drop
 const NON_MEDICINE_CATEGORIES = ['Biscuit', 'Chocolate', 'Juice', 'Beverage', 'Snacks', 'Personal Care', 'Other'];
 const MEDICINE_UNITS = ['Strip', 'Bottle', 'Vial', 'Ampoule', 'Tube'];
 const NON_MEDICINE_UNITS = ['Piece', 'Pack', 'Box', 'Kg', 'Litre', 'Set', 'Unit'];
-import { 
-  Package, Search, Plus, Loader2, Pill, Activity, Barcode, 
-  Settings2, Heart, CheckCircle2, TrendingUp, Filter, Trash2, Edit2, Hexagon, Factory, X, Calendar, AlertTriangle
-} from 'lucide-react';
-import AppModal from '../../components/pharmacy/ui/AppModal';
-import pharmacyService from '../../utils/pharmacy/pharmacyService';
-import ConfirmDialog from '../../components/ui/ConfirmDialog';
-import { usePageData } from '../../hooks/pharmacy/usePageData';
-import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
-import useDebounce from '../../hooks/pharmacy/useDebounce';
 
 
 
@@ -525,7 +525,7 @@ export default function MedicineMaster() {
         </div>
       </div>
 
-      <AppModal 
+      <Modal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)}
         title={isEditMode ? "Edit Medicine Record" : "Register New Medicine"}
@@ -838,7 +838,7 @@ export default function MedicineMaster() {
             </div>
           </div>
         </div>
-      </AppModal>
+      </Modal>
 
       <ConfirmDialog 
         isOpen={confirmDelete.isOpen}

@@ -1,6 +1,9 @@
-import { useEffect, useState } from 'react';
 import logger from '../../utils/logger';
+import Modal from '../../components/ui/Modal';
+import CarePathwayTimeline from '../../components/doctor/CarePathwayTimeline';
+import { useEffect, useState } from 'react';
 import { useClinicalDecisionStore } from '../../store/useClinicalDecisionStore';
+import { Target } from 'lucide-react';
 
 export default function PatientCarePathwayView({ patientId = 1 }) {
   const {
@@ -90,7 +93,7 @@ export default function PatientCarePathwayView({ patientId = 1 }) {
       )}
 
       {/* Modal to Assign Pathway */}
-      <AppModal
+      <Modal
         isOpen={isAssignModalOpen}
         onClose={() => setIsAssignModalOpen(false)}
         title="Assign Care Pathway Template"
@@ -131,7 +134,7 @@ export default function PatientCarePathwayView({ patientId = 1 }) {
             </button>
           </div>
         </form>
-      </AppModal>
+      </Modal>
     </div>
   );
 }

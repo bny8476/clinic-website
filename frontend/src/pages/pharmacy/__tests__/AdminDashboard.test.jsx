@@ -1,9 +1,12 @@
+import AdminDashboard from '../AdminDashboard';
+import { render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
+import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
+import { BrowserRouter } from 'react-router-dom';
+
 /**
  * @vitest-environment jsdom
  */
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
-import { QueryClient } from '@tanstack/react-query';
 
 // Mock dependencies
 vi.mock('@tanstack/react-query', async () => {
@@ -27,7 +30,6 @@ vi.mock('../../../context/pharmacy/AuthContext', () => ({
   })
 }));
 
-import { useQuery } from '@tanstack/react-query';
 
 const renderWithProviders = (component) => {
   const queryClient = new QueryClient({

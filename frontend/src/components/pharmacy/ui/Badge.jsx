@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { cn } from "../../../utils/pharmacy/cn";
+import { cn } from '../../../utils/pharmacy/cn';
 
 const variants = {
   success: 'bg-blue-100 text-blue-800 border-blue-200',

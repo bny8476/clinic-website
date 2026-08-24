@@ -1,14 +1,16 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { axiosPrivate } from '../../api/axios';
-import {
-  Shield, CheckCircle2, XCircle
-} from 'lucide-react';
 import toast from 'react-hot-toast';
-import { staggerChildren, fadeIn } from '../../components/ui/motion';
-
-
+import Input from '../../components/ui/Input';
+import Button from '../../components/ui/Button';
+import Card from '../../components/ui/Card';
+import EmptyState from '../../components/ui/EmptyState';
+import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { axiosPrivate } from '../../api/axios';
+import { ArrowLeft, CheckCircle2, ClipboardList, List, Loader2, Plus, Search, Shield, Star, XCircle } from 'lucide-react';
+import { fadeIn, staggerChildren } from '../../components/ui/motion';
+import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { Badge } from '../../components/ui/Badge';
 
 const InsuranceVerificationPage = () => {
   const queryClient = useQueryClient();

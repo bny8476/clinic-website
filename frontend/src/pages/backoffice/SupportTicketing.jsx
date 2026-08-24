@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { axiosPrivate } from '../../api/axios';
-import { MessageSquare } from 'lucide-react';
 import toast from 'react-hot-toast';
+import Card from '../../components/ui/Card';
+import EmptyState from '../../components/ui/EmptyState';
+import { useEffect, useState } from 'react';
+import { axiosPrivate } from '../../api/axios';
+import { ArrowLeft, CheckCircle2, Clock, LifeBuoy, MessageSquare, Ticket, User } from 'lucide-react';
 import { fadeIn } from '../../components/ui/motion';
-
-
+import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 const SupportTicketing = () => {
   const [filter, setFilter] = useState('ALL');
@@ -18,7 +19,7 @@ const SupportTicketing = () => {
       try {
         const res = await axiosPrivate.get('/support/tickets');
         setTickets(res.data);
-      } catch (err) {
+      } catch {
         toast.error('Failed to load support tickets');
       } finally {
         setLoading(false);
@@ -34,7 +35,7 @@ const SupportTicketing = () => {
       await axiosPrivate.patch(`/support/tickets/${id}/status?status=RESOLVED`);
       setTickets(tickets.map(t => t.id === id ? { ...t, status: 'RESOLVED' } : t));
       toast.success(`Ticket ${id} marked as resolved`);
-    } catch (err) {
+    } catch {
       toast.error('Failed to resolve ticket');
     }
   };

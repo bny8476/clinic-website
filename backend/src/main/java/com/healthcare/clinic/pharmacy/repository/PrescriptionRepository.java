@@ -12,4 +12,6 @@ public interface PrescriptionRepository extends JpaRepository<PharmacyPrescripti
     @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
     @org.springframework.data.jpa.repository.Query("SELECT p FROM PharmacyPrescriptionRecord p WHERE p.id = :id")
     java.util.Optional<PharmacyPrescriptionRecord> findByIdForUpdate(@org.springframework.data.repository.query.Param("id") Long id);
+
+    java.util.Optional<PharmacyPrescriptionRecord> findByClinicalPrescriptionId(Long clinicalPrescriptionId);
 }

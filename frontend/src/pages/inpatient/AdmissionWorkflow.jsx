@@ -1,10 +1,8 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { User, BedDouble, Stethoscope, FileText, CheckCircle } from 'lucide-react';
+import { BedDouble, CheckCircle, ClipboardList, FileText, Search, Stethoscope, User } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-
-
 
 const AdmissionWorkflow = () => {
   const queryClient = useQueryClient();

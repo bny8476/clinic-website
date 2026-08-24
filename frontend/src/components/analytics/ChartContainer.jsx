@@ -1,3 +1,4 @@
+import { ResponsiveContainer } from 'recharts';
 
 /**
  * Universal wrapper for Recharts to enforce standard styling and loading states.

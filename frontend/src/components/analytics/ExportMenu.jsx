@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Download, FileIcon, FileSpreadsheet, FileText } from 'lucide-react';
 
 const ExportMenu = ({ onExport, isExporting = false }) => {
   const [isOpen, setIsOpen] = useState(false);

@@ -1,13 +1,13 @@
-import { useState, useMemo } from 'react';
-
 import useDebounce from '../../hooks/pharmacy/useDebounce';
-import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import api from '../../utils/pharmacy/api';
+import DataTable from '../../components/ui/DataTable';
+import { useMemo, useState } from 'react';
+import { ArrowDownRight, ArrowRight, ArrowUpRight, ChevronDown, Download, IndianRupee, Info, Loader2, Package, RefreshCw, ShoppingBasket, Tag, TrendingUp } from 'lucide-react';
 import { exportToCSV } from '../../utils/pharmacy/reportExport';
 import { useQuery } from '@tanstack/react-query';
-import api from '../../utils/pharmacy/api';
-import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter, subMonths } from 'date-fns';
-
-
+import { endOfDay, endOfMonth, endOfQuarter, endOfWeek, startOfDay, startOfMonth, startOfQuarter, startOfWeek, subMonths } from 'date-fns';
+import { Area, AreaChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Badge } from '../../components/ui/Badge';
 
 const TABS = [
   { id: 'landing', label: 'Analytics Landing' },

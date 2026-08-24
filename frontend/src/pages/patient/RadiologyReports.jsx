@@ -1,11 +1,14 @@
-import { useState, useEffect } from 'react';
+import Button from '../../components/ui/Button';
+import Modal from '../../components/ui/Modal';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { axiosPrivate as axios } from '../../api/axios';
 import { format } from 'date-fns';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
-import { motion, AnimatePresence } from 'framer-motion';
 import { fadeUp, staggerChildren } from '../../components/ui/motion';
+import { Activity, AlertCircle, Calendar, Download, FileText, List, Scan } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function RadiologyReports() {
   const [reports, setReports] = useState([]);

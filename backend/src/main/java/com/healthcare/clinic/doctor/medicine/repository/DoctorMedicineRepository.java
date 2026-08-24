@@ -11,4 +11,5 @@ public interface DoctorMedicineRepository extends JpaRepository<DoctorMedicine, 
     List<DoctorMedicine> findAllByDoctorId(Long doctorId);
     List<DoctorMedicine> findAllByDoctorIdAndIsActiveTrue(Long doctorId);
     List<DoctorMedicine> findByDoctorIdInAndIsActiveTrue(List<Long> doctorIds);
+    List<DoctorMedicine> findByIsActiveTrue();
 }

@@ -1,12 +1,10 @@
-import { useState } from 'react';
-import { useLocation, Navigate, Link, Outlet } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
-import ErrorBoundary from '../components/ui/ErrorBoundary';
-import { motion } from 'framer-motion';
-import { Menu } from 'lucide-react';
-import NotificationBell from '../components/notifications/NotificationBell';
-
 import './AuthLayout.css';
+import ErrorBoundary from '../components/ErrorBoundary';
+import { useState } from 'react';
+import { Link, Navigate, Outlet, Route, Routes, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Menu, User, Users } from 'lucide-react';
 
 const AuthLayout = ({ allowedRoles }) => {
     const { token, user, roles, logout } = useAuthStore();

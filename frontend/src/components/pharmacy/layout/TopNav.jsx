@@ -1,4 +1,10 @@
-import { useState, useEffect } from 'react';
+import QuickActionDropdown from '../../../components/pharmacy/layout/QuickActionDropdown';
+import NotificationDropdown from '../../../components/pharmacy/layout/NotificationDropdown';
+import MessageDropdown from '../../../components/pharmacy/layout/MessageDropdown';
+import ProfileDropdown from '../../../components/pharmacy/layout/ProfileDropdown';
+import CommandPalette from '../../../components/ui/CommandPalette';
+import { useEffect, useState } from 'react';
+import { Menu, Search } from 'lucide-react';
 
 export default function TopNav({ toggleSidebar, isSidebarOpen }) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);

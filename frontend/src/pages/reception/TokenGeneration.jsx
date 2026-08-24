@@ -1,16 +1,15 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import logger from '../../utils/logger';
-import { Ticket, Printer, ArrowLeft, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { fadeIn, staggerChildren } from '../../components/ui/motion';
 import useAuthStore from '../../store/authStore';
-import { Link } from 'react-router-dom';
-import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
-import Badge from '../../components/ui/Badge';
+import Card from '../../components/ui/Card';
 import EmptyState from '../../components/ui/EmptyState';
-
+import { useEffect, useState } from 'react';
+import { ArrowLeft, Loader2, Printer, Ticket } from 'lucide-react';
+import { fadeIn, staggerChildren } from '../../components/ui/motion';
+import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { Badge } from '../../components/ui/Badge';
 
 const TokenGeneration = () => {
   const [issuedToken, setIssuedToken] = useState(null);

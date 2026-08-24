@@ -1,12 +1,8 @@
 import PropTypes from 'prop-types';
-import { BarChart2 } from 'lucide-react';
-import { CATEGORIES } from './reportCatalog';
-
+import { BarChart2, Bell, Image, Star } from 'lucide-react';
+import { CATEGORIES, fmtDateTime, fmtDateTimeEnd, monthStart, today } from './reportCatalog';
 import { doExportCSV } from './reportExportUtils';
 import { toast } from 'react-hot-toast';
-import { fmtDateTime, fmtDateTimeEnd, monthStart, today } from './reportCatalog';
-
-
 
 /**
  * Individual report card shown in the catalog grid.

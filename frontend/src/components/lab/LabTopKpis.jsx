@@ -1,4 +1,4 @@
-import { FileText, ClipboardList, FlaskConical, Settings, CheckSquare, ShieldCheck, FileCheck, XCircle } from 'lucide-react';
+import { CheckSquare, ClipboardList, FileCheck, FileText, FlaskConical, Settings, ShieldCheck, XCircle } from 'lucide-react';
 
 const KpiCard = ({ title, value, subtext, subtextColor, icon: Icon, iconBg, iconColor }) => (
   <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 flex flex-col h-full hover:shadow-md transition-shadow">

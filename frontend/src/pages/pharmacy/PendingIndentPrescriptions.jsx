@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import logger from '../../utils/logger';
 import useDebounce from '../../hooks/pharmacy/useDebounce';
-import { useLocation } from 'react-router-dom';
-import { Plus } from 'lucide-react';
-import { toast } from 'react-hot-toast';
 import pharmacyService from '../../utils/pharmacy/pharmacyService';
-
-
+import ModuleFilterBar from '../../components/pharmacy/ui/ModuleFilterBar';
+import Modal from '../../components/ui/Modal';
+import DataTable from '../../components/ui/DataTable';
+import Pagination from '../../components/ui/Pagination';
+import { useLocation } from 'react-router-dom';
+import { CheckCircle, Eye, List, Plus, PlusCircle, Search, Send, Target, Trash2, XCircle } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import { Badge } from '../../components/ui/Badge';
 
 export default function PendingIndentPrescriptions() {
   const location = useLocation();
@@ -172,7 +175,7 @@ export default function PendingIndentPrescriptions() {
       </div>
 
       {/* Fulfill Modal */}
-      <AppModal 
+      <Modal 
         isOpen={isFulfillModalOpen} 
         onClose={() => setIsFulfillModalOpen(false)}
         title="Fulfill Pharmacy Indent"
@@ -215,10 +218,10 @@ export default function PendingIndentPrescriptions() {
             </div>
           </div>
         )}
-      </AppModal>
+      </Modal>
 
       {/* New Indent Modal */}
-      <AppModal
+      <Modal
         isOpen={isNewIndentModalOpen}
         onClose={() => setIsNewIndentModalOpen(false)}
         title="Create New Pharmacy Indent"
@@ -323,10 +326,10 @@ export default function PendingIndentPrescriptions() {
              </div>
           </div>
         </div>
-      </AppModal>
+      </Modal>
 
       {/* View Modal */}
-      <AppModal
+      <Modal
         isOpen={isViewModalOpen}
         onClose={() => setIsViewModalOpen(false)}
         title="View Indent Details"
@@ -357,10 +360,10 @@ export default function PendingIndentPrescriptions() {
             </div>
           </div>
         )}
-      </AppModal>
+      </Modal>
 
       {/* Delete Confirmation Modal */}
-      <AppModal
+      <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         title="Confirm Cancellation"
@@ -377,7 +380,7 @@ export default function PendingIndentPrescriptions() {
            <p className="font-bold text-gray-900 mb-1 text-lg">Are you sure?</p>
            <p className="text-sm text-gray-500">This will permanently cancel the indent request. This action cannot be undone.</p>
         </div>
-      </AppModal>
+      </Modal>
     </div>
     
   );

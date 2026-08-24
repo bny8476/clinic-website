@@ -17,16 +17,12 @@ public class WishlistService {
 
     @Transactional(readOnly = true)
     public List<EcWishlist> getWishlist(Long patientId) {
-        return wishlistRepository.findAll().stream()
-                .filter(w -> patientId.equals(w.getPatientId()))
-                .toList();
+        return wishlistRepository.findByPatientId(patientId);
     }
 
     @Transactional
     public void addOrUpdate(Long patientId, Long productId, boolean alertPriceDrop, boolean alertBackInStock) {
-        Optional<EcWishlist> existing = wishlistRepository.findAll().stream()
-                .filter(w -> patientId.equals(w.getPatientId()) && productId.equals(w.getProductId()))
-                .findFirst();
+        Optional<EcWishlist> existing = wishlistRepository.findByPatientIdAndProductId(patientId, productId);
 
         if (existing.isPresent()) {
             EcWishlist w = existing.get();
@@ -45,9 +41,7 @@ public class WishlistService {
 
     @Transactional
     public void remove(Long patientId, Long productId) {
-        wishlistRepository.findAll().stream()
-                .filter(w -> patientId.equals(w.getPatientId()) && productId.equals(w.getProductId()))
-                .findFirst()
+        wishlistRepository.findByPatientIdAndProductId(patientId, productId)
                 .ifPresent(wishlistRepository::delete);
     }
 }

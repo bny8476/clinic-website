@@ -72,9 +72,7 @@ public class RefundService {
             }
         } else if ("STRIPE".equalsIgnoreCase(paymentProvider)) {
             try {
-                EcPayment payment = paymentRepository.findAll().stream()
-                        .filter(p -> orderId.equals(p.getOrderId()) && "CAPTURED".equals(p.getStatus()))
-                        .findFirst()
+                EcPayment payment = paymentRepository.findByOrderIdAndStatus(orderId, "CAPTURED")
                         .orElseThrow(() -> new IllegalArgumentException("No captured payment found for order " + orderId));
                 
                 String stripePaymentIntentOrSessionId = payment.getProviderRef();

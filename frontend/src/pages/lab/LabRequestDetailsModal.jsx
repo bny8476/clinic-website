@@ -1,7 +1,6 @@
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Calendar, User, FileText, CheckCircle, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { Calendar, CheckCircle, Clock, FileText, User, X } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const LabRequestDetailsModal = ({ isOpen, onClose, request }) => {
   const navigate = useNavigate();

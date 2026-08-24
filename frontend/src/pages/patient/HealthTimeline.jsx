@@ -1,8 +1,9 @@
+import Card from '../../components/ui/Card';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { Calendar, Home, Video, Activity, FileText, FileOutput, CheckCircle, Clock, Loader2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { pageTransition, staggerChildren, listStagger, fadeUp } from '../../components/ui/motion';
+import { fadeUp, listStagger, pageTransition, staggerChildren } from '../../components/ui/motion';
+import { Activity, Calendar, CheckCircle, Clock, FileOutput, FileText, Home, Loader2, Video } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const getIconForType = (type) => {
     switch (type) {

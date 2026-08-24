@@ -1,5 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
 import useAuthStore from '../../../store/authStore';
+import { useEffect, useRef, useState } from 'react';
+import { ChevronDown, LogOut, Settings, User } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function ProfileDropdown() {
   const [isOpen, setIsOpen] = useState(false);

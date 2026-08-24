@@ -1,8 +1,13 @@
-import { useState } from 'react';
-import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
-import { axiosPrivate } from '../../../api/axios';
-import { HelpCircle, MessageSquare, CheckCircle, Clock, Send } from 'lucide-react';
 import toast from 'react-hot-toast';
+import KPICard from '../../../components/ui/KPICard';
+import Button from '../../../components/ui/Button';
+import Modal from '../../../components/ui/Modal';
+import DataTable from '../../../components/ui/DataTable';
+import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { axiosPrivate } from '../../../api/axios';
+import { CheckCircle, Clock, HelpCircle, MessageSquare, Search, Send, Ticket } from 'lucide-react';
+import { Badge } from '../../../components/ui/Badge';
 
 export const SupportHeaderWidget = () => (
   <div className="mb-6">

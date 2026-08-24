@@ -12,6 +12,7 @@ import java.util.List;
 @RestController("emrClinicalReferralController")
 @RequestMapping("/api/emr/clinicalreferrals")
 @RequiredArgsConstructor
+@PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_NURSE') or hasAuthority('ROLE_ADMIN')")
 public class ClinicalReferralController {
 
     private final ClinicalReferralRepository repository;

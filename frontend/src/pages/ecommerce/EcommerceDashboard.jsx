@@ -1,9 +1,15 @@
+import DashboardShell from '../../components/dashboard/shared/DashboardShell';
+import DashboardGrid from '../../components/dashboard/DashboardGrid';
+import KPICard from '../../components/ui/KPICard';
+import Button from '../../components/ui/Button';
+import FormField from '../../components/ui/FormField';
+import Modal from '../../components/ui/Modal';
+import DataTable from '../../components/ui/DataTable';
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { ShoppingBag, Truck, Package } from 'lucide-react';
-
-
+import { Info, Package, Save, Search, ShoppingBag, Truck, User } from 'lucide-react';
+import { Badge } from '../../components/ui/Badge';
 
 const EcommerceDashboard = () => {
   const queryClient = useQueryClient();

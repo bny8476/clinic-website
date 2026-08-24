@@ -1,11 +1,11 @@
+import Pagination from '../../components/ui/Pagination';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { toast } from 'react-hot-toast';
 import { format } from 'date-fns';
-
-
+import { Activity, Brain, ChevronDown, Download, Droplet, Eye, Scan, Search, Upload } from 'lucide-react';
 
 const DoctorLabReports = () => {
   const navigate = useNavigate();

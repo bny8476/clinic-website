@@ -1,11 +1,10 @@
-import { useState } from 'react';
 import useAuthStore from '../../store/authStore';
-import { motion } from 'framer-motion';
-import { staggerContainer, fadeIn } from '../../components/ui/motion';
 import toast from 'react-hot-toast';
-import Badge from '../../components/ui/Badge';
-
-
+import { useState } from 'react';
+import { fadeIn, staggerContainer } from '../../components/ui/motion';
+import { Clock } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Badge } from '../../components/ui/Badge';
 
 const Attendance = () => {
   const { user } = useAuthStore();

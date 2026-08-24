@@ -99,6 +99,10 @@ axiosPrivate.interceptors.response.use(
         // Show toast for timeouts or network errors
         if (error.code === 'ECONNABORTED' || error.message.includes('timeout') || error.code === 'ERR_NETWORK') {
             toast.error('Network Error: The request took too long or the server is unreachable.');
+        } else if (error.response?.status === 409) {
+            toast.error(error.response?.data?.message || 'State conflict error. Please try again or refresh.');
+        } else if (error.response?.status === 422) {
+            toast.error(error.response?.data?.message || 'Invalid operation error.');
         }
 
         return Promise.reject(error);

@@ -1,20 +1,22 @@
-import { BASE_URL } from './api/axios';
-import { useEffect, lazy, Suspense } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
-import { MotionConfig } from 'framer-motion';
-import AIAssistantWidget from './components/ui/AIAssistantWidget';
+import React, { Suspense, lazy, useEffect } from 'react';
+import RoleRoute from './components/auth/RoleRoute';
+import DashboardLayout from './layouts/DashboardLayout';
+import PublicLayout from './layouts/PublicLayout';
+import MainLayout from './components/pharmacy/layout/MainLayout';
 import PageLoadingSkeleton from './components/ui/PageLoadingSkeleton';
-import { AuthProvider as PharmacyAuthProvider } from './context/pharmacy/AuthContext';
+import AIAssistantWidget from './components/ui/AIAssistantWidget';
+import { MotionConfig } from 'framer-motion';
+import { PharmacyAuthProvider } from './context/pharmacy/AuthContext';
+import { BASE_URL } from './api/axios';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { PharmacyRoutes } from './pages/pharmacy/PharmacyRoutes';
+import { BrowserRouter, Link, Navigate, Outlet, Route, Routes, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+import { Ambulance } from 'lucide-react';
 
 // Layouts
-import PublicLayout from './layouts/PublicLayout';
-import DashboardLayout from './layouts/DashboardLayout';
-import MainLayout from './components/pharmacy/layout/MainLayout';
 
 // Route guard
-import RoleRoute from './components/auth/RoleRoute';
 // Public pages
 const Home = lazy(() => import('./pages/public/Home'));
 const DoctorList = lazy(() => import('./pages/public/DoctorList'));
@@ -183,7 +185,6 @@ const TicketDesk = lazy(() => import('./pages/support/TicketDesk'));
 const PatientSupport = lazy(() => import('./pages/support/PatientSupport'));
 
 // Pharmacy full module routes
-import { PharmacyRoutes } from './pages/pharmacy/PharmacyRoutes';
 
 // HR Module routes
 const Attendance = lazy(() => import('./pages/hr/Attendance'));
@@ -325,8 +326,10 @@ function App() {
             <Route path="lab-reports" element={<LabReports />} />
             {/* Previously missing patient routes */}
             <Route path="radiology-reports" element={<RadiologyReports />} />
+            <Route path="radiology" element={<RadiologyReports />} />
             <Route path="insurance" element={<Insurance />} />
             <Route path="timeline" element={<HealthTimeline />} />
+            <Route path="vitals" element={<HealthTimeline />} />
             <Route path="orders" element={<Orders />} />
             <Route path="dependents" element={<PatientDependents />} />
             <Route path="settings" element={<PatientSettings />} />
@@ -338,6 +341,7 @@ function App() {
             <Route path="survey" element={<SurveyResponse />} />
             <Route path="notifications" element={<NotificationsPage />} />
             <Route path="teleconsultations" element={<Teleconsultations />} />
+            <Route path="teleconsult" element={<Teleconsultations />} />
             <Route path="ai-assistant" element={<AiAssistant />} />
             <Route path="documents" element={<PatientDocuments />} />
             
@@ -403,10 +407,17 @@ function App() {
             <Route path="patients" element={<NurseAssignedPatients />} />
             <Route path="vitals" element={<VitalSignsEntry />} />
             <Route path="medication" element={<MedicationAdministration />} />
+            <Route path="medications" element={<MedicationAdministration />} />
             <Route path="notes" element={<NursingNotes />} />
+            <Route path="care" element={<NursingNotes />} />
+            <Route path="reports" element={<UploadLabReport />} />
+            <Route path="lab" element={<LabWorklist />} />
             <Route path="monitoring" element={<PatientMonitoring />} />
             <Route path="wards" element={<WardManagement />} />
             <Route path="tasks" element={<TaskManagement />} />
+            <Route path="activities" element={<TaskManagement />} />
+            <Route path="op-queue" element={<NurseAssignedPatients />} />
+            <Route path="walk-in" element={<WalkInCheckIn />} />
             <Route path="workspace/:patientId" element={<NurseWorkspace />} />
             {/* Previously missing nurse routes */}
           </Route>

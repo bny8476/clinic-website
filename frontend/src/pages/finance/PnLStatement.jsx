@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { format } from 'date-fns';
-
-
+import { BarChart3, Calendar, TrendingDown, TrendingUp } from 'lucide-react';
 
 const fetchPnL = async (startDate, endDate, branchId) => {
   const params = new URLSearchParams({ startDate, endDate });

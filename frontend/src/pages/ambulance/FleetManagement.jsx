@@ -1,8 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
 import { axiosPrivate } from '../../api/axios';
-
-
+import { Plus } from 'lucide-react';
 
 const FleetManagement = () => {
   const { data: fleet = [], isLoading } = useQuery({

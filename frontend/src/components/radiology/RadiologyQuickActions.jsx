@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Clock, Scan, Layers, CheckCircle } from 'lucide-react';
+import { CheckCircle, Clock, Layers, Scan } from 'lucide-react';
 
 const RadiologyQuickActions = ({ setFilter }) => {
   const navigate = useNavigate();
@@ -13,16 +13,16 @@ const RadiologyQuickActions = ({ setFilter }) => {
   };
 
   const actions = [
-    { label: 'Pending Requests', icon: Clock, color: 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200', iconColor: 'text-orange-500', filterStatus: 'REQUESTED' },
-    { label: 'Scheduled Scans', icon: Layers, color: 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200', iconColor: 'text-blue-500', filterStatus: 'SCHEDULED' },
-    { label: 'Reporting', icon: Scan, color: 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200', iconColor: 'text-purple-500', filterStatus: 'IN_PROGRESS' },
-    { label: 'Finalized', icon: CheckCircle, color: 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200', iconColor: 'text-emerald-500', filterStatus: 'COMPLETED' }
+    { label: 'Pending Requests', icon: Clock, color: 'bg-white/60 hover:bg-white backdrop-blur-sm text-slate-800 border-white/40 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all', iconColor: 'text-orange-500', filterStatus: 'REQUESTED' },
+    { label: 'Scheduled Scans', icon: Layers, color: 'bg-white/60 hover:bg-white backdrop-blur-sm text-slate-800 border-white/40 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all', iconColor: 'text-blue-500', filterStatus: 'SCHEDULED' },
+    { label: 'Reporting', icon: Scan, color: 'bg-white/60 hover:bg-white backdrop-blur-sm text-slate-800 border-white/40 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all', iconColor: 'text-purple-500', filterStatus: 'IN_PROGRESS' },
+    { label: 'Finalized', icon: CheckCircle, color: 'bg-white/60 hover:bg-white backdrop-blur-sm text-slate-800 border-white/40 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all', iconColor: 'text-emerald-500', filterStatus: 'COMPLETED' }
   ];
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
-      <h2 className="text-sm font-bold text-gray-900 mb-4">Quick Actions</h2>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+    <div className="bg-slate-50/50 backdrop-blur-md rounded-2xl shadow-sm border border-slate-200/60 p-5 mb-6">
+      <h2 className="text-sm font-bold text-slate-900 mb-4 uppercase tracking-wider">Quick Actions</h2>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {actions.map((action, i) => {
           const Icon = action.icon;
           return (

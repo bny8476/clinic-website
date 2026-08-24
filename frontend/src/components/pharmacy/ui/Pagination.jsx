@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
-import { cn } from "../../../utils/pharmacy/cn";
+import { cn } from '../../../utils/pharmacy/cn';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function Pagination({ 
   totalRecords, 

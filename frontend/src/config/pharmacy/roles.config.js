@@ -1,3 +1,12 @@
+import { 
+  Building2, ShoppingCart, RotateCcw, LayoutDashboard, ClipboardList,
+  Banknote, Receipt, FileCheck, RefreshCw,
+  BarChart3, Pill, Truck, Users, AlertTriangle, Thermometer,
+  ShieldCheck, ScanBarcode, Shield, Calendar,
+  TrendingUp, FilePlus, ShoppingBag, BarChart2, UserCog, Zap, Package,
+  UserCircle, KeyRound, UserRound
+} from 'lucide-react';
+
 // Role definitions and configurations
 
 export const ROLES = {
@@ -115,14 +124,6 @@ export const getBaseRoleForUI = (role) => {
 
 
 
-import { 
-  Building2, ShoppingCart, RotateCcw, LayoutDashboard, ClipboardList,
-  Banknote, Receipt, FileCheck, RefreshCw,
-  BarChart3, Pill, Truck, Users, AlertTriangle, Thermometer,
-  ShieldCheck, ScanBarcode, Shield, Calendar,
-  TrendingUp, FilePlus, ShoppingBag, BarChart2, UserCog, Zap, Package,
-  UserCircle, KeyRound, UserRound
-} from 'lucide-react';
 
 export const NAV_BY_ROLE = {
   SYSTEM_ADMIN: [

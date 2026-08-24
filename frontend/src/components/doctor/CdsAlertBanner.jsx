@@ -1,3 +1,4 @@
+import Modal from '../../components/ui/Modal';
 import { useState } from 'react';
 
 export default function CdsAlertBanner({ alert, onAcknowledge }) {
@@ -55,7 +56,7 @@ export default function CdsAlertBanner({ alert, onAcknowledge }) {
         </div>
       </div>
 
-      <AppModal
+      <Modal
         isOpen={showOverrideModal}
         onClose={() => setShowOverrideModal(false)}
         title="Override CDS Alert"
@@ -94,7 +95,7 @@ export default function CdsAlertBanner({ alert, onAcknowledge }) {
             </button>
           </div>
         </div>
-      </AppModal>
+      </Modal>
     </>
   );
 }

@@ -1,8 +1,10 @@
-import { useState, useRef, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
+import Button from '../components/ui/Button';
+import { useEffect, useRef, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { scaleIn } from './ui/motion';
 import { axiosPrivate } from '../api/axios';
+import { Bell, CheckCheck, List, X } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const TYPE_ICONS = {
   APPOINTMENT: '📅',

@@ -20,9 +20,7 @@ public class PharmacyPrescriptionSyncService {
     @Transactional
     public void syncNewPrescription(String patientName, String doctorName, Long clinicalPrescriptionId, 
                                     List<PharmacyPrescriptionItem> items) {
-        PharmacyPrescriptionRecord pharmRx = pharmacyPrescriptionRepository.findAll().stream()
-                .filter(p -> clinicalPrescriptionId.equals(p.getClinicalPrescriptionId()))
-                .findFirst()
+        PharmacyPrescriptionRecord pharmRx = pharmacyPrescriptionRepository.findByClinicalPrescriptionId(clinicalPrescriptionId)
                 .orElseGet(PharmacyPrescriptionRecord::new);
 
         pharmRx.setPatientName(patientName);
@@ -43,9 +41,7 @@ public class PharmacyPrescriptionSyncService {
     @Transactional
     public void syncSendPrescription(String patientName, String doctorName, Long clinicalPrescriptionId, 
                                      Long pharmacyUserId, List<PharmacyPrescriptionItem> items) {
-        PharmacyPrescriptionRecord pharmRx = pharmacyPrescriptionRepository.findAll().stream()
-                .filter(p -> clinicalPrescriptionId.equals(p.getClinicalPrescriptionId()))
-                .findFirst()
+        PharmacyPrescriptionRecord pharmRx = pharmacyPrescriptionRepository.findByClinicalPrescriptionId(clinicalPrescriptionId)
                 .orElseGet(PharmacyPrescriptionRecord::new);
 
         pharmRx.setPatientName(patientName);
@@ -65,9 +61,8 @@ public class PharmacyPrescriptionSyncService {
 
     @Transactional
     public void syncVoidPrescription(Long clinicalPrescriptionId) {
-        pharmacyPrescriptionRepository.findAll().stream()
-                .filter(p -> clinicalPrescriptionId.equals(p.getClinicalPrescriptionId()))
-                .forEach(p -> {
+        pharmacyPrescriptionRepository.findByClinicalPrescriptionId(clinicalPrescriptionId)
+                .ifPresent(p -> {
                     p.setStatus("CANCELLED");
                     pharmacyPrescriptionRepository.save(p);
                 });
@@ -75,9 +70,7 @@ public class PharmacyPrescriptionSyncService {
 
     @Transactional(readOnly = true)
     public java.util.Map<String, Object> getPharmacyPrescriptionStatus(Long clinicalPrescriptionId) {
-        return pharmacyPrescriptionRepository.findAll().stream()
-                .filter(p -> p.getClinicalPrescriptionId().equals(clinicalPrescriptionId))
-                .findFirst()
+        return pharmacyPrescriptionRepository.findByClinicalPrescriptionId(clinicalPrescriptionId)
                 .map(p -> java.util.Map.<String, Object>of("status", p.getStatus()))
                 .orElse(null);
     }

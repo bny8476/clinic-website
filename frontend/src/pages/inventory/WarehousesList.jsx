@@ -1,11 +1,9 @@
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { axiosPrivate } from '../../api/axios';
+import React, { Fragment, useState } from 'react';
 import toast from 'react-hot-toast';
-import { useState } from 'react';
-
-
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { axiosPrivate } from '../../api/axios';
+import { Building, Building2, X } from 'lucide-react';
+import { Dialog, Transition } from '@headlessui/react';
 
 const WarehousesList = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);

@@ -1,14 +1,16 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { axiosPrivate } from '../../api/axios';
-import {
-  FileText, Plus, CheckCircle2
-} from 'lucide-react';
 import toast from 'react-hot-toast';
-import { staggerChildren, fadeIn } from '../../components/ui/motion';
-
-
+import Input from '../../components/ui/Input';
+import Button from '../../components/ui/Button';
+import Card from '../../components/ui/Card';
+import EmptyState from '../../components/ui/EmptyState';
+import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { axiosPrivate } from '../../api/axios';
+import { ArrowLeft, CheckCircle2, File, FileText, FolderOpen, Loader2, Plus, Scan, Upload } from 'lucide-react';
+import { fadeIn, staggerChildren } from '../../components/ui/motion';
+import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { Badge } from '../../components/ui/Badge';
 
 const DOC_TYPES = ['Lab Report', 'Prescription', 'Medical Record', 'Radiology', 'Referral Letter', 'Other'];
 

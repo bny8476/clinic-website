@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface EcCartRepository extends JpaRepository<EcCart, Long> {
+    java.util.Optional<EcCart> findByPatientIdAndStatus(Long patientId, String status);
+    java.util.Optional<EcCart> findBySessionKeyAndStatus(String sessionKey, String status);
 }

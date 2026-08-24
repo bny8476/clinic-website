@@ -1,13 +1,18 @@
-import { useState } from 'react';
 import useDebounce from '../../hooks/pharmacy/useDebounce';
+import api from '../../utils/pharmacy/api';
+import ModuleFilterBar from '../../components/pharmacy/ui/ModuleFilterBar';
+import TableSkeleton from '../../components/pharmacy/ui/TableSkeleton';
+import Modal from '../../components/ui/Modal';
+import DataTable from '../../components/ui/DataTable';
+import Pagination from '../../components/ui/Pagination';
+import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { usePageData } from '../../hooks/pharmacy/usePageData';
-import { useQueryClient, useMutation } from '@tanstack/react-query';
-import api from '../../utils/pharmacy/api';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { v4 as uuidv4 } from 'uuid';
-
-
+import { Eye, List, Pill, Search } from 'lucide-react';
+import { Badge } from '../../components/ui/Badge';
 
 export default function DispenseWorklists() {
   const queryClient = useQueryClient();
@@ -115,7 +120,7 @@ export default function DispenseWorklists() {
         )}
       </div>
 
-      <AppModal 
+      <Modal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)}
         title="Medicine Dispensing"
@@ -190,9 +195,9 @@ export default function DispenseWorklists() {
             </div>
           </div>
         )}
-      </AppModal>
+      </Modal>
 
-      <AppModal
+      <Modal
         isOpen={isViewModalOpen}
         onClose={() => setIsViewModalOpen(false)}
         title="Prescription Details"
@@ -220,7 +225,7 @@ export default function DispenseWorklists() {
             </div>
           </div>
         )}
-      </AppModal>
+      </Modal>
     </div>
     
   );

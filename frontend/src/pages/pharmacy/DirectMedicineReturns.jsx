@@ -1,13 +1,18 @@
 import React, { useState } from 'react';
 import useDebounce from '../../hooks/pharmacy/useDebounce';
-import { useLocation } from 'react-router-dom';
-import { toast } from 'react-hot-toast';
 import pharmacyService from '../../utils/pharmacy/pharmacyService';
+import TableSkeleton from '../../components/pharmacy/ui/TableSkeleton';
+import PharmacyInvoice from '../../components/pharmacy/pharmacy/PharmacyInvoice';
+import Modal from '../../components/ui/Modal';
+import DataTable from '../../components/ui/DataTable';
+import Pagination from '../../components/ui/Pagination';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'react-hot-toast';
 import { usePageData } from '../../hooks/pharmacy/usePageData';
-import { useQueryClient, useMutation } from '@tanstack/react-query';
+import { Eye, FileText, Plus, Receipt, RotateCcw, Save, Search } from 'lucide-react';
+import { Badge } from '../../components/ui/Badge';
 
 export default function DirectMedicineReturns() {
-  const location = useLocation();
   const queryClient = useQueryClient();
   
   const { items: allReturnsList = [], isLoading: loading } = usePageData('returns', '/pharmacy/returns');
@@ -44,7 +49,7 @@ export default function DirectMedicineReturns() {
         })));
         toast.success('Receipt loaded successfully');
       }
-    } catch (error) {
+    } catch {
       toast.error('Receipt not found');
     }
   };
@@ -203,7 +208,7 @@ export default function DirectMedicineReturns() {
       </div>
 
       {/* New Return Modal */}
-      <AppModal 
+      <Modal 
         isOpen={isModalOpen} 
         onClose={() => { setIsModalOpen(false); resetForm(); }}
         title="Direct Medicine Return Process"
@@ -342,10 +347,10 @@ export default function DirectMedicineReturns() {
             </div>
           )}
         </div>
-      </AppModal>
+      </Modal>
 
       {/* Invoice Modal */}
-      <AppModal
+      <Modal
         isOpen={isInvoiceModalOpen}
         onClose={() => setIsInvoiceModalOpen(false)}
         maxWidth="sm:max-w-4xl"
@@ -355,7 +360,7 @@ export default function DirectMedicineReturns() {
           bill={invoiceToView} 
           onClose={() => setIsInvoiceModalOpen(false)} 
         />
-      </AppModal>
+      </Modal>
     </div>
   );
 }

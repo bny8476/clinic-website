@@ -1,7 +1,9 @@
+import DispatcherConsole from '../../pages/ambulance/DispatcherConsole';
+import FleetManagement from '../../pages/ambulance/FleetManagement';
+import CrewView from '../../pages/ambulance/CrewView';
+import TripHistory from '../../pages/ambulance/TripHistory';
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-
-
+import { Activity, AlertCircle, Ambulance, ClipboardList, Navigation, Truck } from 'lucide-react';
 
 const AmbulanceDashboard = () => {
   const [activeTab, setActiveTab] = useState('dispatcher');

@@ -1,362 +1,466 @@
-import { useState, useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
+import useAuthStore from '../../store/authStore';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import useAuthStore from '../../store/authStore';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import { 
-  Calendar as CalendarIcon, FileText, Pill, Users,
-  Shield, Scan, Upload, Laptop, ChevronLeft, ChevronRight, Check, Stethoscope, Loader2
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import {
+  Calendar as CalendarIcon,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  FileText,
+  FlaskConical,
+  Laptop,
+  Loader2,
+  Pill,
+  Scan,
+  Shield,
+  Stethoscope,
+  Upload,
+  Users,
+  Heart,
+  Activity,
+  User,
+  Sparkles,
+  ChevronDown,
+  ArrowRight,
+  ClipboardList
 } from 'lucide-react';
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { pageTransition, staggerChildren, listStagger, fadeUp } from '../../components/ui/motion';
+import { fadeUp, listStagger, pageTransition, staggerChildren } from '../../components/ui/motion';
+import { AnimatePresence, motion } from 'framer-motion';
 
-const formatTime = (dateStr) => {
-  if (!dateStr) return '';
-  return new Date(dateStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-};
-
-const PatientDashboard = () => {
+export default function PatientDashboard() {
   const { user, token } = useAuthStore();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('Dashboard');
+  const [timelineView, setTimelineView] = useState('Day');
+  const [medicationTaken, setMedicationTaken] = useState(false);
   const queryClient = useQueryClient();
 
-  const [medicationTaken, setMedicationTaken] = useState(false);
-  const [searchParams, setSearchParams] = useSearchParams();
-  
-  const currentPanel = searchParams.get('panel');
-  const closePanel = () => setSearchParams(new URLSearchParams());
-
-  const tabs = ['Dashboard', 'Appointments', 'Prescriptions', 'Lab Reports'];
+  const tabs = [
+    { label: 'Dashboard', icon: LayoutGridIcon },
+    { label: 'Appointments', icon: CalendarIcon },
+    { label: 'Prescriptions', icon: FileText },
+    { label: 'Lab Reports', icon: FlaskConical },
+    { label: 'Invoices', icon: ClipboardList },
+    { label: 'Health Summary', icon: Stethoscope }
+  ];
 
   const topActions = [
-    { icon: CalendarIcon, label: 'Book\nAppointment', action: () => navigate('/patient/book') },
-    { icon: Pill, label: 'Order\nMedicine', action: () => navigate('/patient/order-medicine') },
-    { icon: Users, label: 'Family\nMembers', action: () => navigate('/patient/dependents') },
-    { icon: Upload, label: 'Upload\nVitals', action: () => navigate('/patient/timeline') },
-    { icon: Laptop, label: 'Tele\nConsult', action: () => navigate('/patient/teleconsultations') },
-    { icon: FileText, label: 'Medical\nRecords', action: () => navigate('/patient/records') },
-    { icon: Scan, label: 'Radiology', action: () => navigate('/patient/radiology') },
-    { icon: Shield, label: 'Insurance', action: () => navigate('/patient/insurance') },
+    { icon: CalendarIcon, label: 'Book\nAppointment', path: '/patient/book' },
+    { icon: Pill, label: 'Order\nMedicine', path: '/patient/order-medicine' },
+    { icon: Users, label: 'Family\nMembers', path: '/patient/dependents' },
+    { icon: Upload, label: 'Upload\nVitals', path: '/patient/timeline' },
+    { icon: Laptop, label: 'Tele\nConsult', path: '/patient/teleconsultations' },
+    { icon: FileText, label: 'Medical\nRecords', path: '/patient/records' },
+    { icon: Scan, label: 'Radiology', path: '/patient/radiology' },
+    { icon: Shield, label: 'Insurance', path: '/patient/insurance' }
   ];
 
   /* ── API Queries ─────────────────────────────────────────────────── */
   const { data: profile } = useQuery({
     queryKey: ['patientProfile', user?.id],
-    queryFn: async () => (await axiosPrivate.get(`/patients/profile/${user.id}`)).data,
-    enabled: !!user?.id,
+    queryFn: async () => {
+      try {
+        const res = await axiosPrivate.get(`/patients/profile/${user?.id}`);
+        return res.data;
+      } catch {
+        return null;
+      }
+    },
+    enabled: !!user?.id
   });
 
-  const { data: appointments = [], isLoading: loadingAppts } = useQuery({
+  const { data: rawAppointments = [], isLoading: loadingAppts } = useQuery({
     queryKey: ['patientAppointments', user?.id],
-    queryFn: async () => (await axiosPrivate.get(`/appointments/patient/${user.id}`)).data,
-    enabled: !!user?.id,
+    queryFn: async () => {
+      try {
+        const res = await axiosPrivate.get(`/appointments/patient/${user?.id}`);
+        const data = res.data;
+        return Array.isArray(data) ? data : data?.content || data?.data || [];
+      } catch {
+        return [];
+      }
+    },
+    enabled: !!user?.id
   });
 
-  const { data: prescriptions = [], isLoading: loadingRx } = useQuery({
+  const { data: rawPrescriptions = [] } = useQuery({
     queryKey: ['patientPrescriptions', user?.id],
-    queryFn: async () => (await axiosPrivate.get(`/prescriptions/patient/${user.id}`)).data,
-    enabled: !!user?.id,
+    queryFn: async () => {
+      try {
+        const res = await axiosPrivate.get(`/prescriptions/patient/${user?.id}`);
+        const data = res.data;
+        return Array.isArray(data) ? data : data?.content || data?.data || [];
+      } catch {
+        return [];
+      }
+    },
+    enabled: !!user?.id
   });
 
-  const { data: labReports = [] } = useQuery({
-    queryKey: ['patientLabReports'],
-    queryFn: async () => (await axiosPrivate.get('/lab/patient/lab-reports')).data,
-    enabled: !!user?.id,
+  const { data: rawLabReports = [] } = useQuery({
+    queryKey: ['patientLabReports', user?.id],
+    queryFn: async () => {
+      try {
+        const res = await axiosPrivate.get('/lab/patient/lab-reports');
+        const data = res.data;
+        return Array.isArray(data) ? data : data?.content || data?.data || [];
+      } catch {
+        return [];
+      }
+    },
+    enabled: !!user?.id
   });
 
-  /* ── Derived data ─────────────────────────────────────────────────── */
-  const upcomingConsultations = useMemo(() => {
-    if (!appointments.length) return [];
-    return appointments.slice(0, 3).map((apt) => ({
-      id:     apt.id,
-      doctor: apt.doctorFirstName ? `Dr. ${apt.doctorFirstName} ${apt.doctorLastName || ''}` : '—',
-      time:   apt.startTime
-        ? new Date(apt.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        : '—',
-      status: apt.status || 'Confirmed'
-    }));
-  }, [appointments]);
+  const appointments = useMemo(() => (Array.isArray(rawAppointments) ? rawAppointments : []), [rawAppointments]);
+  const prescriptions = useMemo(() => (Array.isArray(rawPrescriptions) ? rawPrescriptions : []), [rawPrescriptions]);
+  const labReports = useMemo(() => (Array.isArray(rawLabReports) ? rawLabReports : []), [rawLabReports]);
 
+  // Next appointment derived
   const nextAppt = useMemo(() => {
-    const future = appointments.filter(a => a.startTime && new Date(a.startTime) > new Date());
-    if (!future.length) return null;
-    const a = future[0];
-    return a;
+    if (!Array.isArray(appointments) || !appointments.length) return null;
+    const future = appointments.filter((a) => a && a.startTime && new Date(a.startTime) > new Date());
+    return future[0] || appointments[0];
   }, [appointments]);
 
   const latestRxItem = useMemo(() => {
-    const signed = prescriptions.find(rx => ['Signed', 'SIGNED'].includes(rx.status));
+    if (!Array.isArray(prescriptions) || !prescriptions.length) return null;
+    const signed = prescriptions.find((rx) => rx && ['Signed', 'SIGNED'].includes(rx.status));
     if (!signed?.items?.length) return null;
     return { ...signed.items[0], rxDate: signed.createdAt };
   }, [prescriptions]);
 
-  const now = new Date();
-  const currentHour = now.getHours() + now.getMinutes() / 60;
-  const currentTimeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  const todayDate = now.toLocaleDateString([], { month: 'long', day: 'numeric', year: 'numeric' });
-
   return (
-    <motion.div 
-      className="h-full flex flex-col font-sans overflow-y-auto bg-[var(--color-bg-app)]"
+    <motion.div
       variants={pageTransition}
       initial="hidden"
       animate="visible"
-      exit="exit"
+      className="min-h-screen bg-[#f8fafc] font-sans pb-16 pt-3 px-4 sm:px-6 lg:px-8 text-slate-800 space-y-5"
     >
-      
-      {/* Top Action Cards */}
-      <motion.div 
-        variants={staggerChildren}
-        initial="hidden"
-        animate="visible"
-        className="flex gap-4 p-6 shrink-0 bg-[var(--color-bg-app)] overflow-x-auto"
-      >
+      {/* ── Top Action Cards Grid (8 Cards) ─────────────────────────────────── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
         {topActions.map((action, idx) => (
-          <motion.button 
-            key={idx} 
-            variants={listStagger}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={action.action} 
-            className="min-w-[120px] flex-1 flex flex-col items-center justify-center gap-3 bg-white border border-[var(--color-border)] rounded-xl py-6 hover:shadow-md transition-shadow"
+          <button
+            key={idx}
+            onClick={() => navigate(action.path)}
+            className="bg-white border border-slate-200/80 hover:border-blue-300 rounded-2xl p-4 flex flex-col items-center justify-center text-center gap-2.5 shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
           >
-            <div className="w-12 h-12 rounded-full bg-[var(--color-info-bg)] flex items-center justify-center text-[var(--color-navy-600)]">
-              <action.icon size={24} strokeWidth={2} />
+            <div className="w-10 h-10 rounded-xl bg-blue-50/80 text-blue-600 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <action.icon className="w-5 h-5" />
             </div>
-            <span className="font-bold text-[13px] text-[var(--color-text)] text-center leading-tight">
-              {action.label.split('\n').map((word, i) => (
-                <React.Fragment key={i}>{word}<br/></React.Fragment>
+            <span className="text-xs font-bold text-slate-900 leading-tight">
+              {action.label.split('\n').map((line, i) => (
+                <React.Fragment key={i}>
+                  {line} {i === 1 && <span className="text-slate-400 font-normal">›</span>}
+                  {i === 0 && <br />}
+                </React.Fragment>
               ))}
             </span>
-          </motion.button>
+          </button>
         ))}
-      </motion.div>
+      </div>
 
-      {/* Tabs */}
-      <div className="px-6 flex gap-3 shrink-0 mb-4">
+      {/* ── Navigation Tabs ─────────────────────────────────────────────────── */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
         {tabs.map((tab) => {
-          const isActive = activeTab === tab;
+          const isActive = activeTab === tab.label;
+
           return (
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-6 py-2.5 rounded-lg font-bold text-[14px] transition-colors border ${
-                isActive 
-                  ? 'bg-[var(--color-navy-800)] text-white border-[var(--color-navy-800)] shadow-sm shadow-blue-200' 
-                  : 'bg-white text-[var(--color-text-muted)] border-[var(--color-border)] hover:bg-[var(--color-surface-alt)]'
+              key={tab.label}
+              onClick={() => setActiveTab(tab.label)}
+              className={`px-5 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                isActive
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200/80'
               }`}
             >
-              {tab}
+              <tab.icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-500'}`} />
+              <span>{tab.label}</span>
             </button>
           );
         })}
       </div>
 
-      {/* Main Content Area */}
-      <div className="px-6 pb-6 space-y-6">
-        
-        <div className="grid grid-cols-12 gap-6">
-          
-          {/* Left Column */}
-          <div className="col-span-12 lg:col-span-3 flex flex-col gap-6">
-            <div className="bg-white rounded-xl border border-[var(--color-border)] p-5 flex flex-col items-center flex-1 h-[250px] shadow-card">
-              <div className="w-full flex justify-between items-center mb-6">
-                <h3 className="font-bold text-[15px] text-[var(--color-text)]">My Appointments</h3>
-                <span onClick={() => navigate('/patient/appointments')} className="text-[var(--color-navy-800)] text-[12px] font-bold cursor-pointer hover:underline">VIEW ALL</span>
+      {/* ── Main Dashboard 3-Column Content Layout ────────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        {/* ── LEFT COLUMN (3 Cols): My Appointments & Next Appointment ──────── */}
+        <div className="lg:col-span-3 space-y-5">
+          {/* Card 1: My Appointments */}
+          <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold text-slate-900">My Appointments</h3>
+              <button
+                onClick={() => navigate('/patient/appointments')}
+                className="text-[11px] font-bold text-blue-600 hover:underline"
+              >
+                VIEW ALL
+              </button>
+            </div>
+
+            {/* Doctor Card */}
+            <div className="flex items-center justify-between gap-2.5 p-3 rounded-xl bg-slate-50/50 border border-slate-100">
+              <div className="flex items-center gap-2.5">
+                <img
+                  src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=200"
+                  alt="Doctor"
+                  className="w-10 h-10 rounded-full object-cover border border-slate-100 shrink-0"
+                />
+                <div className="min-w-0">
+                  <h4 className="text-xs font-bold text-slate-900 truncate">Dr. John Doe</h4>
+                  <p className="text-[11px] text-slate-500 truncate">Cardiologist</p>
+                </div>
               </div>
-              <div className="flex-1 flex flex-col items-center justify-center gap-4 w-full">
-                {loadingAppts ? <Loader2 className="animate-spin text-[var(--color-navy-600)]" /> : appointments.length === 0 ? (
-                  <>
-                    <div className="w-14 h-14 bg-[var(--color-info-bg)] rounded-full flex items-center justify-center">
-                      <CalendarIcon className="text-[var(--color-navy-600)]" size={24} />
-                    </div>
-                    <p className="text-[14px] text-[var(--color-text-muted)]">No appointments scheduled</p>
-                    <button onClick={() => navigate('/patient/book')} className="mt-2 w-full max-w-[200px] py-2.5 rounded-full border border-[var(--color-navy-600)]/20 text-[var(--color-navy-800)] font-bold text-[14px] hover:bg-[var(--color-info-bg)] transition-colors">
-                      Book Now
-                    </button>
-                  </>
-                ) : (
-                  <div className="w-full space-y-2 flex-1 overflow-auto">
-                    {upcomingConsultations.map(apt => (
-                      <div key={apt.id} className="flex justify-between items-center p-2 rounded bg-[var(--color-surface-alt)] border border-[var(--color-border)]">
-                        <span className="text-[12px] font-bold text-[var(--color-text)]">{apt.doctor}</span>
-                        <span className="text-[10px] text-[var(--color-text-muted)] bg-white px-2 rounded border border-[var(--color-border)]">{apt.time}</span>
-                      </div>
-                    ))}
-                    <button onClick={() => navigate('/patient/appointments')} className="mt-4 w-full py-2 rounded-full border border-[var(--color-navy-600)]/20 text-[var(--color-navy-800)] font-bold text-[12px] hover:bg-[var(--color-info-bg)]">View All</button>
-                  </div>
-                )}
+
+              <div className="bg-blue-50 text-blue-700 px-2.5 py-1 rounded-lg text-right shrink-0">
+                <div className="text-[10px] font-bold">09:00 AM</div>
+                <div className="text-[9px] font-semibold text-blue-600">Mon, 19 Aug 2026</div>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl border border-[var(--color-border)] p-5 flex flex-col items-center flex-1 h-[250px] shadow-card">
-              <div className="w-full flex justify-between items-center mb-6">
-                <h3 className="font-bold text-[15px] text-[var(--color-text)]">Next Appointment</h3>
-                <span onClick={() => navigate('/patient/appointments')} className="text-[var(--color-navy-800)] text-[12px] font-bold cursor-pointer hover:underline">DETAILS</span>
-              </div>
-              <div className="flex-1 flex flex-col items-center justify-center gap-4 w-full">
-                {loadingAppts ? <Loader2 className="animate-spin text-[var(--color-navy-600)]" /> : !nextAppt ? (
-                  <>
-                    <div className="w-14 h-14 bg-[var(--color-info-bg)] rounded-full flex items-center justify-center">
-                      <Stethoscope className="text-[var(--color-navy-600)]" size={24} />
-                    </div>
-                    <p className="text-[14px] text-[var(--color-text-muted)]">No upcoming appointments</p>
-                  </>
-                ) : (
-                  <div className="w-full text-center">
-                    <p className="text-[18px] font-black text-[var(--color-text)]">{formatTime(nextAppt.startTime)}</p>
-                    <p className="text-[14px] font-bold text-[var(--color-navy-800)] mt-1">Dr. {nextAppt.doctorFirstName} {nextAppt.doctorLastName}</p>
-                    <p className="text-[12px] text-[var(--color-text-muted)] mt-2">{nextAppt.reasonForVisit || 'Consultation'}</p>
-                    <button className="mt-4 w-full py-2.5 bg-[var(--color-navy-800)] text-white rounded-full font-bold text-[13px] hover:bg-blue-700 transition flex justify-center items-center gap-2">
-                      <CalendarIcon size={16} /> Reschedule
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Center Column - Health Journey */}
-          <div className="col-span-12 lg:col-span-6 bg-white rounded-xl border border-[var(--color-border)] p-5 flex flex-col shadow-card">
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center gap-4">
-                <button className="p-1 text-[var(--color-text-muted)] hover:text-slate-600"><ChevronLeft size={20} /></button>
-                <h2 className="font-bold text-[16px] text-[var(--color-text)]">Health Journey</h2>
-                <button className="p-1 text-[var(--color-text-muted)] hover:text-slate-600"><ChevronRight size={20} /></button>
-                <span className="px-3 py-1 bg-[var(--color-info-bg)] text-[var(--color-navy-800)] text-[12px] font-bold rounded-full ml-2">Today</span>
-              </div>
-              <div className="flex items-center border border-[var(--color-border)] rounded-full p-1 bg-white">
-                <button className="px-4 py-1 text-[13px] font-bold text-[var(--color-navy-800)] rounded-full">Day</button>
-                <button className="px-4 py-1 text-[13px] font-bold text-[var(--color-text-muted)] rounded-full hover:bg-[var(--color-surface-alt)]">Week</button>
-                <button className="px-4 py-1 text-[13px] font-bold text-[var(--color-text-muted)] rounded-full hover:bg-[var(--color-surface-alt)]">Month</button>
-              </div>
-            </div>
-
-            <motion.div 
-              variants={staggerChildren}
-              initial="hidden"
-              animate="visible"
-              className="flex-1 relative border-l border-[var(--color-border)] ml-12 pb-6 min-h-[400px]"
+            {/* View All Appointments Button */}
+            <button
+              onClick={() => navigate('/patient/appointments')}
+              className="w-full border border-blue-200 text-blue-600 hover:bg-blue-50 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
             >
-              {['08:00 AM','10:30 AM','01:00 PM','03:30 PM'].map((time, i) => (
-                <motion.div key={i} variants={fadeUp} className="flex items-center h-[80px] relative group">
-                  <span className="absolute -left-16 text-[11px] text-[var(--color-text-muted)] w-12 text-right top-2">{time}</span>
-                  <div className="absolute left-6 right-4 top-2 bg-[var(--color-info-bg)] border-l-4 border-[var(--color-navy-500)] rounded p-3 shadow-sm z-10 transition-colors group-hover:bg-[var(--color-surface-hover)]">
-                    <p className="text-[13px] font-bold text-[var(--color-navy-900)] leading-tight">
-                      {i === 0 ? 'Blood Pressure Stabilized' : i === 1 ? 'Annual Cardiac Screening' : i === 2 ? 'Physical Therapy Session' : 'Mental Wellness Check'}
-                    </p>
-                    <p className="text-[11px] text-[var(--color-navy-700)] mt-1">
-                      {i === 0 ? 'Average: 120/80 mmHg' : i === 1 ? 'Dr. Michael Lee • Cardiology Unit 4' : i === 2 ? 'Lower Back Recovery • Day 12' : 'Guided Meditation • Focus: Stress Relief'}
-                    </p>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
+              <span>View All Appointments</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
           </div>
 
-          {/* Right Column */}
-          <div className="col-span-12 lg:col-span-3 flex flex-col gap-6">
-            <div className="bg-white rounded-xl border border-[var(--color-border)] p-5 flex flex-col items-center flex-1 h-[250px] shadow-card">
-              <div className="w-full flex justify-between items-center mb-6">
-                <h3 className="font-bold text-[15px] text-[var(--color-text)]">My Medications</h3>
-                <span onClick={() => navigate('/patient/prescriptions')} className="text-[var(--color-navy-800)] text-[12px] font-bold cursor-pointer hover:underline">VIEW ALL</span>
+          {/* Card 2: Next Appointment */}
+          <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold text-slate-900">Next Appointment</h3>
+              <button
+                onClick={() => navigate('/patient/appointments')}
+                className="text-[11px] font-bold text-blue-600 hover:underline"
+              >
+                DETAILS
+              </button>
+            </div>
+
+            <div className="flex items-start gap-3">
+              {/* Date Square */}
+              <div className="w-13 bg-blue-600 text-white rounded-xl p-2 text-center shrink-0 shadow-xs">
+                <span className="block text-[9px] font-bold tracking-wider uppercase opacity-90">AUG</span>
+                <span className="block text-base font-extrabold leading-tight">19</span>
+                <span className="block text-[9px] font-bold uppercase opacity-90">MON</span>
               </div>
-              <div className="flex-1 flex flex-col items-center justify-center gap-4 w-full">
-                {latestRxItem ? (
-                  <div className="w-full text-center">
-                    <p className="text-[14px] font-bold text-[var(--color-navy-800)] mb-1">{latestRxItem.medicationName}</p>
-                    <p className="text-[12px] text-[var(--color-text-muted)] mb-4">{latestRxItem.dosage} • {latestRxItem.frequency}</p>
-                    <button
-                      onClick={() => setMedicationTaken(!medicationTaken)}
-                      className="w-full py-2.5 rounded-xl text-[12px] font-bold flex items-center justify-center gap-2 transition-all hover:brightness-110 bg-[var(--color-navy-800)] text-white"
-                    >
-                      <Check className="w-4 h-4"/>
-                      {medicationTaken ? 'Dose Taken ✓' : 'Mark as Taken'}
-                    </button>
-                  </div>
-                ) : (
-                   <div className="w-full text-center">
-                    <p className="text-[14px] font-bold text-[var(--color-navy-800)] mb-1">Lipitor (Atorvastatin)</p>
-                    <p className="text-[12px] text-[var(--color-text-muted)] mb-4">10mg Tablet • After Breakfast</p>
-                    <button
-                      onClick={() => setMedicationTaken(!medicationTaken)}
-                      className="w-full py-2.5 rounded-xl text-[12px] font-bold flex items-center justify-center gap-2 transition-all hover:brightness-110 bg-[var(--color-navy-800)] text-white"
-                    >
-                      <Check className="w-4 h-4"/>
-                      {medicationTaken ? 'Dose Taken ✓' : 'Mark as Taken'}
-                    </button>
-                  </div>
-                )}
+
+              <div className="min-w-0 space-y-0.5">
+                <h4 className="text-xs font-bold text-slate-900 truncate">Dr. John Doe</h4>
+                <p className="text-[11px] text-slate-500">Cardiologist</p>
+                <p className="text-[11px] font-semibold text-slate-700 pt-0.5">09:00 AM - 09:30 AM</p>
+                <p className="text-[10px] text-slate-400">Aurelian Health Hospital</p>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl border border-[var(--color-border)] p-5 flex flex-col items-center flex-1 h-[250px] shadow-card">
-              <div className="w-full flex justify-between items-center mb-6">
-                <h3 className="font-bold text-[15px] text-[var(--color-text)]">Lab Reports</h3>
-                <span onClick={() => navigate('/patient/lab-reports')} className="text-[var(--color-navy-800)] text-[12px] font-bold cursor-pointer hover:underline">VIEW ALL</span>
-              </div>
-              <div className="flex-1 flex flex-col items-center justify-center gap-4 w-full">
-                <div className="w-14 h-14 bg-[var(--color-info-bg)] rounded-full flex items-center justify-center">
-                  <FlaskConical className="text-[var(--color-navy-600)]" size={24} />
-                </div>
-                <p className="text-[14px] text-[var(--color-text-muted)]">No new lab reports</p>
-                <button onClick={() => navigate('/patient/lab-reports')} className="mt-2 w-full max-w-[200px] py-2.5 rounded-full border border-[var(--color-navy-600)]/20 text-[var(--color-navy-800)] font-bold text-[14px] hover:bg-[var(--color-info-bg)] transition-colors">
-                  View History
+            {/* View Details Button */}
+            <button
+              onClick={() => navigate('/patient/appointments')}
+              className="w-full border border-blue-200 text-blue-600 hover:bg-blue-50 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <span>View Details</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+
+        {/* ── CENTER COLUMN (6 Cols): Health Journey Timeline ───────────────── */}
+        <div className="lg:col-span-6 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-6">
+          {/* Timeline Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+            <div className="flex items-center gap-2">
+              <button className="p-1 rounded-lg hover:bg-slate-100 text-slate-400">
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <h2 className="text-base font-bold text-slate-900">Health Journey</h2>
+              <span className="bg-blue-50 text-blue-600 rounded-full px-3 py-0.5 text-xs font-bold flex items-center gap-1 ml-1">
+                <CalendarIcon className="w-3 h-3" />
+                Today
+              </span>
+            </div>
+
+            {/* Day / Week / Month Segmented Switcher */}
+            <div className="flex items-center bg-slate-100 p-1 rounded-xl text-xs font-bold text-slate-500 self-start sm:self-auto">
+              {['Day', 'Week', 'Month'].map((v) => (
+                <button
+                  key={v}
+                  onClick={() => setTimelineView(v)}
+                  className={`px-4 py-1 rounded-lg transition-all cursor-pointer ${
+                    timelineView === v ? 'bg-blue-600 text-white shadow-2xs' : 'hover:text-slate-900'
+                  }`}
+                >
+                  {v}
                 </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Timeline Events List */}
+          <div className="relative pl-14 space-y-6 before:absolute before:left-11 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
+            {/* Event 1: 08:00 AM */}
+            <div className="relative flex items-start gap-4">
+              <span className="absolute -left-14 top-1 text-[11px] font-semibold text-slate-400 w-10 text-right">
+                08:00 AM
+              </span>
+              <div className="w-7 h-7 rounded-full bg-blue-50 border-2 border-blue-600 text-blue-600 flex items-center justify-center z-10 shrink-0 shadow-2xs">
+                <Activity className="w-3.5 h-3.5" />
+              </div>
+              <div className="flex-1 bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs space-y-1">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-slate-900">Blood Pressure Stabilized</h4>
+                  <span className="w-2 h-2 rounded-full bg-blue-600" />
+                </div>
+                <p className="text-xs text-slate-600">
+                  Average: <span className="font-bold text-emerald-600">120/80</span> mmHg
+                </p>
+              </div>
+            </div>
+
+            {/* Event 2: 10:30 AM */}
+            <div className="relative flex items-start gap-4">
+              <span className="absolute -left-14 top-1 text-[11px] font-semibold text-slate-400 w-10 text-right">
+                10:30 AM
+              </span>
+              <div className="w-7 h-7 rounded-full bg-amber-50 border-2 border-amber-500 text-amber-500 flex items-center justify-center z-10 shrink-0 shadow-2xs">
+                <Heart className="w-3.5 h-3.5" />
+              </div>
+              <div className="flex-1 bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs space-y-1">
+                <h4 className="text-xs font-bold text-slate-900">Annual Cardiac Screening</h4>
+                <p className="text-xs text-slate-500">Dr. Michael Lee • Cardiology Unit 4</p>
+              </div>
+            </div>
+
+            {/* Event 3: 01:00 PM */}
+            <div className="relative flex items-start gap-4">
+              <span className="absolute -left-14 top-1 text-[11px] font-semibold text-slate-400 w-10 text-right">
+                01:00 PM
+              </span>
+              <div className="w-7 h-7 rounded-full bg-emerald-50 border-2 border-emerald-600 text-emerald-600 flex items-center justify-center z-10 shrink-0 shadow-2xs">
+                <User className="w-3.5 h-3.5" />
+              </div>
+              <div className="flex-1 bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs space-y-1">
+                <h4 className="text-xs font-bold text-slate-900">Physical Therapy Session</h4>
+                <p className="text-xs text-slate-500">Lower Back Recovery • Day 12</p>
+              </div>
+            </div>
+
+            {/* Event 4: 03:30 PM */}
+            <div className="relative flex items-start gap-4">
+              <span className="absolute -left-14 top-1 text-[11px] font-semibold text-slate-400 w-10 text-right">
+                03:30 PM
+              </span>
+              <div className="w-7 h-7 rounded-full bg-purple-50 border-2 border-purple-600 text-purple-600 flex items-center justify-center z-10 shrink-0 shadow-2xs">
+                <Sparkles className="w-3.5 h-3.5" />
+              </div>
+              <div className="flex-1 bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs space-y-1">
+                <h4 className="text-xs font-bold text-slate-900">Mental Wellness Check</h4>
+                <p className="text-xs text-slate-500">Guided Meditation • Focus: Stress Relief</p>
               </div>
             </div>
           </div>
 
+          {/* Bottom Encouragement Banner */}
+          <div className="bg-gradient-to-r from-blue-50 to-blue-100/50 rounded-2xl p-4 flex items-center gap-2.5 text-xs font-bold text-blue-700 border border-blue-100/80">
+            <Sparkles className="w-4 h-4 text-blue-600 shrink-0" />
+            <span>Keep it up! You're on track for a healthier tomorrow.</span>
+          </div>
         </div>
 
-        {/* Action Tasks */}
-        <div className="bg-white rounded-xl border border-[var(--color-border)] p-5 shadow-card">
-          <h3 className="font-bold text-[15px] text-[var(--color-text)] mb-4">Daily Health Tasks</h3>
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            {[
-              { label: 'Log morning vitals', time: '08:00 AM' },
-              { label: 'Take Lipitor (10mg)', time: '10:30 AM' },
-              { label: 'Drink 2L Water', time: 'Ongoing' },
-              { label: 'Evening walk (30 mins)', time: '06:00 PM' },
-            ].map((task, i) => (
-              <div key={i} className="flex-1 min-w-[200px] flex items-center justify-between border-r border-[var(--color-border)] last:border-0 pr-4">
-                <div className="flex items-center gap-3">
-                  <Circle className="text-[var(--color-navy-800)]" size={16} />
-                  <span className="text-[13px] font-medium text-slate-700">{task.label}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[12px] text-[var(--color-text-muted)]">{task.time}</span>
-                  <ChevronRight size={16} className="text-[var(--color-text-muted)]" />
-                </div>
+        {/* ── RIGHT COLUMN (3 Cols): My Medications & Lab Reports ─────────── */}
+        <div className="lg:col-span-3 space-y-5">
+          {/* Card 1: My Medications */}
+          <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold text-slate-900">My Medications</h3>
+              <button
+                onClick={() => navigate('/patient/prescriptions')}
+                className="text-[11px] font-bold text-blue-600 hover:underline"
+              >
+                VIEW ALL
+              </button>
+            </div>
+
+            {/* Medication Details Card */}
+            <div className="bg-blue-50/60 border border-blue-100/80 rounded-2xl p-3.5 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-blue-500 text-white flex items-center justify-center shrink-0 shadow-2xs">
+                <Pill className="w-4 h-4" />
               </div>
-            ))}
+              <div className="min-w-0">
+                <h4 className="text-xs font-bold text-blue-700 truncate">
+                  {latestRxItem ? latestRxItem.medicationName : 'Lipitor (Atorvastatin)'}
+                </h4>
+                <p className="text-[11px] text-slate-500 truncate">
+                  {latestRxItem ? `${latestRxItem.dosage} • ${latestRxItem.frequency}` : '10mg Tablet • After Breakfast'}
+                </p>
+              </div>
+            </div>
+
+            {/* Primary Action Button */}
+            <button
+              onClick={() => setMedicationTaken(!medicationTaken)}
+              className={`w-full py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs ${
+                medicationTaken
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+              }`}
+            >
+              <Check className="w-4 h-4 stroke-[3]" />
+              <span>{medicationTaken ? 'Dose Taken ✓' : 'Mark as Taken'}</span>
+            </button>
+          </div>
+
+          {/* Card 2: Lab Reports */}
+          <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-4 text-center">
+            <div className="flex items-center justify-between text-left">
+              <h3 className="text-xs font-bold text-slate-900">Lab Reports</h3>
+              <button
+                onClick={() => navigate('/patient/lab-reports')}
+                className="text-[11px] font-bold text-blue-600 hover:underline"
+              >
+                VIEW ALL
+              </button>
+            </div>
+
+            {/* Empty Illustration Graphic */}
+            <div className="py-4 space-y-2">
+              <div className="w-14 h-14 rounded-full bg-blue-50/70 border border-blue-100 flex items-center justify-center text-blue-600 mx-auto shadow-2xs">
+                <FlaskConical className="w-6 h-6 text-blue-600" />
+              </div>
+              <h4 className="text-xs font-bold text-slate-800">No new lab reports</h4>
+              <p className="text-[11px] text-slate-400 max-w-[180px] mx-auto">
+                Your recent lab results will appear here.
+              </p>
+            </div>
           </div>
         </div>
-
-        {/* AI Assistant */}
-        <button
-          onClick={() => navigate('/patient/assistant')}
-          className="w-full flex items-center gap-4 p-5 rounded-xl text-white transition-all hover:brightness-110 hover:-translate-y-0.5 hover:shadow-xl"
-          style={{
-            background: `linear-gradient(135deg, #165DFF 0%, #1D4ED8 100%)`,
-            boxShadow: `0 6px 24px rgba(22, 93, 255, 0.25)`,
-          }}
-        >
-          <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
-            <Bot className="w-6 h-6 text-white"/>
-          </div>
-          <div className="flex-1 text-left">
-            <p className="text-[15px] font-bold text-white leading-tight mb-1">AI Assistant</p>
-            <p className="text-[13px] text-white/80">Get instant answers to your health questions, analyze symptoms, and manage your wellness journey.</p>
-          </div>
-          <ChevronRight className="w-6 h-6 text-white/70"/>
-        </button>
-
       </div>
     </motion.div>
   );
-};
+}
 
-export default PatientDashboard;
+// Helper icon component for Dashboard tab
+function LayoutGridIcon(props) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect width="7" height="7" x="3" y="3" rx="1" />
+      <rect width="7" height="7" x="14" y="3" rx="1" />
+      <rect width="7" height="7" x="14" y="14" rx="1" />
+      <rect width="7" height="7" x="3" y="14" rx="1" />
+    </svg>
+  );
+}

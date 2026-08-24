@@ -1,8 +1,8 @@
+import Pagination from '../../components/ui/Pagination';
 import { useState } from 'react';
 import { axiosPrivate } from '../../api/axios';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-
-
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Activity } from 'lucide-react';
 
 const STATUS_COLORS = {
   NEW: 'bg-blue-100 text-blue-800',

@@ -1,8 +1,16 @@
+import toast from 'react-hot-toast';
+import DashboardShell from '../../components/dashboard/shared/DashboardShell';
+import DashboardGrid from '../../components/dashboard/DashboardGrid';
+import Button from '../../components/ui/Button';
+import FormField from '../../components/ui/FormField';
+import Modal from '../../components/ui/Modal';
+import DataTable from '../../components/ui/DataTable';
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
+import { PlayCircle, Video } from 'lucide-react';
+import { Badge } from '../../components/ui/Badge';
 
 const Teleconsultations = () => {
   const queryClient = useQueryClient();

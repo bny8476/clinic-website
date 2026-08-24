@@ -1,12 +1,12 @@
+import useAuthStore from '../../store/authStore';
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { toast } from 'react-hot-toast';
-import useAuthStore from '../../store/authStore';
 import { useNavigate } from 'react-router-dom';
-import { CalendarDays, XCircle, RefreshCw, Loader2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { pageTransition, staggerChildren, listStagger, fadeUp } from '../../components/ui/motion';
+import { fadeUp, listStagger, pageTransition, staggerChildren } from '../../components/ui/motion';
+import { CalendarDays, Loader2, RefreshCw, XCircle } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const AppointmentHistory = () => {
   const { user } = useAuthStore();

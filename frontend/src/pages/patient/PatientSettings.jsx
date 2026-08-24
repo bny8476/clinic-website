@@ -1,10 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { axiosPrivate } from '../../api/axios';
-import { Bell, Mail, MessageSquare, Smartphone } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { staggerChildren, listStagger, fadeUp } from '../../components/ui/motion';
-
 import PageLoadingSkeleton from '../../components/ui/PageLoadingSkeleton';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { axiosPrivate } from '../../api/axios';
+import { fadeUp, listStagger, staggerChildren } from '../../components/ui/motion';
+import { Bell, Mail, MessageSquare, Settings, Smartphone } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const CATEGORIES = [
   { id: 'APPOINTMENTS', label: 'Appointments & Reminders', desc: 'Updates about your bookings and visit reminders.' },

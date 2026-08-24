@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
+import Modal from '../../../components/ui/Modal';
+import { useEffect, useState } from 'react';
+import { AlertCircle, Calendar, ShoppingBag, Truck } from 'lucide-react';
 
 export default function QuickOrderModal({ isOpen, onClose, medicine, onSuccess }) {
   const [vendors, setVendors] = useState([
@@ -72,7 +74,7 @@ export default function QuickOrderModal({ isOpen, onClose, medicine, onSuccess }
   );
 
   return (
-    <AppModal
+    <Modal
       isOpen={isOpen}
       onClose={onClose}
       title="Quick Purchase Order"
@@ -175,6 +177,6 @@ export default function QuickOrderModal({ isOpen, onClose, medicine, onSuccess }
           </div>
         )}
       </form>
-    </AppModal>
+    </Modal>
   );
 }

@@ -1,5 +1,11 @@
-import { Users, Clock, UserPlus, ArrowRight } from 'lucide-react';
+import KPICard from '../../../components/ui/KPICard';
+import Button from '../../../components/ui/Button';
+import DataTable from '../../../components/ui/DataTable';
+import { ArrowRight, Clock, Phone, Search, UserPlus, Users } from 'lucide-react';
 import { fadeIn } from '../../ui/motion';
+import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { Badge } from '../../../components/ui/Badge';
 
 export const ReceptionKPIWidget = ({ walkInsData, isLoading }) => (
   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">

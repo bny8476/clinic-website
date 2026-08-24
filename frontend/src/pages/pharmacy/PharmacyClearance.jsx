@@ -1,11 +1,16 @@
-import { useState, useEffect } from 'react';
 import useDebounce from '../../hooks/pharmacy/useDebounce';
+import ModuleFilterBar from '../../components/pharmacy/ui/ModuleFilterBar';
+import Card from '../../components/ui/Card';
+import Modal from '../../components/ui/Modal';
+import DataTable from '../../components/ui/DataTable';
+import Pagination from '../../components/ui/Pagination';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { format } from 'date-fns';
-
-
+import { CheckCircle, Eye, FileCheck, Info, Printer, Search } from 'lucide-react';
+import { Badge } from '../../components/ui/Badge';
 
 const fetchClearances = async () => {
   const response = await axiosPrivate.get('/v1/pharmacy/clearances');
@@ -128,7 +133,7 @@ export default function PharmacyClearance() {
         <Pagination totalRecords={filteredClearance.length} currentPage={currentPage} pageSize={pageSize} onPageChange={setCurrentPage} onPageSizeChange={setPageSize} />
       </div>
 
-      <AppModal 
+      <Modal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)}
         title="Patient Final Clearance"
@@ -189,9 +194,9 @@ export default function PharmacyClearance() {
             </div>
           </div>
         )}
-      </AppModal>
+      </Modal>
 
-      <AppModal
+      <Modal
         isOpen={isViewModalOpen}
         onClose={() => setIsViewModalOpen(false)}
         title="Clearance Details"
@@ -219,7 +224,7 @@ export default function PharmacyClearance() {
             </div>
           </div>
         )}
-      </AppModal>
+      </Modal>
     </div>
     
   );

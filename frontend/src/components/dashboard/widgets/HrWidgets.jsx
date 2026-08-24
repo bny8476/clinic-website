@@ -1,7 +1,11 @@
+import toast from 'react-hot-toast';
+import KPICard from '../../../components/ui/KPICard';
+import Button from '../../../components/ui/Button';
+import DataTable from '../../../components/ui/DataTable';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../../api/axios';
-import { Users, CalendarCheck, Clock, CheckCircle, XCircle } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { CalendarCheck, Check, CheckCircle, Clock, Search, Users, XCircle } from 'lucide-react';
+import { Badge } from '../../../components/ui/Badge';
 
 export const HrHeaderWidget = () => (
   <div className="mb-6">

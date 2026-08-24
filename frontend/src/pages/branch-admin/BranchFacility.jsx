@@ -1,15 +1,13 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldAlert, ArrowLeft, Building, Wrench } from 'lucide-react';
+import toast from 'react-hot-toast';
+import Button from '../../components/ui/Button';
+import Card from '../../components/ui/Card';
+import EmptyState from '../../components/ui/EmptyState';
+import { useEffect, useState } from 'react';
+import { ArrowLeft, Building, Monitor, Power, ShieldAlert, Wrench } from 'lucide-react';
 import { fadeIn } from '../../components/ui/motion';
 import { axiosPrivate } from '../../api/axios';
-import Card from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
-import EmptyState from '../../components/ui/EmptyState';
-import toast from 'react-hot-toast';
-
-
+import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 const BranchFacility = () => {
   const [branch, setBranch] = useState(null);

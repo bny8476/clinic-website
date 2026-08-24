@@ -26,25 +26,21 @@ public class DoctorFollowUpService {
 
     @Transactional
     public void updateStatuses() {
-        // Find all pending follow-ups and update status based on date
-        List<DoctorFollowUp> allFollowUps = followUpRepository.findAll();
+        // Find only active follow-ups to avoid memory overhead
+        List<FollowUpStatus> activeStatuses = List.of(FollowUpStatus.PENDING, FollowUpStatus.DUE_TODAY, FollowUpStatus.OVERDUE);
+        List<DoctorFollowUp> activeFollowUps = followUpRepository.findByStatusIn(activeStatuses);
         LocalDate today = LocalDate.now();
         
-        for (DoctorFollowUp followUp : allFollowUps) {
-            if (followUp.getStatus() == FollowUpStatus.PENDING || 
-                followUp.getStatus() == FollowUpStatus.DUE_TODAY || 
-                followUp.getStatus() == FollowUpStatus.OVERDUE) {
-                
-                if (followUp.getFollowUpDate().isBefore(today)) {
-                    followUp.setStatus(FollowUpStatus.OVERDUE);
-                } else if (followUp.getFollowUpDate().isEqual(today)) {
-                    followUp.setStatus(FollowUpStatus.DUE_TODAY);
-                } else {
-                    followUp.setStatus(FollowUpStatus.PENDING);
-                }
+        for (DoctorFollowUp followUp : activeFollowUps) {
+            if (followUp.getFollowUpDate().isBefore(today)) {
+                followUp.setStatus(FollowUpStatus.OVERDUE);
+            } else if (followUp.getFollowUpDate().isEqual(today)) {
+                followUp.setStatus(FollowUpStatus.DUE_TODAY);
+            } else {
+                followUp.setStatus(FollowUpStatus.PENDING);
             }
         }
-        followUpRepository.saveAll(allFollowUps);
+        followUpRepository.saveAll(activeFollowUps);
     }
 
     @Transactional(readOnly = true)

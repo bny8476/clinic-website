@@ -1,5 +1,5 @@
-import { lazy, Suspense } from 'react';
-import { Route } from 'react-router-dom';
+import React, { Suspense, lazy } from 'react';
+import { Link, Navigate, Outlet, Route, Routes, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 const AdminDashboard = lazy(() => import('./AdminDashboard'));
 const BarcodeScanner = lazy(() => import('./BarcodeScanner'));
@@ -115,3 +115,5 @@ export const PharmacyRoutes = [
   <Route key="MonthOverMonth" path="analytics/month-over-month" element={<Suspense fallback={<LoadingFallback />}><MonthOverMonth /></Suspense>} />,
   <Route key="SupplierAnalytics" path="analytics/supplier-analytics" element={<Suspense fallback={<LoadingFallback />}><SupplierAnalytics /></Suspense>} />,
 ];
+
+export default PharmacyRoutes;

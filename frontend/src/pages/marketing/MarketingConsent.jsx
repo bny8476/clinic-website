@@ -1,9 +1,7 @@
-import { useState } from 'react';
 import toast from 'react-hot-toast';
+import { useState } from 'react';
 import { axiosPrivate } from '../../api/axios';
 import { useQuery } from '@tanstack/react-query';
-
-
 
 export default function MarketingConsent() {
   const [patientId, setPatientId] = useState('');
