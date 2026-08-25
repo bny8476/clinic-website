@@ -21,4 +21,10 @@ COPY --from=build --chown=appuser:appgroup /app/target/*.jar app.jar
 USER appuser
 
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", \
+  "-XX:MaxRAMPercentage=65.0", \
+  "-XX:MaxMetaspaceSize=160m", \
+  "-XX:ReservedCodeCacheSize=48m", \
+  "-Xss512k", \
+  "-XX:+UseSerialGC", \
+  "-jar", "app.jar"]

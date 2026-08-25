@@ -17,3 +17,10 @@ app:
       max-lifetime: 1800000
       minimum-idle: 1
       maximum-pool-size: 5
+
+server:
+  tomcat:
+    threads:
+      max: 25
+      min-spare: 5
+    max-connections: 150
