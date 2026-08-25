@@ -55,7 +55,7 @@ app:
   flyway:
     baseline-on-migrate: false
     baseline-version-clinic: "0"
-    baseline-version-pharmacy: "0"
+
   datasource:
     clinic:
       url: ${DB_URL:jdbc:postgresql://localhost:5432/clinic}

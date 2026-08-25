@@ -4,22 +4,34 @@ import org.flywaydb.core.Flyway;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
+import org.springframework.core.env.Environment;
 
 import javax.sql.DataSource;
-
-
 
 @Configuration
 public class FlywayConfig {
 
-    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(FlywayConfig.class);
+    private static final org.slf4j.Logger logger =
+            org.slf4j.LoggerFactory.getLogger(FlywayConfig.class);
 
     @Bean
-    public Flyway clinicFlyway(@Qualifier("clinicDataSource") DataSource clinicDataSource, org.springframework.core.env.Environment env) {
-        boolean baselineOnMigrate = env.getProperty("app.flyway.baseline-on-migrate", Boolean.class, false);
-        String baselineVersion = env.getProperty("app.flyway.baseline-version-clinic", "0");
-        
+    public Flyway clinicFlyway(
+            @Qualifier("clinicDataSource") DataSource clinicDataSource,
+            Environment env) {
+
+        boolean baselineOnMigrate =
+                env.getProperty(
+                        "app.flyway.baseline-on-migrate",
+                        Boolean.class,
+                        false
+                );
+
+        String baselineVersion =
+                env.getProperty(
+                        "app.flyway.baseline-version-clinic",
+                        "0"
+                );
+
         Flyway flyway = Flyway.configure()
                 .dataSource(clinicDataSource)
                 .locations("classpath:db/migration/clinic")
@@ -27,27 +39,13 @@ public class FlywayConfig {
                 .baselineOnMigrate(baselineOnMigrate)
                 .baselineVersion(baselineVersion)
                 .load();
-        if (Boolean.parseBoolean(env.getProperty("spring.flyway.enabled", "true"))) {
+
+        if (Boolean.parseBoolean(
+                env.getProperty("spring.flyway.enabled", "true"))) {
+
             migrateWithRetry(flyway, "clinic");
         }
-        return flyway;
-    }
 
-    @Bean
-    public Flyway pharmacyFlyway(@Qualifier("pharmacyDataSource") DataSource pharmacyDataSource, org.springframework.core.env.Environment env) {
-        boolean baselineOnMigrate = env.getProperty("app.flyway.baseline-on-migrate", Boolean.class, false);
-        String baselineVersion = env.getProperty("app.flyway.baseline-version-pharmacy", "0");
-        
-        Flyway flyway = Flyway.configure()
-                .dataSource(pharmacyDataSource)
-                .locations("classpath:db/migration/pharmacy")
-                .table("pharmacy_flyway_schema_history_v2")
-                .baselineOnMigrate(baselineOnMigrate)
-                .baselineVersion(baselineVersion)
-                .load();
-        if (Boolean.parseBoolean(env.getProperty("spring.flyway.enabled", "true"))) {
-            migrateWithRetry(flyway, "pharmacy");
-        }
         return flyway;
     }
 
@@ -56,60 +54,112 @@ public class FlywayConfig {
             flyway.baseline();
             logger.info("{} Flyway: baseline applied", label);
         } catch (org.flywaydb.core.api.FlywayException e) {
-            logger.info("{} Flyway: baseline skipped ({})", label, e.getMessage());
+            logger.info(
+                    "{} Flyway: baseline skipped ({})",
+                    label,
+                    e.getMessage()
+            );
         }
     }
 
     private void migrateWithRetry(Flyway flyway, String dbName) {
+
         int maxAttempts = 5;
         long backoffMs = 2000;
-        
+
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+
             try {
+
                 baselineIfNeeded(flyway, dbName);
+
                 flyway.repair();
                 flyway.migrate();
+
                 return;
+
             } catch (Exception ex) {
+
                 if (isConnectionError(ex)) {
+
                     if (attempt == maxAttempts) {
-                        logger.error("All {} attempts exhausted for Flyway {} migration. Failing.", maxAttempts, dbName, ex);
+
+                        logger.error(
+                                "All {} attempts exhausted for Flyway {} migration. Failing.",
+                                maxAttempts,
+                                dbName,
+                                ex
+                        );
+
                         throw ex;
                     }
-                    logger.warn("Connection issue during Flyway {} migration (attempt {}/{}). Retrying in {} ms... Reason: {}", 
-                                dbName, attempt, maxAttempts, backoffMs, ex.getMessage());
+
+                    logger.warn(
+                            "Connection issue during Flyway {} migration (attempt {}/{}). Retrying in {} ms... Reason: {}",
+                            dbName,
+                            attempt,
+                            maxAttempts,
+                            backoffMs,
+                            ex.getMessage()
+                    );
+
                     try {
+
                         Thread.sleep(backoffMs);
+
                     } catch (InterruptedException ie) {
+
                         Thread.currentThread().interrupt();
-                        throw new RuntimeException("Thread interrupted during Flyway retry sleep", ie);
+
+                        throw new RuntimeException(
+                                "Thread interrupted during Flyway retry sleep",
+                                ie
+                        );
                     }
+
                     backoffMs *= 2;
+
                 } else {
-                    logger.error("Non-retriable error during Flyway {} migration.", dbName, ex);
+
+                    logger.error(
+                            "Non-retriable error during Flyway {} migration.",
+                            dbName,
+                            ex
+                    );
+
                     throw ex;
                 }
             }
         }
     }
-    
+
     private boolean isConnectionError(Throwable ex) {
+
         Throwable current = ex;
+
         while (current != null) {
+
             String msg = current.getMessage();
+
             if (msg != null) {
+
                 String lowerMsg = msg.toLowerCase();
-                if (lowerMsg.contains("connection is closed") ||
-                    lowerMsg.contains("connection refused") ||
-                    lowerMsg.contains("connection reset") ||
-                    lowerMsg.contains("communications link failure") ||
-                    lowerMsg.contains("unable to restore connection to its original state") ||
-                    lowerMsg.contains("timed out")) {
+
+                if (lowerMsg.contains("connection is closed")
+                        || lowerMsg.contains("connection refused")
+                        || lowerMsg.contains("connection reset")
+                        || lowerMsg.contains("communications link failure")
+                        || lowerMsg.contains(
+                                "unable to restore connection to its original state")
+                        || lowerMsg.contains("timed out")) {
+
                     return true;
                 }
             }
+
             current = current.getCause();
         }
+
         return false;
     }
 }

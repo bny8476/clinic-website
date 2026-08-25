@@ -8,7 +8,7 @@ app:
   flyway:
     baseline-on-migrate: true
     baseline-version-clinic: "114"
-    baseline-version-pharmacy: "112"
+
   datasource:
     clinic:
       connection-timeout: 30000
