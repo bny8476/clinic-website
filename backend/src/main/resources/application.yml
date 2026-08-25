@@ -6,6 +6,7 @@ server:
 spring:
   main:
     allow-bean-definition-overriding: true
+    lazy-initialization: true
   application:
     name: clinic-app
   flyway:
