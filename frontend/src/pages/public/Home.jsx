@@ -3,13 +3,27 @@ import Card from '../../components/ui/Card';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion, useInView, useReducedMotion, useScroll, useTransform } from 'framer-motion';
-import { Activity, ArrowLeft, ArrowRight, BadgeCheck, Bell, Bone, Box, Brain, Calendar, CheckCircle2, ChevronDown, Circle, Clock, FlaskConical, Headphones, Heart, HeartPulse, HomeIcon, Image, Info, Mail, MapPin, Menu, MessageCircle, MessageSquare, Monitor, Phone, PhoneCall, Pill, Play, Plus, Printer, Quote, ShieldCheck, Star, Stethoscope, Target, ThumbsUp, User, UserCheck, Users, Video } from 'lucide-react';
+import { Activity, ArrowLeft, ArrowRight, BadgeCheck, Bell, Bone, Box, Brain, Calendar, CheckCircle2, ChevronDown, ChevronRight, Circle, Clock, FlaskConical, Headphones, Heart, HeartPulse, HomeIcon, Image, Info, Mail, MapPin, Menu, MessageCircle, MessageSquare, Monitor, Phone, PhoneCall, Pill, Play, Plus, Printer, Quote, ShieldCheck, Star, Stethoscope, Target, ThumbsUp, User, UserCheck, Users, Video } from 'lucide-react';
 import { usePublicDepartments, usePublicDoctors } from '../../api/publicApi';
 
 /* ════════════════════════════════════════════════════════════════════════════
    STATIC DATA & TOKENS
 ════════════════════════════════════════════════════════════════════════════ */
 const BLUE = '#2B4AFE';
+
+const FacebookIcon = ({ size=16, className="" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+);
+const TwitterIcon = ({ size=16, className="" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg>
+);
+const InstagramIcon = ({ size=16, className="" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+);
+const LinkedinIcon = ({ size=16, className="" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+);
+
 
 const SERVICES = [
   { num: '01', icon: HeartPulse, title: 'Cardiology', desc: 'Comprehensive heart care with advanced diagnostic tools.' },
@@ -194,7 +208,7 @@ const Home = () => {
   const displayedDoctors = (doctors || []).slice(0, 4);
 
   return (
-    <div className="min-h-screen bg-[#F4F6FF] font-inter pb-20">
+    <div className="min-h-screen bg-[#F4F6FF] font-inter">
       <motion.div
         className="fixed top-0 left-0 right-0 h-1 bg-blue-600 origin-left z-[100]"
         style={{ scaleX: scrollYProgress }}
@@ -209,59 +223,68 @@ const Home = () => {
           variants={navSequence}
           initial="hidden"
           animate="show"
-          className="flex items-center justify-between mb-6 px-4"
+          className="flex items-center justify-between mb-8 px-3 py-3 bg-white/70 backdrop-blur-xl border border-white/50 rounded-[32px] shadow-[0_8px_32px_rgba(0,0,0,0.04)]"
         >
-          {/* Logo */}
-          <motion.div variants={navItem} className="flex items-center gap-3 cursor-pointer select-none" onClick={() => scrollTo('hero')}>
-            <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white shadow-md">
-              <HeartPulse size={20} strokeWidth={2.5} />
-            </div>
-            <span className="font-bold text-gray-900 text-lg tracking-tight">Aurelian Health</span>
-          </motion.div>
+          {/* Left Side: Logo & Menu */}
+          <div className="flex items-center gap-4">
+            {/* Logo */}
+            <motion.div variants={navItem} className="flex items-center gap-3 cursor-pointer select-none pl-1" onClick={() => scrollTo('hero')}>
+              <div className="w-12 h-12 rounded-[16px] bg-blue-600 flex items-center justify-center text-white shadow-md">
+                <HeartPulse size={24} strokeWidth={2.5} />
+              </div>
+              <span className="font-bold text-gray-900 text-[18px] tracking-tight">Aurelian Health</span>
+            </motion.div>
+            
+            {/* Hamburger */}
+            <button className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center hover:bg-gray-50 transition-colors text-gray-700 ml-2 border border-gray-100">
+              <Menu size={22} strokeWidth={2} />
+            </button>
+          </div>
 
           {/* Center Pill Nav */}
-          <motion.div variants={navItem} className="hidden lg:flex items-center bg-white shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-gray-100/50 rounded-full p-2 pr-10 gap-8">
-            <button className="w-[52px] h-[52px] rounded-[18px] bg-[#F8F9FB] flex items-center justify-center hover:bg-gray-100 transition-colors text-[#334155] shrink-0">
-              <Menu size={24} strokeWidth={2.5} />
+          <motion.div variants={navItem} className="hidden lg:flex items-center bg-white/50 border border-white/60 rounded-full px-8 py-3.5 gap-8">
+            <button onClick={() => scrollTo('about')} className="text-[14px] font-semibold text-gray-600 hover:text-gray-900 transition-colors">
+              About Us
             </button>
-            <nav className="flex items-center gap-8">
-              <button onClick={() => scrollTo('about')} className="text-[16px] font-black text-[#1E293B] tracking-tight relative group">
-                About us
-                <span className="absolute -bottom-1 left-1/2 w-0 h-0.5 bg-blue-600 group-hover:w-full group-hover:left-0 transition-all duration-300"></span>
-              </button>
-              <button onClick={() => scrollTo('services')} className="text-[16px] font-black text-[#64748B] hover:text-[#1E293B] transition-colors tracking-tight relative group">
-                Services
-                <span className="absolute -bottom-1 left-1/2 w-0 h-0.5 bg-blue-600 group-hover:w-full group-hover:left-0 transition-all duration-300"></span>
-              </button>
-              <button onClick={() => scrollTo('doctors')} className="text-[16px] font-black text-[#64748B] hover:text-[#1E293B] transition-colors tracking-tight relative group">
-                Doctors
-                <span className="absolute -bottom-1 left-1/2 w-0 h-0.5 bg-blue-600 group-hover:w-full group-hover:left-0 transition-all duration-300"></span>
-              </button>
-              <button onClick={() => scrollTo('contact')} className="text-[16px] font-black text-[#64748B] hover:text-[#1E293B] transition-colors tracking-tight relative group">
-                Contact
-                <span className="absolute -bottom-1 left-1/2 w-0 h-0.5 bg-blue-600 group-hover:w-full group-hover:left-0 transition-all duration-300"></span>
-              </button>
-            </nav>
+            <button onClick={() => scrollTo('services')} className="text-[14px] font-semibold text-gray-600 hover:text-gray-900 transition-colors">
+              Services
+            </button>
+            <button onClick={() => scrollTo('doctors')} className="text-[14px] font-semibold text-blue-600 relative group">
+              Doctors
+              <span className="absolute -bottom-3.5 left-0 w-full h-[3px] bg-blue-600 rounded-t-full"></span>
+            </button>
+            <button onClick={() => scrollTo('contact')} className="text-[14px] font-semibold text-gray-600 hover:text-gray-900 transition-colors">
+              Contact
+            </button>
           </motion.div>
 
           {/* Right Actions */}
-          <motion.div variants={navItem} className="flex items-center gap-6">
-            <div className="hidden xl:flex items-center gap-3 text-gray-500 text-sm">
-              <MapPin size={18} className="text-gray-400" />
-              <div className="leading-snug text-[12px] font-medium">
+          <motion.div variants={navItem} className="flex items-center gap-6 pr-1">
+            <div className="hidden xl:flex items-center gap-3 text-gray-600">
+              <MapPin size={20} className="text-gray-500" strokeWidth={1.5} />
+              <div className="leading-tight text-[12px] font-medium">
                 <p>Medychinyi Avenue,</p>
                 <p>8-A, Lviv</p>
               </div>
             </div>
+            
             <div className="flex items-center gap-2">
-              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-11 h-11 rounded-full bg-gray-900 text-white flex items-center justify-center hover:bg-gray-800 transition-colors shadow-md">
-                <Phone size={18} />
+              {/* Phone Button */}
+              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-12 h-12 rounded-[16px] bg-white text-gray-700 flex items-center justify-center shadow-sm border border-gray-100 hover:shadow transition-shadow">
+                <Phone size={18} strokeWidth={2} />
               </motion.button>
-              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-11 h-11 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center hover:bg-blue-200 transition-colors shadow-sm">
-                <Bell size={18} />
-              </motion.button>
-              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => navigate('/patient/login')} className="w-11 h-11 rounded-full bg-gray-900 text-white flex items-center justify-center hover:bg-gray-800 transition-colors shadow-md">
-                <User size={18} />
+              
+              {/* Bell Button */}
+              <div className="relative">
+                 <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-12 h-12 rounded-[16px] bg-blue-50 text-blue-600 flex items-center justify-center shadow-sm border border-white hover:bg-blue-100 transition-colors">
+                   <Bell size={18} strokeWidth={2} />
+                 </motion.button>
+                 <div className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-blue-600 border-2 border-white rounded-full"></div>
+              </div>
+              
+              {/* User Button */}
+              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => navigate('/patient/login')} className="w-12 h-12 rounded-[16px] bg-blue-600 text-white flex items-center justify-center shadow-md hover:bg-blue-700 transition-colors">
+                <User size={18} strokeWidth={2} />
               </motion.button>
             </div>
           </motion.div>
@@ -281,7 +304,7 @@ const Home = () => {
             className="lg:w-[55%] bg-white p-10 lg:p-20 relative z-10 flex flex-col justify-center"
           >
             <motion.div variants={heroHeadingContainer} initial="hidden" animate="show" className="mb-10">
-              <h1 className="text-[4rem] sm:text-[5.5rem] xl:text-[7.5rem] font-medium leading-[0.85] tracking-tight text-gray-900 mb-8" style={{ fontFamily: 'var(--font-display, Inter)' }}>
+              <h1 className="text-[3rem] sm:text-[4rem] xl:text-[5.5rem] font-medium leading-[0.85] tracking-tight text-gray-900 mb-8" style={{ fontFamily: 'var(--font-display, Inter)' }}>
                 <div className="overflow-hidden pr-4"><motion.div variants={heroHeadingLine}>Innovation</motion.div></div>
                 <div className="overflow-hidden pr-4"><motion.div variants={heroHeadingLine}>Clinic</motion.div></div>
               </h1>
@@ -311,9 +334,9 @@ const Home = () => {
             </motion.div>
 
             {/* Stats Card */}
-            <div className="mt-auto pt-16 flex flex-col sm:flex-row gap-8 relative z-30">
-              <motion.div variants={cardSequence} initial="hidden" animate="show" className="bg-white/80 backdrop-blur-xl border border-gray-100 shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-[32px] p-6 flex flex-col sm:flex-row gap-8 items-center max-w-xl">
-                <motion.div whileHover={{ y: -3 }} className="w-32 h-24 rounded-2xl overflow-hidden relative shrink-0 shadow-inner group cursor-pointer">
+            <div className="mt-auto pt-16 flex flex-col sm:flex-row relative z-30">
+              <motion.div variants={cardSequence} initial="hidden" animate="show" className="bg-white/80 backdrop-blur-xl border border-gray-100 shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-[24px] p-4 pr-6 flex flex-col sm:flex-row gap-5 items-center w-max max-w-full">
+                <motion.div whileHover={{ y: -3 }} className="w-28 h-20 rounded-xl overflow-hidden relative shrink-0 shadow-inner group cursor-pointer">
                   <motion.div variants={cardImage} className="w-full h-full">
                     <motion.img 
                       whileHover={{ scale: 1.05 }}
@@ -324,29 +347,29 @@ const Home = () => {
                     />
                   </motion.div>
                   <div className="absolute inset-0 bg-black/20 flex items-center justify-center group-hover:bg-black/10 transition-colors">
-                    <motion.div variants={playButtonReveal} className="w-8 h-8 rounded-full bg-white/30 backdrop-blur-sm flex items-center justify-center text-white border border-white/50 group-hover:scale-110 transition-transform">
-                      <Play className="w-3 h-3 ml-0.5 fill-current" />
+                    <motion.div variants={playButtonReveal} className="w-6 h-6 rounded-full bg-white/30 backdrop-blur-sm flex items-center justify-center text-white border border-white/50 group-hover:scale-110 transition-transform">
+                      <Play className="w-2.5 h-2.5 ml-0.5 fill-current" />
                     </motion.div>
                   </div>
-                  <span className="absolute bottom-2 left-0 right-0 text-center text-white text-[10px] font-bold tracking-wide z-10 uppercase">Virtual tour</span>
+                  <span className="absolute bottom-1.5 left-0 right-0 text-center text-white text-[9px] font-bold tracking-wide z-10 uppercase">Virtual tour</span>
                 </motion.div>
                 <motion.div variants={statsSequence} initial="hidden" animate="show">
-                  <motion.div variants={statsItem} className="flex items-center gap-3 mb-4">
-                    <p className="text-[11px] text-gray-500 font-bold uppercase tracking-wider">Results we are proud of</p>
-                    <div className="w-8 h-4 rounded-full bg-blue-100 flex items-center p-0.5"><div className="w-3 h-3 rounded-full bg-blue-600" /></div>
+                  <motion.div variants={statsItem} className="flex items-center gap-2 mb-3">
+                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Results we are proud of</p>
+                    <div className="w-6 h-3 rounded-full bg-blue-100 flex items-center p-0.5"><div className="w-2 h-2 rounded-full bg-blue-600" /></div>
                   </motion.div>
-                  <motion.div className="flex gap-6 sm:gap-8">
+                  <motion.div className="flex gap-4 sm:gap-5">
                     <motion.div variants={statsItem}>
-                      <p className="text-3xl font-medium text-blue-600 leading-none mb-2"><AnimatedCounter value={10} delay={1.5} suffix="+" /></p>
-                      <p className="text-[10px] text-gray-500 uppercase font-bold leading-tight">years of<br/>experience</p>
+                      <p className="text-2xl font-medium text-blue-600 leading-none mb-1.5"><AnimatedCounter value={10} delay={1.5} suffix="+" /></p>
+                      <p className="text-[9px] text-gray-500 uppercase font-bold leading-tight">years of<br/>experience</p>
                     </motion.div>
                     <motion.div variants={statsItem}>
-                      <p className="text-3xl font-medium text-blue-600 leading-none mb-2"><AnimatedCounter value={20} delay={1.6} suffix="+" /></p>
-                      <p className="text-[10px] text-gray-500 uppercase font-bold leading-tight">highly qualified<br/>doctors</p>
+                      <p className="text-2xl font-medium text-blue-600 leading-none mb-1.5"><AnimatedCounter value={20} delay={1.6} suffix="+" /></p>
+                      <p className="text-[9px] text-gray-500 uppercase font-bold leading-tight">highly qualified<br/>doctors</p>
                     </motion.div>
                     <motion.div variants={statsItem}>
-                      <p className="text-3xl font-medium text-blue-600 leading-none mb-2"><AnimatedCounter value={100} delay={1.7} suffix="%" /></p>
-                      <p className="text-[10px] text-gray-500 uppercase font-bold leading-tight">digital<br/>diagnostics</p>
+                      <p className="text-2xl font-medium text-blue-600 leading-none mb-1.5"><AnimatedCounter value={100} delay={1.7} suffix="%" /></p>
+                      <p className="text-[9px] text-gray-500 uppercase font-bold leading-tight">digital<br/>diagnostics</p>
                     </motion.div>
                   </motion.div>
                 </motion.div>
@@ -396,11 +419,10 @@ const Home = () => {
           </div>
 
           {/* Doctor Image Overlay */}
-          <motion.div 
-            style={{ y: parallaxY1 }}
-            className="absolute bottom-0 left-[55%] -translate-x-[50%] w-[380px] lg:w-[450px] xl:w-[580px] h-[85%] lg:h-[90%] z-40 pointer-events-none hidden md:block"
+          <div 
+            className="absolute bottom-0 left-[52%] -translate-x-[50%] w-[340px] lg:w-[400px] xl:w-[500px] h-[75%] lg:h-[80%] z-40 pointer-events-none hidden md:block"
           >
-            <motion.div animate={{ y: [0, -3, 0] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }} className="w-full h-full">
+            <div className="w-full h-full">
               <motion.img 
                 variants={heroImage}
                 initial="hidden"
@@ -409,26 +431,8 @@ const Home = () => {
                 className="w-full h-full object-contain object-bottom drop-shadow-[0_25px_50px_rgba(0,0,0,0.3)]" 
                 alt="Doctor" 
               />
-              
-              {/* Floating Labels */}
-              <motion.div variants={floatingLabelSequence} initial="hidden" animate="show" className="absolute inset-0">
-                {/* Experience */}
-                <motion.div variants={floatingLabel} className="absolute top-[35%] right-[10%] bg-white rounded-full px-4 py-2 shadow-lg flex items-center font-bold text-[14px] text-gray-800">
-                  Experience
-                </motion.div>
-                
-                {/* Professional */}
-                <motion.div variants={floatingLabel} className="absolute bottom-[25%] right-[0%] bg-white rounded-full px-4 py-2 shadow-lg flex items-center font-bold text-[14px] text-gray-800">
-                  Professional
-                </motion.div>
-                
-                {/* Reliability */}
-                <motion.div variants={floatingLabel} className="absolute bottom-[10%] left-[10%] bg-white rounded-full px-4 py-2 shadow-lg flex items-center font-bold text-[14px] text-gray-800">
-                  Reliability
-                </motion.div>
-              </motion.div>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
 
         </motion.div>
       </div>
@@ -676,14 +680,10 @@ const Home = () => {
                </div>
             </div>
 
-            {/* Floating Doctors Image */}
-            <motion.div 
-               animate={{ y: [0, -15, 0] }}
-               transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-               className="hidden xl:block absolute bottom-0 left-[25%] w-[450px] z-10 pointer-events-none"
-            >
+            {/* Fixed Doctors Image */}
+            <div className="hidden xl:block absolute bottom-0 left-[25%] w-[450px] z-10 pointer-events-none">
                <img src="https://pngimg.com/uploads/doctor/doctor_PNG15988.png" alt="Doctors" className="w-full h-auto drop-shadow-2xl object-bottom object-contain" />
-            </motion.div>
+            </div>
 
             {/* Right Stats Area */}
             <div className="w-full xl:w-[55%] bg-[#F8FAFC] p-10 lg:p-16 flex flex-col justify-center relative z-0 pl-10 xl:pl-56">
@@ -696,27 +696,24 @@ const Home = () => {
                   {/* 10+ Years of Experience */}
                   <motion.div 
                      initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp} 
-                     whileHover={{ y: -5, scale: 1.02 }}
+                     whileHover={{ y: -5, boxShadow: "0 20px 40px rgba(0,0,0,0.08)" }}
                      transition={{ duration: 0.3 }}
-                     className="bg-white rounded-[32px] p-8 shadow-[0_4px_24px_rgba(0,0,0,0.04)] hover:shadow-xl relative overflow-hidden group cursor-pointer"
+                     className="bg-white rounded-[24px] p-6 lg:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 border-l-[4px] border-l-blue-600 relative overflow-hidden group cursor-pointer"
                   >
-                     <div className="absolute top-6 right-6 grid grid-cols-3 gap-1.5 opacity-20">
-                        {[...Array(9)].map((_, i) => <div key={i} className="w-1.5 h-1.5 rounded-full bg-blue-300"></div>)}
+                     <div className="absolute top-6 right-6 grid grid-cols-4 gap-1.5 opacity-20">
+                        {[...Array(12)].map((_, i) => <div key={i} className="w-1 h-1 rounded-full bg-blue-500"></div>)}
                      </div>
                      <div className="relative z-10">
-                        <div className="flex items-center gap-5 mb-8">
-                           <div className="w-[64px] h-[64px] rounded-full bg-[#F4F6FF] flex items-center justify-center shrink-0">
-                              <Calendar size={32} className="text-blue-600" strokeWidth={1.5} />
+                        <div className="flex items-start gap-5 mb-5">
+                           <div className="w-[60px] h-[60px] rounded-[18px] bg-blue-50 flex items-center justify-center shrink-0">
+                              <Calendar size={28} className="text-blue-600" strokeWidth={1.5} />
                            </div>
-                           <div className="flex flex-col items-start mt-2">
-                              <span className="text-[44px] font-black text-blue-600 tracking-tight leading-none mb-1">10+</span>
-                              <div className="flex items-center gap-1.5">
-                                 <div className="h-[3px] w-8 bg-blue-600 rounded-full"></div>
-                                 <div className="h-[3px] w-[4px] bg-blue-600 rounded-full"></div>
-                              </div>
+                           <div className="flex flex-col items-start mt-0.5">
+                              <span className="text-[40px] font-black text-blue-600 tracking-tight leading-none mb-1">10+</span>
+                              <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-3">Years of Experience</span>
+                              <div className="w-8 h-[2px] bg-blue-600 rounded-full"></div>
                            </div>
                         </div>
-                        <h4 className="font-bold text-gray-900 text-[18px] mb-3 tracking-tight">Years of Experience</h4>
                         <p className="text-gray-500 text-[14px] leading-relaxed font-medium">We have been working since 2012, improving the quality of services every day.</p>
                      </div>
                   </motion.div>
@@ -724,25 +721,24 @@ const Home = () => {
                   {/* 15+ Areas of Medicine */}
                   <motion.div 
                      initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp} 
-                     whileHover={{ y: -5, scale: 1.02 }}
+                     whileHover={{ y: -5, boxShadow: "0 20px 40px rgba(0,0,0,0.08)" }}
                      transition={{ duration: 0.3 }}
-                     className="bg-white rounded-[32px] p-8 shadow-[0_4px_24px_rgba(0,0,0,0.04)] hover:shadow-xl relative overflow-hidden group cursor-pointer"
+                     className="bg-white rounded-[24px] p-6 lg:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 border-l-[4px] border-l-blue-600 relative overflow-hidden group cursor-pointer"
                   >
-                     <div className="absolute top-6 right-6 w-16 h-16 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/hexellence.png')]"></div>
+                     <div className="absolute top-6 right-6 grid grid-cols-4 gap-1.5 opacity-20">
+                        {[...Array(12)].map((_, i) => <div key={i} className="w-1 h-1 rounded-full bg-blue-500"></div>)}
+                     </div>
                      <div className="relative z-10">
-                        <div className="flex items-center gap-5 mb-8">
-                           <div className="w-[64px] h-[64px] rounded-full bg-[#F4F6FF] flex items-center justify-center shrink-0">
-                              <Activity size={32} className="text-blue-600" strokeWidth={1.5} />
+                        <div className="flex items-start gap-5 mb-5">
+                           <div className="w-[60px] h-[60px] rounded-[18px] bg-blue-50 flex items-center justify-center shrink-0">
+                              <Activity size={28} className="text-blue-600" strokeWidth={1.5} />
                            </div>
-                           <div className="flex flex-col items-start mt-2">
-                              <span className="text-[44px] font-black text-blue-600 tracking-tight leading-none mb-1">15+</span>
-                              <div className="flex items-center gap-1.5">
-                                 <div className="h-[3px] w-8 bg-blue-600 rounded-full"></div>
-                                 <div className="h-[3px] w-[4px] bg-blue-600 rounded-full"></div>
-                              </div>
+                           <div className="flex flex-col items-start mt-0.5">
+                              <span className="text-[40px] font-black text-blue-600 tracking-tight leading-none mb-1">15+</span>
+                              <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-3">Areas of Medicine</span>
+                              <div className="w-8 h-[2px] bg-blue-600 rounded-full"></div>
                            </div>
                         </div>
-                        <h4 className="font-bold text-gray-900 text-[18px] mb-3 tracking-tight">Areas of Medicine</h4>
                         <p className="text-gray-500 text-[14px] leading-relaxed font-medium">From family medicine to cardiology and laboratory diagnostics.</p>
                      </div>
                   </motion.div>
@@ -750,27 +746,24 @@ const Home = () => {
                   {/* 95% Satisfied Patients */}
                   <motion.div 
                      initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp} 
-                     whileHover={{ y: -5, scale: 1.02 }}
+                     whileHover={{ y: -5, boxShadow: "0 20px 40px rgba(0,0,0,0.08)" }}
                      transition={{ duration: 0.3 }}
-                     className="bg-white rounded-[32px] p-8 shadow-[0_4px_24px_rgba(0,0,0,0.04)] hover:shadow-xl relative overflow-hidden group cursor-pointer"
+                     className="bg-white rounded-[24px] p-6 lg:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 border-l-[4px] border-l-[#00A96E] relative overflow-hidden group cursor-pointer"
                   >
-                     <div className="absolute top-6 right-6 grid grid-cols-3 gap-1.5 opacity-20">
-                        {[...Array(5)].map((_, i) => <div key={i} className={`w-1.5 h-1.5 rounded-full bg-blue-300 ${i === 1 || i === 3 ? 'invisible' : ''}`}></div>)}
+                     <div className="absolute top-6 right-6 grid grid-cols-4 gap-1.5 opacity-30">
+                        {[...Array(12)].map((_, i) => <div key={i} className="w-1 h-1 rounded-full bg-[#00A96E]"></div>)}
                      </div>
                      <div className="relative z-10">
-                        <div className="flex items-center gap-5 mb-8">
-                           <div className="w-[64px] h-[64px] rounded-full bg-[#F4F6FF] flex items-center justify-center shrink-0">
-                              <ThumbsUp size={32} className="text-blue-600" strokeWidth={1.5} />
+                        <div className="flex items-start gap-5 mb-5">
+                           <div className="w-[60px] h-[60px] rounded-[18px] bg-[#00A96E]/10 flex items-center justify-center shrink-0">
+                              <ThumbsUp size={28} className="text-[#00A96E]" strokeWidth={1.5} />
                            </div>
-                           <div className="flex flex-col items-start mt-2">
-                              <span className="text-[44px] font-black text-blue-600 tracking-tight leading-none mb-1">95%</span>
-                              <div className="flex items-center gap-1.5">
-                                 <div className="h-[3px] w-8 bg-blue-600 rounded-full"></div>
-                                 <div className="h-[3px] w-[4px] bg-blue-600 rounded-full"></div>
-                              </div>
+                           <div className="flex flex-col items-start mt-0.5">
+                              <span className="text-[40px] font-black text-[#00A96E] tracking-tight leading-none mb-1">95%</span>
+                              <span className="text-[10px] font-bold text-[#00A96E] uppercase tracking-widest mb-3">Satisfied Patients</span>
+                              <div className="w-8 h-[2px] bg-[#00A96E] rounded-full"></div>
                            </div>
                         </div>
-                        <h4 className="font-bold text-gray-900 text-[18px] mb-3 tracking-tight">Satisfied Patients</h4>
                         <p className="text-gray-500 text-[14px] leading-relaxed font-medium">According to internal surveys over the past year.</p>
                      </div>
                   </motion.div>
@@ -778,27 +771,24 @@ const Home = () => {
                   {/* 98% Diagnostic Accuracy */}
                   <motion.div 
                      initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp} 
-                     whileHover={{ y: -5, scale: 1.02 }}
+                     whileHover={{ y: -5, boxShadow: "0 20px 40px rgba(0,0,0,0.08)" }}
                      transition={{ duration: 0.3 }}
-                     className="bg-white rounded-[32px] p-8 shadow-[0_4px_24px_rgba(0,0,0,0.04)] hover:shadow-xl relative overflow-hidden group cursor-pointer"
+                     className="bg-white rounded-[24px] p-6 lg:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 border-l-[4px] border-l-[#5B3DF0] relative overflow-hidden group cursor-pointer"
                   >
-                     <div className="absolute top-6 right-6 grid grid-cols-3 gap-1.5 opacity-20">
-                        {[...Array(9)].map((_, i) => <div key={i} className="w-1.5 h-1.5 rounded-full bg-blue-300"></div>)}
+                     <div className="absolute top-6 right-6 grid grid-cols-4 gap-1.5 opacity-25">
+                        {[...Array(12)].map((_, i) => <div key={i} className="w-1 h-1 rounded-full bg-[#5B3DF0]"></div>)}
                      </div>
                      <div className="relative z-10">
-                        <div className="flex items-center gap-5 mb-8">
-                           <div className="w-[64px] h-[64px] rounded-full bg-[#F4F6FF] flex items-center justify-center shrink-0">
-                              <Target size={32} className="text-blue-600" strokeWidth={1.5} />
+                        <div className="flex items-start gap-5 mb-5">
+                           <div className="w-[60px] h-[60px] rounded-[18px] bg-[#5B3DF0]/10 flex items-center justify-center shrink-0">
+                              <Target size={28} className="text-[#5B3DF0]" strokeWidth={1.5} />
                            </div>
-                           <div className="flex flex-col items-start mt-2">
-                              <span className="text-[44px] font-black text-blue-600 tracking-tight leading-none mb-1">98%</span>
-                              <div className="flex items-center gap-1.5">
-                                 <div className="h-[3px] w-8 bg-blue-600 rounded-full"></div>
-                                 <div className="h-[3px] w-[4px] bg-blue-600 rounded-full"></div>
-                              </div>
+                           <div className="flex flex-col items-start mt-0.5">
+                              <span className="text-[40px] font-black text-[#5B3DF0] tracking-tight leading-none mb-1">98%</span>
+                              <span className="text-[10px] font-bold text-[#5B3DF0] uppercase tracking-widest mb-3">Diagnostic Accuracy</span>
+                              <div className="w-8 h-[2px] bg-[#5B3DF0] rounded-full"></div>
                            </div>
                         </div>
-                        <h4 className="font-bold text-gray-900 text-[18px] mb-3 tracking-tight">Diagnostic Accuracy</h4>
                         <p className="text-gray-500 text-[14px] leading-relaxed font-medium">Thanks to modern equipment and experienced specialists.</p>
                      </div>
                   </motion.div>
@@ -1272,12 +1262,10 @@ const Home = () => {
                   <div className="absolute top-[-10%] right-[-15%] w-[120%] aspect-square bg-blue-600 rounded-full opacity-90 blur-sm"></div>
                   
                   {/* Doctor Image */}
-                  <motion.img 
-                     animate={{ y: [0, -10, 0] }}
-                     transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                  <img 
                      src="https://pngimg.com/uploads/doctor/doctor_PNG15988.png" 
                      alt="Doctor" 
-                     className="relative z-10 w-[95%] object-contain" 
+                     className="relative z-10 w-[75%] max-w-[450px] object-contain object-bottom" 
                   />
                   
                   {/* Floating Badges (Z-20) */}
@@ -1413,84 +1401,167 @@ const Home = () => {
       </section>
 
       {/* FOOTER */}
-      <motion.footer initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp} id="contact" className="bg-[#0A0A0A] text-white pt-16 pb-8 px-8 md:px-16 mt-20">
+      <footer id="contact" className="bg-[#0A0E17] text-white pt-16 pb-12 px-4 md:px-16 mt-20">
          <div className="max-w-[1600px] mx-auto">
             {/* Top: Contact Info */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-               <div className="flex items-start gap-4">
-                  <PhoneCall size={24} className="text-gray-400 shrink-0 mt-0.5" strokeWidth={1.5} />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 border border-gray-800/60 rounded-2xl p-6 lg:p-8 mb-16 shadow-lg bg-[#0E131F]">
+               
+               <div className="flex items-center gap-4 lg:border-r border-gray-800/60 p-4">
+                  <div className="w-12 h-12 rounded-full bg-blue-900/20 flex items-center justify-center shrink-0">
+                     <PhoneCall size={20} className="text-blue-500" strokeWidth={1.5} />
+                  </div>
                   <div>
-                     <p className="text-sm text-gray-400 mb-1">Tel</p>
-                     <p className="text-[15px] font-medium">310-437-2766</p>
+                     <p className="text-sm text-gray-300 mb-1">Phone</p>
+                     <p className="text-[15px] font-medium tracking-wide">310-437-2766</p>
                   </div>
                </div>
                
-               <div className="flex items-start gap-4">
-                  <Mail size={24} className="text-gray-400 shrink-0 mt-0.5" strokeWidth={1.5} />
+               <div className="flex items-center gap-4 lg:border-r border-gray-800/60 p-4">
+                  <div className="w-12 h-12 rounded-full bg-blue-900/20 flex items-center justify-center shrink-0">
+                     <Mail size={20} className="text-blue-500" strokeWidth={1.5} />
+                  </div>
                   <div>
-                     <p className="text-sm text-gray-400 mb-1">Mail</p>
-                     <p className="text-[15px] font-medium">clinic@outlook.com</p>
+                     <p className="text-sm text-gray-300 mb-1">Email</p>
+                     <p className="text-[15px] font-medium tracking-wide">clinic@outlook.com</p>
                   </div>
                </div>
                
-               <div className="flex items-start gap-4">
-                  <MapPin size={24} className="text-gray-400 shrink-0 mt-0.5" strokeWidth={1.5} />
+               <div className="flex items-center gap-4 lg:border-r border-gray-800/60 p-4">
+                  <div className="w-12 h-12 rounded-full bg-blue-900/20 flex items-center justify-center shrink-0">
+                     <MapPin size={20} className="text-blue-500" strokeWidth={1.5} />
+                  </div>
                   <div>
-                     <p className="text-sm text-gray-400 mb-1">Address</p>
-                     <p className="text-[15px] font-medium leading-snug">Medcyhnyi Avenue,<br/>8-A, Lviv</p>
+                     <p className="text-sm text-gray-300 mb-1">Address</p>
+                     <p className="text-[15px] font-medium leading-snug">Medcynnyi Avenue,<br/>8-A, Lviv</p>
                   </div>
                </div>
                
-               <div className="flex items-start gap-4">
-                  <Printer size={24} className="text-gray-400 shrink-0 mt-0.5" strokeWidth={1.5} />
+               <div className="flex items-center gap-4 p-4">
+                  <div className="w-12 h-12 rounded-full bg-blue-900/20 flex items-center justify-center shrink-0">
+                     <Printer size={20} className="text-blue-500" strokeWidth={1.5} />
+                  </div>
                   <div>
-                     <p className="text-sm text-gray-400 mb-1">Fax</p>
-                     <p className="text-[15px] font-medium">+1-000-0000</p>
+                     <p className="text-sm text-gray-300 mb-1">Fax</p>
+                     <p className="text-[15px] font-medium tracking-wide">+1-000-0000</p>
                   </div>
                </div>
             </div>
             
             {/* Divider */}
-            <div className="h-[1px] w-full bg-gray-800 mb-12"></div>
+            <div className="h-[1px] w-full bg-gray-800/60 mb-16"></div>
             
             {/* Middle: Links */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
-               <div className="hidden lg:block"></div>
-               <div className="hidden lg:block"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-20 mb-16">
+               
+               <div className="col-span-1">
+                  <div className="flex items-center gap-3 mb-4">
+                     <div className="text-blue-500">
+                        <HeartPulse size={36} strokeWidth={2.5} />
+                     </div>
+                     <div>
+                        <h3 className="text-xl font-bold tracking-tight leading-none text-white">Aurelian Health</h3>
+                        <p className="text-[10px] tracking-[0.2em] text-gray-300 mt-1.5 uppercase">Care That Connects</p>
+                     </div>
+                  </div>
+                  <p className="text-[14px] text-gray-300 leading-relaxed mb-8 pr-4">
+                     Delivering compassionate, high-quality healthcare with modern technology and a patient-first approach.
+                  </p>
+                  <button className="border border-gray-600/80 rounded-full px-6 py-2 hover:bg-gray-700 transition-colors inline-flex items-center gap-3 text-sm font-medium group">
+                     About Us <ArrowRight size={16} className="text-gray-300 group-hover:text-white transition-colors" />
+                  </button>
+               </div>
                
                <div>
-                  <h4 className="text-lg font-medium mb-6">Support</h4>
-                  <ul className="space-y-4 text-[14px] text-gray-400">
-                     <li><a href="#" className="hover:text-white transition-colors">Contact Us</a></li>
-                     <li><a href="#" className="hover:text-white transition-colors">Book An Appointment</a></li>
-                     <li><a href="#" className="hover:text-white transition-colors">How To Find Us</a></li>
-                     <li><a href="#" className="hover:text-white transition-colors">Insurance Information</a></li>
-                     <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
+                  <h4 className="text-lg font-medium mb-8 relative inline-block text-white">
+                     Support
+                     <span className="absolute -bottom-3 left-0 w-8 h-[2px] bg-blue-500"></span>
+                  </h4>
+                  <ul className="space-y-4 text-[14px] text-gray-300 font-medium">
+                     <li><a href="#" className="hover:text-white transition-colors flex items-center justify-between group">Contact Us <ChevronRight size={14} className="text-gray-500 group-hover:text-blue-500 transition-colors opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transform" /></a></li>
+                     <li><a href="#" className="hover:text-white transition-colors flex items-center justify-between group">Book An Appointment <ChevronRight size={14} className="text-gray-500 group-hover:text-blue-500 transition-colors opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transform" /></a></li>
+                     <li><a href="#" className="hover:text-white transition-colors flex items-center justify-between group">How To Find Us <ChevronRight size={14} className="text-gray-500 group-hover:text-blue-500 transition-colors opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transform" /></a></li>
+                     <li><a href="#" className="hover:text-white transition-colors flex items-center justify-between group">Insurance Information <ChevronRight size={14} className="text-gray-500 group-hover:text-blue-500 transition-colors opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transform" /></a></li>
+                     <li><a href="#" className="hover:text-white transition-colors flex items-center justify-between group">Privacy Policy <ChevronRight size={14} className="text-gray-500 group-hover:text-blue-500 transition-colors opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transform" /></a></li>
                   </ul>
                </div>
                
                <div>
-                  <h4 className="text-lg font-medium mb-6">FAQ</h4>
-                  <ul className="space-y-4 text-[14px] text-gray-400">
-                     <li><a href="#" className="hover:text-white transition-colors">Account</a></li>
-                     <li><a href="#" className="hover:text-white transition-colors">Manage Appointments</a></li>
-                     <li><a href="#" className="hover:text-white transition-colors">FAQ</a></li>
-                     <li><a href="#" className="hover:text-white transition-colors">Account & Support</a></li>
-                     <li><a href="#" className="hover:text-white transition-colors">Patient Portal</a></li>
+                  <h4 className="text-lg font-medium mb-8 relative inline-block text-white">
+                     FAQ
+                     <span className="absolute -bottom-3 left-0 w-8 h-[2px] bg-blue-500"></span>
+                  </h4>
+                  <ul className="space-y-4 text-[14px] text-gray-300 font-medium">
+                     <li><a href="#" className="hover:text-white transition-colors flex items-center justify-between group">Account <ChevronRight size={14} className="text-gray-500 group-hover:text-blue-500 transition-colors opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transform" /></a></li>
+                     <li><a href="#" className="hover:text-white transition-colors flex items-center justify-between group">Manage Appointments <ChevronRight size={14} className="text-gray-500 group-hover:text-blue-500 transition-colors opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transform" /></a></li>
+                     <li><a href="#" className="hover:text-white transition-colors flex items-center justify-between group">FAQ <ChevronRight size={14} className="text-gray-500 group-hover:text-blue-500 transition-colors opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transform" /></a></li>
+                     <li><a href="#" className="hover:text-white transition-colors flex items-center justify-between group">Account & Support <ChevronRight size={14} className="text-gray-500 group-hover:text-blue-500 transition-colors opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transform" /></a></li>
+                     <li><a href="#" className="hover:text-white transition-colors flex items-center justify-between group">Patient Portal <ChevronRight size={14} className="text-gray-500 group-hover:text-blue-500 transition-colors opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transform" /></a></li>
+                  </ul>
+               </div>
+
+               <div>
+                  <h4 className="text-lg font-medium mb-8 relative inline-block text-white">
+                     Quick Links
+                     <span className="absolute -bottom-3 left-0 w-8 h-[2px] bg-blue-500"></span>
+                  </h4>
+                  <ul className="space-y-4 text-[14px] text-gray-300 font-medium">
+                     <li><a href="#" className="hover:text-white transition-colors flex items-center justify-between group">Doctors <ChevronRight size={14} className="text-gray-500 group-hover:text-blue-500 transition-colors opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transform" /></a></li>
+                     <li><a href="#" className="hover:text-white transition-colors flex items-center justify-between group">Departments <ChevronRight size={14} className="text-gray-500 group-hover:text-blue-500 transition-colors opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transform" /></a></li>
+                     <li><a href="#" className="hover:text-white transition-colors flex items-center justify-between group">Services <ChevronRight size={14} className="text-gray-500 group-hover:text-blue-500 transition-colors opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transform" /></a></li>
+                     <li><a href="#" className="hover:text-white transition-colors flex items-center justify-between group">Blog <ChevronRight size={14} className="text-gray-500 group-hover:text-blue-500 transition-colors opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transform" /></a></li>
+                     <li><a href="#" className="hover:text-white transition-colors flex items-center justify-between group">Careers <ChevronRight size={14} className="text-gray-500 group-hover:text-blue-500 transition-colors opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transform" /></a></li>
                   </ul>
                </div>
             </div>
             
             {/* Divider */}
-            <div className="h-[1px] w-full bg-gray-800 mb-8"></div>
+            <div className="h-[1px] w-full bg-gray-800/60 mb-8"></div>
             
-            {/* Bottom: Copyright */}
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-gray-500 font-medium">
-               <a href="#" className="hover:text-white transition-colors">Terms of Use</a>
-               <p>© {new Date().getFullYear()} Aurelian Health. All rights reserved.</p>
+            {/* Bottom: Copyright & Socials */}
+            <div className="flex flex-col lg:flex-row justify-between items-center gap-8 lg:gap-4 text-xs font-medium text-gray-300 pt-2">
+               
+               <div className="flex flex-col gap-3 text-center lg:text-left">
+                  <p>© {new Date().getFullYear()} <span className="text-blue-400">Aurelian Health</span>. All rights reserved.</p>
+                  <div className="flex items-center gap-4 justify-center lg:justify-start">
+                     <a href="#" className="hover:text-white transition-colors">Terms of Use</a>
+                     <span className="text-gray-600">|</span>
+                     <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
+                     <span className="text-gray-600">|</span>
+                     <a href="#" className="hover:text-white transition-colors">Sitemap</a>
+                  </div>
+               </div>
+
+               <div className="flex flex-col items-center gap-3">
+                  <p className="text-white">Follow Us</p>
+                  <div className="flex items-center gap-3">
+                     <a href="#" className="w-10 h-10 rounded-full bg-[#161C26] flex items-center justify-center hover:bg-gray-800 transition-colors text-white">
+                        <FacebookIcon size={16} />
+                     </a>
+                     <a href="#" className="w-10 h-10 rounded-full bg-[#161C26] flex items-center justify-center hover:bg-gray-800 transition-colors text-white">
+                        <TwitterIcon size={16} />
+                     </a>
+                     <a href="#" className="w-10 h-10 rounded-full bg-[#161C26] flex items-center justify-center hover:bg-gray-800 transition-colors text-white">
+                        <InstagramIcon size={16} />
+                     </a>
+                     <a href="#" className="w-10 h-10 rounded-full bg-[#161C26] flex items-center justify-center hover:bg-gray-800 transition-colors text-white">
+                        <LinkedinIcon size={16} />
+                     </a>
+                  </div>
+               </div>
+
+               <div className="flex items-center gap-4 text-left border border-transparent">
+                  <div className="text-blue-500 rounded-full border border-blue-500/20 bg-blue-500/5 p-2">
+                     <ShieldCheck size={28} strokeWidth={1.5} />
+                  </div>
+                  <div>
+                     <p className="text-white text-sm mb-1 font-medium">Your health. Our priority.</p>
+                     <p className="text-gray-300 text-xs">Trusted by <span className="text-blue-400">15,000+</span> patients worldwide.</p>
+                  </div>
+               </div>
+
             </div>
          </div>
-      </motion.footer>
+      </footer>
 
     </div>
   );

@@ -29,7 +29,7 @@ export const AiChatWindow = ({
   }, [messages, isSending]);
 
   return (
-    <div className="relative flex h-[580px] w-[380px] sm:w-[420px] max-w-[95vw] bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl shadow-2xl overflow-hidden font-sans text-slate-800 flex-col">
+    <div className="relative flex h-[calc(100vh-120px)] max-h-[580px] w-[380px] sm:w-[420px] max-w-[95vw] bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl shadow-2xl overflow-hidden font-sans text-slate-800 flex-col">
       {/* Slide-out History Overlay */}
       {showHistory && (
         <div className="absolute inset-0 z-30 flex">
