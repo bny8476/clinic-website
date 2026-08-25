@@ -77,6 +77,9 @@ public class ClinicDatabaseConfig {
         dataSource.setDriverClassName(driver);
         dataSource.setKeepaliveTime(120000);       // 2 min proactive ping
         dataSource.setConnectionTestQuery("SELECT 1");
+        dataSource.setMaximumPoolSize(5);
+        dataSource.setMinimumIdle(1);
+        dataSource.setConnectionTimeout(30000);
 
         try (java.sql.Connection testConn = dataSource.getConnection()) {
             System.out.println("[Clinic DB] Test connection succeeded: "

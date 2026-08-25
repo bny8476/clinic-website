@@ -72,8 +72,6 @@ public class FlywayConfig {
             try {
 
                 baselineIfNeeded(flyway, dbName);
-
-                flyway.repair();
                 flyway.migrate();
 
                 return;
