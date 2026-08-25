@@ -19,6 +19,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 @EnableTransactionManagement
 @EnableJpaRepositories(
         basePackages = "com.healthcare.clinic",
+        excludeFilters = @org.springframework.context.annotation.ComponentScan.Filter(
+                type = org.springframework.context.annotation.FilterType.REGEX, 
+                pattern = "com\\.healthcare\\.clinic\\.pharmacy\\..*"
+        ),
         entityManagerFactoryRef = "clinicEntityManagerFactory",
         transactionManagerRef = "clinicTransactionManager",
         nameGenerator = org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGenerator.class
@@ -149,8 +153,7 @@ public class ClinicDatabaseConfig {
                 "com.healthcare.clinic.vendor",
                 "com.healthcare.clinic.admin",
                 "com.healthcare.clinic.superadmin",
-                "com.healthcare.clinic.support",
-                "com.healthcare.clinic.pharmacy"
+                "com.healthcare.clinic.support"
         );
 
         em.setJpaVendorAdapter(new org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter());

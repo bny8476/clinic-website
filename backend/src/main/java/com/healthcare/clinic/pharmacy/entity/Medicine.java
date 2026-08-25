@@ -85,7 +85,7 @@ public class Medicine extends BaseEntity {
     @Column(name = "schedule_category")
     private String scheduleCategory = "NORMAL";
 
-    @jakarta.persistence.ManyToOne
+    @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
     @jakarta.persistence.JoinColumn(name = "supplier_id")
     private Supplier supplier;
 

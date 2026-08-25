@@ -13,6 +13,7 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>clinic-app</name>
 	<description>Monolithic Clinic Application</description>
+	<!-- IDE Sync Trigger -->
 
 	<properties>
 		<java.version>21</java.version>

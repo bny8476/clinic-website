@@ -246,7 +246,6 @@ public class MedicineController {
     @PreAuthorize("hasAnyAuthority('ROLE_SYSTEM_ADMIN','ROLE_PHARMACIST','ROLE_STOREKEEPER','ROLE_PURCHASE_MANAGER')")
     @PostMapping("/purchase-orders/auto-generate")
     public ResponseEntity<ApiResponse<String>> autoGeneratePOs() {
-        List<Medicine> medicines = medicineRepository.findAll();
         List<Object[]> stockSummary = stockRepository.getStockQuantitiesGroupByMedicine();
         java.util.Map<Long, Integer> stockMap = stockSummary.stream()
                 .filter(arr -> arr[0] != null && arr[1] != null)
@@ -258,9 +257,13 @@ public class MedicineController {
         java.util.Map<Long, PurchaseOrder> supplierOrders = new java.util.HashMap<>();
         int generatedCount = 0;
 
-        for (Medicine med : medicines) {
-            int currentStock = stockMap.getOrDefault(med.getId(), 0);
-            if (med.getReorderLevel() != null && currentStock <= med.getReorderLevel()) {
+        int page = 0;
+        org.springframework.data.domain.Page<Medicine> medicinePage;
+        do {
+            medicinePage = medicineRepository.findAll(org.springframework.data.domain.PageRequest.of(page, 500));
+            for (Medicine med : medicinePage.getContent()) {
+                int currentStock = stockMap.getOrDefault(med.getId(), 0);
+                if (med.getReorderLevel() != null && currentStock <= med.getReorderLevel()) {
                 // Find supplier (from latest stock or medicine's supplierVendor, here assuming basic logic)
                 com.healthcare.clinic.pharmacy.entity.Supplier supplier = null;
                 List<MedicineStock> latestStocks = stockRepository.findByMedicineId(med.getId());
@@ -288,6 +291,8 @@ public class MedicineController {
                 }
             }
         }
+        page++;
+    } while (medicinePage.hasNext());
 
         for (PurchaseOrder po : supplierOrders.values()) {
             purchaseOrderRepository.save(po);
@@ -299,7 +304,6 @@ public class MedicineController {
     @PreAuthorize("hasAnyAuthority('ROLE_SYSTEM_ADMIN','ROLE_STOREKEEPER','ROLE_PHARMACIST','ROLE_SUPERVISOR','ROLE_CASHIER','ROLE_BILLING_STAFF')")
     @GetMapping("/stocks/low-stock")
     public ResponseEntity<ApiResponse<List<MedicineDTO>>> getLowStockMedicines() {
-        List<Medicine> medicines = medicineRepository.findAll();
         List<Object[]> stockSummary = stockRepository.getStockQuantitiesGroupByMedicine();
         java.util.Map<Long, Integer> stockMap = stockSummary.stream()
                 .filter(arr -> arr[0] != null && arr[1] != null)
@@ -308,13 +312,20 @@ public class MedicineController {
                         arr -> ((Number) arr[1]).intValue()
                 ));
 
-        List<Medicine> lowStockMedicines = medicines.stream()
-                .filter(m -> {
-                    int qty = stockMap.getOrDefault(m.getId(), 0);
-                    int rlvl = m.getReorderLevel() != null ? m.getReorderLevel() : 0;
-                    return rlvl > 0 && qty <= rlvl;
-                })
-                .toList();
+        List<Medicine> lowStockMedicines = new java.util.ArrayList<>();
+        int page = 0;
+        org.springframework.data.domain.Page<Medicine> medicinePage;
+        do {
+            medicinePage = medicineRepository.findAll(org.springframework.data.domain.PageRequest.of(page, 500));
+            for (Medicine m : medicinePage.getContent()) {
+                int qty = stockMap.getOrDefault(m.getId(), 0);
+                int rlvl = m.getReorderLevel() != null ? m.getReorderLevel() : 0;
+                if (rlvl > 0 && qty <= rlvl) {
+                    lowStockMedicines.add(m);
+                }
+            }
+            page++;
+        } while (medicinePage.hasNext());
 
         if (lowStockMedicines.isEmpty()) {
             return ResponseEntity.ok(ApiResponse.success(List.of(), "Low stock medicines fetched"));
