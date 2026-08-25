@@ -106,7 +106,6 @@ public class ClinicDatabaseConfig {
         
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(dataSource);
-        em.setPackagesToScan("com.healthcare.clinic");
         em.setPersistenceUnitName("clinic");
         em.setPackagesToScan(
                 "com.healthcare.clinic.ai",

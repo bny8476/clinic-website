@@ -34,7 +34,7 @@ public class FlywayConfig {
     }
 
     @Bean
-    public Flyway pharmacyFlyway(@Qualifier("clinicDataSource") DataSource pharmacyDataSource, org.springframework.core.env.Environment env) {
+    public Flyway pharmacyFlyway(@Qualifier("pharmacyDataSource") DataSource pharmacyDataSource, org.springframework.core.env.Environment env) {
         boolean baselineOnMigrate = env.getProperty("app.flyway.baseline-on-migrate", Boolean.class, false);
         String baselineVersion = env.getProperty("app.flyway.baseline-version-pharmacy", "0");
         
