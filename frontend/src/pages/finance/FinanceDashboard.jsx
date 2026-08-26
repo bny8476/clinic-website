@@ -1,10 +1,7 @@
-import KPICard from '../../components/ui/KPICard';
-import Button from '../../components/ui/Button';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { DollarSign, TrendingDown, TrendingUp } from 'lucide-react';
-import { fadeIn, staggerContainer } from '../../components/ui/motion';
+import { DollarSign, TrendingDown, TrendingUp, Plus, Receipt, LayoutGrid, FileText, IndianRupee, Calendar, ShieldCheck, Settings } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function FinanceDashboard() {
@@ -45,116 +42,197 @@ export default function FinanceDashboard() {
     });
 
     return (
-        <div className="p-6 h-full overflow-y-auto bg-[var(--color-bg-app)]">
-            <div className="mb-4">
-              <h1 className="text-[24px] font-bold text-[var(--color-text)]">Finance Dashboard</h1>
-              <p className="text-[14px] text-[var(--color-text-muted)] mt-1">Manage Revenue, Expenses, and Accounting</p>
+        <div className="p-6 h-full overflow-y-auto bg-[#F8FAFF]">
+            <div className="mb-6">
+              <h1 className="text-2xl font-bold text-gray-900">Finance Dashboard</h1>
+              <p className="text-gray-500 mt-1">Manage Revenue, Expenses, and Accounting</p>
             </div>
 
             {/* Top Stats */}
-            <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-                <motion.div variants={fadeIn} className="relative group" whileHover={{ y: -4, scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                    <div className="absolute inset-0 bg-white/40 backdrop-blur-md border border-slate-200/50 rounded-2xl shadow-sm group-hover:shadow-xl group-hover:shadow-success/10 transition-all z-0"></div>
-                    <div className="relative z-10 p-1">
-                        <KPICard 
-                            label="Total Revenue" 
-                            value={`₹${totalRevenue.toLocaleString()}`} 
-                            icon={TrendingUp} 
-                            colorToken="success" 
-                            className="bg-transparent border-0 shadow-none"
-                        />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                {/* Total Revenue */}
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden relative group">
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-green-500"></div>
+                    <div className="p-6 relative z-10">
+                        <div className="flex items-start gap-4">
+                            <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                                <TrendingUp className="w-7 h-7 text-green-600" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-semibold text-gray-500">Total Revenue</p>
+                                <h3 className="text-3xl font-bold text-gray-900 mt-1">₹{totalRevenue.toLocaleString()}</h3>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2 mt-4">
+                            <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-md flex items-center gap-1">
+                                <TrendingUp className="w-3 h-3" /> 0%
+                            </span>
+                            <span className="text-sm text-gray-400">vs last 30 days</span>
+                        </div>
                     </div>
-                </motion.div>
-                <motion.div variants={fadeIn} className="relative group" whileHover={{ y: -4, scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                    <div className="absolute inset-0 bg-white/40 backdrop-blur-md border border-slate-200/50 rounded-2xl shadow-sm group-hover:shadow-xl group-hover:shadow-danger/10 transition-all z-0"></div>
-                    <div className="relative z-10 p-1">
-                        <KPICard 
-                            label="Total Expenses" 
-                            value={`₹${totalExpenses.toLocaleString()}`} 
-                            icon={TrendingDown} 
-                            colorToken="danger" 
-                            className="bg-transparent border-0 shadow-none"
-                        />
+                    {/* Wavy background right */}
+                    <div className="absolute right-0 bottom-0 opacity-20 pointer-events-none w-32 h-24">
+                        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full">
+                            <path d="M0 100 C 20 80, 40 100, 60 70 S 80 40, 100 60 L 100 100 Z" fill="#22c55e" />
+                            <path d="M0 100 C 30 90, 50 110, 70 80 S 90 50, 100 70 L 100 100 Z" fill="#16a34a" opacity="0.5" />
+                        </svg>
                     </div>
-                </motion.div>
-                <motion.div variants={fadeIn} className="relative group" whileHover={{ y: -4, scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                    <div className="absolute inset-0 bg-white/40 backdrop-blur-md border border-slate-200/50 rounded-2xl shadow-sm group-hover:shadow-xl group-hover:shadow-info/10 transition-all z-0"></div>
-                    <div className="relative z-10 p-1">
-                        <KPICard 
-                            label="Net Income" 
-                            value={`₹${netIncome.toLocaleString()}`} 
-                            icon={DollarSign} 
-                            colorToken="info" 
-                            className="bg-transparent border-0 shadow-none"
-                        />
+                </div>
+
+                {/* Total Expenses */}
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden relative group">
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-red-400"></div>
+                    <div className="p-6 relative z-10">
+                        <div className="flex items-start gap-4">
+                            <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center shrink-0">
+                                <TrendingDown className="w-7 h-7 text-red-500" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-semibold text-gray-500">Total Expenses</p>
+                                <h3 className="text-3xl font-bold text-gray-900 mt-1">₹{totalExpenses.toLocaleString()}</h3>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2 mt-4">
+                            <span className="bg-red-50 text-red-600 text-xs font-bold px-2 py-1 rounded-md flex items-center gap-1">
+                                <TrendingDown className="w-3 h-3" /> 0%
+                            </span>
+                            <span className="text-sm text-gray-400">vs last 30 days</span>
+                        </div>
                     </div>
-                </motion.div>
-            </motion.div>
+                    {/* Wavy background right */}
+                    <div className="absolute right-0 bottom-0 opacity-20 pointer-events-none w-32 h-24">
+                        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full">
+                            <path d="M0 100 C 20 80, 40 100, 60 70 S 80 40, 100 60 L 100 100 Z" fill="#ef4444" />
+                            <path d="M0 100 C 30 90, 50 110, 70 80 S 90 50, 100 70 L 100 100 Z" fill="#dc2626" opacity="0.5" />
+                        </svg>
+                    </div>
+                </div>
+
+                {/* Net Income */}
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden relative group">
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#2864FF]"></div>
+                    <div className="p-6 relative z-10">
+                        <div className="flex items-start gap-4">
+                            <div className="w-14 h-14 rounded-full bg-[#EBF0FF] flex items-center justify-center shrink-0">
+                                <DollarSign className="w-7 h-7 text-[#2864FF]" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-semibold text-gray-500">Net Income</p>
+                                <h3 className="text-3xl font-bold text-gray-900 mt-1">₹{netIncome.toLocaleString()}</h3>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2 mt-4">
+                            <span className="bg-[#EBF0FF] text-[#2864FF] text-xs font-bold px-2 py-1 rounded-md flex items-center gap-1">
+                                − 0%
+                            </span>
+                            <span className="text-sm text-gray-400">vs last 30 days</span>
+                        </div>
+                    </div>
+                    {/* Wavy background right */}
+                    <div className="absolute right-0 bottom-0 opacity-20 pointer-events-none w-32 h-24">
+                        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full">
+                            <path d="M0 100 C 20 80, 40 100, 60 70 S 80 40, 100 60 L 100 100 Z" fill="#2864FF" />
+                            <path d="M0 100 C 30 90, 50 110, 70 80 S 90 50, 100 70 L 100 100 Z" fill="#1e40af" opacity="0.5" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
 
             {/* Expenses Workflow */}
-            <div className="mt-6 bg-white rounded-xl shadow-sm border border-[var(--color-border)] overflow-hidden">
-                <div className="p-5 border-b border-[var(--color-border)] bg-slate-50">
-                    <h3 className="text-[16px] font-bold text-[var(--color-text)]">Expense Management & Approvals</h3>
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+                    <h3 className="text-lg font-bold text-gray-900">Expense Management & Approvals</h3>
+                    <button className="flex items-center gap-2 bg-[#2864FF] hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm">
+                        <Plus className="w-4 h-4" /> Add Expense
+                    </button>
                 </div>
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse text-[13px]">
+                    <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="bg-white text-[var(--color-text-muted)] text-[11px] font-bold uppercase tracking-wider border-b border-[var(--color-border)]">
-                                <th className="p-4">Category</th>
-                                <th className="p-4">Description</th>
-                                <th className="p-4">Amount</th>
-                                <th className="p-4">Date</th>
-                                <th className="p-4">Status</th>
-                                <th className="p-4">Action</th>
+                            <tr className="bg-gray-50/50 text-gray-500 text-[11px] font-bold uppercase tracking-wider border-b border-gray-100">
+                                <th className="p-4 pl-6">
+                                    <div className="flex items-center gap-2"><LayoutGrid className="w-3.5 h-3.5" /> CATEGORY</div>
+                                </th>
+                                <th className="p-4">
+                                    <div className="flex items-center gap-2"><FileText className="w-3.5 h-3.5" /> DESCRIPTION</div>
+                                </th>
+                                <th className="p-4">
+                                    <div className="flex items-center gap-2"><IndianRupee className="w-3.5 h-3.5" /> AMOUNT</div>
+                                </th>
+                                <th className="p-4">
+                                    <div className="flex items-center gap-2"><Calendar className="w-3.5 h-3.5" /> DATE</div>
+                                </th>
+                                <th className="p-4">
+                                    <div className="flex items-center gap-2"><ShieldCheck className="w-3.5 h-3.5" /> STATUS</div>
+                                </th>
+                                <th className="p-4 pr-6">
+                                    <div className="flex items-center gap-2"><Settings className="w-3.5 h-3.5" /> ACTION</div>
+                                </th>
                             </tr>
                         </thead>
-                        <motion.tbody variants={staggerContainer} initial="hidden" animate="visible" className="divide-y divide-[var(--color-border)]">
+                        <tbody className="divide-y divide-gray-100">
                             {expenses.slice(0, 10).map(expense => (
-                                <motion.tr variants={fadeIn} key={expense.id} className="hover:bg-slate-50 transition-colors">
-                                    <td className="p-4 font-bold text-[var(--color-text)]">{expense.category}</td>
-                                    <td className="p-4 text-[var(--color-text-muted)] font-medium">{expense.description}</td>
-                                    <td className="p-4 text-[var(--color-text)] font-black">₹{expense.amount}</td>
-                                    <td className="p-4 text-[var(--color-text-muted)] font-medium">{new Date(expense.incurredOn).toLocaleDateString()}</td>
+                                <tr key={expense.id} className="hover:bg-gray-50/50 transition-colors">
+                                    <td className="p-4 pl-6 font-semibold text-gray-900 text-sm">{expense.category}</td>
+                                    <td className="p-4 text-gray-600 font-medium text-sm">{expense.description}</td>
+                                    <td className="p-4 text-gray-900 font-bold text-sm">₹{expense.amount}</td>
+                                    <td className="p-4 text-gray-500 font-medium text-sm">{new Date(expense.incurredOn).toLocaleDateString()}</td>
                                     <td className="p-4">
-                                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                                            expense.status === 'PENDING_APPROVAL' ? 'bg-orange-100 text-orange-700' :
-                                            expense.status === 'APPROVED' ? 'bg-[var(--color-info-bg)] text-[var(--color-navy-800)]' :
-                                            expense.status === 'PAID' ? 'bg-emerald-100 text-emerald-700' :
-                                            'bg-red-100 text-red-700'
+                                        <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold ${
+                                            expense.status === 'PENDING_APPROVAL' ? 'bg-orange-50 text-orange-600 border border-orange-100' :
+                                            expense.status === 'APPROVED' ? 'bg-[#EBF0FF] text-[#2864FF] border border-blue-100' :
+                                            expense.status === 'PAID' ? 'bg-green-50 text-green-600 border border-green-100' :
+                                            'bg-red-50 text-red-600 border border-red-100'
                                         }`}>
                                             {expense.status}
                                         </span>
                                     </td>
-                                    <td className="p-4">
+                                    <td className="p-4 pr-6">
                                         {expense.status === 'PENDING_APPROVAL' && (
-                                            <Button 
-                                                size="sm"
-                                                variant="secondary"
+                                            <button 
                                                 onClick={() => approveMutation.mutate(expense.id)}
+                                                className="text-xs font-medium bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition-colors"
                                             >
                                                 Approve
-                                            </Button>
+                                            </button>
                                         )}
                                         {expense.status === 'APPROVED' && (
-                                            <Button 
-                                                size="sm"
-                                                variant="success"
+                                            <button 
                                                 onClick={() => payMutation.mutate(expense.id)}
+                                                className="text-xs font-medium bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-lg transition-colors shadow-sm"
                                             >
                                                 Mark Paid & Post to GL
-                                            </Button>
+                                            </button>
                                         )}
                                     </td>
-                                </motion.tr>
+                                </tr>
                             ))}
                             {expenses.length === 0 && (
-                                <motion.tr variants={fadeIn}>
-                                    <td colSpan="6" className="p-8 text-center text-[var(--color-text-muted)] font-medium">
-                                        No expenses recorded yet.
+                                <tr>
+                                    <td colSpan="6" className="p-16">
+                                        <div className="flex flex-col items-center justify-center text-center">
+                                            <div className="w-20 h-20 bg-[#F4F7FF] rounded-full flex items-center justify-center mb-6 relative">
+                                                <div className="absolute inset-0 bg-[#EBF0FF] rounded-full animate-ping opacity-20"></div>
+                                                <Receipt className="w-10 h-10 text-[#2864FF]" />
+                                                {/* Decorative dots */}
+                                                <div className="absolute top-0 right-[-10px] w-2 h-2 bg-blue-200 rounded-full"></div>
+                                                <div className="absolute bottom-4 left-[-15px] w-2 h-2 bg-blue-200 rounded-full"></div>
+                                                <div className="absolute top-[-10px] left-4 w-1.5 h-1.5 bg-blue-100 rounded-full"></div>
+                                            </div>
+                                            <h3 className="text-lg font-bold text-gray-900 mb-2">
+                                                No expenses recorded yet.
+                                            </h3>
+                                            <p className="text-gray-500 text-sm mb-6">
+                                                Add your first expense to get started.
+                                            </p>
+                                            <button className="flex items-center gap-2 border-2 border-[#2864FF] text-[#2864FF] hover:bg-[#F4F7FF] px-6 py-2 rounded-xl text-sm font-semibold transition-colors">
+                                                <Plus className="w-4 h-4" /> Add Expense
+                                            </button>
+                                        </div>
                                     </td>
-                                </motion.tr>
+                                </tr>
                             )}
-                        </motion.tbody>
+                        </tbody>
                     </table>
                 </div>
             </div>

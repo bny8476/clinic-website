@@ -98,7 +98,7 @@ public class ClinicDatabaseConfig {
 
     @Primary
     @Bean(name = "clinicEntityManagerFactory")
-    @DependsOn({"clinicFlyway"})
+    @DependsOn({"clinicFlyway", "pharmacyFlyway"})
     public LocalContainerEntityManagerFactoryBean clinicEntityManagerFactory(
             @Qualifier("clinicDataSource") DataSource dataSource,
             org.springframework.core.env.Environment env) {

@@ -1,14 +1,12 @@
+import React, { useState } from 'react';
 import toast from 'react-hot-toast';
-import Card from '../../components/ui/Card';
-import Badge from '../../components/ui/Badge';
-import Button from '../../components/ui/Button';
-import Modal from '../../components/ui/Modal';
-import FormField from '../../components/ui/FormField';
-import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { format, isPast } from 'date-fns';
-import { AlertCircle, Barcode, Beaker, FileText, Play, Save, Search, Upload } from 'lucide-react';
+import { AlertCircle, Beaker, FileText, Play, Search, User, Droplet, Clock, ShieldCheck, Inbox, FlaskConical } from 'lucide-react';
+import Modal from '../../components/ui/Modal';
+import Badge from '../../components/ui/Badge';
+import Button from '../../components/ui/Button';
 import { motion } from 'framer-motion';
 import { fadeIn, staggerChildren } from '../../components/ui/motion';
 
@@ -93,23 +91,23 @@ const ResultEntryModal = ({ request, onClose, onSuccess }) => {
         
         <div className="space-y-1.5">
           <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Result Value *</label>
-          <input type="text" value={resultValue} onChange={e => setResultValue(e.target.value)} required className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white/50 backdrop-blur-md outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm font-bold text-lg" />
+          <input type="text" value={resultValue} onChange={e => setResultValue(e.target.value)} required className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white/50 backdrop-blur-md outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-[#2160FF] transition-all shadow-sm font-bold text-lg" />
         </div>
         
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Reference Range</label>
-            <input type="text" value={referenceRange} onChange={e => setReferenceRange(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white/50 backdrop-blur-md outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm" />
+            <input type="text" value={referenceRange} onChange={e => setReferenceRange(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white/50 backdrop-blur-md outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-[#2160FF] transition-all shadow-sm" />
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Unit</label>
-            <input type="text" value={unit} onChange={e => setUnit(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white/50 backdrop-blur-md outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm" />
+            <input type="text" value={unit} onChange={e => setUnit(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white/50 backdrop-blur-md outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-[#2160FF] transition-all shadow-sm" />
           </div>
         </div>
         
-        <div className="flex items-center space-x-4 p-4 bg-[var(--color-surface-alt)] rounded-lg border border-[var(--color-border)]">
+        <div className="flex items-center space-x-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
           <div className="flex-1 flex items-center space-x-2">
-            <span className="text-sm font-semibold text-[var(--color-text)]">Live Status:</span>
+            <span className="text-sm font-semibold text-slate-700">Live Status:</span>
             {liveCritical ? (
               <Badge variant="danger">CRITICAL</Badge>
             ) : liveAbnormal ? (
@@ -117,11 +115,11 @@ const ResultEntryModal = ({ request, onClose, onSuccess }) => {
             ) : resultValue ? (
               <Badge variant="success">NORMAL</Badge>
             ) : (
-              <span className="text-xs text-[var(--color-text-muted)]">Enter result to evaluate</span>
+              <span className="text-xs text-slate-400">Enter result to evaluate</span>
             )}
           </div>
           {(liveAbnormal || liveCritical) && (
-            <p className="text-xs text-[var(--color-danger)] font-medium">
+            <p className="text-xs text-red-500 font-medium">
               Values outside reference range. A critical result triggers immediate alerts.
             </p>
           )}
@@ -129,18 +127,29 @@ const ResultEntryModal = ({ request, onClose, onSuccess }) => {
         
         <div className="space-y-1.5">
           <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Upload PDF Report (Optional)</label>
-          <input type="file" accept="application/pdf" onChange={e => setFile(e.target.files[0])} className="w-full text-sm file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors cursor-pointer border border-slate-200 rounded-xl px-2 py-2 bg-white/50"/>
+          <input type="file" accept="application/pdf" onChange={e => setFile(e.target.files[0])} className="w-full text-sm file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#F0F5FF] file:text-[#2160FF] hover:file:bg-[#E0EAFF] transition-colors cursor-pointer border border-slate-200 rounded-xl px-2 py-2 bg-white/50"/>
         </div>
         
-        <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-[var(--color-border)]">
+        <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-slate-200">
           <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
           <Button type="button" variant="secondary" onClick={(e) => handleSubmit(e, true)} isLoading={submitMutation.isPending}>Save Draft</Button>
-          <Button type="submit" variant="primary" isLoading={submitMutation.isPending}>Submit Result</Button>
+          <button type="submit" disabled={submitMutation.isPending} className="px-5 py-2.5 bg-[#2160FF] hover:bg-blue-700 text-white rounded-xl font-bold shadow-sm shadow-blue-500/20 disabled:opacity-50">
+            {submitMutation.isPending ? 'Saving...' : 'Submit Result'}
+          </button>
         </div>
       </form>
     </Modal>
   );
 };
+
+const filterTabs = [
+  { id: 'ALL', label: 'All', icon: null },
+  { id: 'ORDERED', label: 'Unassigned', icon: User },
+  { id: 'COLLECTED', label: 'Collected', icon: Droplet },
+  { id: 'RECEIVED', label: 'Received', icon: Inbox },
+  { id: 'IN_PROGRESS', label: 'In Progress', icon: Clock },
+  { id: 'PENDING_VERIFICATION', label: 'Pending Verification', icon: ShieldCheck }
+];
 
 const LabWorklist = () => {
   const [filterStatus, setFilterStatus] = useState('ALL');
@@ -154,7 +163,7 @@ const LabWorklist = () => {
       const params = {};
       if (filterStatus !== 'ALL') params.status = filterStatus;
       if (search) params.search = search;
-      params.size = 100; // Fetch up to 100 for now to keep it simple
+      params.size = 100;
       const res = await axiosPrivate.get('/lab/worklist', { params });
       return res.data;
     },
@@ -188,112 +197,210 @@ const LabWorklist = () => {
   const filteredRequests = requests;
 
   return (
-    <motion.div initial="hidden" animate="visible" variants={staggerChildren} className="max-w-6xl mx-auto space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold font-display text-[var(--color-navy-900)] m-0 flex items-center gap-2">
-            <Beaker className="w-7 h-7 text-[var(--color-navy-800)]" />
-            Lab Worklist
-          </h1>
-          <p className="text-sm text-[var(--color-text-muted)] m-0 mt-1">
-            Manage lab test queue
-          </p>
+    <div className="min-h-full bg-[#F8FAFC] p-6 lg:p-8 w-full font-sans">
+      <div className="max-w-[1400px] mx-auto space-y-6">
+        
+        {/* Header */}
+        <div className="flex items-center gap-5 pb-2">
+          <div className="p-4 bg-[#EDF2FF] rounded-2xl flex-shrink-0">
+            <FlaskConical className="w-8 h-8 text-[#2160FF]" strokeWidth={2.5} />
+          </div>
+          <div>
+            <h1 className="text-[26px] font-extrabold text-slate-900 mb-1 tracking-tight">Lab Worklist</h1>
+            <p className="text-[14.5px] text-gray-500 font-medium">Manage and track patient lab requests.</p>
+          </div>
         </div>
-      </div>
 
-      <Card>
-        <Card.Body className="flex flex-col sm:flex-row justify-between items-center gap-4 border-b border-[var(--color-border)] p-4 bg-[var(--color-surface-alt)]">
-          <div className="flex space-x-2 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0 hide-scrollbar">
-            {['ALL', 'ORDERED', 'COLLECTED', 'RECEIVED', 'IN_PROGRESS', 'PENDING_VERIFICATION'].map(s => (
-               <button 
-                 key={s} 
-                 onClick={() => setFilterStatus(s)} 
-                 className={`px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-colors ${
-                   filterStatus === s 
-                    ? 'bg-[var(--color-navy-800)] text-white' 
-                    : 'text-[var(--color-text-muted)] hover:bg-[var(--color-surface)]'
-                 }`}
-               >
-                 {s.replace('_', ' ')}
-               </button>
-            ))}
-          </div>
-          <div className="relative w-full sm:w-64">
-             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
-             <input type="text" placeholder="Search patient or ID..." value={search} onChange={e => setSearch(e.target.value)} className="input-field pl-9 w-full" />
-          </div>
-        </Card.Body>
-
-        <Card.Body className="p-0">
-          {isLoading ? (
-             <div className="p-8 flex justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--color-navy-800)]"></div></div>
-          ) : isError ? (
-             <div className="p-8 text-center text-[var(--color-danger)]">Error loading worklist.</div>
-          ) : filteredRequests.length === 0 ? (
-             <div className="p-12 text-center text-[var(--color-text-muted)]">No requests found.</div>
-          ) : (
-            <ul className="divide-y divide-[var(--color-border)]">
-              {filteredRequests.map(req => {
-                const targetHours = req.testCatalog?.turnaroundTargetHours || 24;
-                const dueTime = new Date(req.requestedAt).getTime() + (targetHours * 60 * 60 * 1000);
-                const isOverdue = isPast(new Date(dueTime)) && req.status !== 'RELEASED' && req.status !== 'VERIFIED';
-                
+        {/* Main Card */}
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
+          
+          {/* Top Filter Bar */}
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center p-5 border-b border-gray-100 gap-4">
+            
+            <div className="flex space-x-1 w-full lg:w-auto overflow-x-auto pb-1 lg:pb-0 hide-scrollbar">
+              {filterTabs.map((tab) => {
+                const isActive = filterStatus === tab.id;
+                const Icon = tab.icon;
                 return (
-    
-                  <motion.li variants={fadeIn} key={req.id} className="p-4 bg-white hover:bg-slate-50/80 transition-colors flex flex-col sm:flex-row justify-between gap-4 border-b border-slate-100 last:border-0 rounded-lg sm:rounded-none">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <Badge variant={req.priority === 'STAT' ? 'danger' : req.priority === 'URGENT' ? 'warning' : 'info'}>
-                          {req.priority}
-                        </Badge>
-                        <span className="font-bold text-slate-900 text-lg">{req.testCatalog?.testName}</span>
-                        <span className="text-xs font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">#{req.labRequestNumber}</span>
-                        {isOverdue && <Badge variant="danger" className="animate-pulse flex items-center gap-1 shadow-sm shadow-red-500/20"><AlertCircle size={10} /> OVERDUE</Badge>}
-                      </div>
-                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-[var(--color-text-muted)]">
-                        <span><strong className="text-[var(--color-text)]">Patient:</strong> {req.patient?.user?.firstName} {req.patient?.user?.lastName}</span>
-                        <span><strong className="text-[var(--color-text)]">Requested:</strong> {format(new Date(req.requestedAt), 'PPp')}</span>
-                        <span><strong className="text-[var(--color-text)]">Status:</strong> {req.status.replace('_', ' ')}</span>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-                       {req.status === 'ORDERED' && (
-                         <>
-                           {!req.sampleBarcodeId && (
-                             <Button size="sm" variant="secondary" onClick={() => generateBarcodeMutation.mutate(req.id)} isLoading={generateBarcodeMutation.isPending}>Barcode</Button>
-                           )}
-                           <Button size="sm" variant="primary" onClick={() => updateStatusMutation.mutate({ id: req.id, status: 'COLLECTED' })}>Mark Collected</Button>
-                         </>
-                       )}
-                       {req.status === 'COLLECTED' && (
-                         <>
-                           {req.sampleBarcodeId && (
-                             <Button size="sm" variant="ghost" icon={FileText} onClick={() => window.print()}>Print</Button>
-                           )}
-                           <Button size="sm" variant="primary" onClick={() => updateStatusMutation.mutate({ id: req.id, status: 'RECEIVED' })}>Receive</Button>
-                         </>
-                       )}
-                       {req.status === 'RECEIVED' && (
-                         <Button size="sm" variant="primary" icon={Play} onClick={() => updateStatusMutation.mutate({ id: req.id, status: 'IN_PROGRESS' })}>Start Processing</Button>
-                       )}
-                       {req.status === 'IN_PROGRESS' && (
-                         <Button size="sm" variant="primary" onClick={() => setSelectedRequest(req)}>Enter Results</Button>
-                       )}
-                    </div>
-                  </motion.li>
+                  <button 
+                    key={tab.id} 
+                    onClick={() => setFilterStatus(tab.id)} 
+                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[14px] font-bold whitespace-nowrap transition-all ${
+                      isActive 
+                        ? 'bg-[#2160FF] text-white shadow-md shadow-blue-500/20' 
+                        : 'text-gray-500 hover:bg-gray-50 hover:text-slate-700'
+                    }`}
+                  >
+                    {Icon && <Icon className="w-4 h-4" strokeWidth={2.5} />}
+                    {tab.label}
+                  </button>
                 );
               })}
-            </ul>
-          )}
-        </Card.Body>
-      </Card>
+            </div>
+            
+            <div className="relative w-full lg:w-72">
+              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" strokeWidth={2.5} />
+              <input 
+                type="text" 
+                placeholder="Search patient or ID..." 
+                value={search} 
+                onChange={e => setSearch(e.target.value)} 
+                className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-[13px] font-medium text-slate-700 focus:outline-none focus:border-[#2160FF] focus:ring-4 focus:ring-[#2160FF]/10 transition-all shadow-sm" 
+              />
+            </div>
+          </div>
+
+          {/* Body Content */}
+          <div className="bg-white min-h-[500px]">
+            {isLoading ? (
+              <div className="flex justify-center items-center h-full py-32">
+                <div className="w-8 h-8 border-3 border-[#EDF2FF] border-t-[#2160FF] rounded-full animate-spin"></div>
+              </div>
+            ) : isError ? (
+              <div className="p-12 text-center font-bold text-red-500">Error loading worklist.</div>
+            ) : filteredRequests.length === 0 ? (
+              <div className="flex flex-col items-center justify-center text-center p-12 py-24 h-full">
+                
+                {/* Custom Empty State Illustration */}
+                <div className="relative w-36 h-36 flex items-center justify-center mb-8">
+                   <div className="absolute inset-0 bg-[#F0F5FF] rounded-full"></div>
+                   
+                   {/* Sparkles */}
+                   <div className="absolute top-4 left-4 w-2 h-2 bg-[#2160FF]/30 rotate-45"></div>
+                   <div className="absolute top-8 right-6 w-1.5 h-1.5 bg-[#2160FF]/40 rotate-45"></div>
+                   <div className="absolute bottom-6 left-8 w-1.5 h-1.5 bg-[#2160FF]/40 rotate-45"></div>
+                   <div className="absolute bottom-10 right-4 w-2 h-2 bg-[#2160FF]/30 rotate-45"></div>
+
+                   {/* Test Tubes Graphic */}
+                   <div className="relative z-10 flex items-end justify-center gap-3">
+                     <div className="w-5 h-16 border-2 border-[#2160FF] rounded-b-full rounded-t flex flex-col justify-end overflow-hidden p-0.5 pb-1">
+                       <div className="w-full h-8 bg-[#2160FF]/20 rounded-b-full"></div>
+                     </div>
+                     <div className="w-5 h-20 border-2 border-[#2160FF] rounded-b-full rounded-t flex flex-col justify-end overflow-hidden p-0.5 pb-1">
+                       <div className="w-full h-12 bg-[#2160FF]/40 rounded-b-full"></div>
+                     </div>
+                     <div className="w-5 h-14 border-2 border-[#2160FF] rounded-b-full rounded-t flex flex-col justify-end overflow-hidden p-0.5 pb-1">
+                       <div className="w-full h-6 bg-[#2160FF]/20 rounded-b-full"></div>
+                     </div>
+                     
+                     {/* Rack Base */}
+                     <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-28 h-2.5 bg-[#2160FF]/30 rounded-full"></div>
+                     {/* Rack Support */}
+                     <div className="absolute bottom-0 left-1 w-1.5 h-8 bg-[#2160FF]/30 rounded-t-full"></div>
+                     <div className="absolute bottom-0 right-1 w-1.5 h-8 bg-[#2160FF]/30 rounded-t-full"></div>
+                     <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-28 h-1.5 bg-[#2160FF]/30 rounded-full"></div>
+                   </div>
+                </div>
+
+                <h3 className="text-[20px] font-extrabold text-slate-900 mb-2 tracking-tight">No lab requests found</h3>
+                <p className="text-[14.5px] text-gray-500 font-medium mb-8">There are no lab requests in this category.</p>
+                
+                <button className="flex items-center gap-2 px-6 py-2.5 border-2 border-[#2160FF] text-[#2160FF] font-bold text-[14px] rounded-xl hover:bg-[#2160FF] hover:text-white transition-all shadow-sm">
+                  <FlaskConical className="w-4 h-4" strokeWidth={2.5} /> New Lab Request
+                </button>
+              </div>
+            ) : (
+              <ul className="divide-y divide-gray-100">
+                {filteredRequests.map(req => {
+                  const targetHours = req.testCatalog?.turnaroundTargetHours || 24;
+                  const dueTime = new Date(req.requestedAt).getTime() + (targetHours * 60 * 60 * 1000);
+                  const isOverdue = isPast(new Date(dueTime)) && req.status !== 'RELEASED' && req.status !== 'VERIFIED';
+                  
+                  return (
+                    <motion.li variants={fadeIn} key={req.id} className="p-5 hover:bg-gray-50/50 transition-colors flex flex-col md:flex-row justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-3 mb-2">
+                          <span className="font-extrabold text-slate-900 text-[15px]">{req.testCatalog?.testName}</span>
+                          <span className="text-[11px] font-black text-slate-400 bg-slate-100 px-2.5 py-0.5 rounded-full uppercase tracking-wider">#{req.labRequestNumber}</span>
+                          <Badge variant={req.priority === 'STAT' ? 'danger' : req.priority === 'URGENT' ? 'warning' : 'info'}>
+                            {req.priority}
+                          </Badge>
+                          {isOverdue && <Badge variant="danger" className="animate-pulse flex items-center gap-1 shadow-sm shadow-red-500/20"><AlertCircle size={10} /> OVERDUE</Badge>}
+                        </div>
+                        <div className="flex flex-wrap gap-x-6 gap-y-2 mt-1">
+                          <div className="flex items-center gap-1.5">
+                             <User className="w-3.5 h-3.5 text-gray-400" />
+                             <span className="text-[13px] font-medium text-slate-700">{req.patient?.user?.firstName} {req.patient?.user?.lastName}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                             <Clock className="w-3.5 h-3.5 text-gray-400" />
+                             <span className="text-[13px] font-medium text-slate-700">{format(new Date(req.requestedAt), 'PPp')}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                             <ShieldCheck className="w-3.5 h-3.5 text-gray-400" />
+                             <span className="text-[13px] font-medium text-slate-700 capitalize">{req.status.toLowerCase().replace('_', ' ')}</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-2 flex-wrap md:flex-nowrap">
+                         {req.status === 'ORDERED' && (
+                           <>
+                             {!req.sampleBarcodeId && (
+                               <button 
+                                 onClick={() => generateBarcodeMutation.mutate(req.id)} 
+                                 disabled={generateBarcodeMutation.isPending}
+                                 className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[13px] rounded-lg transition-colors"
+                               >
+                                 Barcode
+                               </button>
+                             )}
+                             <button 
+                               onClick={() => updateStatusMutation.mutate({ id: req.id, status: 'COLLECTED' })}
+                               className="px-4 py-2 bg-[#2160FF] hover:bg-blue-700 text-white font-bold text-[13px] rounded-lg shadow-sm shadow-blue-500/20 transition-colors"
+                             >
+                               Mark Collected
+                             </button>
+                           </>
+                         )}
+                         {req.status === 'COLLECTED' && (
+                           <>
+                             {req.sampleBarcodeId && (
+                               <button 
+                                 onClick={() => window.print()}
+                                 className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[13px] rounded-lg transition-colors flex items-center gap-2"
+                               >
+                                 <FileText className="w-3.5 h-3.5" /> Print
+                               </button>
+                             )}
+                             <button 
+                               onClick={() => updateStatusMutation.mutate({ id: req.id, status: 'RECEIVED' })}
+                               className="px-4 py-2 bg-[#2160FF] hover:bg-blue-700 text-white font-bold text-[13px] rounded-lg shadow-sm shadow-blue-500/20 transition-colors"
+                             >
+                               Receive
+                             </button>
+                           </>
+                         )}
+                         {req.status === 'RECEIVED' && (
+                           <button 
+                             onClick={() => updateStatusMutation.mutate({ id: req.id, status: 'IN_PROGRESS' })}
+                             className="px-4 py-2 bg-[#2160FF] hover:bg-blue-700 text-white font-bold text-[13px] rounded-lg shadow-sm shadow-blue-500/20 transition-colors flex items-center gap-2"
+                           >
+                             <Play className="w-3.5 h-3.5 fill-current" /> Start Processing
+                           </button>
+                         )}
+                         {req.status === 'IN_PROGRESS' && (
+                           <button 
+                             onClick={() => setSelectedRequest(req)}
+                             className="px-4 py-2 bg-[#2160FF] hover:bg-blue-700 text-white font-bold text-[13px] rounded-lg shadow-sm shadow-blue-500/20 transition-colors"
+                           >
+                             Enter Results
+                           </button>
+                         )}
+                      </div>
+                    </motion.li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        </div>
+      </div>
       
       {selectedRequest && (
         <ResultEntryModal request={selectedRequest} onClose={() => setSelectedRequest(null)} onSuccess={() => setSelectedRequest(null)} />
       )}
-    </motion.div>
-    
+    </div>
   );
 };
 

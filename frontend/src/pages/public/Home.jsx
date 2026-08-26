@@ -182,8 +182,45 @@ const AnimatedCounter = ({ value, duration = 2, delay = 0, suffix = '' }) => {
 /* ════════════════════════════════════════════════════════════════════════════
    MAIN HOME COMPONENT
 ════════════════════════════════════════════════════════════════════════════ */
+const TESTIMONIALS_DATA = [
+  {
+    name: "Anna",
+    date: "20.04.2025",
+    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=150",
+    photo: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=600",
+    quote: "I felt calm and cared for from the first step inside. The doctor took time to explain everything clearly — I've never felt more confident in a diagnosis.",
+    rating: 5
+  },
+  {
+    name: "Michael T.",
+    date: "15.03.2025",
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80",
+    photo: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=600&q=80",
+    quote: "The level of professionalism and care here is unmatched. State-of-the-art facilities and doctors who genuinely listen to your concerns.",
+    rating: 5
+  },
+  {
+    name: "Sarah Jenkins",
+    date: "02.02.2025",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
+    photo: "https://images.unsplash.com/photo-1581056771107-24ca5f033842?auto=format&fit=crop&w=600&q=80",
+    quote: "Booking was a breeze, and my appointment started right on time. Outstanding service and the entire staff was incredibly welcoming.",
+    rating: 5
+  }
+];
+
 const Home = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [currentTestimonial, setCurrentTestimonial] = useState(0);
+  
+  const handleNextTestimonial = () => {
+    setCurrentTestimonial((prev) => (prev + 1) % TESTIMONIALS_DATA.length);
+  };
+  
+  const handlePrevTestimonial = () => {
+    setCurrentTestimonial((prev) => (prev - 1 + TESTIMONIALS_DATA.length) % TESTIMONIALS_DATA.length);
+  };
+
   const navigate = useNavigate();
 
   const { data: doctors, isLoading: loadingDoctors } = usePublicDoctors();
@@ -1123,15 +1160,15 @@ const Home = () => {
                </p>
                
                <div className="flex items-center gap-6">
-                  <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-14 h-14 rounded-full border-2 border-blue-100 flex items-center justify-center text-blue-600 hover:bg-blue-50 transition-colors">
+                  <motion.button onClick={handlePrevTestimonial} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-14 h-14 rounded-full border-2 border-blue-100 flex items-center justify-center text-blue-600 hover:bg-blue-50 transition-colors">
                      <ArrowLeft size={24} strokeWidth={1.5} />
                   </motion.button>
                   <div className="flex items-center gap-3">
-                     <div className="w-2.5 h-2.5 rounded-full bg-blue-600"></div>
-                     <div className="w-2.5 h-2.5 rounded-full bg-gray-200"></div>
-                     <div className="w-2.5 h-2.5 rounded-full bg-gray-200"></div>
+                     {TESTIMONIALS_DATA.map((_, idx) => (
+                        <div key={idx} className={`w-2.5 h-2.5 rounded-full transition-colors ${idx === currentTestimonial ? 'bg-blue-600' : 'bg-gray-200'}`}></div>
+                     ))}
                   </div>
-                  <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-14 h-14 rounded-full border-2 border-blue-100 flex items-center justify-center text-blue-600 hover:bg-blue-50 transition-colors">
+                  <motion.button onClick={handleNextTestimonial} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-14 h-14 rounded-full border-2 border-blue-100 flex items-center justify-center text-blue-600 hover:bg-blue-50 transition-colors">
                      <ArrowRight size={24} strokeWidth={1.5} />
                   </motion.button>
                </div>
@@ -1141,50 +1178,58 @@ const Home = () => {
             <motion.div 
                initial="hidden" whileInView="show" viewport={{ once: true, margin: "-50px" }} variants={fadeUp}
                whileHover={{ y: -8 }} transition={{ duration: 0.3 }} 
-               className="w-full lg:w-[65%] bg-white rounded-[40px] shadow-[0_8px_40px_rgb(0,0,0,0.06)] hover:shadow-xl transition-shadow border border-gray-50 p-8 md:p-12"
+               className="w-full lg:w-[65%] bg-white rounded-[40px] shadow-[0_8px_40px_rgb(0,0,0,0.06)] hover:shadow-xl transition-shadow border border-gray-50 p-8 md:p-12 relative overflow-hidden"
             >
-               {/* Card Header */}
-               <div className="flex items-center justify-between mb-10">
-                  <div className="flex items-center gap-5">
-                     <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=150" alt="Anna" className="w-16 h-16 rounded-full object-cover shadow-sm" />
-                     <div>
-                        <h4 className="font-bold text-gray-900 text-[19px] mb-1">Anna</h4>
-                        <div className="flex gap-1 text-yellow-400">
-                           <Star size={18} fill="currentColor" className="text-yellow-400" />
-                           <Star size={18} fill="currentColor" className="text-yellow-400" />
-                           <Star size={18} fill="currentColor" className="text-yellow-400" />
-                           <Star size={18} fill="currentColor" className="text-yellow-400" />
-                           <Star size={18} fill="currentColor" className="text-yellow-400" />
+               <AnimatePresence mode="wait">
+                  <motion.div 
+                     key={currentTestimonial}
+                     initial={{ opacity: 0, x: 20 }}
+                     animate={{ opacity: 1, x: 0 }}
+                     exit={{ opacity: 0, x: -20 }}
+                     transition={{ duration: 0.3, ease: "easeOut" }}
+                  >
+                     {/* Card Header */}
+                     <div className="flex items-center justify-between mb-10">
+                        <div className="flex items-center gap-5">
+                           <img src={TESTIMONIALS_DATA[currentTestimonial].avatar} alt={TESTIMONIALS_DATA[currentTestimonial].name} className="w-16 h-16 rounded-full object-cover shadow-sm" />
+                           <div>
+                              <h4 className="font-bold text-gray-900 text-[19px] mb-1">{TESTIMONIALS_DATA[currentTestimonial].name}</h4>
+                              <div className="flex gap-1 text-yellow-400">
+                                 {[...Array(TESTIMONIALS_DATA[currentTestimonial].rating)].map((_, i) => (
+                                    <Star key={i} size={18} fill="currentColor" className="text-yellow-400" />
+                                 ))}
+                              </div>
+                           </div>
+                        </div>
+                        <span className="text-gray-500 font-medium text-[15px]">{TESTIMONIALS_DATA[currentTestimonial].date}</span>
+                     </div>
+                     
+                     {/* Card Body */}
+                     <div className="flex flex-col md:flex-row gap-10 mb-10 items-center">
+                        <div className="w-full md:w-[45%] h-[220px] rounded-2xl overflow-hidden shadow-sm shrink-0">
+                           <img src={TESTIMONIALS_DATA[currentTestimonial].photo} alt="Doctor interaction" className="w-full h-full object-cover" />
+                        </div>
+                        <div className="w-full md:w-[55%] pt-2">
+                           <Quote size={40} className="text-blue-600 mb-6 opacity-80" fill="currentColor" strokeWidth={1} />
+                           <p className="text-gray-700 text-[18px] leading-relaxed font-medium">
+                              {TESTIMONIALS_DATA[currentTestimonial].quote}
+                           </p>
                         </div>
                      </div>
-                  </div>
-                  <span className="text-gray-500 font-medium text-[15px]">20.04.2025</span>
-               </div>
-               
-               {/* Card Body */}
-               <div className="flex flex-col md:flex-row gap-10 mb-10 items-center">
-                  <div className="w-full md:w-[45%] h-[220px] rounded-2xl overflow-hidden shadow-sm shrink-0">
-                     <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=600" alt="Doctor interaction" className="w-full h-full object-cover" />
-                  </div>
-                  <div className="w-full md:w-[55%] pt-2">
-                     <Quote size={40} className="text-blue-600 mb-6 opacity-80" fill="currentColor" strokeWidth={1} />
-                     <p className="text-gray-700 text-[18px] leading-relaxed font-medium">
-                        I felt calm and cared for from the first step inside. The doctor took time to explain everything clearly — I've never felt more confident in a diagnosis.
-                     </p>
-                  </div>
-               </div>
-               
-               {/* Card Footer */}
-               <div className="flex items-center justify-between border-t border-gray-100 pt-8 mt-2">
-                  <span className="text-gray-400 font-bold text-[13px] tracking-widest uppercase">Aurelian Health</span>
-                  <div className="flex-1 h-[1px] bg-gray-100 mx-8"></div>
-                  <div className="flex items-center gap-3">
-                     <span className="text-gray-500 text-[15px] font-medium">Verified Patient</span>
-                     <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-white">
-                        <BadgeCheck size={14} strokeWidth={3} />
+                     
+                     {/* Card Footer */}
+                     <div className="flex items-center justify-between border-t border-gray-100 pt-8 mt-2">
+                        <span className="text-gray-400 font-bold text-[13px] tracking-widest uppercase">Aurelian Health</span>
+                        <div className="flex-1 h-[1px] bg-gray-100 mx-8"></div>
+                        <div className="flex items-center gap-3">
+                           <span className="text-gray-500 text-[15px] font-medium">Verified Patient</span>
+                           <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-white">
+                              <BadgeCheck size={14} strokeWidth={3} />
+                           </div>
+                        </div>
                      </div>
-                  </div>
-               </div>
+                  </motion.div>
+               </AnimatePresence>
             </motion.div>
          </div>
       </section>
@@ -1401,10 +1446,10 @@ const Home = () => {
       </section>
 
       {/* FOOTER */}
-      <footer id="contact" className="bg-[#0A0E17] text-white pt-16 pb-12 px-4 md:px-16 mt-20">
+      <footer id="contact" className="bg-[#0A0E17] text-white pt-10 pb-6 px-4 md:px-16 mt-10">
          <div className="max-w-[1600px] mx-auto">
             {/* Top: Contact Info */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 border border-gray-800/60 rounded-2xl p-6 lg:p-8 mb-16 shadow-lg bg-[#0E131F]">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 border border-gray-800/60 rounded-2xl p-6 lg:p-8 mb-8 shadow-lg bg-[#0E131F]">
                
                <div className="flex items-center gap-4 lg:border-r border-gray-800/60 p-4">
                   <div className="w-12 h-12 rounded-full bg-blue-900/20 flex items-center justify-center shrink-0">
@@ -1448,10 +1493,10 @@ const Home = () => {
             </div>
             
             {/* Divider */}
-            <div className="h-[1px] w-full bg-gray-800/60 mb-16"></div>
+            <div className="h-[1px] w-full bg-gray-800/60 mb-8"></div>
             
             {/* Middle: Links */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-20 mb-16">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-20 mb-8">
                
                <div className="col-span-1">
                   <div className="flex items-center gap-3 mb-4">
@@ -1515,7 +1560,7 @@ const Home = () => {
             </div>
             
             {/* Divider */}
-            <div className="h-[1px] w-full bg-gray-800/60 mb-8"></div>
+            <div className="h-[1px] w-full bg-gray-800/60 mb-6"></div>
             
             {/* Bottom: Copyright & Socials */}
             <div className="flex flex-col lg:flex-row justify-between items-center gap-8 lg:gap-4 text-xs font-medium text-gray-300 pt-2">

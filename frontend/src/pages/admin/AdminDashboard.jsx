@@ -13,7 +13,8 @@ import { useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { fadeIn, staggerContainer } from '../../components/ui/motion';
-import { BarChart3, Building, Building2, CalendarCheck, CheckCircle, CheckCircle2, CheckSquare, ClipboardList, Database, DollarSign, Download, FileDown, FileSpreadsheet, FileType, RefreshCw, Settings, ShieldCheck, User, UserPlus, Users, Users2, X } from 'lucide-react';
+import { BarChart3, Building, Building2, CalendarCheck, CalendarDays, CheckCircle, CheckCircle2, CheckSquare, ChevronDown, ChevronRight, ClipboardList, Database, DollarSign, Download, FileDown, FileSpreadsheet, FileType, RefreshCw, Settings, ShieldCheck, User, UserPlus, Users, Users2, X, HardDrive, Network, Link as LinkIcon } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { motion } from 'framer-motion';
 
 /* ── Backup & Restore Modal ──────────────────────────────────── */
@@ -235,192 +236,384 @@ function ExportDataModal({ onClose }) {
 
 
 
+/* ── Mock Data for Redesigned Dashboard ── */
+const APPT_DATA = [
+  { name: 'Mon', value: 50 },
+  { name: 'Tue', value: 140 },
+  { name: 'Wed', value: 245 },
+  { name: 'Thu', value: 120 },
+  { name: 'Fri', value: 260 },
+  { name: 'Sat', value: 310 },
+  { name: 'Sun', value: 240 },
+];
+
+const DEPT_DATA = [
+  { name: 'Cardiology', value: 3850, color: '#2160FF', pct: '30.6%' },
+  { name: 'Neurology', value: 2450, color: '#8B5CF6', pct: '19.5%' },
+  { name: 'Orthopedics', value: 2125, color: '#F59E0B', pct: '16.9%' },
+  { name: 'Pediatrics', value: 1875, color: '#10B981', pct: '14.9%' },
+  { name: 'Others', value: 2268, color: '#94A3B8', pct: '18.0%' },
+];
+
+const RECENT_ACTIVITY = [
+  { icon: User, color: 'text-[#2160FF]', bg: 'bg-blue-50', title: 'New patient registered', sub: 'John Doe • 5 min ago' },
+  { icon: CalendarCheck, color: 'text-[#2160FF]', bg: 'bg-blue-50', title: 'Appointment booked', sub: 'Dr. Sarah Smith • 15 min ago' },
+  { icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50', title: 'Payment received', sub: 'Invoice #INV-4587 • 30 min ago' },
+  { icon: FileSpreadsheet, color: 'text-purple-600', bg: 'bg-purple-50', title: 'Lab report uploaded', sub: 'Patient ID: PT-1256 • 1 hr ago' },
+  { icon: UserPlus, color: 'text-[#2160FF]', bg: 'bg-blue-50', title: 'New doctor added', sub: 'Dr. Michael Lee • 2 hr ago' },
+];
+
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState('branches');
+  const [activeTab, setActiveTab] = useState('analytics');
   const [backupModalOpen, setBackupModalOpen] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
 
-  const { data: branches, isLoading: branchesLoading } = useQuery({
-    queryKey: ['branches'],
-    queryFn: async () => {
-      const res = await axiosPrivate.get('/branches');
-      return res.data;
-    },
-    enabled: activeTab === 'branches'
-  });
-
-  const { data: metrics, isLoading: metricsLoading } = useQuery({
-    queryKey: ['admin-dashboard-metrics'],
-    queryFn: async () => {
-      const res = await axiosPrivate.get('/admin/analytics/dashboard');
-      return res.data;
-    },
-    enabled: activeTab === 'analytics',
-    refetchInterval: 5000 // Real-time simulated updates
-  });
-
   const tabs = [
-    { id: 'branches', label: 'Manage Branches', icon: Building2 },
-    { id: 'analytics', label: 'Analytics & Reports', icon: BarChart3 },
-    { id: 'users', label: 'Manage Users', icon: Users },
-    { id: 'patients', label: 'Manage Patients', icon: Users2 },
-    { id: 'doctors', label: 'Manage Doctors', icon: Users },
-    { id: 'departments', label: 'Manage Departments', icon: Building },
-    { id: 'audit', label: 'Audit & Compliance', icon: ShieldCheck },
-  ];
-
-  const quickActions = [
-    { label: 'Create User', icon: UserPlus, action: () => setActiveTab('users') },
-    { label: 'Manage Users', icon: Users, action: () => setActiveTab('users') },
-    { label: 'Roles &\nPermissions', icon: ShieldCheck, action: () => setActiveTab('users') },
-    { label: 'Manage\nDepartments', icon: Building, action: () => setActiveTab('departments') },
-    { label: 'Manage\nDoctors', icon: Users, action: () => setActiveTab('doctors') },
-    { label: 'Manage\nPatients', icon: Users2, action: () => setActiveTab('patients') },
-    { label: 'Manage\nBranches', icon: Building2, action: () => setActiveTab('branches') },
-    { label: 'Audit Logs', icon: ClipboardList, action: () => setActiveTab('audit') },
-    { label: 'Analytics\nDashboard', icon: BarChart3, action: () => setActiveTab('analytics') },
-    { label: 'System\nSettings', icon: Settings, action: () => setActiveTab('analytics') },
-    { label: 'Backup &\nRestore', icon: Database, action: () => setBackupModalOpen(true) },
-    { label: 'Export Data', icon: Download, action: () => setExportModalOpen(true) },
-  ];
-
-  const columns = [
-    { key: 'date', title: 'Date' },
-    { key: 'totalRevenue', title: 'Revenue', render: (val) => `$${val}` },
-    { key: 'totalAppointments', title: 'Total Appts' },
-    { key: 'completedAppointments', title: 'Completed' },
-    { key: 'cancelledAppointments', title: 'Cancelled' },
+    { id: 'branches', label: 'Manage Branches', sub: '12 Branches', icon: Building2 },
+    { id: 'analytics', label: 'Analytics & Reports', sub: 'Real-time Insights', icon: BarChart3 },
+    { id: 'users', label: 'Manage Users', sub: '156 Users', icon: Users },
+    { id: 'patients', label: 'Manage Patients', sub: '12,568 Patients', icon: Users2 },
+    { id: 'doctors', label: 'Manage Doctors', sub: '156 Doctors', icon: Users },
+    { id: 'departments', label: 'Manage Departments', sub: '26 Departments', icon: Building },
+    { id: 'audit', label: 'Audit & Compliance', sub: '98% Compliant', icon: ShieldCheck },
   ];
 
   return (
     <>
-      <DashboardShell
-        tabs={tabs}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-      >
-        <div className="p-4 sm:p-6 md:p-8 bg-slate-50 min-h-full overflow-y-auto w-full space-y-6 text-slate-800">
-          
-          {/* ── Hero Admin Banner ── */}
-          <div className="relative bg-gradient-to-r from-slate-900 via-slate-850 to-blue-950 rounded-3xl p-6 sm:p-8 text-white shadow-xl overflow-hidden border border-slate-800">
-            {/* Background Glow Overlay */}
-            <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
-            <div className="absolute bottom-0 left-1/3 w-64 h-64 bg-indigo-600/10 rounded-full blur-2xl pointer-events-none"></div>
-
-            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
-              <div className="space-y-2 max-w-2xl">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/15 border border-emerald-400/30 rounded-full text-emerald-400 text-xs font-bold shadow-xs">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                  System Operational · 99.9% Uptime
-                </div>
-                <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-white m-0">
-                  System Administration
-                </h1>
-                <p className="text-xs sm:text-sm text-slate-300 font-medium leading-relaxed m-0">
-                  Manage clinic locations, system users, department rosters, audit logs, and enterprise analytics across all branches.
-                </p>
+      <div className="flex flex-col h-full overflow-hidden bg-[#F8FAFC] font-sans">
+        
+        {/* Top Pill Navigation */}
+        <div className="px-6 py-4 flex items-center gap-4 overflow-x-auto no-scrollbar shrink-0 border-b border-slate-200/60 bg-white">
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-3 min-w-max px-4 py-2.5 rounded-xl border transition-all ${
+                activeTab === tab.id
+                  ? 'bg-[#2160FF] border-[#2160FF] text-white shadow-md shadow-blue-500/20'
+                  : 'bg-white border-slate-200 text-slate-700 hover:border-[#2160FF]/30 hover:bg-blue-50/50'
+              }`}
+            >
+              <div className={`p-1.5 rounded-lg ${activeTab === tab.id ? 'bg-white/20' : 'bg-blue-50 text-[#2160FF]'}`}>
+                <tab.icon className="w-5 h-5" strokeWidth={2} />
               </div>
-
-              {/* Action Buttons in Banner */}
-              <div className="flex items-center gap-3 shrink-0">
-                <button
-                  onClick={() => setBackupModalOpen(true)}
-                  className="px-4 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs rounded-2xl backdrop-blur-md flex items-center gap-2 transition shadow-sm"
-                >
-                  <Database className="w-4 h-4 text-blue-300" />
-                  Backup & Restore
-                </button>
-                <button
-                  onClick={() => setExportModalOpen(true)}
-                  className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-2xl shadow-md shadow-blue-500/20 flex items-center gap-2 transition"
-                >
-                  <Download className="w-4 h-4 text-blue-100" />
-                  Export System Data
-                </button>
+              <div className="text-left">
+                <p className={`text-[13px] font-bold leading-tight ${activeTab === tab.id ? 'text-white' : 'text-slate-800'}`}>{tab.label}</p>
+                <p className={`text-[11px] ${activeTab === tab.id ? 'text-blue-100' : 'text-slate-500'}`}>{tab.sub}</p>
               </div>
-            </div>
-
-            {/* Quick Actions Grid inside Banner */}
-            <div className="mt-8 pt-6 border-t border-white/10">
-              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3">
-                Quick Shortcuts
-              </p>
-              <motion.div
-                variants={staggerContainer}
-                initial="hidden"
-                animate="show"
-                className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3"
-              >
-                {quickActions.map((btn, i) => {
-                  const Icon = btn.icon;
-                  return (
-                    <motion.button
-                      key={i}
-                      onClick={btn.action}
-                      variants={fadeIn}
-                      whileHover={{ y: -2, scale: 1.02 }}
-                      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                      className="bg-white/10 hover:bg-white/20 border border-white/10 p-3 rounded-2xl backdrop-blur-md flex items-center gap-3 cursor-pointer text-left w-full transition group"
-                    >
-                      <div className="p-2 bg-blue-500/20 text-blue-300 rounded-xl shrink-0 group-hover:bg-blue-600 group-hover:text-white transition shadow-xs">
-                        <Icon className="w-4 h-4" strokeWidth={2} />
-                      </div>
-                      <span className="text-xs font-bold text-slate-100 leading-snug whitespace-pre-line group-hover:text-white">
-                        {btn.label.replace('\n', ' ')}
-                      </span>
-                    </motion.button>
-                  );
-                })}
-              </motion.div>
-            </div>
-          </div>
-
-          {/* ── Active Tab View Content ── */}
-          <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-2xs">
-            {activeTab === 'branches' && <BranchManagement />}
-            {activeTab === 'users' && <UserManagement />}
-            {activeTab === 'patients' && <PatientManagement />}
-            {activeTab === 'doctors' && <DoctorManagement />}
-            {activeTab === 'departments' && <DepartmentManagement />}
-            {activeTab === 'audit' && <AuditDashboard />}
-
-            {activeTab === 'analytics' && (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-black text-slate-900 text-lg">System Analytics & KPIs</h3>
-                    <p className="text-xs font-medium text-slate-500">Real-time performance indicators and operational counts.</p>
-                  </div>
-                  <Button variant="secondary" icon={Download}>Export Report PDF</Button>
-                </div>
-                
-                <motion.div
-                  variants={staggerContainer}
-                  initial="hidden"
-                  animate="show"
-                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
-                >
-                  <motion.div variants={fadeIn}><KPICard icon={DollarSign} label="Today's Revenue" value={`$${metrics?.todaysRevenue || '0.00'}`} colorToken="success" /></motion.div>
-                  <motion.div variants={fadeIn}><KPICard icon={DollarSign} label="Outstanding Payments" value={`$${metrics?.outstandingPayments || '0.00'}`} colorToken="danger" /></motion.div>
-                  <motion.div variants={fadeIn}><KPICard icon={CalendarCheck} label="Today's Appointments" value={metrics?.todaysAppointments || 0} colorToken="navy" /></motion.div>
-                  <motion.div variants={fadeIn}><KPICard icon={CheckSquare} label="Pending Appointments" value={metrics?.pendingAppointments || 0} colorToken="warning" /></motion.div>
-                  
-                  <motion.div variants={fadeIn}><KPICard icon={CheckCircle2} label="Completed Consultations" value={metrics?.completedConsultations || 0} colorToken="info" /></motion.div>
-                  <motion.div variants={fadeIn}><KPICard icon={BarChart3} label="Pending Lab Requests" value={metrics?.pendingLabRequests || 0} colorToken="indigo" /></motion.div>
-                  <motion.div variants={fadeIn}><KPICard icon={BarChart3} label="Pending Prescriptions" value={metrics?.pendingPharmacyPrescriptions || 0} colorToken="indigo" /></motion.div>
-                  <motion.div variants={fadeIn}><KPICard icon={CheckCircle2} label="Expiring Medicines" value={metrics?.expiringMedicines || 0} colorToken="warning" /></motion.div>
-                  
-                  <motion.div variants={fadeIn}><KPICard icon={CheckCircle2} label="Total Patients" value={metrics?.totalPatients || 0} colorToken="navy" /></motion.div>
-                  <motion.div variants={fadeIn}><KPICard icon={CheckCircle2} label="Total Doctors" value={metrics?.totalDoctors || 0} colorToken="navy" /></motion.div>
-                  <motion.div variants={fadeIn}><KPICard icon={CheckCircle2} label="Total Staff" value={metrics?.totalStaff || 0} colorToken="navy" /></motion.div>
-                  <motion.div variants={fadeIn}><KPICard icon={CheckCircle2} label="Active Users" value={metrics?.activeUsers || 0} colorToken="success" /></motion.div>
-                </motion.div>
-              </div>
-            )}
-          </div>
-
+            </button>
+          ))}
         </div>
-      </DashboardShell>
+
+        {/* Scrollable Main Content */}
+        <div className="flex-1 overflow-y-auto p-6 md:p-8">
+          {activeTab === 'analytics' ? (
+            <div className="max-w-[1500px] mx-auto space-y-6">
+              
+              {/* Banner Area */}
+              <div className="relative bg-[#1E3A8A] rounded-2xl p-8 pt-10 pb-20 shadow-xl overflow-hidden text-white flex flex-col md:flex-row justify-between items-start">
+                <div className="absolute inset-0 opacity-20 pointer-events-none overflow-hidden">
+                  <div className="absolute -top-[50%] -left-[10%] w-[120%] h-[120%] border-[2px] border-white/20 rounded-[100%]"></div>
+                  <div className="absolute top-[10%] -left-[20%] w-[140%] h-[140%] border-[2px] border-white/10 rounded-[100%]"></div>
+                </div>
+
+                <div className="relative z-10 space-y-3">
+                  <p className="text-blue-100 text-[15px] font-medium">Welcome back,</p>
+                  <h1 className="text-4xl font-extrabold tracking-tight flex items-center gap-2">
+                    Dr. Admin <span className="text-3xl">👋</span>
+                  </h1>
+                  <p className="text-blue-200 text-[14px]">Here's what's happening with your healthcare enterprise today.</p>
+                  
+                  <div className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-500/20 border border-emerald-500/30 rounded-full">
+                    <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+                    <span className="text-[11px] font-bold text-emerald-300">System Operational - 99.9% Uptime</span>
+                  </div>
+                </div>
+
+                <div className="relative z-10 flex flex-col items-end gap-4 mt-6 md:mt-0">
+                  <div className="flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-[13px] font-medium backdrop-blur-sm cursor-pointer hover:bg-white/20 transition-colors">
+                    <CalendarDays className="w-4 h-4 text-blue-200" />
+                    May 18 - May 24, 2026
+                    <ChevronDown className="w-4 h-4 ml-1 opacity-70" />
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button 
+                      onClick={() => setBackupModalOpen(true)}
+                      className="px-5 py-2.5 bg-transparent border border-white/30 hover:bg-white/10 text-white text-[13px] font-bold rounded-lg transition-colors flex items-center gap-2"
+                    >
+                      <Database className="w-4 h-4" /> Backup & Restore
+                    </button>
+                    <button 
+                      onClick={() => setExportModalOpen(true)}
+                      className="px-5 py-2.5 bg-[#2160FF] hover:bg-blue-600 text-white text-[13px] font-bold rounded-lg shadow-lg shadow-blue-500/30 transition-colors flex items-center gap-2"
+                    >
+                      <Download className="w-4 h-4" /> Export System Data
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* KPI Cards (Overlapping) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 -mt-16 relative z-20 px-4">
+                <div className="bg-white rounded-2xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.08)] flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+                    <User className="w-6 h-6 text-[#2160FF]" strokeWidth={2.5} />
+                  </div>
+                  <div>
+                    <p className="text-[12px] font-bold text-slate-500">Total Patients</p>
+                    <h3 className="text-2xl font-black text-slate-800 tracking-tight">12,568</h3>
+                    <p className="text-[11px] font-bold text-emerald-500 mt-0.5">↑ 12.5% <span className="text-slate-400 font-medium">vs last week</span></p>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-2xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.08)] flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center shrink-0">
+                    <CalendarCheck className="w-6 h-6 text-purple-600" strokeWidth={2.5} />
+                  </div>
+                  <div>
+                    <p className="text-[12px] font-bold text-slate-500">Appointments</p>
+                    <h3 className="text-2xl font-black text-slate-800 tracking-tight">1,245</h3>
+                    <p className="text-[11px] font-bold text-emerald-500 mt-0.5">↑ 8.3% <span className="text-slate-400 font-medium">vs last week</span></p>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-2xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.08)] flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center shrink-0">
+                    <Users className="w-6 h-6 text-emerald-600" strokeWidth={2.5} />
+                  </div>
+                  <div>
+                    <p className="text-[12px] font-bold text-slate-500">Total Doctors</p>
+                    <h3 className="text-2xl font-black text-slate-800 tracking-tight">156</h3>
+                    <p className="text-[11px] font-bold text-emerald-500 mt-0.5">↑ 4.2% <span className="text-slate-400 font-medium">vs last week</span></p>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-2xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.08)] flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+                    <DollarSign className="w-6 h-6 text-[#2160FF]" strokeWidth={2.5} />
+                  </div>
+                  <div>
+                    <p className="text-[12px] font-bold text-slate-500">Revenue (This Week)</p>
+                    <h3 className="text-2xl font-black text-slate-800 tracking-tight">₹ 24,85,000</h3>
+                    <p className="text-[11px] font-bold text-emerald-500 mt-0.5">↑ 15.6% <span className="text-slate-400 font-medium">vs last week</span></p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Grid Content */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-4">
+                
+                {/* Left Column (Charts & Usage) */}
+                <div className="lg:col-span-6 space-y-6">
+                  
+                  {/* Appointments Overview Line Chart */}
+                  <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="text-[16px] font-extrabold text-slate-800">Appointments Overview</h2>
+                      <div className="flex items-center gap-1 text-[12px] font-bold text-slate-600 px-3 py-1.5 border border-slate-200 rounded-lg cursor-pointer">
+                        This Week <ChevronDown className="w-4 h-4 ml-1" />
+                      </div>
+                    </div>
+                    <div className="h-[280px] w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={APPT_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                          <defs>
+                            <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#2160FF" stopOpacity={0.3}/>
+                              <stop offset="95%" stopColor="#2160FF" stopOpacity={0}/>
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b', fontWeight: 500}} dy={10} />
+                          <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b', fontWeight: 500}} />
+                          <Tooltip 
+                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
+                            itemStyle={{ color: '#2160FF', fontWeight: 800 }}
+                          />
+                          <Area type="monotone" dataKey="value" stroke="#2160FF" strokeWidth={3} fillOpacity={1} fill="url(#colorValue)" activeDot={{r: 6, fill: '#2160FF', stroke: '#fff', strokeWidth: 2}} />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  {/* System Usage */}
+                  <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="text-[16px] font-extrabold text-slate-800">System Usage</h2>
+                      <div className="flex items-center gap-1 text-[12px] font-bold text-slate-600 px-3 py-1.5 border border-slate-200 rounded-lg cursor-pointer">
+                        This Month <ChevronDown className="w-4 h-4 ml-1" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                      {/* Storage */}
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                            <HardDrive className="w-5 h-5 text-[#2160FF]" />
+                          </div>
+                          <div>
+                            <p className="text-[12px] font-bold text-slate-800">Storage Usage</p>
+                            <p className="text-[11px] text-slate-500">320 GB / 1 TB</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div className="h-full bg-[#2160FF] rounded-full" style={{ width: '32%' }}></div>
+                          </div>
+                          <span className="text-[11px] font-bold text-slate-600">32%</span>
+                        </div>
+                      </div>
+                      
+                      {/* Database */}
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center shrink-0">
+                            <Database className="w-5 h-5 text-purple-600" />
+                          </div>
+                          <div>
+                            <p className="text-[12px] font-bold text-slate-800">Database</p>
+                            <p className="text-[11px] text-slate-500">78 GB / 250 GB</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div className="h-full bg-purple-600 rounded-full" style={{ width: '31%' }}></div>
+                          </div>
+                          <span className="text-[11px] font-bold text-slate-600">31%</span>
+                        </div>
+                      </div>
+
+                      {/* API Requests */}
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+                            <LinkIcon className="w-5 h-5 text-emerald-600" />
+                          </div>
+                          <div>
+                            <p className="text-[12px] font-bold text-slate-800">API Requests</p>
+                            <p className="text-[11px] text-slate-500">12.6M / 50M</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div className="h-full bg-emerald-600 rounded-full" style={{ width: '25%' }}></div>
+                          </div>
+                          <span className="text-[11px] font-bold text-slate-600">25%</span>
+                        </div>
+                      </div>
+
+                      {/* Bandwidth */}
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center shrink-0">
+                            <Network className="w-5 h-5 text-orange-500" />
+                          </div>
+                          <div>
+                            <p className="text-[12px] font-bold text-slate-800">Bandwidth</p>
+                            <p className="text-[11px] text-slate-500">256 GB / 1 TB</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div className="h-full bg-orange-500 rounded-full" style={{ width: '26%' }}></div>
+                          </div>
+                          <span className="text-[11px] font-bold text-slate-600">26%</span>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+
+                {/* Middle Column (Donut Chart) */}
+                <div className="lg:col-span-3 flex">
+                   <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 w-full flex flex-col">
+                      <h2 className="text-[16px] font-extrabold text-slate-800 mb-4 text-center">Patients by Department</h2>
+                      <div className="flex-1 min-h-[200px] relative">
+                         <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                               <Pie
+                                  data={DEPT_DATA}
+                                  cx="50%"
+                                  cy="50%"
+                                  innerRadius={50}
+                                  outerRadius={70}
+                                  paddingAngle={2}
+                                  dataKey="value"
+                               >
+                                  {DEPT_DATA.map((entry, index) => (
+                                     <Cell key={`cell-${index}`} fill={entry.color} />
+                                  ))}
+                               </Pie>
+                               <Tooltip 
+                                 contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
+                               />
+                            </PieChart>
+                         </ResponsiveContainer>
+                         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                            <span className="text-xl font-black text-slate-800">12,568</span>
+                            <span className="text-[10px] font-bold text-slate-400">Total</span>
+                         </div>
+                      </div>
+                      <div className="mt-4 space-y-3">
+                         {DEPT_DATA.map((d, i) => (
+                            <div key={i} className="flex items-center justify-between">
+                               <div className="flex items-center gap-2">
+                                  <div className="w-2.5 h-2.5 rounded-full" style={{backgroundColor: d.color}}></div>
+                                  <span className="text-[12px] font-bold text-slate-700">{d.name}</span>
+                               </div>
+                               <div className="text-right">
+                                  <p className="text-[12px] font-semibold text-slate-500">{d.value.toLocaleString()} <span className="text-[10px] text-slate-400">({d.pct})</span></p>
+                               </div>
+                            </div>
+                         ))}
+                      </div>
+                   </div>
+                </div>
+
+                {/* Right Column (Recent Activity) */}
+                <div className="lg:col-span-3">
+                  <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 h-full">
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="text-[16px] font-extrabold text-slate-800">Recent Activity</h2>
+                      <span className="text-[12px] font-bold text-[#2160FF] cursor-pointer hover:underline">View All</span>
+                    </div>
+                    <div className="space-y-5">
+                      {RECENT_ACTIVITY.map((act, i) => {
+                        const Icon = act.icon;
+                        return (
+                          <div key={i} className="flex items-center justify-between group cursor-pointer">
+                            <div className="flex items-center gap-3.5">
+                              <div className={`w-10 h-10 rounded-full ${act.bg} flex items-center justify-center shrink-0`}>
+                                <Icon className={`w-4 h-4 ${act.color}`} strokeWidth={2.5} />
+                              </div>
+                              <div>
+                                <p className="text-[13px] font-bold text-slate-800 group-hover:text-[#2160FF] transition-colors">{act.title}</p>
+                                <p className="text-[11px] text-slate-500 mt-0.5">{act.sub}</p>
+                              </div>
+                            </div>
+                            <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-[#2160FF] transition-colors" />
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm min-h-[600px] max-w-[1500px] mx-auto">
+              {activeTab === 'branches' && <BranchManagement />}
+              {activeTab === 'users' && <UserManagement />}
+              {activeTab === 'patients' && <PatientManagement />}
+              {activeTab === 'doctors' && <DoctorManagement />}
+              {activeTab === 'departments' && <DepartmentManagement />}
+              {activeTab === 'audit' && <AuditDashboard />}
+            </div>
+          )}
+        </div>
+      </div>
 
       {backupModalOpen && <BackupRestoreModal onClose={() => setBackupModalOpen(false)} />}
       {exportModalOpen && <ExportDataModal onClose={() => setExportModalOpen(false)} />}

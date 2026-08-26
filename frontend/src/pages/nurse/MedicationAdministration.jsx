@@ -1,7 +1,8 @@
-import logger from '../../utils/logger';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import { axiosPrivate } from '../../api/axios';
-import { Pill } from 'lucide-react';
+import { Pill, User, Clock, CheckCircle2, MoreVertical, Loader2 } from 'lucide-react';
+import logger from '../../utils/logger';
 
 const MedicationAdministration = () => {
   const [marList, setMarList] = useState([]);
@@ -30,6 +31,7 @@ const MedicationAdministration = () => {
     try {
       await axiosPrivate.post(`/nursing/mar/${id}/administer`);
       fetchMarList();
+      toast.success('Medication marked as administered.');
     } catch (err) {
       logger.error(err);
       toast.error('Failed to update status.');
@@ -42,58 +44,153 @@ const MedicationAdministration = () => {
   };
 
   return (
-    
-    <div className="p-4 sm:p-6" style={{ maxWidth: '1000px', margin: '0 auto' }}>
-      <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0f172a', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <Pill size={24} color="#0f766e" /> Medication Administration Record (MAR)
-      </h1>
+    <div className="min-h-full bg-[#F4F7FB] p-6 lg:p-10 w-full font-sans">
+      <div className="max-w-[1200px] mx-auto space-y-6">
+        
+        {/* Top Header Card */}
+        <div className="bg-white rounded-3xl p-6 lg:p-8 shadow-sm border border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+          <div className="flex items-center gap-5">
+            <div className="p-4 bg-[#F0FDF4] rounded-2xl flex-shrink-0 border border-teal-100/50">
+              <Pill className="w-8 h-8 text-[#0F766E]" strokeWidth={2.5} />
+            </div>
+            <div>
+              <h1 className="text-[28px] font-extrabold text-slate-900 mb-1 tracking-tight">Medication Administration Record (MAR)</h1>
+              <p className="text-[15px] text-gray-500 font-medium">View and manage all medications administered to the patient.</p>
+            </div>
+          </div>
+        </div>
 
-      {error && <div className="bg-red-50 text-red-700 p-3 rounded mb-4">{error}</div>}
+        {error && (
+          <div className="bg-red-50 text-red-700 p-4 rounded-xl border border-red-200 font-medium">
+            {error}
+          </div>
+        )}
 
-      <div style={{ background: '#fff', borderRadius: '12px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-          <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-            <tr>
-              <th style={{ padding: '12px 16px', color: '#475569', fontSize: '0.8rem' }}>Patient & Bed</th>
-              <th style={{ padding: '12px 16px', color: '#475569', fontSize: '0.8rem' }}>Medication & Dose</th>
-              <th style={{ padding: '12px 16px', color: '#475569', fontSize: '0.8rem' }}>Scheduled Time</th>
-              <th style={{ padding: '12px 16px', color: '#475569', fontSize: '0.8rem' }}>Status</th>
-              <th style={{ padding: '12px 16px', color: '#475569', fontSize: '0.8rem' }}>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr><td colSpan="5" style={{ padding: '20px', textAlign: 'center' }}>Loading...</td></tr>
-            ) : marList.length === 0 ? (
-              <tr><td colSpan="5" style={{ padding: '20px', textAlign: 'center', color: '#64748b' }}>No medications due.</td></tr>
-            ) : marList.map(m => (
-              <tr key={m.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                <td style={{ padding: '12px 16px', fontWeight: 600, fontSize: '0.85rem', color: '#0f172a' }}>{m.patientName} (Bed {m.bedNumber})</td>
-                <td style={{ padding: '12px 16px', fontSize: '0.85rem' }}>{m.medicationName} ({m.dosage})</td>
-                <td style={{ padding: '12px 16px', fontSize: '0.8rem', color: '#64748b' }}>{formatTime(m.scheduledTime)}</td>
-                <td style={{ padding: '12px 16px' }}>
-                  <span style={{
-                    padding: '3px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600,
-                    background: m.status === 'GIVEN' ? '#dcfce7' : '#fef9c3',
-                    color: m.status === 'GIVEN' ? '#15803d' : '#854d0e'
-                  }}>
-                    {m.status === 'GIVEN' ? `Given at ${formatTime(m.administeredAt)}` : 'DUE NOW'}
-                  </span>
-                </td>
-                <td style={{ padding: '12px 16px' }}>
-                  {m.status === 'DUE' && (
-                    <button onClick={() => markGiven(m.id)} style={{ background: '#0f766e', color: '#fff', border: 'none', padding: '5px 12px', borderRadius: '5px', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600 }}>
-                      Mark Administered
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        {/* Main Content Card (Table) */}
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[800px]">
+              <thead>
+                <tr className="bg-[#F8FAF9] border-b border-gray-200">
+                  <th className="py-5 px-6 font-semibold text-[14px] text-slate-700 w-[25%]">
+                    <div className="flex items-center gap-2">
+                      <User className="w-4 h-4 text-[#0F766E]" /> Patient & Bed
+                    </div>
+                  </th>
+                  <th className="py-5 px-6 font-semibold text-[14px] text-slate-700 w-[30%]">
+                    <div className="flex items-center gap-2">
+                      <Pill className="w-4 h-4 text-[#0F766E]" /> Medication & Dose
+                    </div>
+                  </th>
+                  <th className="py-5 px-6 font-semibold text-[14px] text-slate-700 w-[20%]">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-[#0F766E]" /> Scheduled Time
+                    </div>
+                  </th>
+                  <th className="py-5 px-6 font-semibold text-[14px] text-slate-700 w-[15%]">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-[#0F766E]" /> Status
+                    </div>
+                  </th>
+                  <th className="py-5 px-6 font-semibold text-[14px] text-slate-700 w-[10%]">
+                    <div className="flex items-center gap-2">
+                      <MoreVertical className="w-4 h-4 text-[#0F766E]" /> Action
+                    </div>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr>
+                    <td colSpan="5" className="py-20 text-center">
+                      <div className="flex justify-center">
+                        <Loader2 className="w-8 h-8 animate-spin text-[#0F766E]" />
+                      </div>
+                    </td>
+                  </tr>
+                ) : marList.length === 0 ? (
+                  <tr>
+                    <td colSpan="5" className="py-20">
+                      <div className="flex flex-col items-center justify-center text-center">
+                        {/* Custom Empty State Illustration */}
+                        <div className="relative w-28 h-28 flex items-center justify-center mb-6">
+                           <div className="absolute inset-0 bg-[#F0FDF4] rounded-full"></div>
+                           
+                           {/* Sparkles */}
+                           <div className="absolute top-4 left-2 w-1.5 h-1.5 bg-[#0F766E]/40 rotate-45"></div>
+                           <div className="absolute bottom-6 left-4 w-2 h-2 bg-[#0F766E]/50 rotate-45"></div>
+                           <div className="absolute top-6 right-0 w-2.5 h-2.5 bg-[#0F766E]/60 rotate-45"></div>
+                           <div className="absolute bottom-8 right-3 w-1.5 h-1.5 bg-[#0F766E]/40 rotate-45"></div>
+
+                           {/* Clipboard + Pill */}
+                           <div className="relative z-10 w-14 h-18 bg-white border-2 border-[#0F766E] rounded-lg flex flex-col items-center pt-3 pb-2 px-2 shadow-sm">
+                             {/* Clip */}
+                             <div className="absolute -top-1.5 w-6 h-2 bg-white border-2 border-[#0F766E] rounded-sm"></div>
+                             {/* Lines */}
+                             <div className="w-full h-0.5 bg-[#0F766E] rounded-full mt-1 opacity-40"></div>
+                             <div className="w-full h-0.5 bg-[#0F766E] rounded-full mt-2 opacity-40"></div>
+                             <div className="w-2/3 h-0.5 bg-[#0F766E] rounded-full mt-2 self-start opacity-40"></div>
+                           </div>
+                           
+                           {/* Overlaid Pill */}
+                           <div className="absolute -bottom-1 -right-1 z-20 bg-white rounded-full p-0.5">
+                             <div className="w-8 h-8 rounded-full border-2 border-[#0F766E] bg-white flex items-center justify-center transform -rotate-45">
+                               <div className="w-full h-1/2 bg-[#0F766E]/10 border-b-2 border-[#0F766E] rounded-t-full absolute top-0"></div>
+                             </div>
+                           </div>
+                        </div>
+
+                        <h3 className="text-[20px] font-extrabold text-slate-900 mb-2 tracking-tight">No medication data.</h3>
+                        <p className="text-[14.5px] text-gray-500 font-medium">There are no medication administration records available for this patient.</p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  marList.map((m, index) => (
+                    <tr key={m.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors">
+                      <td className="py-5 px-6">
+                        <div className="font-extrabold text-slate-900 text-[15px]">{m.patientName}</div>
+                        <div className="text-[13px] text-gray-500 font-medium mt-0.5">Bed {m.bedNumber}</div>
+                      </td>
+                      <td className="py-5 px-6">
+                        <div className="font-bold text-slate-800 text-[14.5px]">{m.medicationName}</div>
+                        <div className="text-[13px] text-gray-500 font-medium mt-0.5">{m.dosage}</div>
+                      </td>
+                      <td className="py-5 px-6">
+                        <div className="font-semibold text-slate-700 text-[14.5px]">{formatTime(m.scheduledTime)}</div>
+                      </td>
+                      <td className="py-5 px-6">
+                        {m.status === 'GIVEN' ? (
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-black uppercase tracking-wider bg-green-100 text-green-700">
+                            Given at {formatTime(m.administeredAt)}
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-black uppercase tracking-wider bg-amber-100 text-amber-700">
+                            DUE NOW
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-5 px-6">
+                        {m.status === 'DUE' ? (
+                          <button 
+                            onClick={() => markGiven(m.id)}
+                            className="bg-[#0F766E] hover:bg-teal-800 text-white border-none py-2 px-4 rounded-lg text-[13px] font-bold cursor-pointer transition-colors shadow-md shadow-teal-700/20 whitespace-nowrap"
+                          >
+                            Mark Administered
+                          </button>
+                        ) : (
+                          <span className="text-gray-400 font-medium text-[13px] italic">Completed</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
-    
   );
 };
 

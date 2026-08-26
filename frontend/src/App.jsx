@@ -4,7 +4,6 @@ import DashboardLayout from './layouts/DashboardLayout';
 import PublicLayout from './layouts/PublicLayout';
 import MainLayout from './components/pharmacy/layout/MainLayout';
 import PageLoadingSkeleton from './components/ui/PageLoadingSkeleton';
-import AIAssistantWidget from './components/ui/AIAssistantWidget';
 import { MotionConfig } from 'framer-motion';
 import { PharmacyAuthProvider } from './context/pharmacy/AuthContext';
 import { BASE_URL } from './api/axios';
@@ -279,7 +278,6 @@ function App() {
         />
         <MotionConfig reducedMotion="user">
           <Suspense fallback={<PageLoadingSkeleton />}>
-            <AIAssistantWidget />
             <Routes>
 
           {/* ── Public Routes ───────────────────────────────────────────── */}
@@ -440,7 +438,7 @@ function App() {
             <Route path="billing" element={<ReceptionBilling />} />
             <Route path="insurance" element={<InsuranceVerificationPage />} />
             <Route path="documents" element={<DocumentScanning />} />
-            <Route path="checkin" element={<CheckInKiosk />} />
+            <Route path="kiosk" element={<CheckInKiosk />} />
             <Route path="search" element={<PatientSearch />} />
             {/* Previously missing reception routes */}
             <Route path="book" element={<DoctorList />} />

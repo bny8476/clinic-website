@@ -81,7 +81,7 @@ const DoctorLabReports = () => {
             <h1 className="text-2xl font-bold text-slate-800">Lab Reports</h1>
             <p className="text-sm font-medium text-slate-500 mt-1">View and manage all patient lab reports</p>
           </div>
-          <button className="flex items-center gap-2 bg-[#5B21B6] hover:bg-indigo-800 text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm transition-colors">
+          <button className="flex items-center gap-2 bg-[#2160FF] hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm transition-colors">
             <Upload size={16} strokeWidth={2.5} /> Upload Report
           </button>
         </div>
@@ -94,12 +94,12 @@ const DoctorLabReports = () => {
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`pb-3 text-sm font-bold whitespace-nowrap transition-colors relative ${
-                  activeTab === tab ? 'text-[#5B21B6]' : 'text-slate-500 hover:text-slate-700'
+                  activeTab === tab ? 'text-[#2160FF]' : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
                 {tab}
                 {activeTab === tab && (
-                  <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#5B21B6] rounded-t-md"></div>
+                  <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#2160FF] rounded-t-md"></div>
                 )}
               </button>
             ))}
@@ -111,7 +111,7 @@ const DoctorLabReports = () => {
               <input 
                 type="text" 
                 placeholder="Search lab reports..." 
-                className="pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-[13px] font-medium text-slate-700 focus:outline-none focus:border-[#5B21B6] w-[220px]"
+                className="pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-[13px] font-medium text-slate-700 focus:outline-none focus:border-[#2160FF] w-[220px]"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -197,8 +197,8 @@ const DoctorLabReports = () => {
                         </span>
                       </td>
                       <td className="py-4 px-6">
-                        <div className="flex items-center justify-center gap-3 text-[#5B21B6]">
-                          <button className="w-7 h-7 flex items-center justify-center rounded bg-indigo-50 hover:bg-indigo-100 transition-colors">
+                        <div className="flex items-center justify-center gap-3 text-[#2160FF]">
+                          <button className="w-7 h-7 flex items-center justify-center rounded bg-blue-50 hover:bg-blue-100 transition-colors">
                             <Eye size={14} strokeWidth={2.5} />
                           </button>
                           {(report.status === 'VERIFIED' || report.status === 'RELEASED') && (
@@ -223,7 +223,7 @@ const DoctorLabReports = () => {
               <span className="text-[12px] font-medium text-slate-500">Showing 1 to 8 of 24 reports</span>
               <div className="flex items-center gap-1">
                 <button className="w-8 h-8 flex items-center justify-center rounded border border-slate-200 text-slate-500 hover:bg-slate-50">&lt;</button>
-                <button className="w-8 h-8 flex items-center justify-center rounded bg-[#5B21B6] text-white font-bold text-[13px]">1</button>
+                <button className="w-8 h-8 flex items-center justify-center rounded bg-[#2160FF] text-white font-bold text-[13px]">1</button>
                 <button className="w-8 h-8 flex items-center justify-center rounded border border-slate-200 text-slate-600 font-bold text-[13px] hover:bg-slate-50">2</button>
                 <button className="w-8 h-8 flex items-center justify-center rounded border border-slate-200 text-slate-600 font-bold text-[13px] hover:bg-slate-50">3</button>
                 <button className="w-8 h-8 flex items-center justify-center rounded border border-slate-200 text-slate-500 hover:bg-slate-50">&gt;</button>
@@ -284,7 +284,7 @@ const DoctorLabReports = () => {
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-[14px] font-bold text-slate-800">Recent Uploads</h3>
-                <button className="text-[11px] font-bold text-[#5B21B6] hover:underline">View All</button>
+                <button className="text-[11px] font-bold text-[#2160FF] hover:underline">View All</button>
               </div>
 
               <div className="p-3 text-center text-sm text-slate-500 font-medium">

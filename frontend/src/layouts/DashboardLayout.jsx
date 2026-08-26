@@ -217,11 +217,7 @@ const DashboardLayout = ({ portalSlug, allowedRoles }) => {
           - All other routes:  overflow-y-auto  → page content scrolls naturally inside
             the fixed shell (header + nav bar remain sticky at top). */}
       <main
-        className={`flex-1 w-full flex flex-col ${
-          location.pathname.endsWith('/dashboard')
-            ? 'overflow-hidden'
-            : 'overflow-x-hidden overflow-y-auto relative'
-        }`}
+        className={`flex-1 w-full flex flex-col overflow-x-hidden overflow-y-auto relative`}
       >
         <div key={location.pathname} className="flex-1 flex flex-col">
           <Outlet />

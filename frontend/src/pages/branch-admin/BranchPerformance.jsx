@@ -21,10 +21,10 @@ const MOCK_DAILY = [
 ];
 
 const MOCK_KPIS = [
-  { label: 'Daily Footfall', value: '142', icon: Users, color: 'bg-indigo-50 border-indigo-100 text-indigo-600', valueColor: 'text-indigo-900' },
+  { label: 'Daily Footfall', value: '142', icon: Users, color: 'bg-blue-50 border-blue-100 text-[#2160FF]', valueColor: 'text-blue-900' },
   { label: 'Gross Revenue', value: '₹51,200', icon: IndianRupee, color: 'bg-emerald-50 border-emerald-100 text-emerald-600', valueColor: 'text-emerald-900' },
   { label: 'Avg Wait Time', value: '14 min', icon: Clock, color: 'bg-amber-50 border-amber-100 text-amber-600', valueColor: 'text-amber-900' },
-  { label: 'OPD Consults', value: '89', icon: BarChart3, color: 'bg-violet-50 border-violet-100 text-violet-600', valueColor: 'text-violet-900' },
+  { label: 'OPD Consults', value: '89', icon: BarChart3, color: 'bg-blue-50 border-blue-100 text-[#2160FF]', valueColor: 'text-blue-900' },
 ];
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
@@ -61,114 +61,130 @@ const BranchPerformance = () => {
   };
 
   return (
-    <motion.div
-      initial="hidden"
-      animate="visible"
-      variants={fadeIn}
-      className="max-w-6xl mx-auto space-y-6"
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <Link to="/branch-admin" className="inline-flex items-center text-xs font-semibold text-[var(--color-navy-600)] hover:underline mb-2 gap-1">
-            <ArrowLeft className="w-3.5 h-3.5" /> Back to Dashboard
-          </Link>
-          <h1 className="text-2xl sm:text-3xl font-bold font-display text-[var(--color-navy-900)] m-0 flex items-center gap-2">
-            <BarChart3 className="w-7 h-7 text-indigo-600" />
-            Branch Performance
-          </h1>
-          <p className="text-sm text-[var(--color-text-muted)] m-0 mt-1">
-            Daily patient footfall, revenue, and clinical metrics.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          {[['week', 'This Week'], ['month', 'This Month'], ['year', 'This Year']].map(([val, label]) => (
-            <button
-              key={val}
-              onClick={() => setTimeRange(val)}
-              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${
-                timeRange === val
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-          <button
-            onClick={() => refetch()}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-          </button>
-          <button
-            onClick={() => toast.success('Exporting performance report…')}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors"
-          >
-            <Download className="w-3.5 h-3.5" /> Export
-          </button>
-        </div>
-      </div>
-
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {normalizeKpis(kpis).map((kpi, i) => {
-          const Icon = kpi.icon;
-          return (
-            <div key={i} className={`rounded-xl border p-5 flex items-center gap-4 ${kpi.color}`}>
-              <div className={`w-12 h-12 rounded-full bg-white/60 flex items-center justify-center shrink-0 ${kpi.color}`}>
-                <Icon size={22} />
+    <div className="p-6 md:p-8 bg-white min-h-full font-sans">
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={fadeIn}
+        className="max-w-[1500px] mx-auto space-y-8"
+      >
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 pb-6">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 m-0 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+                <BarChart3 className="w-6 h-6 text-[#2160FF]" />
               </div>
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wider opacity-70">{kpi.label}</p>
-                <p className={`text-2xl font-bold mt-0.5 ${kpi.valueColor}`}>{kpi.value}</p>
-              </div>
+              Branch Performance
+            </h1>
+            <p className="text-sm font-medium text-slate-500 m-0 mt-2">
+              Daily patient footfall, revenue, and clinical metrics.
+            </p>
+          </div>
+          
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex bg-slate-100 p-1 rounded-lg">
+              {[['week', 'This Week'], ['month', 'This Month'], ['year', 'This Year']].map(([val, label]) => (
+                <button
+                  key={val}
+                  onClick={() => setTimeRange(val)}
+                  className={`px-4 py-2 text-[13px] font-bold rounded-md transition-colors ${
+                    timeRange === val
+                      ? 'bg-white text-[#2160FF] shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
-          );
-        })}
-      </div>
+            <button
+              onClick={() => refetch()}
+              className="flex items-center justify-center w-10 h-10 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-slate-600 shadow-sm"
+              title="Refresh Data"
+            >
+              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+            </button>
+            <button
+              onClick={() => toast.success('Exporting performance report…')}
+              className="flex items-center gap-2 px-5 py-2 text-[13px] font-bold text-white bg-[#2160FF] hover:bg-blue-700 rounded-lg shadow-sm transition-colors"
+            >
+              <Download className="w-4 h-4" /> Export Report
+            </button>
+          </div>
+        </div>
 
-      {/* Daily Bar Chart */}
-      <Card>
-        <Card.Header>
-          <h2 className="text-lg font-bold text-[var(--color-navy-900)]">Daily Patient Footfall &amp; Revenue</h2>
-        </Card.Header>
-        <Card.Body>
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey={chartData[0]?.day ? 'day' : 'date'} axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
-              <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
-              <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }}
-                tickFormatter={v => `₹${(v/1000).toFixed(0)}k`} />
-              <Tooltip formatter={(val, name) => name === 'revenue' ? [`₹${val.toLocaleString('en-IN')}`, 'Revenue'] : [val, 'Footfall']} />
-              <Legend />
-              <Bar yAxisId="left" dataKey="footfall" name="Footfall" fill="#6366f1" radius={[4, 4, 0, 0]} />
-              <Bar yAxisId="right" dataKey="revenue" name="Revenue" fill="#10b981" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </Card.Body>
-      </Card>
+        {/* KPI Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {normalizeKpis(kpis).map((kpi, i) => {
+            const Icon = kpi.icon;
+            return (
+              <div key={i} className={`rounded-2xl border p-6 flex items-center gap-5 transition-transform hover:-translate-y-1 hover:shadow-md ${kpi.color} bg-white shadow-sm`}>
+                <div className={`w-14 h-14 rounded-xl flex items-center justify-center shrink-0 ${kpi.color}`}>
+                  <Icon size={26} strokeWidth={2.5} />
+                </div>
+                <div>
+                  <p className="text-[11px] font-black uppercase tracking-wider text-slate-500 mb-1">{kpi.label}</p>
+                  <p className={`text-[28px] font-extrabold leading-none ${kpi.valueColor}`}>{kpi.value}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
 
-      {/* Monthly Trend Line Chart */}
-      <Card>
-        <Card.Header>
-          <h2 className="text-lg font-bold text-[var(--color-navy-900)]">Monthly Performance Trends</h2>
-        </Card.Header>
-        <Card.Body>
-          <ResponsiveContainer width="100%" height={260}>
-            <LineChart data={monthlyData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
-              <Tooltip />
-              <Legend />
-              <Line type="monotone" dataKey="footfall" name="Footfall" stroke="#6366f1" strokeWidth={2} dot={false} />
-            </LineChart>
-          </ResponsiveContainer>
-        </Card.Body>
-      </Card>
-    </motion.div>
+        {/* Charts Grid */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          {/* Daily Bar Chart */}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+              <h2 className="text-[16px] font-extrabold text-slate-800">Daily Patient Footfall &amp; Revenue</h2>
+              <span className="px-3 py-1 bg-slate-100 text-slate-600 text-[11px] font-bold rounded-full">Last 7 Days</span>
+            </div>
+            <div className="p-6 flex-1 min-h-[350px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis dataKey={chartData[0]?.day ? 'day' : 'date'} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b', fontWeight: 600 }} dy={10} />
+                  <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b', fontWeight: 600 }} dx={-10} />
+                  <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b', fontWeight: 600 }} dx={10}
+                    tickFormatter={v => `₹${(v/1000).toFixed(0)}k`} />
+                  <Tooltip 
+                    contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                    formatter={(val, name) => name === 'revenue' ? [`₹${val.toLocaleString('en-IN')}`, 'Revenue'] : [val, 'Footfall']} 
+                  />
+                  <Legend wrapperStyle={{ paddingTop: '20px', fontWeight: 600, fontSize: '13px' }} />
+                  <Bar yAxisId="left" dataKey="footfall" name="Footfall" fill="#2160FF" radius={[6, 6, 0, 0]} barSize={24} />
+                  <Bar yAxisId="right" dataKey="revenue" name="Revenue" fill="#10b981" radius={[6, 6, 0, 0]} barSize={24} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Monthly Trend Line Chart */}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+              <h2 className="text-[16px] font-extrabold text-slate-800">Monthly Performance Trends</h2>
+              <span className="px-3 py-1 bg-slate-100 text-slate-600 text-[11px] font-bold rounded-full">6 Months</span>
+            </div>
+            <div className="p-6 flex-1 min-h-[350px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={monthlyData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b', fontWeight: 600 }} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b', fontWeight: 600 }} dx={-10} />
+                  <Tooltip 
+                    contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                  />
+                  <Legend wrapperStyle={{ paddingTop: '20px', fontWeight: 600, fontSize: '13px' }} />
+                  <Line type="monotone" dataKey="footfall" name="Footfall" stroke="#2160FF" strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: '#fff' }} activeDot={{ r: 6, fill: '#2160FF', stroke: '#fff', strokeWidth: 2 }} />
+                  <Line type="monotone" dataKey="revenue" name="Revenue (₹)" stroke="#10b981" strokeWidth={3} dot={{ r: 4, strokeWidth: 2, fill: '#fff' }} activeDot={{ r: 6, fill: '#10b981', stroke: '#fff', strokeWidth: 2 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    </div>
   );
 };
 

@@ -137,7 +137,7 @@ export default function OrderMedicine() {
       {/* Page Header */}
       <motion.div variants={fadeUp} className="mb-6">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-[#3B28CC] shadow-sm">
+          <div className="w-14 h-14 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-[#2864FF] shadow-sm">
             <ShoppingBag size={24} />
           </div>
           <div>
@@ -154,7 +154,7 @@ export default function OrderMedicine() {
           <input 
             type="text" 
             placeholder="Search medicines by name, salt or brand..." 
-            className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#3B28CC] focus:border-transparent text-sm font-medium text-slate-800 placeholder:text-slate-400"
+            className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#2864FF] focus:border-transparent text-sm font-medium text-slate-800 placeholder:text-slate-400"
           />
         </div>
         <div className="relative min-w-[160px]">
@@ -182,7 +182,7 @@ export default function OrderMedicine() {
             onClick={() => setActiveCategory(cat)}
             className={`whitespace-nowrap px-5 py-2.5 rounded-xl text-sm font-semibold transition shadow-sm ${
               activeCategory === cat 
-                ? 'bg-[#3B28CC] text-white border-transparent' 
+                ? 'bg-[#2864FF] text-white border-transparent' 
                 : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900'
             }`}
           >
@@ -206,7 +206,7 @@ export default function OrderMedicine() {
                 <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
               </div>
               <div className="flex bg-slate-100/80 rounded-lg p-1 border border-slate-200/60 shadow-inner">
-                <button className="p-1.5 bg-white rounded shadow-sm text-[#3B28CC]">
+                <button className="p-1.5 bg-white rounded shadow-sm text-[#2864FF]">
                   <LayoutGrid size={16} />
                 </button>
                 <button className="p-1.5 text-slate-400 hover:text-slate-600 transition">
@@ -224,7 +224,7 @@ export default function OrderMedicine() {
           >
             {isLoading && (
               <div className="absolute inset-0 bg-white/50 flex items-center justify-center z-10">
-                <div className="w-8 h-8 border-4 border-indigo-200 border-t-[#3B28CC] rounded-full animate-spin"></div>
+                <div className="w-8 h-8 border-4 border-blue-200 border-t-[#2864FF] rounded-full animate-spin"></div>
               </div>
             )}
             
@@ -266,7 +266,7 @@ export default function OrderMedicine() {
                     className={`flex items-center gap-2 px-5 py-2.5 border rounded-xl text-sm font-bold shadow-sm shrink-0 transition ${
                       med.stockQuantity <= 0 
                         ? 'border-slate-200 text-slate-400 bg-slate-50 cursor-not-allowed'
-                        : 'border-indigo-200 text-[#3B28CC] hover:bg-indigo-50 hover:border-indigo-300 bg-white'
+                        : 'border-blue-200 text-[#2864FF] hover:bg-blue-50 hover:border-blue-300 bg-white'
                     }`}
                   >
                     <ShoppingBag size={16} /> {med.stockQuantity <= 0 ? 'Out of Stock' : 'Add to Cart'}
@@ -281,7 +281,7 @@ export default function OrderMedicine() {
             <p>Showing 1 to 8 of 48 medicines</p>
             <div className="flex items-center gap-1.5">
               <button className="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition shadow-sm"><ChevronLeft size={18} /></button>
-              <button className="w-9 h-9 flex items-center justify-center rounded-xl bg-[#3B28CC] text-white font-bold shadow-md">1</button>
+              <button className="w-9 h-9 flex items-center justify-center rounded-xl bg-[#2864FF] text-white font-bold shadow-md">1</button>
               <button className="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-transparent text-slate-600 hover:bg-slate-50 font-bold transition">2</button>
               <button className="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-transparent text-slate-600 hover:bg-slate-50 font-bold transition">3</button>
               <span className="w-9 h-9 flex items-center justify-center text-slate-400 font-bold tracking-widest">...</span>
@@ -302,7 +302,7 @@ export default function OrderMedicine() {
               </div>
             </div>
             <div className="flex items-center gap-3.5 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
-              <div className="w-12 h-12 rounded-full bg-indigo-50/80 text-indigo-600 flex items-center justify-center shrink-0 border border-indigo-100/50">
+              <div className="w-12 h-12 rounded-full bg-blue-50/80 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100/50">
                 <ShieldCheck size={20} />
               </div>
               <div>
@@ -320,7 +320,7 @@ export default function OrderMedicine() {
               </div>
             </div>
             <div className="flex items-center gap-3.5 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
-              <div className="w-12 h-12 rounded-full bg-indigo-50/80 text-indigo-600 flex items-center justify-center shrink-0 border border-indigo-100/50">
+              <div className="w-12 h-12 rounded-full bg-blue-50/80 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100/50">
                 <HeadphonesIcon size={20} />
               </div>
               <div>
@@ -393,8 +393,8 @@ export default function OrderMedicine() {
 
             {cart.length > 0 && (
               <div className="bg-white">
-                <div className="p-4 mx-4 mt-2 mb-2 rounded-xl border border-indigo-100 bg-indigo-50/50">
-                  <button className="w-full flex items-center justify-between text-[#3B28CC] text-[13px] font-bold hover:text-indigo-800 transition">
+                <div className="p-4 mx-4 mt-2 mb-2 rounded-xl border border-blue-100 bg-blue-50/50">
+                  <button className="w-full flex items-center justify-between text-[#2864FF] text-[13px] font-bold hover:text-blue-800 transition">
                     <span className="flex items-center gap-2"><ShoppingBag size={15}/> Apply Coupon</span>
                     <ChevronRight size={16} />
                   </button>
@@ -431,7 +431,7 @@ export default function OrderMedicine() {
                       });
                     }}
                     disabled={createOrderMutation.isPending}
-                    className="w-full bg-[#3B28CC] hover:bg-indigo-700 disabled:bg-indigo-300 text-white font-bold py-3.5 rounded-xl shadow-[0_4px_14px_0_rgba(59,40,204,0.39)] transition flex items-center justify-center gap-2 text-[15px]"
+                    className="w-full bg-[#2864FF] hover:bg-blue-700 disabled:bg-blue-300 text-white font-bold py-3.5 rounded-xl shadow-[0_4px_14px_0_rgba(40,100,255,0.39)] transition flex items-center justify-center gap-2 text-[15px]"
                   >
                     {createOrderMutation.isPending ? 'Processing...' : 'Proceed to Checkout'} <span className="font-light">→</span>
                   </button>

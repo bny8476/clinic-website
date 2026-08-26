@@ -11,7 +11,7 @@ const DoctorMedicalCertificates = () => {
     {
       id: 'MC-0001',
       patient: { name: 'Robert Williams', details: '45 Years, Male', id: 1 },
-      type: { name: 'Fitness Certificate', sub: 'General Fitness', icon: <FileText size={14} />, iconColor: 'text-purple-600 bg-purple-50' },
+      type: { name: 'Fitness Certificate', sub: 'General Fitness', icon: <FileText size={14} />, iconColor: 'text-[#2160FF] bg-blue-50' },
       issueDate: '21 May 2024',
       issueTime: '09:30 AM',
       validTill: '20 Jun 2024',
@@ -61,7 +61,7 @@ const DoctorMedicalCertificates = () => {
     {
       id: 'MC-0006',
       patient: { name: 'Linda Taylor', details: '40 Years, Female', id: 6 },
-      type: { name: 'Handicap Certificate', sub: 'Orthopedic Condition', icon: <FileText size={14} />, iconColor: 'text-purple-600 bg-purple-50' },
+      type: { name: 'Handicap Certificate', sub: 'Orthopedic Condition', icon: <FileText size={14} />, iconColor: 'text-[#2160FF] bg-blue-50' },
       issueDate: '16 May 2024',
       issueTime: '10:00 AM',
       validTill: '15 May 2026',
@@ -113,7 +113,7 @@ const DoctorMedicalCertificates = () => {
             <h1 className="text-2xl font-bold text-slate-800">Medical Certificates</h1>
             <p className="text-sm font-medium text-slate-500 mt-1">Create, manage and view all patient medical certificates</p>
           </div>
-          <button className="flex items-center gap-2 bg-[#5B21B6] hover:bg-indigo-800 text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm transition-colors">
+          <button className="flex items-center gap-2 bg-[#2160FF] hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm transition-colors">
             <Plus size={16} strokeWidth={2.5} /> New Certificate
           </button>
         </div>
@@ -126,12 +126,12 @@ const DoctorMedicalCertificates = () => {
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`pb-3 text-sm font-bold whitespace-nowrap transition-colors relative ${
-                  activeTab === tab ? 'text-[#5B21B6]' : 'text-slate-500 hover:text-slate-700'
+                  activeTab === tab ? 'text-[#2160FF]' : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
                 {tab}
                 {activeTab === tab && (
-                  <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#5B21B6] rounded-t-md"></div>
+                  <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#2160FF] rounded-t-md"></div>
                 )}
               </button>
             ))}
@@ -143,7 +143,7 @@ const DoctorMedicalCertificates = () => {
               <input 
                 type="text" 
                 placeholder="Search certificates..." 
-                className="pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-[13px] font-medium text-slate-700 focus:outline-none focus:border-[#5B21B6] w-[220px]"
+                className="pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-[13px] font-medium text-slate-700 focus:outline-none focus:border-[#2160FF] w-[220px]"
               />
             </div>
             
@@ -217,10 +217,10 @@ const DoctorMedicalCertificates = () => {
                       </span>
                     </td>
                     <td className="py-4 px-6">
-                      <div className="flex items-center justify-center gap-3 text-[#5B21B6]">
+                      <div className="flex items-center justify-center gap-3 text-[#2160FF]">
                         {cert.status === 'Draft' ? (
                           <>
-                            <button className="w-7 h-7 flex items-center justify-center rounded bg-indigo-50 hover:bg-indigo-100 transition-colors">
+                            <button className="w-7 h-7 flex items-center justify-center rounded bg-blue-50 hover:bg-blue-100 transition-colors">
                               <PenTool size={14} strokeWidth={2.5} />
                             </button>
                             <button className="w-7 h-7 flex items-center justify-center rounded bg-red-50 text-red-600 hover:bg-red-100 transition-colors">
@@ -229,10 +229,10 @@ const DoctorMedicalCertificates = () => {
                           </>
                         ) : (
                           <>
-                            <button className="w-7 h-7 flex items-center justify-center rounded bg-indigo-50 hover:bg-indigo-100 transition-colors">
+                            <button className="w-7 h-7 flex items-center justify-center rounded bg-blue-50 hover:bg-blue-100 transition-colors">
                               <Eye size={14} strokeWidth={2.5} />
                             </button>
-                            <button className="w-7 h-7 flex items-center justify-center rounded bg-indigo-50 hover:bg-indigo-100 transition-colors">
+                            <button className="w-7 h-7 flex items-center justify-center rounded bg-blue-50 hover:bg-blue-100 transition-colors">
                               <Download size={14} strokeWidth={2.5} />
                             </button>
                           </>
@@ -252,7 +252,7 @@ const DoctorMedicalCertificates = () => {
               <span className="text-[12px] font-medium text-slate-500">Showing 1 to 8 of 24 certificates</span>
               <div className="flex items-center gap-1">
                 <button className="w-8 h-8 flex items-center justify-center rounded border border-slate-200 text-slate-500 hover:bg-slate-50">&lt;</button>
-                <button className="w-8 h-8 flex items-center justify-center rounded bg-[#5B21B6] text-white font-bold text-[13px]">1</button>
+                <button className="w-8 h-8 flex items-center justify-center rounded bg-[#2160FF] text-white font-bold text-[13px]">1</button>
                 <button className="w-8 h-8 flex items-center justify-center rounded border border-slate-200 text-slate-600 font-bold text-[13px] hover:bg-slate-50">2</button>
                 <button className="w-8 h-8 flex items-center justify-center rounded border border-slate-200 text-slate-600 font-bold text-[13px] hover:bg-slate-50">3</button>
                 <button className="w-8 h-8 flex items-center justify-center rounded border border-slate-200 text-slate-500 hover:bg-slate-50">&gt;</button>
@@ -310,7 +310,7 @@ const DoctorMedicalCertificates = () => {
 
               <div className="flex flex-col gap-4">
                 {[
-                  { name: 'Fitness Certificate', icon: <FileText size={14} />, count: '12', pct: '50%', fill: 'w-[50%]', iconColor: 'text-purple-600' },
+                  { name: 'Fitness Certificate', icon: <FileText size={14} />, count: '12', pct: '50%', fill: 'w-[50%]', iconColor: 'text-[#2160FF]' },
                   { name: 'Sick Leave', icon: <Activity size={14} />, count: '7', pct: '29.2%', fill: 'w-[29.2%]', iconColor: 'text-red-500' },
                   { name: 'Travel Certificate', icon: <Plane size={14} />, count: '3', pct: '12.5%', fill: 'w-[12.5%]', iconColor: 'text-green-600' },
                   { name: 'Others', icon: <Briefcase size={14} />, count: '2', pct: '8.3%', fill: 'w-[8.3%]', iconColor: 'text-orange-500' }
@@ -326,7 +326,7 @@ const DoctorMedicalCertificates = () => {
                       <span className="text-slate-500">{item.count} ({item.pct})</span>
                     </div>
                     <div className="w-full bg-slate-100 rounded-full h-1.5 ml-8 max-w-[calc(100%-2rem)]">
-                      <div className={`bg-[#5B21B6] h-1.5 rounded-full ${item.fill}`}></div>
+                      <div className={`bg-[#2160FF] h-1.5 rounded-full ${item.fill}`}></div>
                     </div>
                   </div>
                 ))}
@@ -337,7 +337,7 @@ const DoctorMedicalCertificates = () => {
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-[14px] font-bold text-slate-800">Recent Certificates</h3>
-                <button className="text-[11px] font-bold text-[#5B21B6] hover:underline">View All</button>
+                <button className="text-[11px] font-bold text-[#2160FF] hover:underline">View All</button>
               </div>
 
               <div className="flex items-center justify-between p-3 border border-slate-100 rounded-lg">

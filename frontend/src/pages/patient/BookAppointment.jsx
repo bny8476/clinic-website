@@ -281,14 +281,7 @@ export default function BookAppointment() {
       {/* ── Stepper Navigation Bar ────────────────────────────────────────── */}
       <div className="max-w-7xl mx-auto mb-8">
         <div className="flex items-center justify-between relative max-w-4xl mx-auto px-4 pt-2">
-          {/* Back Link */}
-          <Link
-            to="/patient/dashboard"
-            className="absolute left-0 -top-1 inline-flex items-center text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors"
-          >
-            <ArrowLeft className="w-3.5 h-3.5 mr-1.5" />
-            Back to Dashboard
-          </Link>
+
 
           {/* Stepper connecting line */}
           <div className="absolute top-8 left-20 right-20 h-[1.5px] bg-slate-200 -z-0" />

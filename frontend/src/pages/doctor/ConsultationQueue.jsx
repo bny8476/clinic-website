@@ -33,8 +33,9 @@ const ConsultationQueue = () => {
     onSuccess: () => queryClient.invalidateQueries(['doctor-queue']),
   });
 
-  const waiting = queue.filter(q => q.status === 'CHECKED_IN');
-  const inProgress = queue.find(q => q.status === 'IN_PROGRESS');
+  const safeQueue = Array.isArray(queue) ? queue : (Array.isArray(queue?.data) ? queue.data : []);
+  const waiting = safeQueue.filter(q => q.status === 'CHECKED_IN');
+  const inProgress = safeQueue.find(q => q.status === 'IN_PROGRESS');
 
   return (
     <div className="p-6 md:p-8 max-w-4xl mx-auto w-full font-sans bg-white min-h-full">

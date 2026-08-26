@@ -1,15 +1,11 @@
-import logger from '../../utils/logger';
+import React, { useEffect, useState } from 'react';
+import { axiosPrivate } from '../../api/axios';
 import toast from 'react-hot-toast';
 import useAuthStore from '../../store/authStore';
-import Button from '../../components/ui/Button';
-import Card from '../../components/ui/Card';
-import EmptyState from '../../components/ui/EmptyState';
-import { useEffect, useState } from 'react';
-import { ArrowLeft, Loader2, Printer, Ticket } from 'lucide-react';
-import { fadeIn, staggerChildren } from '../../components/ui/motion';
+import { ArrowLeft, Ticket, Users, RefreshCcw, Printer, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { fadeIn, staggerChildren } from '../../components/ui/motion';
 import { Link } from 'react-router-dom';
-import { Badge } from '../../components/ui/Badge';
 
 const TokenGeneration = () => {
   const [issuedToken, setIssuedToken] = useState(null);
@@ -27,7 +23,6 @@ const TokenGeneration = () => {
       setWalkIns(res.data || []);
     } catch (err) {
       toast.error('Failed to load walk-in registrations');
-      logger.error(err);
     } finally {
       setLoading(false);
     }
@@ -54,143 +49,187 @@ const TokenGeneration = () => {
       setIssuedToken(token);
       toast.success(`Token ${token.tokenNumber} issued successfully`);
       
-      // Optionally refresh the list to remove the walk-in if it changes status, 
-      // but the backend keeps it WAITING until called, so we don't strictly need to.
     } catch (err) {
       toast.error('Failed to issue token');
-      logger.error(err);
     } finally {
       setIssuing(false);
     }
   };
 
   return (
-    <motion.div 
-      initial="hidden" 
-      animate="visible" 
-      variants={staggerChildren}
-      className="max-w-4xl mx-auto space-y-6"
-    >
-      <div>
-        <Link to="/reception" className="inline-flex items-center text-xs font-semibold text-[var(--color-navy-600)] hover:underline mb-2 gap-1">
-          <ArrowLeft className="w-3.5 h-3.5" /> Back to Reception Desk
-        </Link>
-        <h1 className="text-2xl sm:text-3xl font-bold font-display text-[var(--color-navy-900)] m-0 flex items-center gap-2">
-          <Ticket className="w-7 h-7 text-[var(--color-navy-800)]" />
-          Issue Queue Token
-        </h1>
-        <p className="text-sm text-[var(--color-text-muted)] m-0 mt-1">
-          Generate physical print tokens for walk-in patient consultation and queues.
-        </p>
-      </div>
+    <div className="min-h-full bg-[#F8FAFF] p-6 lg:p-10 w-full font-sans">
+      <motion.div 
+        initial="hidden" 
+        animate="visible" 
+        variants={staggerChildren}
+        className="max-w-[1200px] mx-auto space-y-8"
+      >
+        {/* Header */}
+        <div className="flex flex-col gap-6">
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Walk-in Selection */}
-        <Card className="md:col-span-2">
-          <Card.Header>
-            <div className="flex items-center justify-between">
-              <h2 className="font-display font-bold text-lg text-[var(--color-navy-900)] m-0">
-                Pending Walk-in Registrations
-              </h2>
-              <Button variant="outline" size="sm" onClick={fetchWalkIns}>Refresh</Button>
+          
+          <div className="flex items-start gap-5">
+            <div className="p-4 bg-[#2864FF] rounded-2xl flex-shrink-0 shadow-lg shadow-blue-500/30">
+              <Ticket className="w-8 h-8 text-white" strokeWidth={2.5} />
             </div>
-          </Card.Header>
-          <Card.Body className="space-y-3">
-            {loading ? (
-              <div className="flex justify-center py-6">
-                <Loader2 className="w-6 h-6 animate-spin text-[var(--color-navy-600)]" />
+            <div className="pt-1">
+              <h1 className="text-3xl font-bold text-slate-900 mb-2">Issue Queue Token</h1>
+              <p className="text-[15px] text-gray-500 font-medium">Generate physical print tokens for walk-in patient consultation and queues.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Content Cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 h-[600px]">
+          
+          {/* Left Column: Walk-ins */}
+          <div className="lg:col-span-3 bg-white rounded-3xl p-8 shadow-sm border border-gray-100 flex flex-col h-full">
+            <div className="flex items-center justify-between pb-6 border-b border-gray-100 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-50 rounded-xl">
+                  <Users className="w-6 h-6 text-[#2864FF]" />
+                </div>
+                <h2 className="text-xl font-bold text-slate-900">Pending Walk-in Registrations</h2>
               </div>
-            ) : walkIns.length === 0 ? (
-              <EmptyState 
-                icon={Ticket}
-                title="No Walk-ins"
-                description="There are no pending walk-in registrations."
-              />
-            ) : (
-              walkIns.map((w) => {
-                const name = w.patient ? `${w.patient.firstName} ${w.patient.lastName}` : `${w.firstName} ${w.lastName}`;
-                return (
-                  <div 
-                    key={w.id} 
-                    className="flex items-center justify-between p-4 rounded-md border border-[var(--color-border)] bg-[var(--color-surface-alt)]/40 hover:bg-[var(--color-surface-alt)] transition-colors"
-                  >
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-sm text-[var(--color-navy-900)] m-0">
-                          {name}
-                        </h3>
-                        <Badge variant="info" size="sm">{w.opNumber}</Badge>
+              <button 
+                onClick={fetchWalkIns}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-[#2864FF] bg-white border-2 border-blue-100 hover:bg-blue-50 rounded-xl transition-colors"
+              >
+                <RefreshCcw className="w-4 h-4" /> Refresh
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto pt-6 flex flex-col">
+              {loading ? (
+                <div className="flex-1 flex items-center justify-center">
+                  <Loader2 className="w-8 h-8 animate-spin text-[#2864FF]" />
+                </div>
+              ) : walkIns.length === 0 ? (
+                <div className="flex-1 flex flex-col items-center justify-center">
+                  <div className="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mb-6">
+                    <Ticket className="w-10 h-10 text-[#2864FF]" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-slate-900 mb-2">No Walk-ins</h3>
+                  <p className="text-[15px] font-medium text-gray-500 mb-8 z-10">There are no pending walk-in registrations.</p>
+                  
+                  {/* Paper Plane Decorative SVG */}
+                  <div className="relative w-full max-w-sm h-32 flex items-center justify-center pointer-events-none opacity-50">
+                    <svg viewBox="0 0 200 100" className="w-full h-full text-blue-200" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 3">
+                      <path d="M 10 90 Q 50 90 70 70 T 130 50 Q 150 40 180 30" />
+                    </svg>
+                    <div className="absolute top-4 right-4 text-blue-200">
+                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {walkIns.map((w) => {
+                    const name = w.patient ? `${w.patient.firstName} ${w.patient.lastName}` : `${w.firstName} ${w.lastName}`;
+                    return (
+                      <div 
+                        key={w.id} 
+                        className="flex items-center justify-between p-5 rounded-2xl border border-gray-100 bg-gray-50/50 hover:bg-gray-50 transition-colors"
+                      >
+                        <div>
+                          <div className="flex items-center gap-3">
+                            <h3 className="font-bold text-slate-900 text-[15px]">
+                              {name}
+                            </h3>
+                            <span className="bg-blue-100 text-[#2864FF] text-[10px] font-bold px-2 py-0.5 rounded-md">
+                              {w.opNumber}
+                            </span>
+                          </div>
+                          <p className="text-sm font-medium text-gray-500 mt-1">
+                            {w.reasonForVisit || 'General Consultation'}
+                          </p>
+                        </div>
+                        <button 
+                          className="px-5 py-2.5 bg-white border-2 border-gray-200 hover:border-[#2864FF] hover:text-[#2864FF] text-gray-700 font-bold text-sm rounded-xl transition-colors disabled:opacity-50"
+                          onClick={() => issueToken(w)}
+                          disabled={issuing}
+                        >
+                          Issue Token
+                        </button>
                       </div>
-                      <p className="text-xs text-[var(--color-text-muted)] m-0 mt-0.5">
-                        {w.reasonForVisit || 'General Consultation'}
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right Column: Preview */}
+          <div className="lg:col-span-2 bg-white rounded-3xl p-8 shadow-sm border border-gray-100 flex flex-col h-full">
+            <div className="flex items-center gap-3 pb-6 border-b border-gray-100 shrink-0">
+              <div className="p-2 bg-blue-50 rounded-xl">
+                <Printer className="w-6 h-6 text-[#2864FF]" />
+              </div>
+              <h2 className="text-xl font-bold text-slate-900">Token Slip Preview</h2>
+            </div>
+            
+            <div className="flex-1 pt-6 flex flex-col">
+              {issuedToken ? (
+                <motion.div 
+                  variants={fadeIn}
+                  className="flex-1 flex flex-col justify-between"
+                >
+                  <div className="w-full p-8 rounded-2xl border-2 border-dashed border-[#2864FF] bg-blue-50/50 text-center space-y-4">
+                    <span className="inline-block bg-[#2864FF] text-white text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">
+                      Aurelian Health Clinic
+                    </span>
+                    <h2 className="text-6xl font-black text-slate-900 tracking-tight py-4">
+                      {issuedToken.tokenNumber}
+                    </h2>
+                    <div className="space-y-1">
+                      <p className="text-lg font-bold text-slate-800">
+                        {issuedToken.doctor}
+                      </p>
+                      <p className="text-sm font-medium text-gray-500">
+                        {issuedToken.department}
                       </p>
                     </div>
-                    <Button 
-                      variant="primary" 
-                      size="sm"
-                      onClick={() => issueToken(w)}
-                      disabled={issuing}
-                    >
-                      Issue Token
-                    </Button>
+                    <div className="pt-6 border-t border-blue-200">
+                      <p className="text-xs font-semibold text-gray-400">
+                        Issued at {issuedToken.issuedAt}
+                      </p>
+                    </div>
                   </div>
-                );
-              })
-            )}
-          </Card.Body>
-        </Card>
-
-        {/* Issued Slip Preview */}
-        <Card className="md:col-span-1 flex flex-col justify-between">
-          <Card.Header>
-            <h2 className="font-display font-bold text-base text-[var(--color-navy-900)] m-0">
-              Token Slip Preview
-            </h2>
-          </Card.Header>
-          <Card.Body className="flex-1 flex flex-col items-center justify-center">
-            {issuedToken ? (
-              <motion.div 
-                variants={fadeIn}
-                className="w-full p-5 rounded-md border-2 border-dashed border-[var(--color-warning)] bg-[var(--color-warning-bg)]/40 text-center space-y-2"
-              >
-                <Badge variant="warning" size="sm">Aurelian Health Clinic</Badge>
-                <h2 className="text-4xl font-extrabold font-display text-[var(--color-warning)] tracking-wider m-0 py-1">
-                  {issuedToken.tokenNumber}
-                </h2>
-                <div className="space-y-0.5">
-                  <p className="text-sm font-bold text-[var(--color-navy-900)] m-0">
-                    {issuedToken.doctor}
-                  </p>
-                  <p className="text-xs text-[var(--color-text-muted)] m-0">
-                    {issuedToken.department}
-                  </p>
-                </div>
-                <p className="text-[11px] text-[var(--color-text-muted)] m-0 pt-2 border-t border-[var(--color-warning)]/20">
-                  Issued at {issuedToken.issuedAt}
-                </p>
-                <div className="pt-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    icon={Printer}
+                  
+                  <button 
                     onClick={() => window.print()}
-                    fullWidth
+                    className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-[#2864FF] hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 transition-colors mt-6"
                   >
-                    Print Slip
-                  </Button>
+                    <Printer className="w-5 h-5" /> Print Slip
+                  </button>
+                </motion.div>
+              ) : (
+                <div className="flex-1 flex flex-col items-center justify-center">
+                  <div className="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mb-6">
+                    <Ticket className="w-10 h-10 text-[#2864FF]" />
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-900 mb-2">No Token Issued</h3>
+                  <p className="text-sm font-medium text-gray-500 text-center max-w-[200px] mb-auto">
+                    Click 'Issue Token' on any walk-in to generate a slip preview.
+                  </p>
+                  
+                  <button 
+                    disabled
+                    className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-white border-2 border-blue-100 text-[#2864FF] font-bold rounded-xl mt-6 opacity-50 cursor-not-allowed"
+                  >
+                    <Printer className="w-5 h-5" /> Issue Token
+                  </button>
                 </div>
-              </motion.div>
-            ) : (
-              <EmptyState 
-                icon={Ticket}
-                title="No Token Issued"
-                description="Click 'Issue Token' on any walk-in to generate a slip preview."
-              />
-            )}
-          </Card.Body>
-        </Card>
-      </div>
-    </motion.div>
+              )}
+            </div>
+          </div>
+
+        </div>
+      </motion.div>
+    </div>
   );
 };
 

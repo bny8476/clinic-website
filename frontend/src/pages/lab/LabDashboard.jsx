@@ -36,16 +36,7 @@ const LabDashboard = () => {
 
   const summary = summaryResponse || { totalRequests: 0, statusCounts: {}, priorityCounts: {}, requestsToday: 0 };
 
-  const topActions = [
-    { label: 'New Request', icon: Plus, action: () => navigate('/doctor/lab-request') },
-    { label: 'Collect Sample', icon: FileText, action: () => setFilter('REQUESTED') },
-    { label: 'Enter Results', icon: FlaskConical, action: () => setFilter('PROCESSING') },
-    { label: 'Verify Reports', icon: CheckSquare, action: () => setFilter('RESULT_ENTERED') },
-    { label: 'Print Reports', icon: Printer, action: () => setFilter('VERIFIED') },
-    { label: 'Patient History', icon: History, action: () => {} },
-    { label: 'Alerts', icon: AlertCircle, action: () => setFilter('REJECTED') },
-    { label: 'Catalog', icon: Microscope, action: () => navigate('/lab/catalog') }
-  ];
+
 
     const [selectedRequest, setSelectedRequest] = useState(null);
 
@@ -60,34 +51,10 @@ const LabDashboard = () => {
   return (
     <div className="h-full flex flex-col font-sans overflow-y-auto bg-[var(--color-bg-app)]">
       
-      {/* Top Action Cards */}
-      <motion.div
-        variants={staggerContainer}
-        initial="hidden"
-        animate="show"
-        className="flex gap-4 p-6 shrink-0 bg-[var(--color-bg-app)] overflow-x-auto"
-      >
-        {topActions.map((action, idx) => (
-          <motion.button
-            key={idx}
-            onClick={action.action}
-            variants={fadeIn}
-            whileHover={{ y: -4, scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="min-w-[120px] flex-1 flex flex-col items-center justify-center gap-3 bg-white/50 backdrop-blur-md border border-slate-200/50 rounded-2xl py-6 shadow-sm hover:shadow-xl hover:shadow-blue-500/10 hover:border-blue-200 transition-all group"
-          >
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform duration-300">
-              <action.icon size={26} strokeWidth={1.5} />
-            </div>
-            <span className="font-bold text-[13px] text-slate-700 text-center leading-tight group-hover:text-blue-700 transition-colors">
-              {action.label}
-            </span>
-          </motion.button>
-        ))}
-      </motion.div>
+
 
       {/* Tabs */}
-      <div className="px-6 flex gap-3 shrink-0 mb-4">
+      <div className="px-6 mt-6 flex gap-3 shrink-0 mb-4">
         {tabs.map((tab) => {
           const isActive = activeTab === tab;
           return (

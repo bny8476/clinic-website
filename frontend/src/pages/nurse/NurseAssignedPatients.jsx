@@ -1,81 +1,153 @@
-import EmptyState from '../../components/ui/EmptyState';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { useNavigate } from 'react-router-dom';
-import { HeartPulse, UserRound } from 'lucide-react';
+import { HeartPulse, Users, Calendar, User, Info, Search, FileText } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { fadeIn, staggerChildren } from '../../components/ui/motion';
 
 const NurseAssignedPatients = () => {
   const navigate = useNavigate();
-  const [search, setSearch] = useState('');
 
   const { data: patients = [], isLoading } = useQuery({
     queryKey: ['nurse-assigned-patients'],
     queryFn: async () => (await axiosPrivate.get('/nursing/assignments/op')).data,
   });
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.05 }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 10 },
-    visible: { opacity: 1, y: 0 }
-  };
-
   return (
-    
-    <div className="p-4 sm:p-6 max-w-5xl mx-auto">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-5">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-[var(--color-text)] m-0">Assigned Patients</h1>
-          <p className="m-0 text-sm text-[var(--color-text-muted)] mt-1">Patients currently assigned to your shift</p>
-        </div>
-        <span className="text-sm font-semibold text-[var(--color-navy-800)] bg-[var(--color-info-bg)] px-3 py-1.5 rounded-md whitespace-nowrap">Shift: Morning (08:00 - 16:00)</span>
-      </div>
-
-      <div className="bg-[var(--color-surface)] rounded-xl border border-[var(--color-border)] overflow-hidden shadow-sm">
-        {patients.length === 0 ? (
-          <div className="py-10">
-            <EmptyState 
-              icon={UserRound}
-              title="No Patients Assigned" 
-              description="There are currently no OP patients assigned to your nursing queue." 
-            />
+    <div className="min-h-full bg-[#F4F7FB] p-6 lg:p-10 w-full font-sans">
+      <div className="max-w-[1000px] mx-auto space-y-6">
+        
+        {/* Top Header Card */}
+        <div className="bg-white rounded-3xl p-6 lg:p-8 shadow-sm border border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+          <div className="flex items-center gap-5">
+            <div className="p-4 bg-[#EBF0FF] rounded-2xl flex-shrink-0 border border-blue-100/50">
+              <Users className="w-8 h-8 text-[#2864FF]" strokeWidth={2.5} />
+            </div>
+            <div>
+              <h1 className="text-[28px] font-extrabold text-slate-900 mb-1 tracking-tight">Assigned Patients</h1>
+              <p className="text-[15px] text-gray-500 font-medium">Patients currently assigned to your shift</p>
+            </div>
           </div>
-        ) : (
-          <motion.div variants={containerVariants} initial="hidden" animate="visible">
-            {patients.map(p => (
-              <motion.div key={p.id} variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border-b border-[var(--color-border)] hover:bg-[var(--color-surface-alt)] transition-colors last:border-b-0">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-[var(--color-info-bg)] flex items-center justify-center text-[var(--color-navy-800)] font-bold shrink-0">
-                    {p.patientName ? p.patientName[0] : '?'}
-                  </div>
-                  <div>
-                    <h3 className="m-0 text-[15px] font-bold text-[var(--color-text)]">{p.patientName} ({p.age}y)</h3>
-                    <p className="m-0 mt-1 text-xs text-[var(--color-text-muted)]">
-                      {p.tokenNumber ? `Token #${p.tokenNumber} · ` : ''}Reason: {p.appointmentReason} · Attending: {p.attendingDoctorName}
-                    </p>
-                    <p className="m-0 mt-1 text-xs font-medium text-[var(--color-navy-600)]">Vitals: {p.lastVitalsSummary}</p>
-                  </div>
+          <div className="flex items-center gap-2 px-5 py-2.5 bg-[#EBF0FF] rounded-full border border-blue-100 text-[#2864FF]">
+            <Calendar className="w-4 h-4" />
+            <span className="text-sm font-bold">Shift: Morning (08:00 - 16:00)</span>
+          </div>
+        </div>
+
+        {/* Main Content Card */}
+        <div className="bg-white rounded-3xl p-6 lg:p-8 shadow-sm border border-gray-100">
+          
+          {isLoading ? (
+            <div className="flex justify-center items-center py-20">
+              <div className="w-10 h-10 border-4 border-[#EBF0FF] border-t-[#2864FF] rounded-full animate-spin"></div>
+            </div>
+          ) : patients.length === 0 ? (
+            <div className="flex flex-col gap-6">
+              {/* Dashed Empty State Area */}
+              <div className="border-2 border-dashed border-gray-200 rounded-3xl py-16 px-6 flex flex-col items-center text-center">
+                
+                <div className="w-20 h-20 bg-[#EBF0FF] rounded-full flex items-center justify-center mb-6">
+                  <User className="w-10 h-10 text-[#2864FF]" strokeWidth={2.5} />
                 </div>
-                <div className="flex gap-2 flex-wrap sm:flex-nowrap">
-                  <button onClick={() => navigate(`/nurse/workspace/${p.patientId}`)} className="bg-[var(--color-navy-800)] hover:bg-[var(--color-navy-900)] text-white border-none px-3 py-1.5 rounded-md text-xs cursor-pointer font-semibold flex items-center gap-1.5 transition-colors shadow-sm hover:shadow-md hover:-translate-y-0.5 transform duration-200">
-                    <HeartPulse size={14} /> Workspace
+                
+                <h2 className="text-[22px] font-extrabold text-slate-900 mb-2">No Patients Assigned</h2>
+                <p className="text-[15px] text-gray-500 font-medium max-w-md mb-10">
+                  There are currently no OP patients assigned to your nursing queue.
+                </p>
+
+                {/* Custom Clipboard Illustration */}
+                <div className="relative w-40 h-40 flex items-center justify-center">
+                   {/* Background Sparkles/Leaves */}
+                   <div className="absolute inset-0 opacity-20">
+                     <svg viewBox="0 0 100 100" className="w-full h-full fill-[#2864FF]">
+                       <path d="M 20 60 Q 30 50 20 40 Q 10 50 20 60" />
+                       <path d="M 80 70 Q 90 60 80 50 Q 70 60 80 70" />
+                       <path d="M 15 30 L 17 32 L 15 34 L 13 32 Z" />
+                       <path d="M 85 20 L 87 22 L 85 24 L 83 22 Z" />
+                       <path d="M 30 80 Q 40 70 30 60 Q 20 70 30 80" />
+                       <path d="M 70 40 Q 80 30 70 20 Q 60 30 70 40" />
+                     </svg>
+                   </div>
+                   
+                   {/* Clipboard */}
+                   <div className="relative w-24 h-32 bg-white border-[3px] border-[#EBF0FF] rounded-xl flex flex-col items-center shadow-sm z-10">
+                     {/* Clip */}
+                     <div className="absolute -top-3 w-10 h-4 bg-[#A3C0FF] rounded-md border-[3px] border-white"></div>
+                     {/* Lines */}
+                     <div className="w-16 h-1.5 bg-[#EBF0FF] rounded-full mt-6"></div>
+                     <div className="w-16 h-1.5 bg-[#EBF0FF] rounded-full mt-3"></div>
+                     <div className="w-12 h-1.5 bg-[#EBF0FF] rounded-full mt-3 self-start ml-3"></div>
+                     <div className="w-16 h-1.5 bg-[#EBF0FF] rounded-full mt-3"></div>
+                   </div>
+
+                   {/* Magnifying Glass */}
+                   <div className="absolute bottom-2 right-4 w-12 h-12 bg-white rounded-full border-[3px] border-[#2864FF] shadow-lg z-20 flex items-center justify-center">
+                     <div className="w-5 h-5 bg-[#EBF0FF] rounded-full"></div>
+                     <div className="absolute -bottom-3 -right-2 w-5 h-1.5 bg-[#2864FF] rounded-full rotate-45"></div>
+                   </div>
+                </div>
+
+              </div>
+
+              {/* Info Box */}
+              <div className="flex items-center gap-3 p-4 bg-[#F4F7FF] rounded-xl border border-blue-100/50">
+                <div className="w-6 h-6 bg-[#2864FF] rounded-full flex items-center justify-center shrink-0 shadow-sm">
+                  <Info className="w-3.5 h-3.5 text-white" />
+                </div>
+                <p className="text-[14.5px] font-semibold text-slate-700">Once patients are assigned to your shift, they will appear here.</p>
+              </div>
+            </div>
+          ) : (
+            <motion.div initial="hidden" animate="visible" variants={staggerChildren} className="space-y-4">
+              {/* Info Box for when patients are present */}
+              <div className="flex items-center gap-3 p-4 bg-[#F4F7FF] rounded-xl border border-blue-100/50 mb-6">
+                <div className="w-6 h-6 bg-[#2864FF] rounded-full flex items-center justify-center shrink-0 shadow-sm">
+                  <Info className="w-3.5 h-3.5 text-white" />
+                </div>
+                <p className="text-[14.5px] font-semibold text-slate-700">These patients have been assigned to your queue. Please proceed with their vital assessments.</p>
+              </div>
+
+              {patients.map(p => (
+                <motion.div key={p.id} variants={fadeIn} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl border border-gray-100 bg-gray-50/30 hover:bg-white hover:shadow-md transition-all group">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-[#2864FF] font-black text-lg">
+                      {p.patientName ? p.patientName[0] : '?'}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-3">
+                        <h3 className="font-extrabold text-slate-900 text-[16px]">{p.patientName}</h3>
+                        <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-gray-200 text-gray-700">
+                          {p.age} Yrs
+                        </span>
+                        {p.tokenNumber && (
+                          <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-blue-100 text-[#2864FF]">
+                            Token #{p.tokenNumber}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[13px] font-medium text-gray-500 mt-1">
+                        Reason: <span className="font-semibold text-slate-700">{p.appointmentReason}</span> • 
+                        Dr. {p.attendingDoctorName}
+                      </p>
+                      <p className="text-[12px] font-bold text-[#2864FF] mt-1.5 flex items-center gap-1.5">
+                        <HeartPulse className="w-3.5 h-3.5" /> {p.lastVitalsSummary}
+                      </p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => navigate(`/nurse/workspace/${p.patientId}`)} 
+                    className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[#2864FF] hover:bg-blue-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-blue-500/30 transition-colors"
+                  >
+                    <HeartPulse className="w-4 h-4" /> Open Workspace
                   </button>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        )}
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+        </div>
       </div>
     </div>
-    
   );
 };
 

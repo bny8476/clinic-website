@@ -662,20 +662,6 @@ const DoctorDashboard = () => {
 
       </div>
 
-      {/* Floating Bottom AI Assistant Button */}
-      <div className="fixed bottom-6 right-6 z-50">
-        <button 
-          onClick={() => {
-            const widgetBtn = document.querySelector('.ai-chat-widget-button');
-            if (widgetBtn) widgetBtn.click();
-          }}
-          className="bg-blue-600 hover:bg-blue-700 text-white rounded-2xl px-5 py-3 shadow-xl hover:shadow-2xl transition-all font-bold text-xs flex items-center gap-2 group"
-        >
-          <Bot className="w-4 h-4 text-blue-200 group-hover:rotate-12 transition-transform" />
-          <span>Ask AI Assistant</span>
-        </button>
-      </div>
-
       {/* OVERLAY SYSTEM */}
       {currentPanel === 'queue' && (
         <ModulePanel 

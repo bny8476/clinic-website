@@ -1,4 +1,4 @@
-import DashboardShell from '../../components/dashboard/shared/DashboardShell';
+import DashboardShell, { BottomRow } from '../../components/dashboard/shared/DashboardShell';
 import DashboardGrid from '../../components/dashboard/DashboardGrid';
 import { WIDGETS } from '../../config/dashboardConfig';
 import { useNavigate } from 'react-router-dom';

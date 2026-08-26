@@ -1,16 +1,14 @@
-import toast from 'react-hot-toast';
-import Button from '../../components/ui/Button';
-import Card from '../../components/ui/Card';
-import FormField from '../../components/ui/FormField';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { ArrowLeft, Phone, Save, UserPlus } from 'lucide-react';
-import { fadeIn, staggerContainer } from '../../components/ui/motion';
+import toast from 'react-hot-toast';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft, UserPlus, Phone, Mail, User, Droplet, Stethoscope, FileText, ChevronDown } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { fadeIn, staggerContainer } from '../../components/ui/motion';
 
 const PatientRegistration = () => {
+  const navigate = useNavigate();
   const [patient, setPatient] = useState({
     firstName: '', lastName: '', age: '', gender: 'Male', phone: '', email: '',
     address: '', bloodGroup: 'O+', emergencyContact: '', reasonForVisit: ''
@@ -21,6 +19,7 @@ const PatientRegistration = () => {
     onSuccess: (data) => {
       toast.success(`Patient registered successfully! OP Number: ${data.data.opNumber}`);
       setPatient({ firstName: '', lastName: '', age: '', gender: 'Male', phone: '', email: '', address: '', bloodGroup: 'O+', emergencyContact: '', reasonForVisit: '' });
+      navigate('/reception');
     },
     onError: (err) => {
       toast.error(err.response?.data?.message || 'Failed to register patient');
@@ -29,196 +28,228 @@ const PatientRegistration = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!patient.firstName || !patient.phone) {
-      toast.error('First Name and Phone are required fields');
+    if (!patient.firstName || !patient.phone || !patient.reasonForVisit) {
+      toast.error('First Name, Phone and Reason for Visit are required fields');
       return;
     }
     registerPatient.mutate();
   };
 
-  return (
-    
-    <motion.div 
-      initial="hidden" 
-      animate="visible" 
-      variants={fadeIn}
-      className="max-w-3xl mx-auto space-y-6"
-    >
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <Link to="/reception" className="inline-flex items-center text-xs font-semibold text-[var(--color-navy-600)] hover:underline mb-2 gap-1">
-            <ArrowLeft className="w-3.5 h-3.5" /> Back to Reception Desk
-          </Link>
-          <h1 className="text-2xl sm:text-3xl font-bold font-display text-[var(--color-navy-900)] m-0 flex items-center gap-2">
-            <UserPlus className="w-7 h-7 text-[var(--color-navy-800)]" />
-            Patient Registration
-          </h1>
-          <p className="text-sm text-[var(--color-text-muted)] m-0 mt-1">
-            Enter new patient details for intake and clinical record creation.
-          </p>
-        </div>
-      </div>
+  const inputClass = "w-full bg-white text-[15px] text-gray-700 font-medium rounded-xl border border-gray-200 focus:border-[#2864FF] focus:ring-4 focus:ring-blue-500/10 transition-all outline-none py-3.5";
+  const labelClass = "block text-sm font-bold text-slate-800 mb-2";
 
-      <Card>
-        <Card.Body>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <motion.div variants={fadeIn}>
-              <FormField label="First Name" required id="firstName">
+  return (
+    <div className="min-h-full bg-[#F8FAFF] p-6 lg:p-10 w-full font-sans">
+      <motion.div 
+        initial="hidden" 
+        animate="visible" 
+        variants={fadeIn}
+        className="max-w-[1000px] mx-auto space-y-8"
+      >
+        <div className="flex flex-col gap-6">
+
+          
+          <div className="flex items-start gap-5">
+            <div className="p-4 bg-[#EBF0FF] rounded-2xl flex-shrink-0">
+              <UserPlus className="w-8 h-8 text-[#2864FF]" strokeWidth={2.5} />
+            </div>
+            <div className="pt-1">
+              <h1 className="text-3xl font-bold text-slate-900 mb-2">Patient Registration</h1>
+              <p className="text-[15px] text-gray-500 font-medium">Enter new patient details for intake and clinical record creation.</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-3xl p-8 lg:p-10 shadow-sm border border-gray-100">
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8">
+              
+              {/* First Name */}
+              <motion.div variants={fadeIn} className="lg:col-span-1">
+                <label className={labelClass}>First Name <span className="text-red-500">*</span></label>
                 <input 
-                  id="firstName"
                   type="text"
                   value={patient.firstName} 
                   onChange={e => setPatient({ ...patient, firstName: e.target.value })} 
                   placeholder="e.g. Ramesh" 
-                  className="input-field focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-shadow" 
+                  className={`${inputClass} px-4`}
                   required
                 />
-              </FormField>
               </motion.div>
 
-              <motion.div variants={fadeIn}>
-              <FormField label="Last Name" id="lastName">
+              {/* Last Name */}
+              <motion.div variants={fadeIn} className="lg:col-span-1">
+                <label className={labelClass}>Last Name</label>
                 <input 
-                  id="lastName"
                   type="text"
                   value={patient.lastName} 
                   onChange={e => setPatient({ ...patient, lastName: e.target.value })} 
                   placeholder="e.g. Kumar" 
-                  className="input-field focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-shadow" 
+                  className={`${inputClass} px-4`}
                 />
-              </FormField>
               </motion.div>
 
-              <motion.div variants={fadeIn}>
-              <FormField label="Phone Number" required id="phone">
-                <input 
-                  id="phone"
-                  type="tel"
-                  value={patient.phone} 
-                  onChange={e => setPatient({ ...patient, phone: e.target.value })} 
-                  placeholder="+91 98765 43210" 
-                  className="input-field focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-shadow" 
-                  required
-                />
-              </FormField>
+              {/* Phone Number */}
+              <motion.div variants={fadeIn} className="lg:col-span-1">
+                <label className={labelClass}>Phone Number <span className="text-red-500">*</span></label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <Phone className="w-5 h-5 text-gray-400" />
+                  </div>
+                  <input 
+                    type="tel"
+                    value={patient.phone} 
+                    onChange={e => setPatient({ ...patient, phone: e.target.value })} 
+                    placeholder="+91 98765 43210" 
+                    className={`${inputClass} pl-12 pr-4`}
+                    required
+                  />
+                </div>
               </motion.div>
 
-              <motion.div variants={fadeIn}>
-              <FormField label="Age" id="age">
+              {/* Age */}
+              <motion.div variants={fadeIn} className="lg:col-span-1">
+                <label className={labelClass}>Age</label>
                 <input 
-                  id="age"
                   type="number" 
                   value={patient.age} 
                   onChange={e => setPatient({ ...patient, age: e.target.value })} 
                   placeholder="e.g. 35"
-                  className="input-field focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-shadow" 
+                  className={`${inputClass} px-4`}
                 />
-              </FormField>
               </motion.div>
 
-              <motion.div variants={fadeIn}>
-              <FormField label="Email Address" id="email">
-                <input 
-                  id="email"
-                  type="email"
-                  value={patient.email} 
-                  onChange={e => setPatient({ ...patient, email: e.target.value })} 
-                  placeholder="e.g. email@example.com"
-                  className="input-field focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-shadow" 
-                />
-              </FormField>
+              {/* Email Address */}
+              <motion.div variants={fadeIn} className="md:col-span-2">
+                <label className={labelClass}>Email Address</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <Mail className="w-5 h-5 text-gray-400" />
+                  </div>
+                  <input 
+                    type="email"
+                    value={patient.email} 
+                    onChange={e => setPatient({ ...patient, email: e.target.value })} 
+                    placeholder="e.g. email@example.com"
+                    className={`${inputClass} pl-12 pr-4`}
+                  />
+                </div>
               </motion.div>
 
-              <motion.div variants={fadeIn}>
-              <FormField label="Address" id="address">
+              {/* Address */}
+              <motion.div variants={fadeIn} className="md:col-span-2">
+                <label className={labelClass}>Address</label>
                 <input 
-                  id="address"
                   type="text"
                   value={patient.address} 
                   onChange={e => setPatient({ ...patient, address: e.target.value })} 
                   placeholder="e.g. 123 Main St"
-                  className="input-field focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-shadow" 
+                  className={`${inputClass} px-4`}
                 />
-              </FormField>
               </motion.div>
 
-              <motion.div variants={fadeIn}>
-              <FormField label="Gender" id="gender">
-                <select 
-                  id="gender"
-                  value={patient.gender} 
-                  onChange={e => setPatient({ ...patient, gender: e.target.value })} 
-                  className="input-field focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-shadow"
-                >
-                  <option>Male</option>
-                  <option>Female</option>
-                  <option>Other</option>
-                </select>
-              </FormField>
+              {/* Gender */}
+              <motion.div variants={fadeIn} className="md:col-span-2">
+                <label className={labelClass}>Gender</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <div className="p-1 bg-blue-50 rounded-md">
+                        <User className="w-4 h-4 text-[#2864FF]" />
+                    </div>
+                  </div>
+                  <select 
+                    value={patient.gender} 
+                    onChange={e => setPatient({ ...patient, gender: e.target.value })} 
+                    className={`${inputClass} pl-14 pr-10 appearance-none`}
+                  >
+                    <option>Male</option>
+                    <option>Female</option>
+                    <option>Other</option>
+                  </select>
+                  <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                    <ChevronDown className="w-5 h-5 text-gray-400" />
+                  </div>
+                </div>
               </motion.div>
 
-              <motion.div variants={fadeIn}>
-              <FormField label="Blood Group" id="bloodGroup">
-                <select 
-                  id="bloodGroup"
-                  value={patient.bloodGroup} 
-                  onChange={e => setPatient({ ...patient, bloodGroup: e.target.value })} 
-                  className="input-field focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-shadow"
-                >
-                  {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map(bg => (
-                    <option key={bg}>{bg}</option>
-                  ))}
-                </select>
-              </FormField>
+              {/* Blood Group */}
+              <motion.div variants={fadeIn} className="md:col-span-2">
+                <label className={labelClass}>Blood Group</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                     <div className="p-1 bg-blue-50 rounded-md">
+                        <Droplet className="w-4 h-4 text-[#2864FF]" />
+                     </div>
+                  </div>
+                  <select 
+                    value={patient.bloodGroup} 
+                    onChange={e => setPatient({ ...patient, bloodGroup: e.target.value })} 
+                    className={`${inputClass} pl-14 pr-10 appearance-none`}
+                  >
+                    {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map(bg => (
+                      <option key={bg}>{bg}</option>
+                    ))}
+                  </select>
+                  <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                    <ChevronDown className="w-5 h-5 text-gray-400" />
+                  </div>
+                </div>
               </motion.div>
 
-              <motion.div variants={fadeIn}>
-              <FormField label="Emergency Contact" id="emergencyContact">
-                <input 
-                  id="emergencyContact"
-                  type="tel"
-                  value={patient.emergencyContact} 
-                  onChange={e => setPatient({ ...patient, emergencyContact: e.target.value })} 
-                  placeholder="Emergency Phone Number"
-                  className="input-field focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-shadow" 
-                />
-              </FormField>
+              {/* Emergency Contact */}
+              <motion.div variants={fadeIn} className="md:col-span-2">
+                <label className={labelClass}>Emergency Contact</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <Phone className="w-5 h-5 text-gray-400" />
+                  </div>
+                  <input 
+                    type="tel"
+                    value={patient.emergencyContact} 
+                    onChange={e => setPatient({ ...patient, emergencyContact: e.target.value })} 
+                    placeholder="Emergency Phone Number"
+                    className={`${inputClass} pl-12 pr-4`}
+                  />
+                </div>
               </motion.div>
 
-              <motion.div variants={fadeIn}>
-              <FormField label="Reason for Visit" required id="reasonForVisit">
-                <input 
-                  id="reasonForVisit"
-                  type="text"
-                  value={patient.reasonForVisit} 
-                  onChange={e => setPatient({ ...patient, reasonForVisit: e.target.value })} 
-                  placeholder="e.g. Fever and Cough"
-                  className="input-field focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-shadow" 
-                  required
-                />
-              </FormField>
+              {/* Reason for Visit */}
+              <motion.div variants={fadeIn} className="md:col-span-2">
+                <label className={labelClass}>Reason for Visit <span className="text-red-500">*</span></label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <Stethoscope className="w-5 h-5 text-gray-400" />
+                  </div>
+                  <input 
+                    type="text"
+                    value={patient.reasonForVisit} 
+                    onChange={e => setPatient({ ...patient, reasonForVisit: e.target.value })} 
+                    placeholder="e.g. Fever and Cough"
+                    className={`${inputClass} pl-12 pr-4`}
+                    required
+                  />
+                </div>
               </motion.div>
+
             </motion.div>
 
-            <div className="pt-4 border-t border-[var(--color-border)] flex items-center justify-end gap-3">
-              <Link to="/reception">
-                <Button variant="secondary">Cancel</Button>
+            <div className="pt-8 mt-8 border-t border-gray-100 flex items-center justify-end gap-4">
+              <Link to="/reception" className="px-8 py-3.5 rounded-xl text-sm font-bold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 transition-colors">
+                Cancel
               </Link>
-              <Button 
+              <button 
                 type="submit" 
-                variant="primary" 
-                icon={Save}
-                isLoading={registerPatient.isPending}
+                disabled={registerPatient.isPending}
+                className="flex items-center gap-2 px-8 py-3.5 rounded-xl text-sm font-bold text-white bg-[#2864FF] hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Register Patient
-              </Button>
+                <FileText className="w-5 h-5" />
+                {registerPatient.isPending ? 'Registering...' : 'Register Patient'}
+              </button>
             </div>
           </form>
-        </Card.Body>
-      </Card>
-    </motion.div>
-    
+        </div>
+      </motion.div>
+    </div>
   );
 };
 

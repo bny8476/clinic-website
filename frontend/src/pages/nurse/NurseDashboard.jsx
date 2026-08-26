@@ -417,14 +417,6 @@ const NurseDashboard = () => {
 
       </div>
 
-      {/* ── Floating Ask AI Assistant Button ── */}
-      <div className="fixed bottom-6 right-6 z-40">
-        <button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-xs px-5 py-3 rounded-2xl shadow-xl flex items-center gap-2.5 hover:scale-105 transition">
-          <Sparkles className="w-4 h-4 text-blue-200" />
-          Ask AI Assistant
-        </button>
-      </div>
-
     </div>
   );
 };
