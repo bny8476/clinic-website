@@ -58,19 +58,18 @@ public class BarcodeScanService {
         }
 
         // 2. Check batch barcode
-        List<StockBatch> batches = batchRepository.findAll();
-        for (StockBatch b : batches) {
-            if (barcodeValue.equals(b.getBatchNumber())) {
-                result.put("scanType", "batch_lookup");
-                result.put("resolvedEntity", b);
-                result.put("scanResult", "success");
+        Optional<StockBatch> batchOpt = batchRepository.findByBatchNumber(barcodeValue);
+        if (batchOpt.isPresent()) {
+            StockBatch b = batchOpt.get();
+            result.put("scanType", "batch_lookup");
+            result.put("resolvedEntity", b);
+            result.put("scanResult", "success");
 
-                log.setScanType("batch_lookup");
-                log.setResolvedBatchId(b.getBatchId());
-                log.setScanResult("success");
-                logRepository.save(log);
-                return result;
-            }
+            log.setScanType("batch_lookup");
+            log.setResolvedBatchId(b.getBatchId());
+            log.setScanResult("success");
+            logRepository.save(log);
+            return result;
         }
 
         result.put("scanType", "unknown");

@@ -13,8 +13,12 @@ import java.util.Optional;
 
 @Repository("pharmacyMedicineRepository")
 public interface MedicineRepository extends JpaRepository<Medicine, Long> {
+
+    java.util.Optional<Medicine> findTopByOrderByIdAsc();
+
     List<Medicine> findByNameContainingIgnoreCase(String name);
     Optional<Medicine> findByBarcode(String barcode);
+    List<Medicine> findByCategory(String category);
 
     @Query("SELECT m FROM Medicine m WHERE " +
            "(COALESCE(:search, '') = '' OR LOWER(m.name) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(m.genericName) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(m.medicineCode) LIKE LOWER(CONCAT('%', :search, '%'))) AND " +

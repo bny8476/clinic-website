@@ -14,4 +14,7 @@ public interface PrescriptionRepository extends JpaRepository<PharmacyPrescripti
     java.util.Optional<PharmacyPrescriptionRecord> findByIdForUpdate(@org.springframework.data.repository.query.Param("id") Long id);
 
     java.util.Optional<PharmacyPrescriptionRecord> findByClinicalPrescriptionId(Long clinicalPrescriptionId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT p FROM PharmacyPrescriptionRecord p WHERE p.status = :status AND (p.assignedPharmacyUserId IS NULL OR p.assignedPharmacyUserId = :userId)")
+    java.util.List<PharmacyPrescriptionRecord> findByStatusAndAssignedUserId(@org.springframework.data.repository.query.Param("status") String status, @org.springframework.data.repository.query.Param("userId") Long userId);
 }

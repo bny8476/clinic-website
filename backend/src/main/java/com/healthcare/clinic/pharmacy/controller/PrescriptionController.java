@@ -53,10 +53,7 @@ public class PrescriptionController {
     @PreAuthorize("hasAnyAuthority('ROLE_PHARMACIST','ROLE_DOCTOR','ROLE_ADMIN','ROLE_SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<List<PharmacyPrescriptionRecord>>> getPendingPrescriptions() {
         Long currentUserId = SecurityUtils.getCurrentUserId();
-        List<PharmacyPrescriptionRecord> pending = prescriptionRepository.findAll().stream()
-                .filter(p -> "PENDING".equals(p.getStatus()))
-                .filter(p -> p.getAssignedPharmacyUserId() == null || p.getAssignedPharmacyUserId().equals(currentUserId))
-                .toList();
+        List<PharmacyPrescriptionRecord> pending = prescriptionRepository.findByStatusAndAssignedUserId("PENDING", currentUserId);
         return ResponseEntity.ok(ApiResponse.success(pending, "Pending prescriptions fetched"));
     }
 

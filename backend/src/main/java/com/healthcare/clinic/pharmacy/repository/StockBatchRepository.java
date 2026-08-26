@@ -42,4 +42,6 @@ public interface StockBatchRepository extends JpaRepository<StockBatch, String> 
     List<StockBatch> findByExpiryDateBeforeAndQuantityAvailableGreaterThan(java.time.LocalDate maxDate, Integer minQuantity);
 
     List<StockBatch> findByQuantityAvailableBetween(Integer minQuantity, Integer maxQuantity);
+
+    java.util.Optional<StockBatch> findByBatchNumber(String batchNumber);
 }

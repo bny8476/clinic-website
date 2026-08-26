@@ -75,11 +75,13 @@ public class ClinicDatabaseConfig {
         dataSource.setUsername(username);
         dataSource.setPassword(password);
         dataSource.setDriverClassName(driver);
-        dataSource.setKeepaliveTime(120000);       // 2 min proactive ping
+        dataSource.setKeepaliveTime(environment.getProperty("app.datasource.clinic.keepalive-time", Long.class, 120000L));
         dataSource.setConnectionTestQuery("SELECT 1");
-        dataSource.setMaximumPoolSize(5);
-        dataSource.setMinimumIdle(1);
-        dataSource.setConnectionTimeout(30000);
+        dataSource.setMaximumPoolSize(environment.getProperty("app.datasource.clinic.maximum-pool-size", Integer.class, 5));
+        dataSource.setMinimumIdle(environment.getProperty("app.datasource.clinic.minimum-idle", Integer.class, 1));
+        dataSource.setConnectionTimeout(environment.getProperty("app.datasource.clinic.connection-timeout", Long.class, 30000L));
+        dataSource.setIdleTimeout(environment.getProperty("app.datasource.clinic.idle-timeout", Long.class, 600000L));
+        dataSource.setMaxLifetime(environment.getProperty("app.datasource.clinic.max-lifetime", Long.class, 1800000L));
 
         try (java.sql.Connection testConn = dataSource.getConnection()) {
             System.out.println("[Clinic DB] Test connection succeeded: "
@@ -98,7 +100,7 @@ public class ClinicDatabaseConfig {
 
     @Primary
     @Bean(name = "clinicEntityManagerFactory")
-    @DependsOn({"clinicFlyway", "pharmacyFlyway"})
+    @DependsOn({"clinicFlyway"})
     public LocalContainerEntityManagerFactoryBean clinicEntityManagerFactory(
             @Qualifier("clinicDataSource") DataSource dataSource,
             org.springframework.core.env.Environment env) {

@@ -10,6 +10,8 @@ import org.springframework.cache.annotation.EnableCaching;
 
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGenerator;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import java.util.concurrent.Executor;
 
 @EnableCaching
 @SpringBootApplication(
@@ -34,7 +36,7 @@ public class ClinicApplication {
 		return args -> {
 			System.out.println("=========================================================");
 			System.out.println("=       CLINIC APPLICATION STARTED SUCCESSFULLY         =");
-			System.out.println("=   PostgreSQL and MySQL DataSources Initialized        =");
+			System.out.println("=   PostgreSQL DataSource Initialized                   =");
 			System.out.println("=   Flyway Migrations Passed Successfully               =");
 			System.out.println("=========================================================");
 		};
@@ -52,5 +54,16 @@ public class ClinicApplication {
 				.expireAfterWrite(java.time.Duration.ofMinutes(30))
 				.maximumSize(1000));
 		return cacheManager;
+	}
+
+	@Bean(name = "taskExecutor")
+	public Executor taskExecutor() {
+		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+		executor.setCorePoolSize(2);
+		executor.setMaxPoolSize(10);
+		executor.setQueueCapacity(25);
+		executor.setThreadNamePrefix("Async-");
+		executor.initialize();
+		return executor;
 	}
 }

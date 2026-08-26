@@ -23,7 +23,7 @@ public class HomeVisitAssignment {
     @Column(name = "tenant_id")
     private Long tenantId;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "request_id")
     private HomeVisitRequest request;
 

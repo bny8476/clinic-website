@@ -105,7 +105,7 @@ public class PharmacyDataSeeder implements CommandLineRunner {
             supplierRepository.save(s2);
             log.info("PharmacyDataSeeder: Seeded suppliers.");
         } else {
-            s1 = supplierRepository.findAll(org.springframework.data.domain.PageRequest.of(0, 1)).getContent().get(0);
+            s1 = supplierRepository.findTopByOrderByIdAsc().orElseThrow();
         }
 
         // Seed Medicines
@@ -119,7 +119,7 @@ public class PharmacyDataSeeder implements CommandLineRunner {
             m1 = medicineRepository.save(m1);
             log.info("PharmacyDataSeeder: Seeded medicines.");
         } else {
-            m1 = medicineRepository.findAll(org.springframework.data.domain.PageRequest.of(0, 1)).getContent().get(0);
+            m1 = medicineRepository.findTopByOrderByIdAsc().orElseThrow();
         }
 
         // Seed Purchase Orders

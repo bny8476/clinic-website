@@ -39,8 +39,11 @@ public class CreditBillController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<CreditBill>>> getAllCreditBills() {
-        return ResponseEntity.ok(ApiResponse.success(creditBillRepository.findAll(), "Credit bills fetched"));
+    public ResponseEntity<ApiResponse<org.springframework.data.domain.Page<CreditBill>>> getAllCreditBills(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
+        return ResponseEntity.ok(ApiResponse.success(creditBillRepository.findAll(pageable), "Credit bills fetched"));
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_SYSTEM_ADMIN','ROLE_BILLING_STAFF','ROLE_SUPERVISOR')")

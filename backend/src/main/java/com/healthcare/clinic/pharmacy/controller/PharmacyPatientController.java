@@ -23,8 +23,11 @@ public class PharmacyPatientController {
 
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ROLE_PHARMACIST','ROLE_DOCTOR','ROLE_ADMIN','ROLE_SUPER_ADMIN')")
-    public ResponseEntity<ApiResponse<java.util.List<PharmacyPatient>>> getAllPatients() {
-        return ResponseEntity.ok(ApiResponse.success(patientRepository.findAll(), "Patients fetched"));
+    public ResponseEntity<ApiResponse<org.springframework.data.domain.Page<PharmacyPatient>>> getAllPatients(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
+        return ResponseEntity.ok(ApiResponse.success(patientRepository.findAll(pageable), "Patients fetched"));
     }
 
     @GetMapping("/search")
