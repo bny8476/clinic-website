@@ -22,3 +22,4 @@ USER appuser
 
 EXPOSE 8080
 ENTRYPOINT ["java", "-XX:MaxRAMPercentage=60.0", "-XX:+UseSerialGC", "-jar", "app.jar"]
+                                                                                                                                                                                                                                                                                
