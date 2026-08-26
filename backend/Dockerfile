@@ -21,4 +21,4 @@ COPY --from=build --chown=appuser:appgroup /app/target/*.jar app.jar
 USER appuser
 
 EXPOSE 8080
-ENTRYPOINT ["java", "-XX:MaxRAMPercentage=60.0", "-XX:+UseG1GC", "-XX:+UseStringDeduplication", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-XX:MaxRAMPercentage=60.0", "-XX:+UseSerialGC", "-jar", "app.jar"]
