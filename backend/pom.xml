@@ -140,7 +140,17 @@
 			<artifactId>twilio</artifactId>
 			<version>9.14.0</version>
 		</dependency>
-		<!-- FHIR (Removed) -->
+		<!-- FHIR -->
+		<dependency>
+			<groupId>ca.uhn.hapi.fhir</groupId>
+			<artifactId>hapi-fhir-base</artifactId>
+			<version>6.10.0</version>
+		</dependency>
+		<dependency>
+			<groupId>ca.uhn.hapi.fhir</groupId>
+			<artifactId>hapi-fhir-structures-r4</artifactId>
+			<version>6.10.0</version>
+		</dependency>
 
 		<!-- Stripe -->
 		<dependency>
