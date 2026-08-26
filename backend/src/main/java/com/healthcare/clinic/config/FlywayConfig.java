@@ -38,6 +38,7 @@ public class FlywayConfig {
                 .table("clinic_flyway_schema_history_v2")
                 .baselineOnMigrate(baselineOnMigrate)
                 .baselineVersion(baselineVersion)
+                .validateOnMigrate(false)
                 .load();
 
         if (Boolean.parseBoolean(
