@@ -21,8 +21,16 @@ public class RefreshTokenController {
     private final UserDetailsService userDetailsService;
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshtoken(@CookieValue(name = "refresh_token", required = false) String requestRefreshToken) {
-        if (requestRefreshToken == null || requestRefreshToken.isEmpty()) {
+    public ResponseEntity<?> refreshtoken(
+            @CookieValue(name = "refresh_token", required = false) String cookieRefreshToken,
+            @RequestBody(required = false) TokenRefreshRequest bodyRequest) {
+
+        String requestRefreshToken = cookieRefreshToken;
+        if ((requestRefreshToken == null || requestRefreshToken.isEmpty()) && bodyRequest != null) {
+            requestRefreshToken = bodyRequest.getRefreshToken();
+        }
+
+        if (requestRefreshToken == null || requestRefreshToken.isBlank()) {
             return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).body("Refresh token is missing");
         }
 
@@ -50,7 +58,7 @@ public class RefreshTokenController {
 
                         return ResponseEntity.ok()
                                 .header(org.springframework.http.HttpHeaders.SET_COOKIE, refreshCookie.toString())
-                                .body(new TokenRefreshResponse(token));
+                                .body(new TokenRefreshResponse(token, newRefreshToken));
                     })
                     .orElseThrow(() -> new RuntimeException("Refresh token is not in database!"));
         } catch (Exception e) {
@@ -59,7 +67,15 @@ public class RefreshTokenController {
     }
     
     @PostMapping("/logout")
-    public ResponseEntity<?> logoutUser(@CookieValue(name = "refresh_token", required = false) String requestRefreshToken) {
+    public ResponseEntity<?> logoutUser(
+            @CookieValue(name = "refresh_token", required = false) String cookieRefreshToken,
+            @RequestBody(required = false) TokenRefreshRequest bodyRequest) {
+
+        String requestRefreshToken = cookieRefreshToken;
+        if ((requestRefreshToken == null || requestRefreshToken.isEmpty()) && bodyRequest != null) {
+            requestRefreshToken = bodyRequest.getRefreshToken();
+        }
+
         if (requestRefreshToken != null && !requestRefreshToken.isEmpty()) {
             refreshTokenService.findByToken(requestRefreshToken).ifPresent(token -> {
                 refreshTokenService.deleteByUserId(token.getUser().getId());
@@ -82,16 +98,17 @@ public class RefreshTokenController {
 
 @Data
 class TokenRefreshRequest {
-    @jakarta.validation.constraints.NotBlank
     private String refreshToken;
 }
 
 @Data
 class TokenRefreshResponse {
     private String accessToken;
+    private String refreshToken;
     private String tokenType = "Bearer";
 
-    public TokenRefreshResponse(String accessToken) {
+    public TokenRefreshResponse(String accessToken, String refreshToken) {
         this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
     }
 }

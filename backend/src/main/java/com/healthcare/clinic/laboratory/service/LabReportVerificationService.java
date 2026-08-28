@@ -7,6 +7,7 @@ import com.healthcare.clinic.laboratory.entity.LabTestRequest;
 import com.healthcare.clinic.laboratory.repository.LabResultRepository;
 import com.healthcare.clinic.laboratory.repository.LabTestRequestRepository;
 import com.healthcare.clinic.notification.event.LabResultReleasedEvent;
+import com.healthcare.clinic.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -26,8 +27,8 @@ public class LabReportVerificationService {
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
-    public LabResult verifyReport(Long requestId, User pathologist, String comments) {
-        log.info("Pathologist {} is verifying lab request {}", pathologist.getUsername(), requestId);
+    public LabResult verifyReport(Long requestId, UserPrincipal pathologistPrincipal, String comments) {
+        log.info("Pathologist {} is verifying lab request {}", pathologistPrincipal != null ? pathologistPrincipal.getUsername() : "unknown", requestId);
 
         LabTestRequest request = requestRepository.findById(requestId)
                 .orElseThrow(() -> new IllegalArgumentException("Lab request not found"));
@@ -38,6 +39,10 @@ public class LabReportVerificationService {
 
         LabResult result = resultRepository.findByRequestId(requestId)
                 .orElseThrow(() -> new IllegalArgumentException("Lab result not found for this request"));
+
+        User pathologist = pathologistPrincipal != null && pathologistPrincipal.getUserId() != null
+                ? userRepository.findById(pathologistPrincipal.getUserId()).orElse(null)
+                : null;
 
         result.setVerifiedBy(pathologist);
         result.setVerifiedAt(ZonedDateTime.now());

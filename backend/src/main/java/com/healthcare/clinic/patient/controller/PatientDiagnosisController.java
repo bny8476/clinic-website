@@ -1,6 +1,6 @@
 package com.healthcare.clinic.patient.controller;
 
-import com.healthcare.clinic.identity.entity.User;
+import com.healthcare.clinic.security.UserPrincipal;
 import com.healthcare.clinic.patient.entity.PatientDiagnosis;
 import com.healthcare.clinic.patient.service.PatientDiagnosisService;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/doctor/patients/{patientId}/diagnoses")
-@PreAuthorize("hasAuthority('ROLE_PATIENT') or hasAuthority('ROLE_SUPER_ADMIN')")
+@PreAuthorize("hasAuthority('ROLE_PATIENT') or hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_DOCTOR')")
 @RequiredArgsConstructor
 public class PatientDiagnosisController {
 
@@ -28,7 +28,7 @@ public class PatientDiagnosisController {
     @PostMapping
     @AuditableAction(module = "CLINICAL_ENCOUNTER", action = "ADD_DIAGNOSIS", resourceType = "PatientDiagnosis", sensitivityLevel = "HIGH")
     public ResponseEntity<PatientDiagnosis> addDiagnosis(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal UserPrincipal user,
             @PathVariable Long patientId,
             @RequestBody PatientDiagnosis diagnosis) {
         diagnosis.setPatientId(patientId);

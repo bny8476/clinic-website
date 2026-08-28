@@ -1,6 +1,6 @@
 package com.healthcare.clinic.patient.service;
 
-import com.healthcare.clinic.identity.entity.User;
+import com.healthcare.clinic.security.UserPrincipal;
 import com.healthcare.clinic.patient.entity.PatientPortalPayment;
 import com.healthcare.clinic.patient.entity.PatientProfile;
 import com.healthcare.clinic.patient.repository.PatientPortalPaymentRepository;
@@ -19,18 +19,18 @@ public class PatientPortalPaymentService {
     private final PatientPortalPaymentRepository paymentRepository;
     private final PatientProfileRepository patientProfileRepository;
 
-    private PatientProfile getPatientProfile(User user) {
-        return patientProfileRepository.findByUserId(user.getId())
+    private PatientProfile getPatientProfile(UserPrincipal user) {
+        return patientProfileRepository.findByUserId(user.getUserId())
                 .orElseThrow(() -> new RuntimeException("Patient profile not found for user"));
     }
 
-    public List<PatientPortalPayment> getPayments(User user) {
+    public List<PatientPortalPayment> getPayments(UserPrincipal user) {
         PatientProfile profile = getPatientProfile(user);
         return paymentRepository.findByPatientIdOrderByPaymentDateDesc(profile.getId());
     }
 
     @Transactional
-    public PatientPortalPayment processPayment(User user, PatientPortalPayment payment) {
+    public PatientPortalPayment processPayment(UserPrincipal user, PatientPortalPayment payment) {
         PatientProfile profile = getPatientProfile(user);
         payment.setPatientId(profile.getId());
         

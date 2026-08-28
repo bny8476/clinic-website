@@ -194,31 +194,34 @@ public class DoctorScheduleService {
 
     @Scheduled(cron = "0 0 1 * * *") // Run at 1 AM every day
     @EventListener(ApplicationReadyEvent.class)
-    @Transactional
     public void generateSlotsAutomatically() {
         log.info("Running scheduled slot generation");
         LocalDate today = LocalDate.now();
         LocalDate to = today.plusDays(14);
         
-        List<DoctorProfile> activeDoctors = doctorRepository.findActiveDoctorsWithNames().stream()
-                .map(dto -> doctorRepository.findById(dto.getId()).orElse(null))
-                .filter(doc -> doc != null)
-                .collect(Collectors.toList());
+        try {
+            List<DoctorProfile> activeDoctors = doctorRepository.findActiveDoctorsWithNames().stream()
+                    .map(dto -> doctorRepository.findById(dto.getId()).orElse(null))
+                    .filter(doc -> doc != null)
+                    .collect(Collectors.toList());
 
-        for (DoctorProfile doctor : activeDoctors) {
-            try {
-                List<DoctorWorkingHours> workingHours = workingHoursRepository.findByDoctorIdAndIsActiveTrue(doctor.getId());
-                if (workingHours.isEmpty()) {
-                    log.warn("Doctor {} (User ID: {}) has zero active working hours configured. No slots will be generated.", doctor.getId(), doctor.getUserId());
+            for (DoctorProfile doctor : activeDoctors) {
+                try {
+                    List<DoctorWorkingHours> workingHours = workingHoursRepository.findByDoctorIdAndIsActiveTrue(doctor.getId());
+                    if (workingHours.isEmpty()) {
+                        log.warn("Doctor {} (User ID: {}) has zero active working hours configured. No slots will be generated.", doctor.getId(), doctor.getUserId());
+                    }
+                    
+                    int created = generateSlotsForRange(doctor.getUserId(), today, to);
+                    if (created > 0) {
+                        log.info("Generated {} slots for doctor {}", created, doctor.getId());
+                    }
+                } catch (Exception e) {
+                    log.error("Failed to generate slots for doctor " + doctor.getId(), e);
                 }
-                
-                int created = generateSlotsForRange(doctor.getUserId(), today, to);
-                if (created > 0) {
-                    log.info("Generated {} slots for doctor {}", created, doctor.getId());
-                }
-            } catch (Exception e) {
-                log.error("Failed to generate slots for doctor " + doctor.getId(), e);
             }
+        } catch (Exception e) {
+            log.error("Failed to run automatic slot generation on startup", e);
         }
     }
 }

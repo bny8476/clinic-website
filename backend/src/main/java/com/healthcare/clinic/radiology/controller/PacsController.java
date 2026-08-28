@@ -1,6 +1,6 @@
 package com.healthcare.clinic.radiology.controller;
 
-import com.healthcare.clinic.identity.entity.User;
+import com.healthcare.clinic.security.UserPrincipal;
 import com.healthcare.clinic.radiology.entity.DicomStudy;
 import com.healthcare.clinic.radiology.service.PacsIntegrationService;
 import lombok.RequiredArgsConstructor;
@@ -25,8 +25,9 @@ public class PacsController {
     public ResponseEntity<DicomStudy> uploadDicom(
             @PathVariable Long requestId,
             @RequestParam("file") MultipartFile file,
-            @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(pacsService.ingestDicomFile(requestId, file, user.getId().toString()));
+            @AuthenticationPrincipal UserPrincipal user) {
+        String uploaderId = user != null && user.getUserId() != null ? user.getUserId().toString() : "system";
+        return ResponseEntity.ok(pacsService.ingestDicomFile(requestId, file, uploaderId));
     }
 
     @GetMapping("/study/request/{requestId}")

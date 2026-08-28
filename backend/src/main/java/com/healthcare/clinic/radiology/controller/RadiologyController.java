@@ -1,10 +1,10 @@
 package com.healthcare.clinic.radiology.controller;
 
-import com.healthcare.clinic.identity.entity.User;
 import com.healthcare.clinic.radiology.entity.ImagingProcedure;
 import com.healthcare.clinic.radiology.entity.ImagingRequest;
 import com.healthcare.clinic.radiology.entity.RadiologyReport;
 import com.healthcare.clinic.radiology.service.RadiologyService;
+import com.healthcare.clinic.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -67,7 +67,7 @@ public class RadiologyController {
     public ResponseEntity<RadiologyReport> saveReport(
             @PathVariable Long requestId,
             @RequestBody RadiologyReport report,
-            @AuthenticationPrincipal User radiologist) {
+            @AuthenticationPrincipal UserPrincipal radiologist) {
         return ResponseEntity.ok(radiologyService.saveReport(requestId, report, radiologist));
     }
 
@@ -76,7 +76,7 @@ public class RadiologyController {
     public ResponseEntity<ImagingRequest> bookPatientRequest(
             @PathVariable Long id,
             @RequestBody RadScheduleRequest request,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal UserPrincipal user) {
         try {
             return ResponseEntity.ok(radiologyService.bookPatientRequest(id, request.getScheduledAt(), user));
         } catch (IllegalArgumentException ex) {

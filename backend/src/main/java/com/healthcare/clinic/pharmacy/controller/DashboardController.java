@@ -17,7 +17,7 @@ import java.util.Map;
 
 @RestController("pharmacyDashboardController")
 @RequestMapping("/api/pharmacy/dashboard")
-@org.springframework.security.access.prepost.PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_SUPER_ADMIN','ROLE_PHARMACIST')")
+@org.springframework.security.access.prepost.PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_SUPER_ADMIN','ROLE_BRANCH_ADMIN','ROLE_PHARMACIST','ROLE_PHARMACY','ROLE_PHARMACY_STAFF','ROLE_PHARMACY_MANAGER','ROLE_STOREKEEPER','ROLE_DOCTOR','ROLE_NURSE')")
 public class DashboardController {
 
     private final DashboardService dashboardService;

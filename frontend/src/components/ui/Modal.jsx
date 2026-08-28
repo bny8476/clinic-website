@@ -6,21 +6,11 @@ import { X } from 'lucide-react';
 /**
  * Enterprise Modal Primitive — fully accessible dialog
  *
- * Accessibility:
- *   - role="dialog" + aria-modal="true" on the panel
- *   - aria-labelledby wired to the title <h3> (when title prop provided)
- *   - aria-describedby wired to an optional description slot (via descriptionId)
- *   - Focus is trapped inside while open (Tab / Shift+Tab cycle within modal)
- *   - Focus returns to the trigger element when modal closes
- *   - Escape closes the modal (existing behaviour, kept)
- *   - Backdrop click closes the modal (existing behaviour, kept)
- *   - Close button has an explicit aria-label
- *
  * @param {Object} props
  * @param {boolean} props.isOpen
  * @param {Function} props.onClose
  * @param {string} [props.title]
- * @param {string} [props.description] - Accessible description rendered as a visually-hidden hint
+ * @param {string} [props.description]
  * @param {'sm'|'md'|'lg'|'xl'|'full'} [props.size='md']
  * @param {string} [props.className]
  */
@@ -41,10 +31,8 @@ export default function Modal({
   useEffect(() => {
     if (!isOpen) return;
 
-    // Remember what was focused before we opened
     const previouslyFocused = document.activeElement;
 
-    // Move focus into the modal on open
     const firstFocusable = panelRef.current?.querySelector(
       'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
     );
@@ -87,14 +75,13 @@ export default function Modal({
     return () => {
       document.body.style.overflow = 'unset';
       window.removeEventListener('keydown', handleKeyDown);
-      // Return focus to the element that opened the modal
       previouslyFocused?.focus();
     };
   }, [isOpen, onClose]);
 
   const sizes = {
     sm: 'max-w-sm',
-    md: 'max-w-lg',
+    md: 'max-w-xl',
     lg: 'max-w-2xl',
     xl: 'max-w-4xl',
     full: 'max-w-[95vw] h-[90vh]'
@@ -111,7 +98,7 @@ export default function Modal({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-md"
             aria-hidden="true"
           />
 
@@ -126,7 +113,7 @@ export default function Modal({
             initial="hidden"
             animate="visible"
             exit="exit"
-            className={`relative w-full ${sizes[size] || sizes.md} bg-white/50 backdrop-blur-2xl border border-white/40 rounded-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] z-10 flex flex-col max-h-[90vh] overflow-hidden ${className}`}
+            className={`relative w-full ${sizes[size] || sizes.md} bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-2xl z-10 flex flex-col max-h-[92vh] overflow-hidden ${className}`}
           >
             {/* Visually-hidden description for screen readers */}
             {description && (
@@ -136,10 +123,10 @@ export default function Modal({
             )}
 
             {title && (
-              <div className="px-6 py-4 border-b border-[var(--color-border)] flex items-center justify-between gap-4">
+              <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-4 bg-slate-50/50 dark:bg-slate-950/50">
                 <h3
                   id={titleId}
-                  className="font-display font-bold text-lg text-[var(--color-navy-900)] m-0 truncate"
+                  className="font-display font-semibold text-lg text-slate-900 dark:text-slate-100 m-0 truncate"
                 >
                   {title}
                 </h3>
@@ -147,7 +134,7 @@ export default function Modal({
                   type="button"
                   onClick={onClose}
                   aria-label="Close dialog"
-                  className="p-1.5 rounded-pill text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface-alt)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
+                  className="p-1.5 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                 >
                   <X className="w-5 h-5" aria-hidden="true" />
                 </button>

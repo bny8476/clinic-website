@@ -1,6 +1,8 @@
 package com.healthcare.clinic.support.service;
 
 import com.healthcare.clinic.identity.entity.User;
+import com.healthcare.clinic.identity.repository.UserRepository;
+import com.healthcare.clinic.security.UserPrincipal;
 import com.healthcare.clinic.support.entity.SpTicket;
 import com.healthcare.clinic.support.repository.SpTicketRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,15 +19,20 @@ public class TicketService {
 
     private final SpTicketRepository ticketRepository;
     private final SlaService slaService;
+    private final UserRepository userRepository;
 
     @Transactional
-    public SpTicket createTicket(SpTicket ticketRequest, User requester) {
+    public SpTicket createTicket(SpTicket ticketRequest, UserPrincipal requesterPrincipal) {
         if (ticketRequest.getIdempotencyKey() != null) {
             Optional<SpTicket> existing = ticketRepository.findByIdempotencyKey(ticketRequest.getIdempotencyKey());
             if (existing.isPresent()) {
                 return existing.get();
             }
         }
+
+        User requester = requesterPrincipal != null && requesterPrincipal.getUserId() != null
+                ? userRepository.findById(requesterPrincipal.getUserId()).orElse(null)
+                : null;
 
         SpTicket ticket = new SpTicket();
         ticket.setTicketNumber("TKT-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
@@ -46,14 +53,14 @@ public class TicketService {
         ticket.setReferenceOrderId(ticketRequest.getReferenceOrderId());
         ticket.setReferenceInvoiceId(ticketRequest.getReferenceInvoiceId());
 
-        // Attach SLA deadlines
         slaService.applySlaPolicy(ticket);
 
         return ticketRepository.save(ticket);
     }
 
-    public List<SpTicket> getTicketsByRequester(User requester) {
-        return ticketRepository.findByRequesterIdOrderByCreatedAtDesc(requester.getId());
+    public List<SpTicket> getTicketsByRequester(UserPrincipal requesterPrincipal) {
+        Long requesterId = requesterPrincipal != null ? requesterPrincipal.getUserId() : null;
+        return ticketRepository.findByRequesterIdOrderByCreatedAtDesc(requesterId);
     }
 
     public List<SpTicket> getOpenTickets() {
@@ -61,7 +68,7 @@ public class TicketService {
     }
 
     @Transactional
-    public SpTicket updateTicketStatus(Long ticketId, String newStatus, User actor) {
+    public SpTicket updateTicketStatus(Long ticketId, String newStatus, UserPrincipal actor) {
         SpTicket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new RuntimeException("Ticket not found"));
         

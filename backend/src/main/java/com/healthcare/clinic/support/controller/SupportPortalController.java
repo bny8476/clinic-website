@@ -1,6 +1,6 @@
 package com.healthcare.clinic.support.controller;
 
-import com.healthcare.clinic.identity.entity.User;
+import com.healthcare.clinic.security.UserPrincipal;
 import com.healthcare.clinic.support.entity.SpKnowledgeArticle;
 import com.healthcare.clinic.support.entity.SpTicket;
 import com.healthcare.clinic.support.service.KnowledgeBaseService;
@@ -23,13 +23,13 @@ public class SupportPortalController {
     private final KnowledgeBaseService kbService;
     
     @GetMapping("/tickets")
-    public ResponseEntity<List<SpTicket>> getMyTickets(@AuthenticationPrincipal User patient) {
+    public ResponseEntity<List<SpTicket>> getMyTickets(@AuthenticationPrincipal UserPrincipal patient) {
         return ResponseEntity.ok(ticketService.getTicketsByRequester(patient));
     }
     
     @PostMapping("/tickets")
     public ResponseEntity<SpTicket> createTicket(
-            @AuthenticationPrincipal User patient,
+            @AuthenticationPrincipal UserPrincipal patient,
             @RequestBody SpTicket request) {
         return ResponseEntity.ok(ticketService.createTicket(request, patient));
     }
@@ -37,7 +37,7 @@ public class SupportPortalController {
     @GetMapping("/kb/search")
     public ResponseEntity<List<SpKnowledgeArticle>> searchKb(
             @RequestParam String q,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal UserPrincipal user) {
         String audience = (user != null) ? "PATIENTS_ONLY" : "PUBLIC";
         return ResponseEntity.ok(kbService.searchArticles(q, audience));
     }

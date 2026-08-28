@@ -200,10 +200,35 @@ public class PortalAuthController {
     }
 
     private boolean isPortalMatchingRole(String portal, String roleName) {
-        if (roleName == null) return false;
+        if (roleName == null || portal == null) return false;
         String normalizedRole = roleName.toUpperCase().replace("ROLE_", "");
         String normalizedPortal = portal.toUpperCase().replace("-", "_");
-        return normalizedRole.equals(normalizedPortal) || "ADMIN".equals(normalizedRole);
+
+        if (normalizedRole.equals(normalizedPortal) || "ADMIN".equals(normalizedRole) || "SUPER_ADMIN".equals(normalizedRole)) {
+            return true;
+        }
+
+        if ("PHARMACY".equals(normalizedPortal)) {
+            return normalizedRole.contains("PHARMAC") || normalizedRole.contains("STOREKEEPER");
+        }
+
+        if ("LAB".equals(normalizedPortal) || "LABORATORY".equals(normalizedPortal)) {
+            return normalizedRole.contains("LAB") || "PATHOLOGIST".equals(normalizedRole);
+        }
+
+        if ("RADIOLOGY".equals(normalizedPortal) || "RADIOLOGIST".equals(normalizedPortal)) {
+            return normalizedRole.contains("RADIO");
+        }
+
+        if ("NURSE".equals(normalizedPortal)) {
+            return normalizedRole.contains("NURSE");
+        }
+
+        if ("DOCTOR".equals(normalizedPortal)) {
+            return normalizedRole.contains("DOCTOR") || normalizedRole.contains("PHYSICIAN");
+        }
+
+        return false;
     }
 }
 

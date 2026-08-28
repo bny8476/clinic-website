@@ -1,7 +1,7 @@
 package com.healthcare.clinic.inpatient.controller;
 
 import com.healthcare.clinic.audit.annotation.AuditableAction;
-import com.healthcare.clinic.identity.entity.User;
+import com.healthcare.clinic.security.UserPrincipal;
 import com.healthcare.clinic.inpatient.dto.AdmissionRequest;
 import com.healthcare.clinic.inpatient.dto.DischargeRequest;
 import com.healthcare.clinic.inpatient.dto.TransferRequest;
@@ -27,8 +27,9 @@ public class AdmissionController {
     @GetMapping
     public ResponseEntity<List<Admission>> getAdmissions(
             @RequestParam(required = false) String status,
-            @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(admissionService.getAdmissions(user.getBranchId(), status));
+            @AuthenticationPrincipal UserPrincipal user) {
+        Long branchId = user != null ? user.getBranchId() : null;
+        return ResponseEntity.ok(admissionService.getAdmissions(branchId, status));
     }
 
     @GetMapping("/{id}")
@@ -41,14 +42,15 @@ public class AdmissionController {
     @AuditableAction(module = "INPATIENT", action = "ADMIT_PATIENT")
     public ResponseEntity<Admission> admitPatient(
             @RequestBody AdmissionRequest req,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal UserPrincipal user) {
+        Long branchId = user != null ? user.getBranchId() : null;
         Admission admission = admissionService.admitPatient(
                 req.getPatientId(), 
                 req.getDoctorId(), 
                 req.getBedId(), 
                 req.getAdmissionType(), 
                 req.getReason(),
-                user.getBranchId()
+                branchId
         );
         return ResponseEntity.ok(admission);
     }
@@ -59,7 +61,7 @@ public class AdmissionController {
     public ResponseEntity<BedTransfer> transferBed(
             @PathVariable Long id,
             @RequestBody TransferRequest req,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal UserPrincipal user) {
         return ResponseEntity.ok(admissionService.transferBed(id, req.getNewBedId(), req.getReason(), user));
     }
 

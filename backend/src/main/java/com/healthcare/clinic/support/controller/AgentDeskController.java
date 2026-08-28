@@ -1,6 +1,6 @@
 package com.healthcare.clinic.support.controller;
 
-import com.healthcare.clinic.identity.entity.User;
+import com.healthcare.clinic.security.UserPrincipal;
 import com.healthcare.clinic.support.entity.SpTicket;
 import com.healthcare.clinic.support.service.TicketService;
 import com.healthcare.clinic.support.service.AssignmentService;
@@ -29,8 +29,7 @@ public class AgentDeskController {
     @PostMapping("/tickets/{ticketId}/assign")
     public ResponseEntity<SpTicket> claimTicket(
             @PathVariable Long ticketId,
-            @AuthenticationPrincipal User agent) {
-        // Agent claims ticket for themselves
+            @AuthenticationPrincipal UserPrincipal agent) {
         return ResponseEntity.ok(assignmentService.assignTicket(ticketId, agent, agent, "Agent self-assigned"));
     }
     
@@ -38,7 +37,7 @@ public class AgentDeskController {
     public ResponseEntity<SpTicket> updateTicketStatus(
             @PathVariable Long ticketId,
             @RequestParam String status,
-            @AuthenticationPrincipal User agent) {
+            @AuthenticationPrincipal UserPrincipal agent) {
         return ResponseEntity.ok(ticketService.updateTicketStatus(ticketId, status, agent));
     }
 }

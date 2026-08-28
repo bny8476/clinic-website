@@ -1,6 +1,6 @@
 package com.healthcare.clinic.patient.service;
 
-import com.healthcare.clinic.identity.entity.User;
+import com.healthcare.clinic.security.UserPrincipal;
 import com.healthcare.clinic.patient.entity.PatientAllergy;
 import com.healthcare.clinic.patient.repository.PatientAllergyRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,8 +24,8 @@ public class PatientAllergyService {
     }
 
     @Transactional
-    public PatientAllergy addAllergy(User doctor, PatientAllergy allergy) {
-        allergy.setRecordedBy(doctor.getId());
+    public PatientAllergy addAllergy(UserPrincipal doctor, PatientAllergy allergy) {
+        allergy.setRecordedBy(doctor.getUserId());
         return allergyRepository.save(allergy);
     }
 

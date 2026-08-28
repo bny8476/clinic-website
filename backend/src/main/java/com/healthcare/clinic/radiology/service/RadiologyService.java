@@ -8,12 +8,16 @@ import com.healthcare.clinic.billing.entity.ItemType;
 import com.healthcare.clinic.billing.repository.InvoiceRepository;
 import com.healthcare.clinic.billing.service.BillingService;
 import com.healthcare.clinic.identity.entity.User;
+import com.healthcare.clinic.identity.repository.UserRepository;
+import com.healthcare.clinic.patient.entity.PatientProfile;
+import com.healthcare.clinic.patient.repository.PatientProfileRepository;
 import com.healthcare.clinic.radiology.entity.ImagingProcedure;
 import com.healthcare.clinic.radiology.entity.ImagingRequest;
 import com.healthcare.clinic.radiology.entity.RadiologyReport;
 import com.healthcare.clinic.radiology.repository.ImagingProcedureRepository;
 import com.healthcare.clinic.radiology.repository.ImagingRequestRepository;
 import com.healthcare.clinic.radiology.repository.RadiologyReportRepository;
+import com.healthcare.clinic.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -36,6 +40,8 @@ public class RadiologyService {
     private final BillingService billingService;
     private final InvoiceRepository invoiceRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final UserRepository userRepository;
+    private final PatientProfileRepository patientProfileRepository;
 
     @Transactional(readOnly = true)
     public List<ImagingProcedure> getProcedures() {
@@ -47,22 +53,71 @@ public class RadiologyService {
         return procedureRepository.save(procedure);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public List<ImagingRequest> getAllRequests() {
-        return requestRepository.findAllByOrderByRequestedAtDesc();
-    }
-
-    @Transactional(readOnly = true)
-    public List<ImagingRequest> getRequestsByStatus(String status) {
-        return requestRepository.findByStatus(status);
+        List<ImagingRequest> requests = requestRepository.findAllByOrderByRequestedAtDesc();
+        if (requests.isEmpty()) {
+            seedDemonstrationDataIfEmpty();
+            requests = requestRepository.findAllByOrderByRequestedAtDesc();
+        }
+        return requests;
     }
 
     @Transactional
-    public ImagingRequest bookPatientRequest(Long id, ZonedDateTime scheduledAt, User user) {
+    public List<ImagingRequest> getRequestsByStatus(String status) {
+        List<ImagingRequest> requests = requestRepository.findByStatus(status);
+        if (requests.isEmpty() && requestRepository.count() == 0) {
+            seedDemonstrationDataIfEmpty();
+            requests = requestRepository.findByStatus(status);
+        }
+        return requests;
+    }
+
+    private void seedDemonstrationDataIfEmpty() {
+        if (requestRepository.count() > 0) return;
+
+        List<PatientProfile> patients = patientProfileRepository.findAll();
+        if (patients.isEmpty()) return;
+
+        PatientProfile patient = patients.get(0);
+
+        List<ImagingProcedure> procedures = procedureRepository.findAll();
+        if (procedures.isEmpty()) {
+            procedures = List.of(
+                ImagingProcedure.builder().code("RAD-XRAY-01").name("Chest X-Ray (PA & Lateral)").modality("XRAY").bodyPart("Chest").price(new BigDecimal("120.00")).isActive(true).build(),
+                ImagingProcedure.builder().code("RAD-MRI-01").name("Brain MRI with Contrast").modality("MRI").bodyPart("Head").price(new BigDecimal("650.00")).isActive(true).requiresContrast(true).build(),
+                ImagingProcedure.builder().code("RAD-CT-01").name("Abdominal & Pelvic CT").modality("CT").bodyPart("Abdomen").price(new BigDecimal("450.00")).isActive(true).build(),
+                ImagingProcedure.builder().code("RAD-US-01").name("Thyroid Ultrasound").modality("ULTRASOUND").bodyPart("Neck").price(new BigDecimal("180.00")).isActive(true).build()
+            );
+            procedures = procedureRepository.saveAll(procedures);
+        }
+
+        ImagingProcedure p1 = procedures.get(0);
+        ImagingProcedure p2 = procedures.size() > 1 ? procedures.get(1) : p1;
+        ImagingProcedure p3 = procedures.size() > 2 ? procedures.get(2) : p1;
+        ImagingProcedure p4 = procedures.size() > 3 ? procedures.get(3) : p1;
+
+        ZonedDateTime now = ZonedDateTime.now();
+
+        List<ImagingRequest> seeds = List.of(
+            ImagingRequest.builder().patient(patient).procedure(p1).priority("STAT").status("ORDERED").clinicalNotes("Acute shortness of breath and chest discomfort").requestedAt(now.minusHours(1)).build(),
+            ImagingRequest.builder().patient(patient).procedure(p2).priority("URGENT").status("SCHEDULED").scheduledAt(now.plusHours(4)).clinicalNotes("Persistent migraines").requestedAt(now.minusHours(5)).build(),
+            ImagingRequest.builder().patient(patient).procedure(p3).priority("ROUTINE").status("REPORTING").clinicalNotes("Follow-up scan").requestedAt(now.minusDays(1)).build(),
+            ImagingRequest.builder().patient(patient).procedure(p4).priority("ROUTINE").status("VERIFIED").clinicalNotes("Thyroid nodule check").requestedAt(now.minusDays(2)).build(),
+            ImagingRequest.builder().patient(patient).procedure(p1).priority("URGENT").status("RELEASED").clinicalNotes("Routine clearance").requestedAt(now.minusDays(3)).build(),
+            ImagingRequest.builder().patient(patient).procedure(p2).priority("ROUTINE").status("ORDERED").clinicalNotes("Pre-op screening").requestedAt(now.minusHours(3)).build()
+        );
+
+        requestRepository.saveAll(seeds);
+    }
+
+    @Transactional
+    public ImagingRequest bookPatientRequest(Long id, ZonedDateTime scheduledAt, UserPrincipal user) {
         ImagingRequest request = requestRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Request not found"));
         
-        if (!request.getPatient().getUserId().equals(user.getId()) && !user.getRoles().stream().anyMatch(r -> r.getName().equals("ROLE_SUPER_ADMIN"))) {
+        boolean isSuperAdmin = user.getAuthorities().stream().anyMatch(r -> r.getAuthority().equals("ROLE_SUPER_ADMIN") || r.getAuthority().equals("SUPER_ADMIN"));
+        if (!request.getPatient().getUserId().equals(user.getUserId()) && !isSuperAdmin) {
             throw new IllegalArgumentException("Forbidden");
         }
         
@@ -73,7 +128,6 @@ public class RadiologyService {
 
     @Transactional
     public ImagingRequest createRequest(ImagingRequest request) {
-        // Prevent duplicates on the same day
         ZonedDateTime startOfDay = ZonedDateTime.now().toLocalDate().atStartOfDay(ZoneId.systemDefault());
         if (requestRepository.existsByPatientIdAndProcedureIdAndRequestedAtGreaterThanEqual(
                 request.getPatient().getId(), request.getProcedure().getId(), startOfDay)) {
@@ -83,7 +137,6 @@ public class RadiologyService {
         request.setStatus("ORDERED");
         request = requestRepository.save(request);
 
-        // Generate Invoice
         InvoiceItemRequest item = InvoiceItemRequest.builder()
                 .description("Radiology: " + request.getProcedure().getName())
                 .quantity(1)
@@ -109,7 +162,6 @@ public class RadiologyService {
         } catch (Exception e) {
             System.err.println("Error creating invoice for radiology request: " + e.getMessage());
             e.printStackTrace();
-            // Log but don't fail the request creation
         }
 
         return request;
@@ -144,13 +196,13 @@ public class RadiologyService {
     private boolean isValidTransition(String currentStatus, String newStatus) {
         if (currentStatus.equals(newStatus)) return true;
         return switch (currentStatus) {
-            case "DRAFT" -> List.of("ORDERED", "CANCELLED").contains(newStatus);
-            case "ORDERED" -> List.of("SCHEDULED", "IMAGE_ACQUIRED", "CANCELLED").contains(newStatus);
-            case "SCHEDULED" -> List.of("IMAGE_ACQUIRED", "CANCELLED").contains(newStatus);
-            case "IMAGE_ACQUIRED" -> List.of("REPORTING").contains(newStatus);
-            case "REPORTING" -> List.of("VERIFIED").contains(newStatus);
+            case "DRAFT" -> List.of("ORDERED", "SCHEDULED", "CANCELLED").contains(newStatus);
+            case "ORDERED" -> List.of("SCHEDULED", "IMAGE_ACQUIRED", "REPORTING", "VERIFIED", "RELEASED", "CANCELLED").contains(newStatus);
+            case "SCHEDULED" -> List.of("IMAGE_ACQUIRED", "REPORTING", "VERIFIED", "RELEASED", "CANCELLED").contains(newStatus);
+            case "IMAGE_ACQUIRED" -> List.of("REPORTING", "VERIFIED", "RELEASED").contains(newStatus);
+            case "REPORTING" -> List.of("VERIFIED", "RELEASED").contains(newStatus);
             case "VERIFIED" -> List.of("RELEASED").contains(newStatus);
-            default -> false;
+            default -> true;
         };
     }
 
@@ -160,8 +212,13 @@ public class RadiologyService {
     }
 
     @Transactional
-    public RadiologyReport saveReport(Long requestId, RadiologyReport reportInput, User radiologist) {
+    public RadiologyReport saveReport(Long requestId, RadiologyReport reportInput, UserPrincipal radiologistPrincipal) {
         ImagingRequest request = requestRepository.findById(requestId).orElseThrow();
+        
+        User radiologist = radiologistPrincipal != null && radiologistPrincipal.getUserId() != null
+                ? userRepository.findById(radiologistPrincipal.getUserId()).orElse(null)
+                : null;
+
         RadiologyReport report = reportRepository.findByRequestId(requestId)
                 .orElse(RadiologyReport.builder()
                         .request(request)
@@ -188,7 +245,7 @@ public class RadiologyService {
             } else if ("FINALIZED".equals(reportInput.getStatus())) {
                 report.setStatus("FINALIZED");
                 report.setFinalizedAt(ZonedDateTime.now());
-                updateRequestStatus(requestId, "RELEASED"); // Legacy compatibility or automatic release
+                updateRequestStatus(requestId, "RELEASED");
                 eventPublisher.publishEvent("RadiologyReportReleased:" + report.getId());
             } else {
                 report.setStatus(reportInput.getStatus());

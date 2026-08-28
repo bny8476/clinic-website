@@ -56,6 +56,7 @@ const useAuthStore = create(
     persist(
         (set) => ({
             token: null,
+            refreshToken: null,
             user: null,
             roles: [],
             mfaPending: false,
@@ -75,15 +76,19 @@ const useAuthStore = create(
                         return false; // MFA needed
                     }
                     
-                    const { token } = res.data;
+                    const { token, refreshToken } = res.data;
                     const parsedToken = parseJwtPayload(token);
                     set({ 
                         token, 
+                        refreshToken: refreshToken || null,
                         roles: parsedToken.roles || [],
                         user: { id: parsedToken.userId, email: parsedToken.sub },
                         mfaPending: false,
                         isLoading: false 
                     });
+                    if (refreshToken) {
+                        localStorage.setItem('refreshToken', refreshToken);
+                    }
                     return true;
                 } catch (err) {
                     set({ error: err.response?.data || 'Login failed', isLoading: false });
@@ -97,16 +102,20 @@ const useAuthStore = create(
                     const { axiosPublic } = await import('../api/axios');
                     const res = await axiosPublic.post(`/auth/${portal}/login/mfa`, { email, otp });
                     
-                    const { token } = res.data;
+                    const { token, refreshToken } = res.data;
                     const parsedToken = parseJwtPayload(token);
                     set({ 
                         token, 
+                        refreshToken: refreshToken || null,
                         roles: parsedToken.roles || [],
                         user: { id: parsedToken.userId, email: parsedToken.sub },
                         mfaPending: false,
                         mfaEmail: null,
                         isLoading: false 
                     });
+                    if (refreshToken) {
+                        localStorage.setItem('refreshToken', refreshToken);
+                    }
                     return true;
                 } catch (err) {
                     set({ error: err.response?.data || 'Invalid OTP', isLoading: false });
@@ -117,12 +126,23 @@ const useAuthStore = create(
             refresh: async () => {
                 try {
                     const { axiosPublic } = await import('../api/axios');
-                    // Must include withCredentials to send the HttpOnly refresh_token cookie
-                    const res = await axiosPublic.post(`/auth/refresh`, {}, { withCredentials: true });
-                    
+                    const state = useAuthStore.getState();
+                    const storedRefreshToken = state.refreshToken || localStorage.getItem('refreshToken');
+
+                    // Pass refresh token both via JSON body and withCredentials for cookie support
+                    const res = await axiosPublic.post(
+                        `/auth/refresh`,
+                        storedRefreshToken ? { refreshToken: storedRefreshToken } : {},
+                        { withCredentials: true }
+                    );
+
                     const newAccessToken = res.data.accessToken;
-                    
-                    set({ token: newAccessToken });
+                    const newRefreshToken = res.data.refreshToken || storedRefreshToken;
+
+                    set({ token: newAccessToken, refreshToken: newRefreshToken });
+                    if (newRefreshToken) {
+                        localStorage.setItem('refreshToken', newRefreshToken);
+                    }
                     return newAccessToken;
                 } catch (_err) {
                     return null;
@@ -157,10 +177,12 @@ const useAuthStore = create(
 
             clearError: () => set({ error: null }),
             logout: async () => {
-                set({ token: null, user: null, roles: [], mfaPending: false, mfaEmail: null, error: null });
+                const storedRefreshToken = useAuthStore.getState().refreshToken || localStorage.getItem('refreshToken');
+                set({ token: null, refreshToken: null, user: null, roles: [], mfaPending: false, mfaEmail: null, error: null });
+                localStorage.removeItem('refreshToken');
                 try {
                     const { axiosPrivate } = await import('../api/axios');
-                    await axiosPrivate.post('/auth/logout');
+                    await axiosPrivate.post('/auth/logout', storedRefreshToken ? { refreshToken: storedRefreshToken } : {}, { withCredentials: true });
                 } catch (err) {
                     // Ignore errors if backend session is already dead or network fails
                 }
@@ -169,7 +191,8 @@ const useAuthStore = create(
             clearStaleToken: () => {
                 const { token } = useAuthStore.getState();
                 if (token && !isTokenValid(token)) {
-                    set({ token: null, user: null, roles: [] });
+                    set({ token: null, refreshToken: null, user: null, roles: [] });
+                    localStorage.removeItem('refreshToken');
                 }
             },
             isAuthenticated: () => {
@@ -182,6 +205,7 @@ const useAuthStore = create(
             name: 'auth-storage',
             partialize: (state) => ({
                 token: state.token,
+                refreshToken: state.refreshToken,
                 user: state.user,
                 roles: state.roles,
             }),

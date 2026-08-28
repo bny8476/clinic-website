@@ -1,6 +1,6 @@
 package com.healthcare.clinic.patient.service;
 
-import com.healthcare.clinic.identity.entity.User;
+import com.healthcare.clinic.security.UserPrincipal;
 import com.healthcare.clinic.patient.entity.AiChatMessage;
 import com.healthcare.clinic.patient.entity.AiChatSession;
 import com.healthcare.clinic.patient.entity.PatientProfile;
@@ -22,13 +22,13 @@ public class AiAssistantService {
     private final PatientProfileRepository patientProfileRepository;
     private final com.healthcare.clinic.ai.service.AIAssistantService globalAiService;
 
-    private PatientProfile getPatientProfile(User user) {
-        return patientProfileRepository.findByUserId(user.getId())
+    private PatientProfile getPatientProfile(UserPrincipal user) {
+        return patientProfileRepository.findByUserId(user.getUserId())
                 .orElseThrow(() -> new RuntimeException("Patient profile not found for user"));
     }
 
     @Transactional
-    public AiChatSession getOrCreateActiveSession(User user) {
+    public AiChatSession getOrCreateActiveSession(UserPrincipal user) {
         PatientProfile profile = getPatientProfile(user);
         return sessionRepository.findByPatientId(profile.getId())
                 .stream().findFirst()
@@ -40,14 +40,13 @@ public class AiAssistantService {
                 });
     }
 
-    public List<AiChatMessage> getSessionMessages(User user, Long sessionId) {
-        // Simple authorization check could be added here
+    public List<AiChatMessage> getSessionMessages(UserPrincipal user, Long sessionId) {
         List<AiChatMessage> history = messageRepository.findBySessionIdOrderBySentAtAsc(sessionId);
         return history;
     }
 
     @Transactional
-    public AiChatMessage sendMessage(User user, Long sessionId, String content) {
+    public AiChatMessage sendMessage(UserPrincipal user, Long sessionId, String content) {
         AiChatSession session = sessionRepository.findById(sessionId)
                 .orElseThrow(() -> new RuntimeException("Session not found"));
 
@@ -71,5 +70,3 @@ public class AiAssistantService {
         return messageRepository.save(aiMessage);
     }
 }
-
-

@@ -9,7 +9,7 @@ import { Link, Navigate, Outlet, Route, Routes, useLocation, useNavigate, usePar
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../api/axios';
 import { getPortalConfig } from '../config/portalConfig';
-import { ArrowLeft, Bell, ChevronDown, LogOut, Search, Stethoscope, User, Zap } from 'lucide-react';
+import { ArrowLeft, Bell, ChevronDown, LogOut, Search, ShieldPlus, Stethoscope, Zap } from 'lucide-react';
 
 const DashboardLayout = ({ portalSlug, allowedRoles }) => {
   const [isQuickActionOpen, setIsQuickActionOpen] = useState(false);
@@ -118,7 +118,7 @@ const DashboardLayout = ({ portalSlug, allowedRoles }) => {
             <div className="relative">
               <button 
                 onClick={() => setIsQuickActionOpen(!isQuickActionOpen)}
-                className="bg-[var(--color-navy-800)] text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-semibold hover:opacity-90 transition shadow-xs"
+                className="bg-[#2160FF] hover:bg-blue-700 text-white px-4 py-2 rounded-xl flex items-center gap-2 text-sm font-bold transition shadow-sm cursor-pointer border-none"
               >
                 <Zap size={16} className="fill-current" />
                 Quick Action
@@ -212,10 +212,7 @@ const DashboardLayout = ({ portalSlug, allowedRoles }) => {
       
       <CommandPalette isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
       
-      {/* Main Content Area
-          - Dashboard routes: overflow-hidden → tiles fill the viewport, no scrollbars.
-          - All other routes:  overflow-y-auto  → page content scrolls naturally inside
-            the fixed shell (header + nav bar remain sticky at top). */}
+      {/* Main Content Area */}
       <main
         className={`flex-1 w-full flex flex-col overflow-x-hidden overflow-y-auto relative`}
       >

@@ -1,7 +1,7 @@
 package com.healthcare.clinic.surgery.controller;
 
 import com.healthcare.clinic.audit.annotation.AuditableAction;
-import com.healthcare.clinic.identity.entity.User;
+import com.healthcare.clinic.security.UserPrincipal;
 import com.healthcare.clinic.surgery.dto.PreOpChecklistRequest;
 import com.healthcare.clinic.surgery.dto.ScheduleSurgeryRequest;
 import com.healthcare.clinic.surgery.dto.SurgeryNoteRequest;
@@ -27,15 +27,17 @@ public class SurgeryController {
     private final SurgeryService surgeryService;
 
     @GetMapping("/theatres")
-    public ResponseEntity<List<OperationTheatre>> getTheatres(@AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(surgeryService.getTheatres(user.getBranchId()));
+    public ResponseEntity<List<OperationTheatre>> getTheatres(@AuthenticationPrincipal UserPrincipal user) {
+        Long branchId = user != null ? user.getBranchId() : null;
+        return ResponseEntity.ok(surgeryService.getTheatres(branchId));
     }
 
     @GetMapping("/bookings")
     public ResponseEntity<List<SurgeryBooking>> getBookings(
             @RequestParam(required = false) String status,
-            @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(surgeryService.getBookings(user.getBranchId(), status));
+            @AuthenticationPrincipal UserPrincipal user) {
+        Long branchId = user != null ? user.getBranchId() : null;
+        return ResponseEntity.ok(surgeryService.getBookings(branchId, status));
     }
 
     @PostMapping("/bookings")
@@ -70,7 +72,7 @@ public class SurgeryController {
     public ResponseEntity<PreOpChecklist> savePreOpChecklist(
             @PathVariable Long id,
             @RequestBody PreOpChecklistRequest req,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal UserPrincipal user) {
         return ResponseEntity.ok(surgeryService.savePreOpChecklist(id, req.getChecklistData(), req.getNotes(), user));
     }
 

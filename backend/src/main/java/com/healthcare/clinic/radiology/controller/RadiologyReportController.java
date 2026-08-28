@@ -1,9 +1,9 @@
 package com.healthcare.clinic.radiology.controller;
 
-import com.healthcare.clinic.identity.entity.User;
 import com.healthcare.clinic.radiology.entity.RadiologyReport;
 import com.healthcare.clinic.radiology.repository.RadiologyReportRepository;
 import com.healthcare.clinic.radiology.service.RadiologyReportingService;
+import com.healthcare.clinic.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,7 +33,7 @@ public class RadiologyReportController {
     public ResponseEntity<RadiologyReport> saveReport(
             @PathVariable Long requestId,
             @RequestBody Map<String, String> payload,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal UserPrincipal user) {
         
         String findings = payload.get("findings");
         String impression = payload.get("impression");
@@ -52,7 +52,7 @@ public class RadiologyReportController {
     @PreAuthorize("hasAnyRole('RADIOLOGIST', 'ADMIN')")
     public ResponseEntity<RadiologyReport> verifyReport(
             @PathVariable Long requestId,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal UserPrincipal user) {
         RadiologyReport report = reportRepository.findByRequestId(requestId)
                 .orElseThrow(() -> new IllegalArgumentException("Report not found for request"));
         return ResponseEntity.ok(reportingService.verifyReport(report.getId(), user));

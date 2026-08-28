@@ -2,7 +2,7 @@ import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
-import { BASE_URL } from '../../api/axios';
+import { BASE_URL, axiosPrivate } from '../../api/axios';
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Edit, Edit2, Package, Plus, Save, Trash2 } from 'lucide-react';
@@ -25,28 +25,16 @@ export default function ManageMedicines() {
   const { data: medicines = [], isLoading } = useQuery({
     queryKey: ['doctorMedicines'],
     queryFn: async () => {
-      const res = await fetch(`${BASE_URL}/doctor/medicines`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
-      if (!res.ok) throw new Error('Failed to fetch medicines');
-      return res.json();
+      const res = await axiosPrivate.get('/doctor/medicines');
+      return res.data;
     }
   });
 
   const saveMutation = useMutation({
     mutationFn: async (data) => {
-      const url = editingMedicine ? `${BASE_URL}/doctor/medicines/${editingMedicine.id}` : `${BASE_URL}/doctor/medicines`;
-      const method = editingMedicine ? 'PUT' : 'POST';
-      const res = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(data)
-      });
-      if (!res.ok) throw new Error('Failed to save medicine');
-      return res.json();
+      const url = editingMedicine ? `/doctor/medicines/${editingMedicine.id}` : `/doctor/medicines`;
+      const res = editingMedicine ? await axiosPrivate.put(url, data) : await axiosPrivate.post(url, data);
+      return res.data;
     },
     onSuccess: () => {
       toast.success(`Medicine ${editingMedicine ? 'updated' : 'added'} successfully`);
@@ -58,11 +46,7 @@ export default function ManageMedicines() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id) => {
-      const res = await fetch(`${BASE_URL}/doctor/medicines/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
-      if (!res.ok) throw new Error('Failed to delete medicine');
+      await axiosPrivate.delete(`/doctor/medicines/${id}`);
     },
     onSuccess: () => {
       toast.success('Medicine deleted successfully');

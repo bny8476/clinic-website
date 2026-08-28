@@ -1,6 +1,6 @@
 package com.healthcare.clinic.patient.controller;
 
-import com.healthcare.clinic.identity.entity.User;
+import com.healthcare.clinic.security.UserPrincipal;
 import com.healthcare.clinic.patient.entity.PatientPortalPayment;
 import com.healthcare.clinic.patient.service.PatientPortalPaymentService;
 import lombok.RequiredArgsConstructor;
@@ -20,13 +20,13 @@ public class PatientPortalPaymentController {
     private final PatientPortalPaymentService patientPaymentService;
 
     @GetMapping
-    public ResponseEntity<List<PatientPortalPayment>> getPayments(@AuthenticationPrincipal User user) {
+    public ResponseEntity<List<PatientPortalPayment>> getPayments(@AuthenticationPrincipal UserPrincipal user) {
         return ResponseEntity.ok(patientPaymentService.getPayments(user));
     }
 
     @PostMapping
     public ResponseEntity<PatientPortalPayment> processPayment(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal UserPrincipal user,
             @RequestBody PatientPortalPayment payment) {
         return ResponseEntity.ok(patientPaymentService.processPayment(user, payment));
     }

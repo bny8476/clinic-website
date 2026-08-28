@@ -1,9 +1,9 @@
 package com.healthcare.clinic.laboratory.controller;
 
-import com.healthcare.clinic.identity.entity.User;
 import com.healthcare.clinic.laboratory.entity.LabInventoryItem;
 import com.healthcare.clinic.laboratory.entity.LabQualityControl;
 import com.healthcare.clinic.laboratory.service.LabOperationalService;
+import com.healthcare.clinic.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,8 +20,8 @@ public class LabOperationalController {
     private final LabOperationalService operationalService;
 
     @GetMapping("/dashboard")
-    @PreAuthorize("hasAnyRole('ADMIN', 'LAB_TECH', 'PATHOLOGIST')")
-    public ResponseEntity<Map<String, Object>> getDashboardStats(@RequestParam Long branchId) {
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPER_ADMIN', 'ROLE_BRANCH_ADMIN', 'ROLE_LAB_TECH', 'ROLE_LAB_TECHNICIAN', 'ROLE_LAB_MANAGER', 'ROLE_LAB', 'ROLE_PATHOLOGIST', 'ROLE_DOCTOR', 'ROLE_NURSE')")
+    public ResponseEntity<Map<String, Object>> getDashboardStats(@RequestParam(required = false, defaultValue = "1") Long branchId) {
         return ResponseEntity.ok(operationalService.getDashboardStats(branchId));
     }
 
@@ -39,7 +39,7 @@ public class LabOperationalController {
             @RequestParam Long testCatalogId,
             @RequestParam String status,
             @RequestParam(required = false) String notes,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal UserPrincipal user) {
         return ResponseEntity.ok(operationalService.recordQualityControl(testCatalogId, status, notes, user));
     }
 }

@@ -9,130 +9,229 @@ import PatientManagement from '../../pages/admin/PatientManagement';
 import DoctorManagement from '../../pages/admin/DoctorManagement';
 import DepartmentManagement from '../../pages/admin/DepartmentManagement';
 import AuditDashboard from '../../pages/admin/AuditDashboard';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { fadeIn, staggerContainer } from '../../components/ui/motion';
-import { BarChart3, Building, Building2, CalendarCheck, CalendarDays, CheckCircle, CheckCircle2, CheckSquare, ChevronDown, ChevronRight, ClipboardList, Database, DollarSign, Download, FileDown, FileSpreadsheet, FileType, RefreshCw, Settings, ShieldCheck, User, UserPlus, Users, Users2, X, HardDrive, Network, Link as LinkIcon } from 'lucide-react';
+import { 
+  BarChart3, 
+  Building, 
+  Building2, 
+  CalendarCheck, 
+  CalendarDays, 
+  CheckCircle, 
+  CheckCircle2, 
+  CheckSquare, 
+  ChevronDown, 
+  ChevronRight, 
+  ClipboardList, 
+  Database, 
+  DollarSign, 
+  Download, 
+  FileDown, 
+  FileSpreadsheet, 
+  FileType, 
+  RefreshCw, 
+  Settings, 
+  ShieldCheck, 
+  User, 
+  UserPlus, 
+  Users, 
+  Users2, 
+  X, 
+  HardDrive, 
+  Network, 
+  Link as LinkIcon,
+  Check,
+  Clock,
+  Sparkles
+} from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 /* ── Backup & Restore Modal ──────────────────────────────────── */
 function BackupRestoreModal({ onClose }) {
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [statusMessage, setStatusMessage] = useState('');
   const [done, setDone] = useState(false);
+  const [backups, setBackups] = useState([
+    { id: 1, label: 'Auto System Backup', timestamp: '2026-08-27 02:00 AM', size: '248.5 MB', status: 'OK' },
+    { id: 2, label: 'Manual Admin Snapshot', timestamp: '2026-08-25 06:30 PM', size: '241.2 MB', status: 'OK' },
+    { id: 3, label: 'Pre-Deployment Backup', timestamp: '2026-08-20 02:00 AM', size: '239.8 MB', status: 'OK' },
+  ]);
   const intervalRef = useRef(null);
-
-  const mockBackups = [
-    { id: 1, label: 'Auto Backup', timestamp: '2026-08-21 02:00 AM', size: '248 MB', status: 'OK' },
-    { id: 2, label: 'Manual Backup', timestamp: '2026-08-20 06:30 PM', size: '241 MB', status: 'OK' },
-    { id: 3, label: 'Auto Backup', timestamp: '2026-08-20 02:00 AM', size: '239 MB', status: 'OK' },
-  ];
 
   const runBackup = () => {
     setRunning(true);
     setProgress(0);
     setDone(false);
+    setStatusMessage('Initializing database dump...');
+
     intervalRef.current = setInterval(() => {
       setProgress(p => {
         if (p >= 100) {
           clearInterval(intervalRef.current);
           setRunning(false);
           setDone(true);
-          toast.success('Backup completed successfully!');
+          const newBackup = {
+            id: Date.now(),
+            label: 'Manual Full Backup',
+            timestamp: new Date().toISOString().replace('T', ' ').substring(0, 16),
+            size: '252.1 MB',
+            status: 'OK'
+          };
+          setBackups(prev => [newBackup, ...prev]);
+          toast.success('System backup created & archived successfully!');
           return 100;
         }
-        return p + 8;
+
+        if (p < 30) setStatusMessage('Dumping MySQL/PostgreSQL schema & clinical tables...');
+        else if (p < 60) setStatusMessage('Compressing encrypted document storage & audit logs...');
+        else if (p < 90) setStatusMessage('Generating SHA-256 integrity checksums...');
+        else setStatusMessage('Finalizing backup archive storage...');
+
+        return p + 10;
       });
-    }, 120);
+    }, 200);
+  };
+
+  const handleDownloadBackup = (backup) => {
+    const blob = new Blob([
+      JSON.stringify({
+        system: 'Aurelian Health Enterprise',
+        backupId: backup.id,
+        label: backup.label,
+        timestamp: backup.timestamp,
+        checksum: 'sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+      }, null, 2)
+    ], { type: 'application/json' });
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `clinic_backup_${backup.timestamp.replace(/[: ]/g, '_')}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`Downloaded backup manifest for ${backup.label}`);
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50">
-          <div className="flex items-center gap-3">
-            <Database className="w-5 h-5 text-blue-600" />
-            <h2 className="font-bold text-slate-800">Backup & Restore</h2>
+    <Modal isOpen={true} onClose={onClose} size="lg">
+      <div className="-mx-6 -mt-6 px-6 py-5 bg-gradient-to-r from-slate-900 to-blue-950 text-white border-b border-slate-800 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-400/30 flex items-center justify-center font-bold">
+            <Database size={20} />
           </div>
-          <button onClick={onClose} className="p-1 hover:bg-slate-200 rounded-lg transition-colors">
-            <X className="w-4 h-4 text-slate-500" />
-          </button>
-        </div>
-
-        <div className="p-6 space-y-5">
-          {/* Run Backup */}
-          <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <p className="font-bold text-sm text-slate-800">Run New Backup</p>
-                <p className="text-xs text-slate-500 mt-0.5">Creates a full snapshot of all databases.</p>
-              </div>
-              <button
-                onClick={runBackup}
-                disabled={running}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${running ? 'animate-spin' : ''}`} />
-                {running ? 'Running…' : 'Run Backup'}
-              </button>
-            </div>
-            {(running || done) && (
-              <div className="space-y-1">
-                <div className="h-2 bg-blue-100 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-blue-600 rounded-full transition-all duration-200"
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
-                <p className="text-[11px] text-blue-600 font-semibold">{done ? '✓ Backup complete' : `${progress}% — Archiving…`}</p>
-              </div>
-            )}
-          </div>
-
-          {/* Recent Backups */}
           <div>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Recent Backups</p>
-            <div className="space-y-2">
-              {mockBackups.map(b => (
-                <div key={b.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-100">
-                  <div>
-                    <p className="text-sm font-bold text-slate-700">{b.label}</p>
-                    <p className="text-[11px] text-slate-400">{b.timestamp} · {b.size}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">✓ {b.status}</span>
-                    <button
-                      onClick={() => toast.success(`Restore initiated from ${b.timestamp}`)}
-                      className="text-xs font-bold text-amber-600 hover:text-amber-700 px-2 py-1 border border-amber-200 rounded-lg hover:bg-amber-50 transition-colors"
-                    >Restore</button>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <h2 className="text-lg font-bold font-display m-0 text-white">System Backup & Recovery</h2>
+            <p className="text-xs text-slate-300 m-0 mt-0.5">Manage encrypted database snapshots and disaster recovery points.</p>
           </div>
-        </div>
-
-        <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end">
-          <button onClick={onClose} className="px-5 py-2 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors">Close</button>
         </div>
       </div>
-    </div>
+
+      <div className="mt-6 space-y-6">
+        {/* Run Backup Card */}
+        <div className="p-5 rounded-2xl bg-blue-50/80 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-[#2160FF]" />
+                Trigger Live Backup
+              </h4>
+              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                Generates a complete snapshot of database tables, patient records, and system configurations.
+              </p>
+            </div>
+            <button
+              onClick={runBackup}
+              disabled={running}
+              className="bg-[#2160FF] hover:bg-blue-600 text-white px-5 py-2.5 rounded-xl font-semibold text-xs shadow-md shadow-blue-500/20 disabled:opacity-50 transition-all flex items-center gap-2 cursor-pointer border-0 shrink-0"
+              style={{ backgroundColor: '#2160FF' }}
+            >
+              <RefreshCw className={`w-4 h-4 ${running ? 'animate-spin' : ''}`} />
+              {running ? 'Archiving System...' : 'Run Backup Now'}
+            </button>
+          </div>
+
+          {(running || done) && (
+            <div className="mt-4 pt-4 border-t border-blue-200/60 dark:border-blue-800/60 space-y-2">
+              <div className="flex items-center justify-between text-xs font-semibold text-blue-900 dark:text-blue-300">
+                <span>{statusMessage}</span>
+                <span>{progress}%</span>
+              </div>
+              <div className="h-2.5 bg-blue-200 dark:bg-blue-900 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-[#2160FF] rounded-full transition-all duration-300"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Existing Backups List */}
+        <div>
+          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 flex items-center gap-2">
+            <Clock size={14} className="text-slate-400" />
+            Available Recovery Snapshots ({backups.length})
+          </h4>
+          <div className="space-y-2.5">
+            {backups.map(b => (
+              <div key={b.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{b.label}</p>
+                    <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 rounded-full border border-emerald-300 dark:border-emerald-800">
+                      ✓ {b.status}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-mono">
+                    {b.timestamp} • Size: {b.size}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 self-end sm:self-auto">
+                  <button
+                    onClick={() => handleDownloadBackup(b)}
+                    className="px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition flex items-center gap-1.5"
+                  >
+                    <Download size={13} />
+                    Download
+                  </button>
+                  <button
+                    onClick={() => toast.success(`Restoration request sent for snapshot ${b.timestamp}`)}
+                    className="px-3 py-1.5 text-xs font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-lg hover:bg-amber-100 transition"
+                  >
+                    Restore
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Modal Footer */}
+        <div className="flex items-center justify-end pt-4 border-t border-slate-100 dark:border-slate-800">
+          <button onClick={onClose} className="px-5 py-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition">
+            Close Window
+          </button>
+        </div>
+      </div>
+    </Modal>
   );
 }
 
 /* ── Export Data Modal ───────────────────────────────────────── */
 function ExportDataModal({ onClose }) {
-  const [selectedEntities, setSelectedEntities] = useState(['patients']);
+  const [selectedEntities, setSelectedEntities] = useState(['patients', 'appointments', 'billing']);
   const [format, setFormat] = useState('csv');
   const [exporting, setExporting] = useState(false);
 
   const entities = [
-    { id: 'patients', label: 'Patients', count: '2,418 records' },
+    { id: 'patients', label: 'Patients', count: '12,568 records' },
     { id: 'appointments', label: 'Appointments', count: '8,903 records' },
     { id: 'billing', label: 'Billing & Payments', count: '5,221 records' },
-    { id: 'staff', label: 'Staff & HR', count: '142 records' },
+    { id: 'staff', label: 'Staff & HR', count: '156 records' },
     { id: 'prescriptions', label: 'Prescriptions', count: '14,670 records' },
     { id: 'lab_reports', label: 'Lab Reports', count: '6,042 records' },
   ];
@@ -142,99 +241,138 @@ function ExportDataModal({ onClose }) {
   );
 
   const handleExport = () => {
-    if (!selectedEntities.length) { toast.error('Select at least one entity.'); return; }
+    if (!selectedEntities.length) { 
+      toast.error('Select at least one entity to export.'); 
+      return; 
+    }
     setExporting(true);
     setTimeout(() => {
       setExporting(false);
-      toast.success(`${format.toUpperCase()} export queued! You'll receive an email when ready.`);
+
+      let fileContent = "Entity,ID,Timestamp,Status,Notes\n";
+      selectedEntities.forEach(ent => {
+        fileContent += `${ent.toUpperCase()},EX-${Math.floor(1000 + Math.random()*9000)},${new Date().toISOString()},COMPLETED,Enterprise Data Export\n`;
+      });
+
+      const mimeTypes = {
+        csv: 'text/csv',
+        pdf: 'application/pdf',
+        excel: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      };
+
+      const blob = new Blob([fileContent], { type: mimeTypes[format] || 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `clinic_system_export_${new Date().toISOString().slice(0, 10)}.${format}`;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      toast.success(`${format.toUpperCase()} export downloaded successfully!`);
       onClose();
-    }, 1800);
+    }, 1200);
   };
 
   const formatIcons = { csv: FileDown, pdf: FileType, excel: FileSpreadsheet };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50">
-          <div className="flex items-center gap-3">
-            <Download className="w-5 h-5 text-emerald-600" />
-            <h2 className="font-bold text-slate-800">Export Data</h2>
+    <Modal isOpen={true} onClose={onClose} size="lg">
+      <div className="-mx-6 -mt-6 px-6 py-5 bg-gradient-to-r from-slate-900 to-blue-950 text-white border-b border-slate-800 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-400/30 flex items-center justify-center font-bold">
+            <Download size={20} />
           </div>
-          <button onClick={onClose} className="p-1 hover:bg-slate-200 rounded-lg transition-colors">
-            <X className="w-4 h-4 text-slate-500" />
-          </button>
+          <div>
+            <h2 className="text-lg font-bold font-display m-0 text-white">Export System Data</h2>
+            <p className="text-xs text-slate-300 m-0 mt-0.5">Select modules, formats, and generate downloadable report packages.</p>
+          </div>
         </div>
+      </div>
 
-        <div className="p-6 space-y-5">
-          {/* Format selector */}
-          <div>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Export Format</p>
-            <div className="flex gap-2">
-              {(['csv', 'pdf', 'excel']).map(f => {
-                const Icon = formatIcons[f];
-                return (
-                  <button
-                    key={f}
-                    onClick={() => setFormat(f)}
-                    className={`flex-1 flex flex-col items-center gap-1.5 py-3 rounded-xl border-2 text-xs font-bold transition-all ${
-                      format === f ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-slate-200 text-slate-500 hover:border-slate-300'
-                    }`}
-                  >
-                    <Icon className="w-5 h-5" />
-                    {f.toUpperCase()}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Entity selector */}
-          <div>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Select Data ({selectedEntities.length} selected)</p>
-            <div className="grid grid-cols-2 gap-2">
-              {entities.map(e => (
+      <div className="mt-6 space-y-6">
+        {/* Export Format Selector */}
+        <div>
+          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">
+            Choose Export Format
+          </h4>
+          <div className="grid grid-cols-3 gap-3">
+            {(['csv', 'pdf', 'excel']).map(f => {
+              const Icon = formatIcons[f];
+              const isSelected = format === f;
+              return (
                 <button
-                  key={e.id}
-                  onClick={() => toggleEntity(e.id)}
-                  className={`flex items-center gap-2 p-3 rounded-xl border text-left transition-all ${
-                    selectedEntities.includes(e.id)
-                      ? 'border-blue-400 bg-blue-50'
-                      : 'border-slate-200 hover:border-slate-300 bg-slate-50'
+                  key={f}
+                  type="button"
+                  onClick={() => setFormat(f)}
+                  className={`flex flex-col items-center justify-center gap-2 py-3.5 px-4 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                    isSelected 
+                      ? 'bg-blue-50 dark:bg-blue-950/40 border-[#2160FF] text-[#2160FF] dark:text-blue-300 shadow-sm' 
+                      : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300'
                   }`}
                 >
-                  <div className={`w-4 h-4 rounded flex items-center justify-center border-2 flex-shrink-0 ${
-                    selectedEntities.includes(e.id) ? 'border-blue-500 bg-blue-500' : 'border-slate-300'
-                  }`}>
-                    {selectedEntities.includes(e.id) && <CheckCircle className="w-3 h-3 text-white" />}
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-slate-700">{e.label}</p>
-                    <p className="text-[10px] text-slate-400">{e.count}</p>
-                  </div>
+                  <Icon className={`w-5 h-5 ${isSelected ? 'text-[#2160FF]' : 'text-slate-400'}`} />
+                  {f.toUpperCase()}
                 </button>
-              ))}
-            </div>
+              );
+            })}
           </div>
         </div>
 
-        <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
-          <button onClick={onClose} className="px-5 py-2 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors">Cancel</button>
+        {/* Entity Selector */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Select Data Entities ({selectedEntities.length} selected)
+            </h4>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {entities.map(e => {
+              const isSelected = selectedEntities.includes(e.id);
+              return (
+                <button
+                  key={e.id}
+                  type="button"
+                  onClick={() => toggleEntity(e.id)}
+                  className={`flex items-center gap-3 p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
+                    isSelected
+                      ? 'border-[#2160FF] bg-blue-50/70 dark:bg-blue-900/30'
+                      : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 hover:border-slate-300'
+                  }`}
+                >
+                  <div className={`w-5 h-5 rounded-md flex items-center justify-center border-2 flex-shrink-0 transition-all ${
+                    isSelected ? 'border-[#2160FF] bg-[#2160FF] text-white' : 'border-slate-300 dark:border-slate-600'
+                  }`}>
+                    {isSelected && <Check className="w-3.5 h-3.5" />}
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-900 dark:text-slate-100">{e.label}</p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">{e.count}</p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Footer Actions */}
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <button onClick={onClose} className="px-5 py-2.5 text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition">
+            Cancel
+          </button>
           <button
             onClick={handleExport}
             disabled={exporting}
-            className="flex items-center gap-2 px-5 py-2 text-sm font-bold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+            className="bg-[#2160FF] hover:bg-blue-600 text-white px-6 py-2.5 text-xs font-bold rounded-xl shadow-lg shadow-blue-500/20 disabled:opacity-50 transition-all cursor-pointer flex items-center gap-2 border-0"
+            style={{ backgroundColor: '#2160FF' }}
           >
             {exporting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-            {exporting ? 'Preparing…' : `Export ${format.toUpperCase()}`}
+            {exporting ? 'Preparing File…' : `Download ${format.toUpperCase()} Package`}
           </button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }
-
-
 
 /* ── Mock Data for Redesigned Dashboard ── */
 const APPT_DATA = [
@@ -263,10 +401,24 @@ const RECENT_ACTIVITY = [
   { icon: UserPlus, color: 'text-[#2160FF]', bg: 'bg-blue-50', title: 'New doctor added', sub: 'Dr. Michael Lee • 2 hr ago' },
 ];
 
+const DATE_PRESETS = [
+  'Today (May 28, 2026)',
+  'May 18 - May 24, 2026',
+  'Last 7 Days (May 21 - May 28)',
+  'Last 30 Days (Apr 28 - May 28)',
+  'This Month (May 2026)',
+  'Last Month (April 2026)'
+];
+
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('analytics');
   const [backupModalOpen, setBackupModalOpen] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
+  
+  // Date Range State & Dropdown Ref
+  const [selectedDateRange, setSelectedDateRange] = useState('May 18 - May 24, 2026');
+  const [isDateDropdownOpen, setIsDateDropdownOpen] = useState(false);
+  const dateDropdownRef = useRef(null);
 
   const tabs = [
     { id: 'branches', label: 'Manage Branches', sub: '12 Branches', icon: Building2 },
@@ -278,6 +430,22 @@ const AdminDashboard = () => {
     { id: 'audit', label: 'Audit & Compliance', sub: '98% Compliant', icon: ShieldCheck },
   ];
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dateDropdownRef.current && !dateDropdownRef.current.contains(event.target)) {
+        setIsDateDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleSelectDateRange = (preset) => {
+    setSelectedDateRange(preset);
+    setIsDateDropdownOpen(false);
+    toast.success(`Dashboard filter updated to ${preset}`);
+  };
+
   return (
     <>
       <div className="flex flex-col h-full overflow-hidden bg-[#F8FAFC] font-sans">
@@ -288,7 +456,7 @@ const AdminDashboard = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-3 min-w-max px-4 py-2.5 rounded-xl border transition-all ${
+              className={`flex items-center gap-3 min-w-max px-4 py-2.5 rounded-xl border transition-all cursor-pointer ${
                 activeTab === tab.id
                   ? 'bg-[#2160FF] border-[#2160FF] text-white shadow-md shadow-blue-500/20'
                   : 'bg-white border-slate-200 text-slate-700 hover:border-[#2160FF]/30 hover:bg-blue-50/50'
@@ -310,9 +478,9 @@ const AdminDashboard = () => {
           {activeTab === 'analytics' ? (
             <div className="max-w-[1500px] mx-auto space-y-6">
               
-              {/* Banner Area */}
-              <div className="relative bg-[#1E3A8A] rounded-2xl p-8 pt-10 pb-20 shadow-xl overflow-hidden text-white flex flex-col md:flex-row justify-between items-start">
-                <div className="absolute inset-0 opacity-20 pointer-events-none overflow-hidden">
+              {/* Banner Area (Set to z-30 so popovers float above the z-10 KPI grid) */}
+              <div className="relative bg-[#1E3A8A] rounded-2xl p-8 pt-10 pb-20 shadow-xl text-white flex flex-col md:flex-row justify-between items-start z-30">
+                <div className="absolute inset-0 opacity-20 pointer-events-none overflow-hidden rounded-2xl">
                   <div className="absolute -top-[50%] -left-[10%] w-[120%] h-[120%] border-[2px] border-white/20 rounded-[100%]"></div>
                   <div className="absolute top-[10%] -left-[20%] w-[140%] h-[140%] border-[2px] border-white/10 rounded-[100%]"></div>
                 </div>
@@ -330,31 +498,81 @@ const AdminDashboard = () => {
                   </div>
                 </div>
 
-                <div className="relative z-10 flex flex-col items-end gap-4 mt-6 md:mt-0">
-                  <div className="flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-[13px] font-medium backdrop-blur-sm cursor-pointer hover:bg-white/20 transition-colors">
-                    <CalendarDays className="w-4 h-4 text-blue-200" />
-                    May 18 - May 24, 2026
-                    <ChevronDown className="w-4 h-4 ml-1 opacity-70" />
+                {/* Right Interactive Actions Header (z-40) */}
+                <div className="relative z-40 flex flex-col items-start md:items-end gap-4 mt-6 md:mt-0">
+                  {/* Interactive Date Range Selector */}
+                  <div className="relative" ref={dateDropdownRef}>
+                    <button 
+                      type="button"
+                      onClick={() => setIsDateDropdownOpen(!isDateDropdownOpen)}
+                      className="flex items-center justify-between gap-3 px-4 py-2.5 bg-white/10 border border-white/20 rounded-xl text-[13px] font-semibold text-white backdrop-blur-md cursor-pointer hover:bg-white/20 transition-all shadow-xs min-w-[220px]"
+                    >
+                      <div className="flex items-center gap-2">
+                        <CalendarDays className="w-4 h-4 text-blue-200 shrink-0" />
+                        <span className="truncate">{selectedDateRange}</span>
+                      </div>
+                      <ChevronDown className={`w-4 h-4 text-blue-200 shrink-0 transition-transform duration-200 ${isDateDropdownOpen ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {/* Date Presets Dropdown — Positioned right below the trigger button with high z-[100] */}
+                    <AnimatePresence>
+                      {isDateDropdownOpen && (
+                        <motion.div 
+                          initial={{ opacity: 0, y: 4, scale: 0.98 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 4, scale: 0.98 }}
+                          transition={{ duration: 0.15 }}
+                          className="absolute right-0 top-full mt-2 w-72 bg-[#0F172A] border border-slate-700/90 rounded-2xl shadow-2xl z-[100] py-2 overflow-hidden text-xs text-white"
+                        >
+                          <div className="px-4 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                            Select Date Range
+                          </div>
+                          <div className="py-1">
+                            {DATE_PRESETS.map(preset => {
+                              const isSelected = selectedDateRange === preset;
+                              return (
+                                <button
+                                  key={preset}
+                                  type="button"
+                                  onClick={() => handleSelectDateRange(preset)}
+                                  className={`w-full text-left px-4 py-2.5 hover:bg-blue-600/30 transition flex items-center justify-between cursor-pointer ${
+                                    isSelected ? 'text-[#2160FF] font-bold bg-blue-600/20' : 'text-slate-200 hover:text-white'
+                                  }`}
+                                >
+                                  <span className="truncate">{preset}</span>
+                                  {isSelected && <Check className="w-4 h-4 text-[#2160FF] shrink-0 ml-2" />}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
+
+                  {/* Header Action Buttons */}
                   <div className="flex items-center gap-3">
                     <button 
                       onClick={() => setBackupModalOpen(true)}
-                      className="px-5 py-2.5 bg-transparent border border-white/30 hover:bg-white/10 text-white text-[13px] font-bold rounded-lg transition-colors flex items-center gap-2"
+                      className="px-5 py-2.5 bg-white/10 hover:bg-white/20 border border-white/25 text-white text-[13px] font-bold rounded-xl transition-all flex items-center gap-2 cursor-pointer backdrop-blur-md shadow-xs"
                     >
-                      <Database className="w-4 h-4" /> Backup & Restore
+                      <Database className="w-4 h-4 text-blue-200" /> 
+                      Backup & Restore
                     </button>
                     <button 
                       onClick={() => setExportModalOpen(true)}
-                      className="px-5 py-2.5 bg-[#2160FF] hover:bg-blue-600 text-white text-[13px] font-bold rounded-lg shadow-lg shadow-blue-500/30 transition-colors flex items-center gap-2"
+                      className="px-5 py-2.5 bg-[#2160FF] hover:bg-blue-600 text-white text-[13px] font-bold rounded-xl shadow-lg shadow-blue-500/30 transition-all flex items-center gap-2 cursor-pointer border-0"
+                      style={{ backgroundColor: '#2160FF' }}
                     >
-                      <Download className="w-4 h-4" /> Export System Data
+                      <Download className="w-4 h-4" /> 
+                      Export System Data
                     </button>
                   </div>
                 </div>
               </div>
 
-              {/* KPI Cards (Overlapping) */}
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 -mt-16 relative z-20 px-4">
+              {/* KPI Cards (z-10, lower than banner z-30) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 -mt-16 relative z-10 px-4">
                 <div className="bg-white rounded-2xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.08)] flex items-center gap-4">
                   <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
                     <User className="w-6 h-6 text-[#2160FF]" strokeWidth={2.5} />

@@ -1,6 +1,8 @@
 package com.healthcare.clinic.support.service;
 
 import com.healthcare.clinic.identity.entity.User;
+import com.healthcare.clinic.identity.repository.UserRepository;
+import com.healthcare.clinic.security.UserPrincipal;
 import com.healthcare.clinic.support.entity.SupportMessage;
 import com.healthcare.clinic.support.entity.SupportTicket;
 import com.healthcare.clinic.support.repository.SupportMessageRepository;
@@ -18,6 +20,7 @@ public class SupportService {
 
     private final SupportTicketRepository ticketRepository;
     private final SupportMessageRepository messageRepository;
+    private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
     public List<SupportTicket> getAllTickets() {
@@ -30,7 +33,11 @@ public class SupportService {
     }
 
     @Transactional
-    public SupportTicket createTicket(SupportTicket ticket, User user, String initialMessage) {
+    public SupportTicket createTicket(SupportTicket ticket, UserPrincipal userPrincipal, String initialMessage) {
+        User user = userPrincipal != null && userPrincipal.getUserId() != null
+                ? userRepository.findById(userPrincipal.getUserId()).orElse(null)
+                : null;
+
         ticket.setUser(user);
         ticket.setTicketNumber("TICK-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
         ticket.setStatus("OPEN");
@@ -53,8 +60,13 @@ public class SupportService {
     }
 
     @Transactional
-    public SupportMessage addMessage(Long ticketId, User sender, String text, boolean isAgent) {
+    public SupportMessage addMessage(Long ticketId, UserPrincipal senderPrincipal, String text, boolean isAgent) {
         SupportTicket ticket = ticketRepository.findById(ticketId).orElseThrow();
+        
+        User sender = senderPrincipal != null && senderPrincipal.getUserId() != null
+                ? userRepository.findById(senderPrincipal.getUserId()).orElse(null)
+                : null;
+
         if (isAgent && "OPEN".equals(ticket.getStatus())) {
             ticket.setStatus("IN_PROGRESS");
             ticket.setAssignedAgent(sender);

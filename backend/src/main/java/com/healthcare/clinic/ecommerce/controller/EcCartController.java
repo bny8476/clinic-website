@@ -2,7 +2,7 @@ package com.healthcare.clinic.ecommerce.controller;
 
 import com.healthcare.clinic.ecommerce.entity.EcCart;
 import com.healthcare.clinic.ecommerce.service.CartService;
-import com.healthcare.clinic.identity.entity.User;
+import com.healthcare.clinic.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,18 +18,18 @@ public class EcCartController {
 
     @GetMapping
     public ResponseEntity<EcCart> getCart(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal UserPrincipal user,
             @RequestHeader(value = "X-Session-Key", required = false) String sessionKey) {
-        Long patientId = user != null ? user.getId() : null;
+        Long patientId = user != null ? user.getUserId() : null;
         return ResponseEntity.ok(cartService.getOrCreateCart(patientId, sessionKey));
     }
 
     @PostMapping("/items")
     public ResponseEntity<EcCart> addItem(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal UserPrincipal user,
             @RequestHeader(value = "X-Session-Key", required = false) String sessionKey,
             @RequestBody java.util.Map<String, Object> request) {
-        Long patientId = user != null ? user.getId() : null;
+        Long patientId = user != null ? user.getUserId() : null;
         EcCart cart = cartService.getOrCreateCart(patientId, sessionKey);
         Long productId = Long.valueOf(request.get("productId").toString());
         Integer quantity = Integer.valueOf(request.get("quantity").toString());
@@ -39,9 +39,9 @@ public class EcCartController {
     @PostMapping("/merge")
     @PreAuthorize("hasAuthority('ROLE_PATIENT')")
     public ResponseEntity<Void> mergeCart(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal UserPrincipal user,
             @RequestHeader("X-Session-Key") String sessionKey) {
-        cartService.mergeSessionCart(user.getId(), sessionKey);
+        cartService.mergeSessionCart(user.getUserId(), sessionKey);
         return ResponseEntity.ok().build();
     }
     

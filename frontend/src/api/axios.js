@@ -27,7 +27,10 @@ export const axiosPublic = axios.create({
 
 axiosPrivate.interceptors.request.use(
     config => {
-        const token = useAuthStore.getState().token;
+        const token =
+            useAuthStore.getState().token ||
+            localStorage.getItem('accessToken') ||
+            localStorage.getItem('token');
         if (token) {
             config.headers['Authorization'] = `Bearer ${token}`;
         }

@@ -96,7 +96,13 @@ public class User implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         Set<GrantedAuthority> authorities = new HashSet<>();
         for (Role role : roles) {
-            authorities.add(new SimpleGrantedAuthority(role.getName()));
+            String roleName = role.getName();
+            if (roleName != null && !roleName.startsWith("ROLE_")) {
+                roleName = "ROLE_" + roleName;
+            }
+            if (roleName != null) {
+                authorities.add(new SimpleGrantedAuthority(roleName));
+            }
             authorities.addAll(role.getPermissions().stream()
                     .map(p -> new SimpleGrantedAuthority(p.getName()))
                     .collect(Collectors.toSet()));

@@ -54,11 +54,11 @@ const VitalSignsEntry = () => {
   const InputGroup = ({ label, unit, icon: Icon, value, onChange, type = "number" }) => (
     <div className="flex flex-col gap-2">
       <label className="text-[14px] font-bold text-slate-900">
-        {label} <span className="text-[#0F766E] font-medium">({unit})</span>
+        {label} <span className="text-[#2160FF] font-medium">({unit})</span>
       </label>
-      <div className="flex items-center h-[52px] border border-gray-200 rounded-xl overflow-hidden focus-within:border-[#0F766E] focus-within:ring-2 focus-within:ring-[#0F766E]/10 transition-all bg-white">
-        <div className="h-full w-[52px] bg-[#F0FDF4] flex items-center justify-center border-r border-gray-100 flex-shrink-0">
-          <Icon className="w-5 h-5 text-[#0F766E]" strokeWidth={2} />
+      <div className="flex items-center h-[52px] border border-gray-200 rounded-xl overflow-hidden focus-within:border-[#2160FF] focus-within:ring-2 focus-within:ring-[#2160FF]/10 transition-all bg-white">
+        <div className="h-full w-[52px] bg-blue-50 flex items-center justify-center border-r border-blue-100 flex-shrink-0">
+          <Icon className="w-5 h-5 text-[#2160FF]" strokeWidth={2} />
         </div>
         <input
           type={type}
@@ -79,8 +79,8 @@ const VitalSignsEntry = () => {
           
           {/* Header */}
           <div className="flex items-start gap-5 pb-8 border-b border-gray-100 mb-8">
-            <div className="p-4 bg-[#F0FDF4] rounded-2xl flex-shrink-0 border border-teal-100/50">
-              <HeartPulse className="w-8 h-8 text-[#0F766E]" strokeWidth={2.5} />
+            <div className="p-4 bg-blue-50 rounded-2xl flex-shrink-0 border border-blue-100">
+              <HeartPulse className="w-8 h-8 text-[#2160FF]" strokeWidth={2.5} />
             </div>
             <div className="pt-1">
               <h1 className="text-[28px] font-extrabold text-slate-900 mb-1 tracking-tight">Record Vital Signs</h1>
@@ -151,13 +151,14 @@ const VitalSignsEntry = () => {
             <button 
               onClick={() => recordVitals.mutate()} 
               disabled={recordVitals.isPending}
-              className="flex items-center justify-center gap-2 px-8 py-3.5 bg-[#0F766E] hover:bg-teal-800 text-white font-bold rounded-xl shadow-lg shadow-teal-700/20 transition-colors disabled:opacity-50"
+              className="flex items-center justify-center gap-2 px-8 py-3.5 bg-[#2160FF] hover:bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-500/20 transition-all border-0 cursor-pointer disabled:opacity-50"
+              style={{ backgroundColor: '#2160FF' }}
             >
               <Save className="w-5 h-5" /> 
               {recordVitals.isPending ? 'Saving...' : 'Save Vitals'}
             </button>
             <div className="flex items-center gap-2 text-slate-500 font-medium text-[14.5px]">
-              <CheckCircle2 className="w-4 h-4 text-[#0F766E]" />
+              <CheckCircle2 className="w-4 h-4 text-[#2160FF]" />
               Your data is saved securely.
             </div>
           </div>

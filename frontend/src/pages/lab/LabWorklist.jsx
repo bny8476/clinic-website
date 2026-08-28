@@ -3,12 +3,12 @@ import toast from 'react-hot-toast';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { format, isPast } from 'date-fns';
-import { AlertCircle, Beaker, FileText, Play, Search, User, Droplet, Clock, ShieldCheck, Inbox, FlaskConical } from 'lucide-react';
+import { AlertCircle, Beaker, FileText, Play, Search, User, Droplet, Clock, ShieldCheck, Inbox, FlaskConical, Plus } from 'lucide-react';
 import Modal from '../../components/ui/Modal';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import { motion } from 'framer-motion';
-import { fadeIn, staggerChildren } from '../../components/ui/motion';
+import { fadeIn } from '../../components/ui/motion';
 
 const ResultEntryModal = ({ request, onClose, onSuccess }) => {
   const [resultValue, setResultValue] = useState('');
@@ -16,7 +16,6 @@ const ResultEntryModal = ({ request, onClose, onSuccess }) => {
   const [unit, setUnit] = useState(request.testCatalog?.unit || '');
   const [file, setFile] = useState(null);
   
-  // Live validation calculation
   let liveAbnormal = false;
   let liveCritical = false;
   
@@ -60,7 +59,7 @@ const ResultEntryModal = ({ request, onClose, onSuccess }) => {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['lab-requests']);
+      queryClient.invalidateQueries({ queryKey: ['lab-requests'] });
       toast.success('Result saved successfully');
       onSuccess();
     },
@@ -88,7 +87,6 @@ const ResultEntryModal = ({ request, onClose, onSuccess }) => {
   return (
     <Modal isOpen={true} onClose={onClose} title={`Result Entry - ${request.testCatalog?.testName}`}>
       <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-4">
-        
         <div className="space-y-1.5">
           <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Result Value *</label>
           <input type="text" value={resultValue} onChange={e => setResultValue(e.target.value)} required className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white/50 backdrop-blur-md outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-[#2160FF] transition-all shadow-sm font-bold text-lg" />
@@ -142,13 +140,86 @@ const ResultEntryModal = ({ request, onClose, onSuccess }) => {
   );
 };
 
+const CreateLabRequestModal = ({ isOpen, onClose, onSuccess }) => {
+  const [patientId, setPatientId] = useState('');
+  const [testCatalogId, setTestCatalogId] = useState('');
+  const [priority, setPriority] = useState('ROUTINE');
+
+  const { data: catalog = [] } = useQuery({
+    queryKey: ['lab-catalog'],
+    queryFn: async () => {
+      const res = await axiosPrivate.get('/lab/catalog');
+      return res.data || [];
+    }
+  });
+
+  const queryClient = useQueryClient();
+
+  const createMutation = useMutation({
+    mutationFn: async () => {
+      const res = await axiosPrivate.post('/lab/requests', {
+        patient: { id: parseInt(patientId) || 1 },
+        testCatalog: { id: parseInt(testCatalogId) || 1 },
+        priority,
+        status: 'REQUESTED'
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['lab-requests'] });
+      toast.success('New lab request created successfully');
+      onSuccess();
+    },
+    onError: () => toast.error('Failed to create lab request')
+  });
+
+  if (!isOpen) return null;
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="New Lab Request">
+      <form onSubmit={(e) => { e.preventDefault(); createMutation.mutate(); }} className="space-y-4">
+        <div className="space-y-1.5">
+          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Patient Profile ID *</label>
+          <input type="number" value={patientId} onChange={e => setPatientId(e.target.value)} required placeholder="e.g. 1" className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-[#2160FF]" />
+        </div>
+        
+        <div className="space-y-1.5">
+          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Select Test *</label>
+          <select value={testCatalogId} onChange={e => setTestCatalogId(e.target.value)} required className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-[#2160FF] bg-white">
+            <option value="">Select Test Catalog</option>
+            {catalog.map(c => (
+              <option key={c.id} value={c.id}>{c.testName} ({c.testCode}) - ${c.price}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Priority</label>
+          <select value={priority} onChange={e => setPriority(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-[#2160FF] bg-white">
+            <option value="ROUTINE">ROUTINE</option>
+            <option value="URGENT">URGENT</option>
+            <option value="STAT">STAT</option>
+          </select>
+        </div>
+
+        <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-slate-200">
+          <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
+          <button type="submit" disabled={createMutation.isPending} className="px-5 py-2.5 bg-[#2160FF] hover:bg-blue-700 text-white rounded-xl font-bold shadow-sm shadow-blue-500/20 disabled:opacity-50">
+            {createMutation.isPending ? 'Creating...' : 'Create Request'}
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
+};
+
 const filterTabs = [
   { id: 'ALL', label: 'All', icon: null },
-  { id: 'ORDERED', label: 'Unassigned', icon: User },
-  { id: 'COLLECTED', label: 'Collected', icon: Droplet },
+  { id: 'REQUESTED', label: 'Requested', icon: User },
+  { id: 'SAMPLE_COLLECTED', label: 'Sample Collected', icon: Droplet },
   { id: 'RECEIVED', label: 'Received', icon: Inbox },
   { id: 'IN_PROGRESS', label: 'In Progress', icon: Clock },
-  { id: 'PENDING_VERIFICATION', label: 'Pending Verification', icon: ShieldCheck }
+  { id: 'VERIFIED', label: 'Verified', icon: ShieldCheck }
 ];
 
 const LabWorklist = () => {
@@ -156,6 +227,7 @@ const LabWorklist = () => {
   const [search, setSearch] = useState('');
   const queryClient = useQueryClient();
   const [selectedRequest, setSelectedRequest] = useState(null);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   const { data = {}, isLoading, isError } = useQuery({
     queryKey: ['lab-requests', filterStatus, search],
@@ -167,7 +239,7 @@ const LabWorklist = () => {
       const res = await axiosPrivate.get('/lab/worklist', { params });
       return res.data;
     },
-    refetchInterval: 30000
+    refetchInterval: 10000 // Realtime 10-second live polling
   });
 
   const requests = data.content || [];
@@ -178,9 +250,10 @@ const LabWorklist = () => {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['lab-requests']);
-      toast.success('Status updated');
-    }
+      queryClient.invalidateQueries({ queryKey: ['lab-requests'] });
+      toast.success('Status updated successfully');
+    },
+    onError: () => toast.error('Failed to update status')
   });
 
   const generateBarcodeMutation = useMutation({
@@ -189,9 +262,22 @@ const LabWorklist = () => {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['lab-requests']);
+      queryClient.invalidateQueries({ queryKey: ['lab-requests'] });
       toast.success('Barcode generated successfully!');
-    }
+    },
+    onError: () => toast.error('Failed to generate barcode')
+  });
+
+  const verifyMutation = useMutation({
+    mutationFn: async (requestId) => {
+      const res = await axiosPrivate.put(`/lab/requests/${requestId}/verify`);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['lab-requests'] });
+      toast.success('Result verified successfully!');
+    },
+    onError: () => toast.error('Failed to verify result')
   });
 
   const filteredRequests = requests;
@@ -201,14 +287,22 @@ const LabWorklist = () => {
       <div className="max-w-[1400px] mx-auto space-y-6">
         
         {/* Header */}
-        <div className="flex items-center gap-5 pb-2">
-          <div className="p-4 bg-[#EDF2FF] rounded-2xl flex-shrink-0">
-            <FlaskConical className="w-8 h-8 text-[#2160FF]" strokeWidth={2.5} />
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2">
+          <div className="flex items-center gap-5">
+            <div className="p-4 bg-[#EDF2FF] rounded-2xl flex-shrink-0">
+              <FlaskConical className="w-8 h-8 text-[#2160FF]" strokeWidth={2.5} />
+            </div>
+            <div>
+              <h1 className="text-[26px] font-extrabold text-slate-900 mb-1 tracking-tight">Lab Worklist</h1>
+              <p className="text-[14.5px] text-gray-500 font-medium">Manage and track patient lab requests in real-time.</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-[26px] font-extrabold text-slate-900 mb-1 tracking-tight">Lab Worklist</h1>
-            <p className="text-[14.5px] text-gray-500 font-medium">Manage and track patient lab requests.</p>
-          </div>
+          <button 
+            onClick={() => setIsCreateOpen(true)}
+            className="flex items-center gap-2 px-6 py-3 bg-[#2160FF] hover:bg-blue-700 text-white font-bold text-[14px] rounded-xl shadow-md shadow-blue-500/20 transition-all cursor-pointer border-none"
+          >
+            <Plus className="w-4 h-4" strokeWidth={2.5} /> New Lab Request
+          </button>
         </div>
 
         {/* Main Card */}
@@ -225,10 +319,10 @@ const LabWorklist = () => {
                   <button 
                     key={tab.id} 
                     onClick={() => setFilterStatus(tab.id)} 
-                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[14px] font-bold whitespace-nowrap transition-all ${
+                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[14px] font-bold whitespace-nowrap transition-all border-none cursor-pointer ${
                       isActive 
                         ? 'bg-[#2160FF] text-white shadow-md shadow-blue-500/20' 
-                        : 'text-gray-500 hover:bg-gray-50 hover:text-slate-700'
+                        : 'text-gray-500 hover:bg-gray-50 hover:text-slate-700 bg-transparent'
                     }`}
                   >
                     {Icon && <Icon className="w-4 h-4" strokeWidth={2.5} />}
@@ -260,7 +354,6 @@ const LabWorklist = () => {
               <div className="p-12 text-center font-bold text-red-500">Error loading worklist.</div>
             ) : filteredRequests.length === 0 ? (
               <div className="flex flex-col items-center justify-center text-center p-12 py-24 h-full">
-                
                 {/* Custom Empty State Illustration */}
                 <div className="relative w-36 h-36 flex items-center justify-center mb-8">
                    <div className="absolute inset-0 bg-[#F0F5FF] rounded-full"></div>
@@ -285,17 +378,16 @@ const LabWorklist = () => {
                      
                      {/* Rack Base */}
                      <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-28 h-2.5 bg-[#2160FF]/30 rounded-full"></div>
-                     {/* Rack Support */}
-                     <div className="absolute bottom-0 left-1 w-1.5 h-8 bg-[#2160FF]/30 rounded-t-full"></div>
-                     <div className="absolute bottom-0 right-1 w-1.5 h-8 bg-[#2160FF]/30 rounded-t-full"></div>
-                     <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-28 h-1.5 bg-[#2160FF]/30 rounded-full"></div>
                    </div>
                 </div>
 
                 <h3 className="text-[20px] font-extrabold text-slate-900 mb-2 tracking-tight">No lab requests found</h3>
-                <p className="text-[14.5px] text-gray-500 font-medium mb-8">There are no lab requests in this category.</p>
+                <p className="text-[14.5px] text-gray-500 font-medium mb-8">There are no lab requests matching the selected status.</p>
                 
-                <button className="flex items-center gap-2 px-6 py-2.5 border-2 border-[#2160FF] text-[#2160FF] font-bold text-[14px] rounded-xl hover:bg-[#2160FF] hover:text-white transition-all shadow-sm">
+                <button 
+                  onClick={() => setIsCreateOpen(true)}
+                  className="flex items-center gap-2 px-6 py-2.5 border-2 border-[#2160FF] text-[#2160FF] font-bold text-[14px] rounded-xl hover:bg-[#2160FF] hover:text-white transition-all shadow-sm cursor-pointer bg-white"
+                >
                   <FlaskConical className="w-4 h-4" strokeWidth={2.5} /> New Lab Request
                 </button>
               </div>
@@ -303,88 +395,103 @@ const LabWorklist = () => {
               <ul className="divide-y divide-gray-100">
                 {filteredRequests.map(req => {
                   const targetHours = req.testCatalog?.turnaroundTargetHours || 24;
-                  const dueTime = new Date(req.requestedAt).getTime() + (targetHours * 60 * 60 * 1000);
+                  const dueTime = req.requestedAt ? new Date(req.requestedAt).getTime() + (targetHours * 60 * 60 * 1000) : Date.now();
                   const isOverdue = isPast(new Date(dueTime)) && req.status !== 'RELEASED' && req.status !== 'VERIFIED';
                   
                   return (
                     <motion.li variants={fadeIn} key={req.id} className="p-5 hover:bg-gray-50/50 transition-colors flex flex-col md:flex-row justify-between gap-4">
                       <div className="flex-1">
                         <div className="flex items-center space-x-3 mb-2">
-                          <span className="font-extrabold text-slate-900 text-[15px]">{req.testCatalog?.testName}</span>
-                          <span className="text-[11px] font-black text-slate-400 bg-slate-100 px-2.5 py-0.5 rounded-full uppercase tracking-wider">#{req.labRequestNumber}</span>
+                          <span className="font-extrabold text-slate-900 text-[15px]">{req.testCatalog?.testName || 'Lab Test'}</span>
+                          <span className="text-[11px] font-black text-slate-400 bg-slate-100 px-2.5 py-0.5 rounded-full uppercase tracking-wider">#{req.labRequestNumber || req.id}</span>
                           <Badge variant={req.priority === 'STAT' ? 'danger' : req.priority === 'URGENT' ? 'warning' : 'info'}>
-                            {req.priority}
+                            {req.priority || 'ROUTINE'}
                           </Badge>
                           {isOverdue && <Badge variant="danger" className="animate-pulse flex items-center gap-1 shadow-sm shadow-red-500/20"><AlertCircle size={10} /> OVERDUE</Badge>}
                         </div>
                         <div className="flex flex-wrap gap-x-6 gap-y-2 mt-1">
                           <div className="flex items-center gap-1.5">
                              <User className="w-3.5 h-3.5 text-gray-400" />
-                             <span className="text-[13px] font-medium text-slate-700">{req.patient?.user?.firstName} {req.patient?.user?.lastName}</span>
+                             <span className="text-[13px] font-medium text-slate-700">
+                               {req.patient?.user?.firstName ? `${req.patient.user.firstName} ${req.patient.user.lastName || ''}` : `Patient #${req.patient?.id || 'N/A'}`}
+                             </span>
                           </div>
                           <div className="flex items-center gap-1.5">
                              <Clock className="w-3.5 h-3.5 text-gray-400" />
-                             <span className="text-[13px] font-medium text-slate-700">{format(new Date(req.requestedAt), 'PPp')}</span>
+                             <span className="text-[13px] font-medium text-slate-700">{req.requestedAt ? format(new Date(req.requestedAt), 'PPp') : 'Just now'}</span>
                           </div>
                           <div className="flex items-center gap-1.5">
                              <ShieldCheck className="w-3.5 h-3.5 text-gray-400" />
-                             <span className="text-[13px] font-medium text-slate-700 capitalize">{req.status.toLowerCase().replace('_', ' ')}</span>
+                             <span className="text-[13px] font-medium text-slate-700 capitalize">{(req.status || 'REQUESTED').toLowerCase().replace('_', ' ')}</span>
                           </div>
                         </div>
                       </div>
                       
                       <div className="flex items-center gap-2 flex-wrap md:flex-nowrap">
-                         {req.status === 'ORDERED' && (
+                         {(req.status === 'REQUESTED' || req.status === 'ORDERED') && (
                            <>
                              {!req.sampleBarcodeId && (
                                <button 
                                  onClick={() => generateBarcodeMutation.mutate(req.id)} 
                                  disabled={generateBarcodeMutation.isPending}
-                                 className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[13px] rounded-lg transition-colors"
+                                 className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[13px] rounded-lg transition-colors cursor-pointer border-none"
                                >
                                  Barcode
                                </button>
                              )}
                              <button 
-                               onClick={() => updateStatusMutation.mutate({ id: req.id, status: 'COLLECTED' })}
-                               className="px-4 py-2 bg-[#2160FF] hover:bg-blue-700 text-white font-bold text-[13px] rounded-lg shadow-sm shadow-blue-500/20 transition-colors"
+                               onClick={() => updateStatusMutation.mutate({ id: req.id, status: 'SAMPLE_COLLECTED' })}
+                               disabled={updateStatusMutation.isPending}
+                               className="px-4 py-2 bg-[#2160FF] hover:bg-blue-700 text-white font-bold text-[13px] rounded-lg shadow-sm shadow-blue-500/20 transition-colors cursor-pointer border-none"
                              >
                                Mark Collected
                              </button>
                            </>
                          )}
-                         {req.status === 'COLLECTED' && (
+                         {(req.status === 'SAMPLE_COLLECTED' || req.status === 'COLLECTED') && (
                            <>
-                             {req.sampleBarcodeId && (
-                               <button 
-                                 onClick={() => window.print()}
-                                 className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[13px] rounded-lg transition-colors flex items-center gap-2"
-                               >
-                                 <FileText className="w-3.5 h-3.5" /> Print
-                               </button>
-                             )}
                              <button 
                                onClick={() => updateStatusMutation.mutate({ id: req.id, status: 'RECEIVED' })}
-                               className="px-4 py-2 bg-[#2160FF] hover:bg-blue-700 text-white font-bold text-[13px] rounded-lg shadow-sm shadow-blue-500/20 transition-colors"
+                               disabled={updateStatusMutation.isPending}
+                               className="px-4 py-2 bg-[#2160FF] hover:bg-blue-700 text-white font-bold text-[13px] rounded-lg shadow-sm shadow-blue-500/20 transition-colors cursor-pointer border-none"
                              >
-                               Receive
+                               Receive Sample
                              </button>
                            </>
                          )}
                          {req.status === 'RECEIVED' && (
                            <button 
                              onClick={() => updateStatusMutation.mutate({ id: req.id, status: 'IN_PROGRESS' })}
-                             className="px-4 py-2 bg-[#2160FF] hover:bg-blue-700 text-white font-bold text-[13px] rounded-lg shadow-sm shadow-blue-500/20 transition-colors flex items-center gap-2"
+                             disabled={updateStatusMutation.isPending}
+                             className="px-4 py-2 bg-[#2160FF] hover:bg-blue-700 text-white font-bold text-[13px] rounded-lg shadow-sm shadow-blue-500/20 transition-colors flex items-center gap-2 cursor-pointer border-none"
                            >
                              <Play className="w-3.5 h-3.5 fill-current" /> Start Processing
                            </button>
                          )}
-                         {req.status === 'IN_PROGRESS' && (
+                         {(req.status === 'IN_PROGRESS' || req.status === 'PROCESSING') && (
                            <button 
                              onClick={() => setSelectedRequest(req)}
-                             className="px-4 py-2 bg-[#2160FF] hover:bg-blue-700 text-white font-bold text-[13px] rounded-lg shadow-sm shadow-blue-500/20 transition-colors"
+                             className="px-4 py-2 bg-[#2160FF] hover:bg-blue-700 text-white font-bold text-[13px] rounded-lg shadow-sm shadow-blue-500/20 transition-colors cursor-pointer border-none"
                            >
                              Enter Results
+                           </button>
+                         )}
+                         {req.status === 'RESULT_ENTERED' && (
+                           <button 
+                             onClick={() => verifyMutation.mutate(req.id)}
+                             disabled={verifyMutation.isPending}
+                             className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[13px] rounded-lg shadow-sm shadow-emerald-500/20 transition-colors cursor-pointer border-none"
+                           >
+                             Verify Result
+                           </button>
+                         )}
+                         {req.status === 'VERIFIED' && (
+                           <button 
+                             onClick={() => updateStatusMutation.mutate({ id: req.id, status: 'RELEASED' })}
+                             disabled={updateStatusMutation.isPending}
+                             className="px-4 py-2 bg-[#2160FF] hover:bg-blue-700 text-white font-bold text-[13px] rounded-lg shadow-sm shadow-blue-500/20 transition-colors cursor-pointer border-none"
+                           >
+                             Release Report
                            </button>
                          )}
                       </div>
@@ -400,6 +507,8 @@ const LabWorklist = () => {
       {selectedRequest && (
         <ResultEntryModal request={selectedRequest} onClose={() => setSelectedRequest(null)} onSuccess={() => setSelectedRequest(null)} />
       )}
+
+      <CreateLabRequestModal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} onSuccess={() => setIsCreateOpen(false)} />
     </div>
   );
 };

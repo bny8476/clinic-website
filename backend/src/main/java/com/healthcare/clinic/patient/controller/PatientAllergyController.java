@@ -1,6 +1,6 @@
 package com.healthcare.clinic.patient.controller;
 
-import com.healthcare.clinic.identity.entity.User;
+import com.healthcare.clinic.security.UserPrincipal;
 import com.healthcare.clinic.patient.entity.PatientAllergy;
 import com.healthcare.clinic.patient.service.PatientAllergyService;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/doctor/patients/{patientId}/allergies")
-@PreAuthorize("hasAuthority('ROLE_PATIENT') or hasAuthority('ROLE_SUPER_ADMIN')")
+@PreAuthorize("hasAuthority('ROLE_PATIENT') or hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_DOCTOR')")
 @RequiredArgsConstructor
 public class PatientAllergyController {
 
@@ -26,7 +26,7 @@ public class PatientAllergyController {
 
     @PostMapping
     public ResponseEntity<PatientAllergy> addAllergy(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal UserPrincipal user,
             @PathVariable Long patientId,
             @RequestBody PatientAllergy allergy) {
         allergy.setPatientId(patientId);

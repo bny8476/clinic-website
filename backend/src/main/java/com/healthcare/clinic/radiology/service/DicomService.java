@@ -1,12 +1,14 @@
 package com.healthcare.clinic.radiology.service;
 
 import com.healthcare.clinic.identity.entity.User;
+import com.healthcare.clinic.identity.repository.UserRepository;
 import com.healthcare.clinic.radiology.entity.DicomStudy;
 import com.healthcare.clinic.radiology.entity.ImagingRequest;
 import com.healthcare.clinic.radiology.entity.RadiologyAccessLog;
 import com.healthcare.clinic.radiology.repository.DicomStudyRepository;
 import com.healthcare.clinic.radiology.repository.ImagingRequestRepository;
 import com.healthcare.clinic.radiology.repository.RadiologyAccessLogRepository;
+import com.healthcare.clinic.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,13 +26,13 @@ public class DicomService {
     private final DicomStudyRepository dicomStudyRepository;
     private final ImagingRequestRepository imagingRequestRepository;
     private final RadiologyAccessLogRepository accessLogRepository;
+    private final UserRepository userRepository;
 
     @Transactional
-    public DicomStudy saveStudyMock(Long requestId, String modality, User uploader) {
+    public DicomStudy saveStudyMock(Long requestId, String modality, UserPrincipal uploader) {
         ImagingRequest request = imagingRequestRepository.findById(requestId)
                 .orElseThrow(() -> new IllegalArgumentException("Request not found"));
                 
-        // In a real system, the DICOM files are parsed to extract this. Here we mock it.
         DicomStudy study = DicomStudy.builder()
                 .studyInstanceUid("1.2.840.113619.2." + UUID.randomUUID().toString())
                 .accessionNumber("ACC" + request.getId())
@@ -51,30 +53,29 @@ public class DicomService {
     }
 
     @Transactional
-    public Map<String, Object> getStudyMetadata(String studyInstanceUid, User user, String ipAddress) {
-        log.info("Fetching DICOM metadata for study: {} by user: {}", studyInstanceUid, user.getUsername());
+    public Map<String, Object> getStudyMetadata(String studyInstanceUid, UserPrincipal userPrincipal, String ipAddress) {
+        log.info("Fetching DICOM metadata for study: {} by user: {}", studyInstanceUid, userPrincipal != null ? userPrincipal.getUsername() : "unknown");
         
         DicomStudy study = dicomStudyRepository.findByStudyInstanceUid(studyInstanceUid)
                 .orElseThrow(() -> new IllegalArgumentException("Study not found"));
                 
-        // Authorization check: User must be SuperAdmin, Radiologist, the ordering Doctor, or the Patient
-        boolean isSuperAdmin = user.getRoles().stream().anyMatch(r -> r.getName().equals("ROLE_SUPER_ADMIN"));
-        boolean isRadiologist = user.getRoles().stream().anyMatch(r -> r.getName().equals("ROLE_RADIOLOGIST"));
-        boolean isOrderingDoctor = study.getRequest().getDoctor() != null && study.getRequest().getDoctor().getUserId().equals(user.getId());
-        boolean isPatient = study.getPatient().getUserId().equals(user.getId());
+        boolean isSuperAdmin = userPrincipal.getAuthorities().stream().anyMatch(r -> r.getAuthority().equals("ROLE_SUPER_ADMIN") || r.getAuthority().equals("SUPER_ADMIN"));
+        boolean isRadiologist = userPrincipal.getAuthorities().stream().anyMatch(r -> r.getAuthority().equals("ROLE_RADIOLOGIST") || r.getAuthority().equals("RADIOLOGIST"));
+        boolean isOrderingDoctor = study.getRequest().getDoctor() != null && study.getRequest().getDoctor().getUserId().equals(userPrincipal.getUserId());
+        boolean isPatient = study.getPatient().getUserId().equals(userPrincipal.getUserId());
         
         if (!isSuperAdmin && !isRadiologist && !isOrderingDoctor && !isPatient) {
-            log.warn("Unauthorized DICOM access attempt by user: {}", user.getUsername());
+            log.warn("Unauthorized DICOM access attempt by user: {}", userPrincipal.getUsername());
             throw new SecurityException("Forbidden: You do not have access to this study.");
         }
         
-        // If patient, only allow if report is released
         if (isPatient && !("RELEASED".equals(study.getRequest().getStatus()))) {
             log.warn("Patient attempted to access unreleased study: {}", studyInstanceUid);
             throw new SecurityException("Forbidden: Study is not yet released.");
         }
         
-        // Log access
+        User user = userRepository.findById(userPrincipal.getUserId()).orElse(null);
+
         RadiologyAccessLog logEntry = RadiologyAccessLog.builder()
                 .user(user)
                 .request(study.getRequest())
@@ -84,11 +85,10 @@ public class DicomService {
                 .build();
         accessLogRepository.save(logEntry);
         
-        // Construct mock WADO-RS response
         Map<String, Object> metadata = new HashMap<>();
         metadata.put("studyInstanceUid", study.getStudyInstanceUid());
         metadata.put("patientId", study.getPatient().getId());
-        metadata.put("patientName", "Patient " + study.getPatient().getId()); // Simplification since user join is not mapped here
+        metadata.put("patientName", "Patient " + study.getPatient().getId());
         metadata.put("modality", study.getModality());
         metadata.put("seriesCount", study.getSeriesCount());
         metadata.put("instanceCount", study.getInstanceCount());
@@ -98,8 +98,8 @@ public class DicomService {
     }
 
     @Transactional
-    public Map<String, Object> getStudyMetadataByRequestId(Long requestId, User user, String ipAddress) {
-        log.info("Fetching DICOM metadata for requestId: {} by user: {}", requestId, user.getUsername());
+    public Map<String, Object> getStudyMetadataByRequestId(Long requestId, UserPrincipal user, String ipAddress) {
+        log.info("Fetching DICOM metadata for requestId: {} by user: {}", requestId, user != null ? user.getUsername() : "unknown");
         
         DicomStudy study = dicomStudyRepository.findByRequestId(requestId)
                 .orElseThrow(() -> new IllegalArgumentException("Study not found for request"));

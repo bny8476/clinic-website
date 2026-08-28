@@ -4,7 +4,7 @@ import com.healthcare.clinic.ecommerce.entity.EcPayment;
 import com.healthcare.clinic.ecommerce.entity.EcommerceOrder;
 import com.healthcare.clinic.ecommerce.service.CheckoutService;
 import com.healthcare.clinic.ecommerce.service.PaymentService;
-import com.healthcare.clinic.identity.entity.User;
+import com.healthcare.clinic.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,11 +23,11 @@ public class EcCheckoutController {
 
     @PostMapping
     public ResponseEntity<EcommerceOrder> processCheckout(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal UserPrincipal user,
             @RequestHeader(value = "X-Session-Key", required = false) String sessionKey,
             @RequestBody java.util.Map<String, Object> request) {
         
-        Long patientId = user != null ? user.getId() : null;
+        Long patientId = user != null ? user.getUserId() : null;
         com.healthcare.clinic.ecommerce.entity.EcCart cart = cartService.getOrCreateCart(patientId, sessionKey);
         
         Long addressId = Long.valueOf(request.get("addressId").toString());

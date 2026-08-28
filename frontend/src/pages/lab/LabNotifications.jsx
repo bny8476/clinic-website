@@ -5,6 +5,7 @@ import EmptyState from '../../components/ui/EmptyState';
 import { useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
+import useAuthStore from '../../store/authStore';
 import { AlertTriangle, ArrowLeft, Bell, CheckCircle2, MailOpen } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { fadeIn } from '../../components/ui/motion';
@@ -40,7 +41,7 @@ const LabNotifications = () => {
 
   // Setup SSE connection
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = useAuthStore.getState().token || localStorage.getItem('token');
     const eventSource = new EventSource(`/api/sse/lab?token=${token}`);
 
     const handleSseMessage = (event) => {

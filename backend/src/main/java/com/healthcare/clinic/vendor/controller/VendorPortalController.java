@@ -1,7 +1,7 @@
 package com.healthcare.clinic.vendor.controller;
 
 import com.healthcare.clinic.backoffice.inventory.entity.BackofficePurchaseOrder;
-import com.healthcare.clinic.identity.entity.User;
+import com.healthcare.clinic.security.UserPrincipal;
 import com.healthcare.clinic.vendor.entity.VendorDelivery;
 import com.healthcare.clinic.vendor.service.VendorPortalService;
 import lombok.RequiredArgsConstructor;
@@ -31,15 +31,16 @@ public class VendorPortalController {
     }
 
     @GetMapping("/deliveries")
-    public ResponseEntity<List<VendorDelivery>> getDeliveries(@AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(vendorService.getVendorDeliveries(user.getId()));
+    public ResponseEntity<List<VendorDelivery>> getDeliveries(@AuthenticationPrincipal UserPrincipal user) {
+        Long userId = user != null ? user.getUserId() : null;
+        return ResponseEntity.ok(vendorService.getVendorDeliveries(userId));
     }
 
     @PostMapping("/purchase-orders/{poId}/dispatch")
     public ResponseEntity<VendorDelivery> createDelivery(
             @PathVariable Long poId,
             @RequestBody VendorDelivery delivery,
-            @AuthenticationPrincipal User vendorUser) {
+            @AuthenticationPrincipal UserPrincipal vendorUser) {
         return ResponseEntity.ok(vendorService.createDelivery(poId, delivery, vendorUser));
     }
 }

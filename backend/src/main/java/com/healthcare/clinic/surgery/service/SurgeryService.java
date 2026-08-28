@@ -3,10 +3,12 @@ package com.healthcare.clinic.surgery.service;
 import com.healthcare.clinic.doctor.entity.DoctorProfile;
 import com.healthcare.clinic.doctor.repository.DoctorProfileRepository;
 import com.healthcare.clinic.identity.entity.User;
+import com.healthcare.clinic.identity.repository.UserRepository;
 import com.healthcare.clinic.inpatient.entity.Admission;
 import com.healthcare.clinic.inpatient.repository.AdmissionRepository;
 import com.healthcare.clinic.patient.entity.PatientProfile;
 import com.healthcare.clinic.patient.repository.PatientProfileRepository;
+import com.healthcare.clinic.security.UserPrincipal;
 import com.healthcare.clinic.surgery.entity.*;
 import com.healthcare.clinic.surgery.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +32,7 @@ public class SurgeryService {
     private final PatientProfileRepository patientRepository;
     private final DoctorProfileRepository doctorRepository;
     private final AdmissionRepository admissionRepository;
+    private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
     public List<OperationTheatre> getTheatres(Long branchId) {
@@ -82,12 +85,16 @@ public class SurgeryService {
     }
 
     @Transactional
-    public PreOpChecklist savePreOpChecklist(Long bookingId, Map<String, Boolean> checklistData, String notes, User completedBy) {
+    public PreOpChecklist savePreOpChecklist(Long bookingId, Map<String, Boolean> checklistData, String notes, UserPrincipal completedByPrincipal) {
         SurgeryBooking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
 
         PreOpChecklist checklist = checklistRepository.findBySurgeryBookingId(bookingId)
                 .orElse(PreOpChecklist.builder().surgeryBooking(booking).build());
+
+        User completedBy = completedByPrincipal != null && completedByPrincipal.getUserId() != null
+                ? userRepository.findById(completedByPrincipal.getUserId()).orElse(null)
+                : null;
 
         checklist.setCompletedBy(completedBy);
         checklist.setChecklistData(checklistData);

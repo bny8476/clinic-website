@@ -133,16 +133,23 @@ const AppleIcon = () => (
 );
 
 const InputField = ({ icon: Icon, rightSlot, ...props }) => (
-  <div className="relative">
-    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-      <Icon size={15}/>
-    </span>
+  <div className="relative flex items-center">
+    {Icon && (
+      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none z-10 flex items-center justify-center">
+        <Icon size={16}/>
+      </span>
+    )}
     <input
       {...props}
-      className="input-field pl-10 pr-10 w-full py-3 text-[13px]"
+      style={{
+        paddingLeft: Icon ? '40px' : '16px',
+        paddingRight: rightSlot ? '40px' : '16px',
+        ...props.style,
+      }}
+      className={`input-field w-full py-3 text-[13px] ${props.className || ''}`}
     />
     {rightSlot && (
-      <span className="absolute right-3.5 top-1/2 -translate-y-1/2">{rightSlot}</span>
+      <span className="absolute right-3.5 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center">{rightSlot}</span>
     )}
   </div>
 );

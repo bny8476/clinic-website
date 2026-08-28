@@ -32,7 +32,7 @@ public class PatientMedicineController {
         return patientMedicineService.getAvailableMedicines(currentUserId);
     }
 
-    @PostMapping("/order")
+    @PostMapping({"/order", "/orders"})
     public Map<String, String> orderMedicines(@RequestBody MedicineOrderRequest request) {
         Long currentUserId = SecurityUtils.getCurrentUserId();
         Long patientProfileId = getPatientProfileIdForUserId(currentUserId);

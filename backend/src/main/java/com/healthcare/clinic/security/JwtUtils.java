@@ -8,12 +8,12 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.security.Key;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.springframework.util.StringUtils;
 
 @Component
 @Slf4j
@@ -23,7 +23,7 @@ public class JwtUtils {
     private String jwtSecret;
 
     @Value("${jwt.access-token-expiration-ms:86400000}")
-    private int jwtExpirationMs;
+    private long jwtExpirationMs;
 
     @PostConstruct
     public void init() {
@@ -37,19 +37,64 @@ public class JwtUtils {
     }
 
     public String generateJwtToken(Authentication authentication) {
-        User userPrincipal = (User) authentication.getPrincipal();
-        
-        List<String> roles = userPrincipal.getAuthorities().stream()
-                .map(item -> item.getAuthority())
-                .collect(Collectors.toList());
+        if (authentication.getPrincipal() instanceof UserPrincipal principal) {
+            List<String> roles = principal.getAuthorities().stream()
+                    .map(item -> item.getAuthority())
+                    .collect(Collectors.toList());
 
-        return Jwts.builder()
-                .setSubject((userPrincipal.getUsername()))
-                .claim("userId", userPrincipal.getId())
-                .claim("roles", roles)
-                .claim("branchId", userPrincipal.getBranchId())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
+            return generateAccessToken(
+                    principal.getUsername(),
+                    principal.getUserId(),
+                    principal.getBranchId(),
+                    roles
+            );
+        } else if (authentication.getPrincipal() instanceof User userPrincipal) {
+            List<String> roles = userPrincipal.getAuthorities().stream()
+                    .map(item -> item.getAuthority())
+                    .collect(Collectors.toList());
+
+            return generateAccessToken(
+                    userPrincipal.getUsername(),
+                    userPrincipal.getId(),
+                    userPrincipal.getBranchId(),
+                    roles
+            );
+        } else if (authentication.getPrincipal() instanceof org.springframework.security.core.userdetails.UserDetails userDetails) {
+            List<String> roles = userDetails.getAuthorities().stream()
+                    .map(item -> item.getAuthority())
+                    .collect(Collectors.toList());
+
+            return generateAccessToken(
+                    userDetails.getUsername(),
+                    null,
+                    null,
+                    roles
+            );
+        }
+        
+        return generateAccessToken(authentication.getName(), null, null, List.of());
+    }
+
+    public String generateAccessToken(String username, Long userId, Long branchId, List<String> roles) {
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
+
+        var builder = Jwts.builder()
+                .setSubject(username)
+                .setIssuedAt(now)
+                .setExpiration(expiryDate);
+
+        if (userId != null) {
+            builder.claim("userId", userId);
+        }
+        if (branchId != null) {
+            builder.claim("branchId", branchId);
+        }
+        if (roles != null && !roles.isEmpty()) {
+            builder.claim("roles", roles);
+        }
+
+        return builder
                 .signWith(key(), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -59,13 +104,16 @@ public class JwtUtils {
     }
 
     public Claims getClaimsFromJwtToken(String token) {
-        return Jwts.parserBuilder().setSigningKey(key()).build()
-                .parseClaimsJws(token).getBody();
+        return Jwts.parserBuilder()
+                .setSigningKey(key())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 
     public boolean validateJwtToken(String authToken) {
         try {
-            Jwts.parserBuilder().setSigningKey(key()).build().parse(authToken);
+            Jwts.parserBuilder().setSigningKey(key()).build().parseClaimsJws(authToken);
             return true;
         } catch (MalformedJwtException e) {
             log.error("Invalid JWT token: {}", e.getMessage());
@@ -75,7 +123,13 @@ public class JwtUtils {
             log.error("JWT token is unsupported: {}", e.getMessage());
         } catch (IllegalArgumentException e) {
             log.error("JWT claims string is empty: {}", e.getMessage());
+        } catch (Exception e) {
+            log.error("JWT validation failed: {}", e.getMessage());
         }
         return false;
+    }
+
+    public boolean validateRefreshToken(String refreshToken) {
+        return validateJwtToken(refreshToken);
     }
 }

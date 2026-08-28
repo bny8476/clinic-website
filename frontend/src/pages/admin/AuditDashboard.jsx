@@ -58,7 +58,8 @@ const AuditDashboard = () => {
         </div>
         <button 
           onClick={exportAuditLog}
-          className="bg-slate-800 text-white px-4 py-2 rounded shadow flex items-center gap-2 hover:bg-slate-700"
+          className="bg-[#2160FF] hover:bg-[#1b52dc] text-white px-4 py-2 rounded-lg shadow-sm font-medium transition-all flex items-center gap-2"
+          style={{ backgroundColor: '#2160FF' }}
         >
           <Download size={18} /> Export CSV
         </button>

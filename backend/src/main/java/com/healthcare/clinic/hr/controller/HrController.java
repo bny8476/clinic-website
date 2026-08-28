@@ -15,7 +15,7 @@ import com.healthcare.clinic.hr.service.OnboardingService;
 import com.healthcare.clinic.hr.service.RecruitmentService;
 import com.healthcare.clinic.hr.service.HrDocumentService;
 import com.healthcare.clinic.hr.service.CredentialService;
-import com.healthcare.clinic.identity.entity.User;
+import com.healthcare.clinic.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -80,8 +80,8 @@ public class HrController {
     public ResponseEntity<LeaveRequest> updateLeaveStatus(
             @PathVariable Long id,
             @RequestParam String status,
-            @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(hrService.updateLeaveStatus(id, status, user.getId()));
+            @AuthenticationPrincipal UserPrincipal user) {
+        return ResponseEntity.ok(hrService.updateLeaveStatus(id, status, user != null ? user.getUserId() : null));
     }
 
     // Recruitment Endpoints
@@ -142,8 +142,8 @@ public class HrController {
     }
 
     @PutMapping("/employee-documents/{documentId}/verify")
-    public ResponseEntity<EmployeeDocument> verifyDocument(@PathVariable Long documentId, @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(hrDocumentService.verifyDocument(documentId, user.getId()));
+    public ResponseEntity<EmployeeDocument> verifyDocument(@PathVariable Long documentId, @AuthenticationPrincipal UserPrincipal user) {
+        return ResponseEntity.ok(hrDocumentService.verifyDocument(documentId, user != null ? user.getUserId() : null));
     }
 
     // Credential Endpoints

@@ -1,6 +1,6 @@
 import toast from 'react-hot-toast';
 import Pagination from '../../components/ui/Pagination';
-import { BASE_URL } from '../../api/axios';
+import { BASE_URL, axiosPrivate } from '../../api/axios';
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { usePatientMedicineFeed } from '../../hooks/usePatientMedicineFeed';
@@ -24,13 +24,8 @@ export default function OrderMedicine() {
   const { data: medicines = [], isLoading } = useQuery({
     queryKey: ['patientMedicines'],
     queryFn: async () => {
-      const response = await fetch(`${BASE_URL}/patient/medicines`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      if (!response.ok) throw new Error('Failed to fetch medicines');
-      return response.json();
+      const response = await axiosPrivate.get('/patient/medicines');
+      return response.data;
     }
   });
 
@@ -43,19 +38,8 @@ export default function OrderMedicine() {
   // Create Order mutation
   const createOrderMutation = useMutation({
     mutationFn: async (orderRequest) => {
-      const response = await fetch(`${BASE_URL}/patient/medicines/orders`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(orderRequest)
-      });
-      if (!response.ok) {
-        const err = await response.text();
-        throw new Error(err || 'Failed to place order');
-      }
-      return response.json();
+      const response = await axiosPrivate.post('/patient/medicines/orders', orderRequest);
+      return response.data;
     },
     onSuccess: (data) => {
       if (data.checkoutUrl) {

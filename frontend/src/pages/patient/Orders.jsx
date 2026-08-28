@@ -1,6 +1,6 @@
 import PageLoadingSkeleton from '../../components/ui/PageLoadingSkeleton';
 import { useEffect, useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import useAuthStore from '../../store/authStore';
 import { axiosPrivate as axios } from '../../api/axios';
 import { format } from 'date-fns';
 import { fadeUp, listStagger, staggerChildren } from '../../components/ui/motion';
@@ -11,7 +11,7 @@ export default function Orders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const { user } = useAuth();
+  const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
     const fetchOrders = async () => {

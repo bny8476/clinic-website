@@ -1,6 +1,6 @@
 package com.healthcare.clinic.patient.controller;
 
-import com.healthcare.clinic.identity.entity.User;
+import com.healthcare.clinic.security.UserPrincipal;
 import com.healthcare.clinic.patient.entity.PatientDocument;
 import com.healthcare.clinic.patient.service.PatientDocumentService;
 import lombok.RequiredArgsConstructor;
@@ -20,13 +20,13 @@ public class PatientDocumentController {
     private final PatientDocumentService patientDocumentService;
 
     @GetMapping
-    public ResponseEntity<List<PatientDocument>> getPatientDocuments(@AuthenticationPrincipal User user) {
+    public ResponseEntity<List<PatientDocument>> getPatientDocuments(@AuthenticationPrincipal UserPrincipal user) {
         return ResponseEntity.ok(patientDocumentService.getPatientDocuments(user));
     }
 
     @PostMapping(consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<PatientDocument> uploadDocument(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal UserPrincipal user,
             @RequestPart("document") PatientDocument document,
             @RequestPart(value = "file", required = false) org.springframework.web.multipart.MultipartFile file) {
         return ResponseEntity.ok(patientDocumentService.saveDocumentMetadata(user, document, file));

@@ -3,6 +3,8 @@ package com.healthcare.clinic.vendor.service;
 import com.healthcare.clinic.backoffice.inventory.entity.BackofficePurchaseOrder;
 import com.healthcare.clinic.backoffice.inventory.repository.BackofficePurchaseOrderRepository;
 import com.healthcare.clinic.identity.entity.User;
+import com.healthcare.clinic.identity.repository.UserRepository;
+import com.healthcare.clinic.security.UserPrincipal;
 import com.healthcare.clinic.vendor.entity.VendorDelivery;
 import com.healthcare.clinic.vendor.repository.VendorDeliveryRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,7 @@ public class VendorPortalService {
 
     private final BackofficePurchaseOrderRepository poRepository;
     private final VendorDeliveryRepository deliveryRepository;
+    private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
     public List<BackofficePurchaseOrder> getVendorPurchaseOrders() {
@@ -36,10 +39,14 @@ public class VendorPortalService {
     }
 
     @Transactional
-    public VendorDelivery createDelivery(Long poId, VendorDelivery deliveryInput, User vendorUser) {
+    public VendorDelivery createDelivery(Long poId, VendorDelivery deliveryInput, UserPrincipal vendorUserPrincipal) {
         BackofficePurchaseOrder po = poRepository.findById(poId).orElseThrow();
         po.setStatus("SHIPPED");
         poRepository.save(po);
+
+        User vendorUser = vendorUserPrincipal != null && vendorUserPrincipal.getUserId() != null
+                ? userRepository.findById(vendorUserPrincipal.getUserId()).orElse(null)
+                : null;
 
         deliveryInput.setPurchaseOrder(po);
         deliveryInput.setVendorUser(vendorUser);

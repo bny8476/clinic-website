@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useAuth } from '../../../context/pharmacy/AuthContext';
 import { NAV_BY_ROLE, getBaseRoleForUI } from '../../../config/pharmacy/roles.config';
 import { Outlet } from 'react-router-dom';
+import Sidebar from './Sidebar';
+import TopNav from './TopNav';
 
 export default function MainLayout() {
   const { activeRole, roles } = useAuth();

@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types';
+import ReactDatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import { cn } from '../../../utils/pharmacy/cn';
 import { Calendar, Search } from 'lucide-react';
@@ -24,7 +25,7 @@ export default function ModuleFilterBar({
             <div className="relative">
               <ReactDatePicker
                 selected={dateRange.from}
-                onChange={(date) => onDateChange('from', date)}
+                onChange={(date) => onDateChange && onDateChange('from', date)}
                 placeholderText="From Date"
                 className="pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 w-36 transition-all"
               />
@@ -34,7 +35,7 @@ export default function ModuleFilterBar({
             <div className="relative">
               <ReactDatePicker
                 selected={dateRange.to}
-                onChange={(date) => onDateChange('to', date)}
+                onChange={(date) => onDateChange && onDateChange('to', date)}
                 placeholderText="To Date"
                 className="pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 w-36 transition-all"
               />
@@ -47,7 +48,7 @@ export default function ModuleFilterBar({
         {filters.map((f, i) => (
           <div key={i} className="min-w-[140px]">
             <select
-              onChange={(e) => onFilterChange(f.name, e.target.value)}
+              onChange={(e) => onFilterChange && onFilterChange(f.name, e.target.value)}
               className="w-full border border-gray-200 rounded-lg text-sm px-3 py-2 outline-none focus:ring-2 focus:ring-primary/20 transition-all appearance-none bg-no-repeat bg-[right_0.5rem_center] bg-[length:1em_1em]"
               style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")` }}
             >
@@ -64,7 +65,7 @@ export default function ModuleFilterBar({
           <input
             type="text"
             value={searchValue}
-            onChange={(e) => onSearch(e.target.value)}
+            onChange={(e) => onSearch && onSearch(e.target.value)}
             placeholder={searchPlaceholder}
             className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all"
           />

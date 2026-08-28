@@ -2,7 +2,7 @@ package com.healthcare.clinic.backoffice.inventory.controller;
 
 import com.healthcare.clinic.backoffice.inventory.entity.*;
 import com.healthcare.clinic.backoffice.inventory.service.BackofficeInventoryService;
-import com.healthcare.clinic.identity.entity.User;
+import com.healthcare.clinic.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -57,8 +57,8 @@ public class BackofficeInventoryController {
     @PostMapping("/purchase-orders")
     public ResponseEntity<BackofficePurchaseOrder> createPurchaseOrder(
             @RequestBody BackofficePurchaseOrder po,
-            @AuthenticationPrincipal User user) {
-        po.setRaisedBy(user.getId());
+            @AuthenticationPrincipal UserPrincipal user) {
+        po.setRaisedBy(user != null ? user.getUserId() : null);
         return ResponseEntity.ok(inventoryService.createPurchaseOrder(po));
     }
 
@@ -75,7 +75,7 @@ public class BackofficeInventoryController {
     @PostMapping("/transfers")
     public ResponseEntity<StockTransfer> createTransfer(
             @RequestBody StockTransfer transfer,
-            @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(inventoryService.createStockTransfer(transfer, user != null ? user.getId() : null));
+            @AuthenticationPrincipal UserPrincipal user) {
+        return ResponseEntity.ok(inventoryService.createStockTransfer(transfer, user != null ? user.getUserId() : null));
     }
 }

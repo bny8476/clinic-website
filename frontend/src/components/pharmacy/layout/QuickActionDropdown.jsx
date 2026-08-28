@@ -19,7 +19,7 @@ export default function QuickActionDropdown() {
     <div className="relative hidden sm:block" ref={dropdownRef}>
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="bg-indigo-600 text-white px-4 py-2 rounded-full flex items-center gap-2 text-sm font-semibold hover:bg-indigo-700 transition shadow-sm"
+        className="bg-[#2160FF] hover:bg-blue-700 text-white px-4.5 py-2 rounded-full flex items-center gap-2 text-sm font-semibold transition shadow-sm border-none cursor-pointer"
       >
         <Zap size={16} className="fill-current" />
         Quick Action
@@ -33,16 +33,16 @@ export default function QuickActionDropdown() {
           <div className="px-3 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 mb-1">
             Pharmacy Actions
           </div>
-          <button onClick={() => { setIsOpen(false); window.location.pathname = '/pharmacy/direct-pharmacy-sales'; }} className="w-full text-left px-3 py-2 hover:bg-slate-50 flex items-center gap-2.5">
-            <span className="p-1 rounded bg-indigo-50 text-indigo-600"><ShoppingCart size={13} /></span> Direct Sale
+          <button onClick={() => { setIsOpen(false); window.location.pathname = '/pharmacy/direct-pharmacy-sales'; }} className="w-full text-left px-3 py-2 hover:bg-slate-50 flex items-center gap-2.5 border-none bg-transparent cursor-pointer">
+            <span className="p-1 rounded bg-blue-50 text-[#2160FF]"><ShoppingCart size={13} /></span> Direct Sale
           </button>
-          <button onClick={() => { setIsOpen(false); window.location.pathname = '/pharmacy/medicine-master'; }} className="w-full text-left px-3 py-2 hover:bg-slate-50 flex items-center gap-2.5">
+          <button onClick={() => { setIsOpen(false); window.location.pathname = '/pharmacy/medicine-master'; }} className="w-full text-left px-3 py-2 hover:bg-slate-50 flex items-center gap-2.5 border-none bg-transparent cursor-pointer">
             <span className="p-1 rounded bg-orange-50 text-orange-600"><Package size={13} /></span> Add Medicine
           </button>
-          <button onClick={() => { setIsOpen(false); window.location.pathname = '/pharmacy/purchase-orders'; }} className="w-full text-left px-3 py-2 hover:bg-slate-50 flex items-center gap-2.5">
+          <button onClick={() => { setIsOpen(false); window.location.pathname = '/pharmacy/purchase-orders'; }} className="w-full text-left px-3 py-2 hover:bg-slate-50 flex items-center gap-2.5 border-none bg-transparent cursor-pointer">
             <span className="p-1 rounded bg-blue-50 text-blue-600"><FileText size={13} /></span> Purchase Order
           </button>
-          <button onClick={() => { setIsOpen(false); window.location.pathname = '/pharmacy/suppliers'; }} className="w-full text-left px-3 py-2 hover:bg-slate-50 flex items-center gap-2.5 border-t border-slate-100 mt-1 pt-2">
+          <button onClick={() => { setIsOpen(false); window.location.pathname = '/pharmacy/suppliers'; }} className="w-full text-left px-3 py-2 hover:bg-slate-50 flex items-center gap-2.5 border-t border-slate-100 mt-1 pt-2 border-none bg-transparent cursor-pointer">
             <span className="p-1 rounded bg-blue-50 text-blue-600"><Truck size={13} /></span> Manage Suppliers
           </button>
         </div>

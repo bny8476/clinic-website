@@ -1,12 +1,14 @@
 package com.healthcare.clinic.laboratory.service;
 
 import com.healthcare.clinic.identity.entity.User;
+import com.healthcare.clinic.identity.repository.UserRepository;
 import com.healthcare.clinic.laboratory.entity.LabResult;
 import com.healthcare.clinic.laboratory.entity.LabTestCatalog;
 import com.healthcare.clinic.laboratory.entity.LabTestRequest;
 import com.healthcare.clinic.laboratory.repository.LabResultRepository;
 import com.healthcare.clinic.laboratory.repository.LabTestRequestRepository;
 import com.healthcare.clinic.notification.service.InAppNotificationService;
+import com.healthcare.clinic.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,9 +27,10 @@ public class LabResultService {
     private final LabTestRequestRepository requestRepository;
     private final InAppNotificationService inAppNotificationService;
     private final LabOperationalService labOperationalService;
+    private final UserRepository userRepository;
 
     @Transactional
-    public LabResult addResult(Long requestId, LabResult result, User labTech) {
+    public LabResult addResult(Long requestId, LabResult result, UserPrincipal labTechPrincipal) {
         LabTestRequest request = requestRepository.findById(requestId)
                 .orElseThrow(() -> new IllegalArgumentException("Request not found"));
 
@@ -42,6 +45,10 @@ public class LabResultService {
         } else {
             result.setEnteredAt(ZonedDateTime.now());
         }
+
+        User labTech = labTechPrincipal != null && labTechPrincipal.getUserId() != null
+                ? userRepository.findById(labTechPrincipal.getUserId()).orElse(null)
+                : null;
 
         result.setRequest(request);
         result.setLabTech(labTech);

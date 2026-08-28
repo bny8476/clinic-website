@@ -1,6 +1,6 @@
 package com.healthcare.clinic.patient.controller;
 
-import com.healthcare.clinic.identity.entity.User;
+import com.healthcare.clinic.security.UserPrincipal;
 import com.healthcare.clinic.patient.entity.PatientNotification;
 import com.healthcare.clinic.patient.service.PatientNotificationService;
 import lombok.RequiredArgsConstructor;
@@ -20,18 +20,18 @@ public class PatientNotificationController {
     private final PatientNotificationService patientNotificationService;
 
     @GetMapping
-    public ResponseEntity<List<PatientNotification>> getNotifications(@AuthenticationPrincipal User user) {
+    public ResponseEntity<List<PatientNotification>> getNotifications(@AuthenticationPrincipal UserPrincipal user) {
         return ResponseEntity.ok(patientNotificationService.getNotifications(user));
     }
 
     @GetMapping("/unread")
-    public ResponseEntity<List<PatientNotification>> getUnreadNotifications(@AuthenticationPrincipal User user) {
+    public ResponseEntity<List<PatientNotification>> getUnreadNotifications(@AuthenticationPrincipal UserPrincipal user) {
         return ResponseEntity.ok(patientNotificationService.getUnreadNotifications(user));
     }
 
     @PostMapping("/{id}/read")
     public ResponseEntity<Void> markAsRead(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal UserPrincipal user,
             @PathVariable Long id) {
         patientNotificationService.markAsRead(user, id);
         return ResponseEntity.ok().build();

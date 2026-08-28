@@ -10,7 +10,7 @@ import com.healthcare.clinic.emergency.entity.EmergencyEncounter;
 import com.healthcare.clinic.emergency.entity.EmergencyOrder;
 import com.healthcare.clinic.emergency.entity.TriageAssessment;
 import com.healthcare.clinic.emergency.service.EmergencyService;
-import com.healthcare.clinic.identity.entity.User;
+import com.healthcare.clinic.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -29,8 +29,9 @@ public class EmergencyController {
     @GetMapping("/encounters")
     public ResponseEntity<List<EmergencyEncounter>> getEncounters(
             @RequestParam(required = false) String status,
-            @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(emergencyService.getEncounters(user.getBranchId(), status));
+            @AuthenticationPrincipal UserPrincipal user) {
+        Long branchId = user != null ? user.getBranchId() : null;
+        return ResponseEntity.ok(emergencyService.getEncounters(branchId, status));
     }
 
     @PostMapping("/encounters")
@@ -38,8 +39,9 @@ public class EmergencyController {
     @AuditableAction(module = "EMERGENCY", action = "REGISTER_PATIENT")
     public ResponseEntity<EmergencyEncounter> registerPatient(
             @RequestBody RegisterPatientRequest req,
-            @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(emergencyService.registerPatient(req.getPatientId(), req.getArrivalMode(), user.getBranchId()));
+            @AuthenticationPrincipal UserPrincipal user) {
+        Long branchId = user != null ? user.getBranchId() : null;
+        return ResponseEntity.ok(emergencyService.registerPatient(req.getPatientId(), req.getArrivalMode(), branchId));
     }
 
     @PostMapping("/encounters/{id}/triage")
@@ -48,7 +50,7 @@ public class EmergencyController {
     public ResponseEntity<TriageAssessment> performTriage(
             @PathVariable Long id,
             @RequestBody TriageRequest req,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal UserPrincipal user) {
         return ResponseEntity.ok(emergencyService.performTriage(id, req.getTriageLevel(), req.getChiefComplaint(), user));
     }
 
@@ -67,7 +69,7 @@ public class EmergencyController {
     public ResponseEntity<EmergencyOrder> placeOrder(
             @PathVariable Long id,
             @RequestBody OrderRequest req,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal UserPrincipal user) {
         return ResponseEntity.ok(emergencyService.placeOrder(id, req.getOrderType(), req.getReferenceId(), user));
     }
 

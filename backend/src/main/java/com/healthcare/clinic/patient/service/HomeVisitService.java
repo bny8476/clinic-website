@@ -1,6 +1,6 @@
 package com.healthcare.clinic.patient.service;
 
-import com.healthcare.clinic.identity.entity.User;
+import com.healthcare.clinic.security.UserPrincipal;
 import com.healthcare.clinic.patient.entity.HomeVisitRequest;
 import com.healthcare.clinic.patient.entity.PatientProfile;
 import com.healthcare.clinic.homevisit.repository.HomeVisitRequestRepository;
@@ -18,13 +18,13 @@ public class HomeVisitService {
     private final HomeVisitRequestRepository homeVisitRequestRepository;
     private final PatientProfileRepository patientProfileRepository;
 
-    private PatientProfile getPatientProfileForUser(User user) {
-        return patientProfileRepository.findByUserId(user.getId())
+    private PatientProfile getPatientProfileForUser(UserPrincipal user) {
+        return patientProfileRepository.findByUserId(user.getUserId())
                 .orElseThrow(() -> new RuntimeException("Patient profile not found for user"));
     }
 
     @Transactional
-    public HomeVisitRequest requestHomeVisit(User user, HomeVisitRequest request) {
+    public HomeVisitRequest requestHomeVisit(UserPrincipal user, HomeVisitRequest request) {
         PatientProfile profile = getPatientProfileForUser(user);
         
         request.setPatient(profile);
@@ -32,13 +32,13 @@ public class HomeVisitService {
         return homeVisitRequestRepository.save(request);
     }
 
-    public List<HomeVisitRequest> getPatientRequests(User user) {
+    public List<HomeVisitRequest> getPatientRequests(UserPrincipal user) {
         PatientProfile profile = getPatientProfileForUser(user);
         return homeVisitRequestRepository.findByPatientIdOrderByCreatedAtDesc(profile.getId());
     }
     
     @Transactional
-    public HomeVisitRequest cancelRequest(User user, Long requestId) {
+    public HomeVisitRequest cancelRequest(UserPrincipal user, Long requestId) {
         PatientProfile profile = getPatientProfileForUser(user);
         
         HomeVisitRequest request = homeVisitRequestRepository.findById(requestId)

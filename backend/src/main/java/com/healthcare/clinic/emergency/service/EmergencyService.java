@@ -9,8 +9,10 @@ import com.healthcare.clinic.emergency.repository.EmergencyEncounterRepository;
 import com.healthcare.clinic.emergency.repository.EmergencyOrderRepository;
 import com.healthcare.clinic.emergency.repository.TriageAssessmentRepository;
 import com.healthcare.clinic.identity.entity.User;
+import com.healthcare.clinic.identity.repository.UserRepository;
 import com.healthcare.clinic.patient.entity.PatientProfile;
 import com.healthcare.clinic.patient.repository.PatientProfileRepository;
+import com.healthcare.clinic.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +28,7 @@ public class EmergencyService {
     private final EmergencyOrderRepository orderRepository;
     private final PatientProfileRepository patientProfileRepository;
     private final DoctorProfileRepository doctorProfileRepository;
+    private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
     public List<EmergencyEncounter> getEncounters(Long branchId, String status) {
@@ -53,13 +56,17 @@ public class EmergencyService {
     }
 
     @Transactional
-    public TriageAssessment performTriage(Long encounterId, String triageLevel, String chiefComplaint, User triagedBy) {
+    public TriageAssessment performTriage(Long encounterId, String triageLevel, String chiefComplaint, UserPrincipal triagedByPrincipal) {
         EmergencyEncounter encounter = encounterRepository.findById(encounterId)
                 .orElseThrow(() -> new RuntimeException("Encounter not found"));
 
         if (!"REGISTERED".equals(encounter.getStatus())) {
             throw new RuntimeException("Cannot triage a patient who is not in REGISTERED status");
         }
+
+        User triagedBy = triagedByPrincipal != null && triagedByPrincipal.getUserId() != null
+                ? userRepository.findById(triagedByPrincipal.getUserId()).orElse(null)
+                : null;
 
         TriageAssessment triage = TriageAssessment.builder()
                 .emergencyEncounter(encounter)
@@ -88,9 +95,13 @@ public class EmergencyService {
     }
 
     @Transactional
-    public EmergencyOrder placeOrder(Long encounterId, String orderType, Long referenceId, User orderedBy) {
+    public EmergencyOrder placeOrder(Long encounterId, String orderType, Long referenceId, UserPrincipal orderedByPrincipal) {
         EmergencyEncounter encounter = encounterRepository.findById(encounterId)
                 .orElseThrow(() -> new RuntimeException("Encounter not found"));
+
+        User orderedBy = orderedByPrincipal != null && orderedByPrincipal.getUserId() != null
+                ? userRepository.findById(orderedByPrincipal.getUserId()).orElse(null)
+                : null;
 
         EmergencyOrder order = EmergencyOrder.builder()
                 .emergencyEncounter(encounter)

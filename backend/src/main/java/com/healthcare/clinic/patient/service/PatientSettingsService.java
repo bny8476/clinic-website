@@ -1,6 +1,5 @@
 package com.healthcare.clinic.patient.service;
 
-import com.healthcare.clinic.identity.entity.User;
 import com.healthcare.clinic.patient.entity.*;
 import com.healthcare.clinic.patient.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -22,28 +21,28 @@ public class PatientSettingsService {
     private final PatientConsentRepository consentRepository;
     private final ConsentVersionRepository consentVersionRepository;
 
-    private PatientProfile getPatientProfileForUser(User user) {
-        return patientProfileRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Patient profile not found for user: " + user.getUsername()));
+    private PatientProfile getPatientProfileForUser(Long userId) {
+        return patientProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Patient profile not found for userId: " + userId));
     }
 
     // --- Dependents ---
     @Transactional(readOnly = true)
-    public List<DependentProfile> getDependents(User user) {
-        PatientProfile guardian = getPatientProfileForUser(user);
+    public List<DependentProfile> getDependents(Long userId) {
+        PatientProfile guardian = getPatientProfileForUser(userId);
         return dependentProfileRepository.findByGuardianId(guardian.getId());
     }
 
     @Transactional
-    public DependentProfile addDependent(User user, DependentProfile dependent) {
-        PatientProfile guardian = getPatientProfileForUser(user);
+    public DependentProfile addDependent(Long userId, DependentProfile dependent) {
+        PatientProfile guardian = getPatientProfileForUser(userId);
         dependent.setGuardian(guardian);
         return dependentProfileRepository.save(dependent);
     }
 
     @Transactional
-    public void removeDependent(User user, Long dependentId) {
-        PatientProfile guardian = getPatientProfileForUser(user);
+    public void removeDependent(Long userId, Long dependentId) {
+        PatientProfile guardian = getPatientProfileForUser(userId);
         DependentProfile dependent = dependentProfileRepository.findById(dependentId)
                 .orElseThrow(() -> new IllegalArgumentException("Dependent not found"));
         if (!dependent.getGuardian().getId().equals(guardian.getId())) {
@@ -54,21 +53,21 @@ public class PatientSettingsService {
 
     // --- Emergency Contacts ---
     @Transactional(readOnly = true)
-    public List<EmergencyContact> getEmergencyContacts(User user) {
-        PatientProfile patient = getPatientProfileForUser(user);
+    public List<EmergencyContact> getEmergencyContacts(Long userId) {
+        PatientProfile patient = getPatientProfileForUser(userId);
         return emergencyContactRepository.findByPatientId(patient.getId());
     }
 
     @Transactional
-    public EmergencyContact addEmergencyContact(User user, EmergencyContact contact) {
-        PatientProfile patient = getPatientProfileForUser(user);
+    public EmergencyContact addEmergencyContact(Long userId, EmergencyContact contact) {
+        PatientProfile patient = getPatientProfileForUser(userId);
         contact.setPatient(patient);
         return emergencyContactRepository.save(contact);
     }
     
     @Transactional
-    public void removeEmergencyContact(User user, Long contactId) {
-        PatientProfile patient = getPatientProfileForUser(user);
+    public void removeEmergencyContact(Long userId, Long contactId) {
+        PatientProfile patient = getPatientProfileForUser(userId);
         EmergencyContact contact = emergencyContactRepository.findById(contactId)
                 .orElseThrow(() -> new IllegalArgumentException("Contact not found"));
         if (!contact.getPatient().getId().equals(patient.getId())) {
@@ -79,14 +78,14 @@ public class PatientSettingsService {
 
     // --- Notification Preferences ---
     @Transactional(readOnly = true)
-    public List<PatientNotificationPreference> getNotificationPreferences(User user) {
-        PatientProfile patient = getPatientProfileForUser(user);
+    public List<PatientNotificationPreference> getNotificationPreferences(Long userId) {
+        PatientProfile patient = getPatientProfileForUser(userId);
         return notificationPreferenceRepository.findByPatientId(patient.getId());
     }
 
     @Transactional
-    public PatientNotificationPreference updateNotificationPreference(User user, String category, PatientNotificationPreference pref) {
-        PatientProfile patient = getPatientProfileForUser(user);
+    public PatientNotificationPreference updateNotificationPreference(Long userId, String category, PatientNotificationPreference pref) {
+        PatientProfile patient = getPatientProfileForUser(userId);
         PatientNotificationPreference existing = notificationPreferenceRepository.findByPatientIdAndCategory(patient.getId(), category)
                 .orElseGet(() -> {
                     PatientNotificationPreference newPref = new PatientNotificationPreference();
@@ -109,14 +108,14 @@ public class PatientSettingsService {
     }
 
     @Transactional(readOnly = true)
-    public List<PatientConsent> getPatientConsents(User user) {
-        PatientProfile patient = getPatientProfileForUser(user);
+    public List<PatientConsent> getPatientConsents(Long userId) {
+        PatientProfile patient = getPatientProfileForUser(userId);
         return consentRepository.findByPatientId(patient.getId());
     }
 
     @Transactional
-    public PatientConsent grantConsent(User user, String consentType, String ipAddress, String userAgent) {
-        PatientProfile patient = getPatientProfileForUser(user);
+    public PatientConsent grantConsent(Long userId, String consentType, String ipAddress, String userAgent) {
+        PatientProfile patient = getPatientProfileForUser(userId);
         ConsentVersion latestVersion = consentVersionRepository.findByConsentTypeAndIsLatestTrue(consentType)
                 .orElseThrow(() -> new IllegalArgumentException("No active consent version found for type: " + consentType));
 
@@ -135,8 +134,8 @@ public class PatientSettingsService {
     }
 
     @Transactional
-    public void revokeConsent(User user, String consentType) {
-        PatientProfile patient = getPatientProfileForUser(user);
+    public void revokeConsent(Long userId, String consentType) {
+        PatientProfile patient = getPatientProfileForUser(userId);
         ConsentVersion latestVersion = consentVersionRepository.findByConsentTypeAndIsLatestTrue(consentType)
                 .orElseThrow(() -> new IllegalArgumentException("No active consent version found for type: " + consentType));
 

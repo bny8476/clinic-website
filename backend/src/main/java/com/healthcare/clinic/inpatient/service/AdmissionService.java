@@ -3,6 +3,7 @@ package com.healthcare.clinic.inpatient.service;
 import com.healthcare.clinic.doctor.entity.DoctorProfile;
 import com.healthcare.clinic.doctor.repository.DoctorProfileRepository;
 import com.healthcare.clinic.identity.entity.User;
+import com.healthcare.clinic.identity.repository.UserRepository;
 import com.healthcare.clinic.inpatient.entity.Admission;
 import com.healthcare.clinic.inpatient.entity.Bed;
 import com.healthcare.clinic.inpatient.entity.BedTransfer;
@@ -13,6 +14,7 @@ import com.healthcare.clinic.inpatient.repository.BedTransferRepository;
 import com.healthcare.clinic.inpatient.repository.DischargeSummaryRepository;
 import com.healthcare.clinic.patient.entity.PatientProfile;
 import com.healthcare.clinic.patient.repository.PatientProfileRepository;
+import com.healthcare.clinic.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +33,7 @@ public class AdmissionService {
     private final DischargeSummaryRepository dischargeSummaryRepository;
     private final PatientProfileRepository patientProfileRepository;
     private final DoctorProfileRepository doctorProfileRepository;
+    private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
     public List<Admission> getAdmissions(Long branchId, String status) {
@@ -79,7 +82,7 @@ public class AdmissionService {
     }
 
     @Transactional
-    public BedTransfer transferBed(Long admissionId, Long newBedId, String reason, User transferringUser) {
+    public BedTransfer transferBed(Long admissionId, Long newBedId, String reason, UserPrincipal transferringUserPrincipal) {
         Admission admission = admissionRepository.findById(admissionId)
                 .orElseThrow(() -> new RuntimeException("Admission not found"));
 
@@ -103,6 +106,10 @@ public class AdmissionService {
 
         admission.setBed(newBed);
         admissionRepository.save(admission);
+
+        User transferringUser = transferringUserPrincipal != null && transferringUserPrincipal.getUserId() != null
+                ? userRepository.findById(transferringUserPrincipal.getUserId()).orElse(null)
+                : null;
 
         BedTransfer transfer = BedTransfer.builder()
                 .admission(admission)

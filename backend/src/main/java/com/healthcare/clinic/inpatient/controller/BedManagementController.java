@@ -1,7 +1,7 @@
 package com.healthcare.clinic.inpatient.controller;
 
 import com.healthcare.clinic.audit.annotation.AuditableAction;
-import com.healthcare.clinic.identity.entity.User;
+import com.healthcare.clinic.security.UserPrincipal;
 import com.healthcare.clinic.inpatient.entity.Bed;
 import com.healthcare.clinic.inpatient.entity.Room;
 import com.healthcare.clinic.inpatient.entity.Ward;
@@ -22,22 +22,26 @@ public class BedManagementController {
     private final BedManagementService bedManagementService;
 
     @GetMapping("/wards")
-    public ResponseEntity<List<Ward>> getWards(@AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(bedManagementService.getWards(user.getBranchId()));
+    public ResponseEntity<List<Ward>> getWards(@AuthenticationPrincipal UserPrincipal user) {
+        Long branchId = user != null ? user.getBranchId() : null;
+        return ResponseEntity.ok(bedManagementService.getWards(branchId));
     }
 
     @GetMapping("/beds")
     public ResponseEntity<List<Bed>> getBeds(
             @RequestParam(required = false) String status,
-            @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(bedManagementService.getBeds(user.getBranchId(), status));
+            @AuthenticationPrincipal UserPrincipal user) {
+        Long branchId = user != null ? user.getBranchId() : null;
+        return ResponseEntity.ok(bedManagementService.getBeds(branchId, status));
     }
 
     @PostMapping("/wards")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'BRANCH_ADMIN')")
     @AuditableAction(module = "INPATIENT", action = "CREATE_WARD")
-    public ResponseEntity<Ward> createWard(@RequestBody Ward ward, @AuthenticationPrincipal User user) {
-        ward.setBranchId(user.getBranchId());
+    public ResponseEntity<Ward> createWard(@RequestBody Ward ward, @AuthenticationPrincipal UserPrincipal user) {
+        if (user != null) {
+            ward.setBranchId(user.getBranchId());
+        }
         return ResponseEntity.ok(bedManagementService.createWard(ward));
     }
 

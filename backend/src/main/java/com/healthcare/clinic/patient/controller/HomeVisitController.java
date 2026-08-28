@@ -1,6 +1,6 @@
 package com.healthcare.clinic.patient.controller;
 
-import com.healthcare.clinic.identity.entity.User;
+import com.healthcare.clinic.security.UserPrincipal;
 import com.healthcare.clinic.patient.entity.HomeVisitRequest;
 import com.healthcare.clinic.patient.service.HomeVisitService;
 import lombok.RequiredArgsConstructor;
@@ -21,19 +21,19 @@ public class HomeVisitController {
 
     @PostMapping
     public ResponseEntity<HomeVisitRequest> requestHomeVisit(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal UserPrincipal user,
             @RequestBody HomeVisitRequest request) {
         return ResponseEntity.ok(homeVisitService.requestHomeVisit(user, request));
     }
 
     @GetMapping
-    public ResponseEntity<List<HomeVisitRequest>> getPatientRequests(@AuthenticationPrincipal User user) {
+    public ResponseEntity<List<HomeVisitRequest>> getPatientRequests(@AuthenticationPrincipal UserPrincipal user) {
         return ResponseEntity.ok(homeVisitService.getPatientRequests(user));
     }
 
     @PostMapping("/{id}/cancel")
     public ResponseEntity<HomeVisitRequest> cancelRequest(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal UserPrincipal user,
             @PathVariable Long id) {
         return ResponseEntity.ok(homeVisitService.cancelRequest(user, id));
     }

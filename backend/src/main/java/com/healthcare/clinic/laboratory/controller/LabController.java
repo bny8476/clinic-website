@@ -11,9 +11,9 @@ import com.healthcare.clinic.laboratory.repository.LabTestCatalogRepository;
 import com.healthcare.clinic.laboratory.repository.LabTestRequestRepository;
 
 import com.healthcare.clinic.notification.event.LabResultReleasedEvent;
-import com.healthcare.clinic.patient.entity.PatientProfile;
 import com.healthcare.clinic.patient.repository.PatientProfileRepository;
 import com.healthcare.clinic.security.SecurityUtils;
+import com.healthcare.clinic.security.UserPrincipal;
 import com.healthcare.clinic.laboratory.service.LabPdfService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -153,7 +153,7 @@ public class LabController {
      * Used by LabWorklist.jsx frontend component.
      */
     @GetMapping("/worklist")
-    @PreAuthorize("hasRole('LAB_TECH') or hasRole('SUPER_ADMIN') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('LAB_TECH') or hasRole('NURSE') or hasRole('SUPER_ADMIN') or hasRole('ADMIN')")
     public ResponseEntity<Page<LabTestRequest>> getWorklist(
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String search,
@@ -195,9 +195,20 @@ public class LabController {
     }
 
     @GetMapping("/requests/status/{status}")
-    @PreAuthorize("hasRole('LAB_TECH') or hasRole('SUPER_ADMIN')")
+    @PreAuthorize("hasRole('LAB_TECH') or hasRole('NURSE') or hasRole('SUPER_ADMIN') or hasRole('ADMIN')")
     public ResponseEntity<List<LabTestRequest>> getRequestsByStatus(@PathVariable String status) {
         return ResponseEntity.ok(requestRepository.findByStatus(status));
+    }
+
+    /**
+     * GET /api/lab/requests/all
+     * Returns every lab request, most recent first.
+     * Used by LabRecentRequests.jsx (lab dashboard, "All Requests" filter).
+     */
+    @GetMapping("/requests/all")
+    @PreAuthorize("hasRole('LAB_TECH') or hasRole('NURSE') or hasRole('SUPER_ADMIN') or hasRole('ADMIN')")
+    public ResponseEntity<List<LabTestRequest>> getAllRequests() {
+        return ResponseEntity.ok(requestRepository.findAll(Sort.by(Sort.Direction.DESC, "requestedAt")));
     }
 
     @PutMapping("/requests/{requestId}/status")
@@ -245,7 +256,7 @@ public class LabController {
             @PathVariable Long requestId,
             @RequestPart("result") LabResult result,
             @RequestPart(value = "file", required = false) MultipartFile file,
-            @AuthenticationPrincipal User labTech) {
+            @AuthenticationPrincipal UserPrincipal labTech) {
         
         LabResult savedResult = resultService.addResult(requestId, result, labTech);
         
@@ -270,7 +281,7 @@ public class LabController {
             @RequestParam(value = "refDoctor", required = false) String refDoctor,
             @RequestParam(value = "notes", required = false) String notes,
             @RequestPart("files") List<MultipartFile> files,
-            @AuthenticationPrincipal User doctor) {
+            @AuthenticationPrincipal UserPrincipal doctor) {
 
         // In a real system, we would save the files to S3 or similar and create a record in the database
         // For now, we will create a mock upload directory
@@ -303,7 +314,7 @@ public class LabController {
     public ResponseEntity<LabResult> verifyReport(
             @PathVariable Long requestId,
             @RequestBody java.util.Map<String, String> payload,
-            @AuthenticationPrincipal User pathologist) {
+            @AuthenticationPrincipal UserPrincipal pathologist) {
         
         String comments = payload.get("comments");
         LabResult verifiedResult = verificationService.verifyReport(requestId, pathologist, comments);
@@ -314,7 +325,7 @@ public class LabController {
     @PreAuthorize("hasRole('PATIENT') or hasRole('DOCTOR') or hasRole('LAB_TECH') or hasRole('PATHOLOGIST') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<byte[]> downloadLabReportPdf(
             @PathVariable Long requestId,
-            @AuthenticationPrincipal User user) {
+            @AuthenticationPrincipal UserPrincipal user) {
             
         LabTestRequest request = requestRepository.findById(requestId)
                 .orElseThrow(() -> new IllegalArgumentException("Lab request not found"));
@@ -323,9 +334,10 @@ public class LabController {
                 .orElseThrow(() -> new IllegalArgumentException("Lab result not found for this request"));
                 
         // Check authorization
-        boolean isPatient = user.getRoles().stream().anyMatch(r -> r.getName().equals("ROLE_PATIENT"));
+        boolean isPatient = user.getAuthorities().stream()
+                .anyMatch(r -> r.getAuthority().equals("ROLE_PATIENT") || r.getAuthority().equals("PATIENT"));
         if (isPatient) {
-            if (!request.getPatient().getUserId().equals(user.getId())) {
+            if (!request.getPatient().getUserId().equals(user.getUserId())) {
                 return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).build();
             }
         }
@@ -344,11 +356,15 @@ public class LabController {
     @PutMapping("/requests/{requestId}/verify")
     @PreAuthorize("hasRole('LAB_TECH') or hasRole('SUPER_ADMIN')")
     @AuditableAction(module = "LABORATORY", action = "VERIFY_RESULT", resourceType = "LabResult", sensitivityLevel = "HIGH")
-    public ResponseEntity<LabResult> verifyResult(@PathVariable Long requestId, @AuthenticationPrincipal User verifier) {
+    public ResponseEntity<LabResult> verifyResult(@PathVariable Long requestId, @AuthenticationPrincipal UserPrincipal verifierPrincipal) {
         LabTestRequest request = requestRepository.findById(requestId).orElseThrow();
         LabResult result = resultRepository.findByRequestId(requestId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Result not found"));
         
+        User verifier = verifierPrincipal != null && verifierPrincipal.getUserId() != null
+                ? userRepository.findById(verifierPrincipal.getUserId()).orElse(null)
+                : null;
+
         result.setVerifiedAt(ZonedDateTime.now());
         result.setVerifiedBy(verifier);
         LabResult savedResult = resultRepository.save(result);

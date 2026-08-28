@@ -3,15 +3,16 @@ package com.healthcare.clinic.notification.controller;
 import com.healthcare.clinic.notification.entity.Notification;
 import com.healthcare.clinic.notification.service.InAppNotificationService;
 import com.healthcare.clinic.security.SecurityUtils;
+import com.healthcare.clinic.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
-import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/notifications")
@@ -22,8 +23,9 @@ public class NotificationController {
     private final InAppNotificationService notificationService;
 
     @GetMapping
-    public ResponseEntity<List<Notification>> getMyNotifications() {
-        Long userId = SecurityUtils.getCurrentUserId();
+    public ResponseEntity<List<Notification>> getMyNotifications(
+            @AuthenticationPrincipal UserPrincipal user) {
+        Long userId = user != null ? user.getUserId() : SecurityUtils.getCurrentUserId();
         if (userId == null) {
             return ResponseEntity.ok(Collections.emptyList());
         }
@@ -31,8 +33,9 @@ public class NotificationController {
     }
 
     @GetMapping("/unread-count")
-    public ResponseEntity<Map<String, Long>> getUnreadCount() {
-        Long userId = SecurityUtils.getCurrentUserId();
+    public ResponseEntity<Map<String, Long>> getUnreadCount(
+            @AuthenticationPrincipal UserPrincipal user) {
+        Long userId = user != null ? user.getUserId() : SecurityUtils.getCurrentUserId();
         if (userId == null) {
             return ResponseEntity.ok(Map.of("count", 0L));
         }
@@ -40,8 +43,10 @@ public class NotificationController {
     }
 
     @PatchMapping("/{id}/read")
-    public ResponseEntity<Void> markRead(@PathVariable Long id) {
-        Long userId = SecurityUtils.getCurrentUserId();
+    public ResponseEntity<Void> markRead(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal user) {
+        Long userId = user != null ? user.getUserId() : SecurityUtils.getCurrentUserId();
         if (userId != null) {
             notificationService.markRead(id, userId);
         }
@@ -49,8 +54,9 @@ public class NotificationController {
     }
 
     @PatchMapping("/mark-all-read")
-    public ResponseEntity<Void> markAllRead() {
-        Long userId = SecurityUtils.getCurrentUserId();
+    public ResponseEntity<Void> markAllRead(
+            @AuthenticationPrincipal UserPrincipal user) {
+        Long userId = user != null ? user.getUserId() : SecurityUtils.getCurrentUserId();
         if (userId != null) {
             notificationService.markAllRead(userId);
         }

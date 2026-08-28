@@ -1,6 +1,6 @@
 package com.healthcare.clinic.support.controller;
 
-import com.healthcare.clinic.identity.entity.User;
+import com.healthcare.clinic.security.UserPrincipal;
 import com.healthcare.clinic.support.entity.SupportMessage;
 import com.healthcare.clinic.support.entity.SupportTicket;
 import com.healthcare.clinic.support.service.SupportService;
@@ -21,43 +21,83 @@ public class SupportController {
     private final SupportService supportService;
 
     @GetMapping("/tickets")
-    @PreAuthorize("hasRole('CUSTOMER_SUPPORT') or hasRole('SUPER_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_CUSTOMER_SUPPORT', 'ROLE_SUPER_ADMIN')")
     public ResponseEntity<List<SupportTicket>> getAllTickets() {
         return ResponseEntity.ok(supportService.getAllTickets());
     }
 
     @GetMapping("/my-tickets")
-    public ResponseEntity<List<SupportTicket>> getMyTickets(@AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(supportService.getUserTickets(user.getId()));
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<SupportTicket>> getMyTickets(
+            @AuthenticationPrincipal UserPrincipal user) {
+
+        Long userId = user != null ? user.getUserId() : null;
+
+        return ResponseEntity.ok(
+                supportService.getUserTickets(userId)
+        );
     }
 
     @PostMapping("/tickets")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<SupportTicket> createTicket(
             @RequestBody SupportTicket ticket,
             @RequestParam(required = false) String initialMessage,
-            @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(supportService.createTicket(ticket, user, initialMessage));
+            @AuthenticationPrincipal UserPrincipal user) {
+
+        return ResponseEntity.ok(
+                supportService.createTicket(
+                        ticket,
+                        user,
+                        initialMessage
+                )
+        );
     }
 
     @GetMapping("/tickets/{ticketId}/messages")
-    public ResponseEntity<List<SupportMessage>> getMessages(@PathVariable Long ticketId) {
-        return ResponseEntity.ok(supportService.getTicketMessages(ticketId));
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<SupportMessage>> getMessages(
+            @PathVariable Long ticketId) {
+
+        return ResponseEntity.ok(
+                supportService.getTicketMessages(ticketId)
+        );
     }
 
     @PostMapping("/tickets/{ticketId}/messages")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<SupportMessage> addMessage(
             @PathVariable Long ticketId,
             @RequestBody Map<String, String> body,
-            @AuthenticationPrincipal User sender) {
+            @AuthenticationPrincipal UserPrincipal sender) {
+
         String text = body.get("message");
-        boolean isAgent = sender.getRoles() != null && sender.getRoles().stream()
-                .anyMatch(r -> r.getName().equals("ROLE_CUSTOMER_SUPPORT") || r.getName().equals("ROLE_SUPER_ADMIN"));
-        return ResponseEntity.ok(supportService.addMessage(ticketId, sender, text, isAgent));
+
+        boolean isAgent = sender != null &&
+                sender.getAuthorities().stream()
+                        .anyMatch(r ->
+                                r.getAuthority().equals("ROLE_CUSTOMER_SUPPORT")
+                                || r.getAuthority().equals("ROLE_SUPER_ADMIN")
+                        );
+
+        return ResponseEntity.ok(
+                supportService.addMessage(
+                        ticketId,
+                        sender,
+                        text,
+                        isAgent
+                )
+        );
     }
 
     @PatchMapping("/tickets/{ticketId}/status")
-    @PreAuthorize("hasRole('CUSTOMER_SUPPORT') or hasRole('SUPER_ADMIN')")
-    public ResponseEntity<SupportTicket> updateStatus(@PathVariable Long ticketId, @RequestParam String status) {
-        return ResponseEntity.ok(supportService.updateTicketStatus(ticketId, status));
+    @PreAuthorize("hasAnyAuthority('ROLE_CUSTOMER_SUPPORT', 'ROLE_SUPER_ADMIN')")
+    public ResponseEntity<SupportTicket> updateStatus(
+            @PathVariable Long ticketId,
+            @RequestParam String status) {
+
+        return ResponseEntity.ok(
+                supportService.updateTicketStatus(ticketId, status)
+        );
     }
 }

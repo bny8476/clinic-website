@@ -104,7 +104,11 @@
 }
 
 .input-field.has-icon {
-  padding-left: 40px;
+  padding-left: 40px !important;
+}
+
+.input-field.has-right-slot {
+  padding-right: 40px !important;
 }
 
 .input-icon-wrapper {

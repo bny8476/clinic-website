@@ -1,6 +1,6 @@
 package com.healthcare.clinic.patient.service;
 
-import com.healthcare.clinic.identity.entity.User;
+import com.healthcare.clinic.security.UserPrincipal;
 import com.healthcare.clinic.patient.entity.PatientDiagnosis;
 import com.healthcare.clinic.patient.repository.PatientDiagnosisRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,8 +24,8 @@ public class PatientDiagnosisService {
     }
 
     @Transactional
-    public PatientDiagnosis addDiagnosis(User doctor, PatientDiagnosis diagnosis) {
-        diagnosis.setRecordedBy(doctor.getId());
+    public PatientDiagnosis addDiagnosis(UserPrincipal doctor, PatientDiagnosis diagnosis) {
+        diagnosis.setRecordedBy(doctor.getUserId());
         return diagnosisRepository.save(diagnosis);
     }
 

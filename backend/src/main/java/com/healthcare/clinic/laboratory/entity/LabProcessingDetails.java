@@ -19,6 +19,7 @@ public class LabProcessingDetails {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "request_id", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private LabTestRequest request;
 
     @ManyToOne(fetch = FetchType.LAZY)

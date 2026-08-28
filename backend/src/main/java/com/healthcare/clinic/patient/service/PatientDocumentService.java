@@ -1,6 +1,6 @@
 package com.healthcare.clinic.patient.service;
 
-import com.healthcare.clinic.identity.entity.User;
+import com.healthcare.clinic.security.UserPrincipal;
 import com.healthcare.clinic.patient.entity.PatientDocument;
 import com.healthcare.clinic.patient.entity.PatientProfile;
 import com.healthcare.clinic.patient.repository.PatientDocumentRepository;
@@ -21,18 +21,18 @@ public class PatientDocumentService {
     private final PatientProfileRepository patientProfileRepository;
     private final DocumentStorageService storageService;
 
-    private PatientProfile getPatientProfile(User user) {
-        return patientProfileRepository.findByUserId(user.getId())
+    private PatientProfile getPatientProfile(UserPrincipal user) {
+        return patientProfileRepository.findByUserId(user.getUserId())
                 .orElseThrow(() -> new RuntimeException("Patient profile not found for user"));
     }
 
-    public List<PatientDocument> getPatientDocuments(User user) {
+    public List<PatientDocument> getPatientDocuments(UserPrincipal user) {
         PatientProfile profile = getPatientProfile(user);
         return documentRepository.findByPatientIdOrderByUploadedAtDesc(profile.getId());
     }
 
     @Transactional
-    public PatientDocument saveDocumentMetadata(User user, PatientDocument document, MultipartFile file) {
+    public PatientDocument saveDocumentMetadata(UserPrincipal user, PatientDocument document, MultipartFile file) {
         PatientProfile profile = getPatientProfile(user);
         
         document.setPatientId(profile.getId());

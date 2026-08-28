@@ -50,8 +50,8 @@ const MedicationAdministration = () => {
         {/* Top Header Card */}
         <div className="bg-white rounded-3xl p-6 lg:p-8 shadow-sm border border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
           <div className="flex items-center gap-5">
-            <div className="p-4 bg-[#F0FDF4] rounded-2xl flex-shrink-0 border border-teal-100/50">
-              <Pill className="w-8 h-8 text-[#0F766E]" strokeWidth={2.5} />
+            <div className="p-4 bg-blue-50 rounded-2xl flex-shrink-0 border border-blue-100">
+              <Pill className="w-8 h-8 text-[#2160FF]" strokeWidth={2.5} />
             </div>
             <div>
               <h1 className="text-[28px] font-extrabold text-slate-900 mb-1 tracking-tight">Medication Administration Record (MAR)</h1>
@@ -74,27 +74,27 @@ const MedicationAdministration = () => {
                 <tr className="bg-[#F8FAF9] border-b border-gray-200">
                   <th className="py-5 px-6 font-semibold text-[14px] text-slate-700 w-[25%]">
                     <div className="flex items-center gap-2">
-                      <User className="w-4 h-4 text-[#0F766E]" /> Patient & Bed
+                      <User className="w-4 h-4 text-[#2160FF]" /> Patient & Bed
                     </div>
                   </th>
                   <th className="py-5 px-6 font-semibold text-[14px] text-slate-700 w-[30%]">
                     <div className="flex items-center gap-2">
-                      <Pill className="w-4 h-4 text-[#0F766E]" /> Medication & Dose
+                      <Pill className="w-4 h-4 text-[#2160FF]" /> Medication & Dose
                     </div>
                   </th>
                   <th className="py-5 px-6 font-semibold text-[14px] text-slate-700 w-[20%]">
                     <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-[#0F766E]" /> Scheduled Time
+                      <Clock className="w-4 h-4 text-[#2160FF]" /> Scheduled Time
                     </div>
                   </th>
                   <th className="py-5 px-6 font-semibold text-[14px] text-slate-700 w-[15%]">
                     <div className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-[#0F766E]" /> Status
+                      <CheckCircle2 className="w-4 h-4 text-[#2160FF]" /> Status
                     </div>
                   </th>
                   <th className="py-5 px-6 font-semibold text-[14px] text-slate-700 w-[10%]">
                     <div className="flex items-center gap-2">
-                      <MoreVertical className="w-4 h-4 text-[#0F766E]" /> Action
+                      <MoreVertical className="w-4 h-4 text-[#2160FF]" /> Action
                     </div>
                   </th>
                 </tr>
@@ -104,7 +104,7 @@ const MedicationAdministration = () => {
                   <tr>
                     <td colSpan="5" className="py-20 text-center">
                       <div className="flex justify-center">
-                        <Loader2 className="w-8 h-8 animate-spin text-[#0F766E]" />
+                        <Loader2 className="w-8 h-8 animate-spin text-[#2160FF]" />
                       </div>
                     </td>
                   </tr>
@@ -114,28 +114,28 @@ const MedicationAdministration = () => {
                       <div className="flex flex-col items-center justify-center text-center">
                         {/* Custom Empty State Illustration */}
                         <div className="relative w-28 h-28 flex items-center justify-center mb-6">
-                           <div className="absolute inset-0 bg-[#F0FDF4] rounded-full"></div>
+                           <div className="absolute inset-0 bg-blue-50 rounded-full"></div>
                            
                            {/* Sparkles */}
-                           <div className="absolute top-4 left-2 w-1.5 h-1.5 bg-[#0F766E]/40 rotate-45"></div>
-                           <div className="absolute bottom-6 left-4 w-2 h-2 bg-[#0F766E]/50 rotate-45"></div>
-                           <div className="absolute top-6 right-0 w-2.5 h-2.5 bg-[#0F766E]/60 rotate-45"></div>
-                           <div className="absolute bottom-8 right-3 w-1.5 h-1.5 bg-[#0F766E]/40 rotate-45"></div>
+                           <div className="absolute top-4 left-2 w-1.5 h-1.5 bg-[#2160FF]/40 rotate-45"></div>
+                           <div className="absolute bottom-6 left-4 w-2 h-2 bg-[#2160FF]/50 rotate-45"></div>
+                           <div className="absolute top-6 right-0 w-2.5 h-2.5 bg-[#2160FF]/60 rotate-45"></div>
+                           <div className="absolute bottom-8 right-3 w-1.5 h-1.5 bg-[#2160FF]/40 rotate-45"></div>
 
                            {/* Clipboard + Pill */}
-                           <div className="relative z-10 w-14 h-18 bg-white border-2 border-[#0F766E] rounded-lg flex flex-col items-center pt-3 pb-2 px-2 shadow-sm">
+                           <div className="relative z-10 w-14 h-18 bg-white border-2 border-[#2160FF] rounded-lg flex flex-col items-center pt-3 pb-2 px-2 shadow-sm">
                              {/* Clip */}
-                             <div className="absolute -top-1.5 w-6 h-2 bg-white border-2 border-[#0F766E] rounded-sm"></div>
+                             <div className="absolute -top-1.5 w-6 h-2 bg-white border-2 border-[#2160FF] rounded-sm"></div>
                              {/* Lines */}
-                             <div className="w-full h-0.5 bg-[#0F766E] rounded-full mt-1 opacity-40"></div>
-                             <div className="w-full h-0.5 bg-[#0F766E] rounded-full mt-2 opacity-40"></div>
-                             <div className="w-2/3 h-0.5 bg-[#0F766E] rounded-full mt-2 self-start opacity-40"></div>
+                             <div className="w-full h-0.5 bg-[#2160FF] rounded-full mt-1 opacity-40"></div>
+                             <div className="w-full h-0.5 bg-[#2160FF] rounded-full mt-2 opacity-40"></div>
+                             <div className="w-2/3 h-0.5 bg-[#2160FF] rounded-full mt-2 self-start opacity-40"></div>
                            </div>
                            
                            {/* Overlaid Pill */}
                            <div className="absolute -bottom-1 -right-1 z-20 bg-white rounded-full p-0.5">
-                             <div className="w-8 h-8 rounded-full border-2 border-[#0F766E] bg-white flex items-center justify-center transform -rotate-45">
-                               <div className="w-full h-1/2 bg-[#0F766E]/10 border-b-2 border-[#0F766E] rounded-t-full absolute top-0"></div>
+                             <div className="w-8 h-8 rounded-full border-2 border-[#2160FF] bg-white flex items-center justify-center transform -rotate-45">
+                               <div className="w-full h-1/2 bg-[#2160FF]/10 border-b-2 border-[#2160FF] rounded-t-full absolute top-0"></div>
                              </div>
                            </div>
                         </div>
@@ -174,7 +174,7 @@ const MedicationAdministration = () => {
                         {m.status === 'DUE' ? (
                           <button 
                             onClick={() => markGiven(m.id)}
-                            className="bg-[#0F766E] hover:bg-teal-800 text-white border-none py-2 px-4 rounded-lg text-[13px] font-bold cursor-pointer transition-colors shadow-md shadow-teal-700/20 whitespace-nowrap"
+                            className="bg-[#2160FF] hover:bg-blue-600 text-white border-none py-2 px-4 rounded-lg text-[13px] font-bold cursor-pointer transition-all shadow-md shadow-blue-500/20 whitespace-nowrap"
                           >
                             Mark Administered
                           </button>

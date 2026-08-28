@@ -2,10 +2,11 @@ package com.healthcare.clinic.ecommerce.controller;
 
 import com.healthcare.clinic.ecommerce.entity.EcommerceOrder;
 import com.healthcare.clinic.ecommerce.service.OrderService;
-import com.healthcare.clinic.identity.entity.User;
+import com.healthcare.clinic.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,10 +21,11 @@ public class EcOrderController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('PATIENT', 'ADMIN', 'SUPER_ADMIN', 'PHARMACIST')")
-    public ResponseEntity<List<EcommerceOrder>> getOrders(@AuthenticationPrincipal User user) {
-        boolean isPatient = user.getRoles().stream().anyMatch(r -> r.getName().equals("PATIENT"));
+    public ResponseEntity<List<EcommerceOrder>> getOrders(@AuthenticationPrincipal UserPrincipal user) {
+        boolean isPatient = user.getAuthorities().stream()
+                .anyMatch(r -> r.getAuthority().equals("ROLE_PATIENT") || r.getAuthority().equals("PATIENT"));
         if (isPatient) {
-            return ResponseEntity.ok(orderService.getPatientOrders(user.getId()));
+            return ResponseEntity.ok(orderService.getPatientOrders(user.getUserId()));
         } else {
             return ResponseEntity.ok(orderService.getAllOrders());
         }
@@ -32,11 +34,12 @@ public class EcOrderController {
     @GetMapping("/{orderId}")
     @PreAuthorize("hasAnyRole('PATIENT', 'ADMIN', 'SUPER_ADMIN', 'PHARMACIST')")
     public ResponseEntity<EcommerceOrder> getOrderDetails(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal UserPrincipal user,
             @PathVariable Long orderId) {
-        boolean isPatient = user.getRoles().stream().anyMatch(r -> r.getName().equals("PATIENT"));
+        boolean isPatient = user.getAuthorities().stream()
+                .anyMatch(r -> r.getAuthority().equals("ROLE_PATIENT") || r.getAuthority().equals("PATIENT"));
         if (isPatient) {
-            return ResponseEntity.ok(orderService.getOrderDetails(orderId, user.getId()));
+            return ResponseEntity.ok(orderService.getOrderDetails(orderId, user.getUserId()));
         } else {
             return ResponseEntity.ok(orderService.getOrderDetailsForAdmin(orderId));
         }
@@ -45,11 +48,15 @@ public class EcOrderController {
     @PostMapping("/{orderId}/status")
     @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN') or hasRole('PHARMACIST')")
     public ResponseEntity<Void> updateOrderStatus(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal UserPrincipal user,
             @PathVariable Long orderId,
             @RequestParam String status,
             @RequestParam(required = false) String note) {
-        orderService.updateOrderStatus(orderId, status, user.getId(), user.getRoles().stream().findFirst().map(com.healthcare.clinic.identity.entity.Role::getName).orElse("USER"), note);
+        String roleName = user.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .findFirst()
+                .orElse("USER");
+        orderService.updateOrderStatus(orderId, status, user.getUserId(), roleName, note);
         return ResponseEntity.ok().build();
     }
     
