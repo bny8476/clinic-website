@@ -1,21 +1,25 @@
 package com.healthcare.clinic.radiology.service;
 
+import com.healthcare.clinic.doctor.entity.DoctorProfile;
+import com.healthcare.clinic.doctor.repository.DoctorProfileRepository;
 import com.healthcare.clinic.identity.entity.User;
 import com.healthcare.clinic.identity.repository.UserRepository;
+import com.healthcare.clinic.patient.entity.PatientProfile;
+import com.healthcare.clinic.patient.repository.PatientProfileRepository;
 import com.healthcare.clinic.radiology.entity.ImagingProcedure;
 import com.healthcare.clinic.radiology.entity.ImagingRequest;
 import com.healthcare.clinic.radiology.repository.ImagingProcedureRepository;
 import com.healthcare.clinic.radiology.repository.ImagingRequestRepository;
-import com.healthcare.clinic.patient.entity.PatientProfile;
-import com.healthcare.clinic.patient.repository.PatientProfileRepository;
-import com.healthcare.clinic.doctor.entity.DoctorProfile;
-import com.healthcare.clinic.doctor.repository.DoctorProfileRepository;
+import com.healthcare.clinic.branch.entity.Branch;
+import com.healthcare.clinic.branch.repository.BranchRepository;
+import com.healthcare.clinic.security.UserPrincipal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,70 +34,80 @@ public class RadiologyWorkflowIntegrationTest {
 
     @Autowired
     private ImagingRequestRepository requestRepository;
-    
-    @Autowired
-    private ImagingProcedureRepository procedureRepository;
-    
-    @Autowired
-    private PatientProfileRepository patientRepository;
 
     @Autowired
-    private DoctorProfileRepository doctorRepository;
-    
+    private ImagingProcedureRepository procedureRepository;
+
     @Autowired
     private UserRepository userRepository;
 
     @Autowired
-    private com.healthcare.clinic.identity.repository.RoleRepository roleRepository;
+    private PatientProfileRepository patientProfileRepository;
+
+    @Autowired
+    private DoctorProfileRepository doctorProfileRepository;
+
+    @Autowired
+    private BranchRepository branchRepository;
 
     private PatientProfile testPatient;
     private DoctorProfile testDoctor;
     private ImagingProcedure testProcedure;
+    private Branch testBranch;
+
+    private UserPrincipal toPrincipal(User u) {
+        return u != null ? new UserPrincipal(u.getId(), u.getEmail(), u.getAuthorities(), u.getBranchId()) : null;
+    }
 
     @BeforeEach
-    void setUp() {
-        User pUser = new User();
-        pUser.setEmail("testp" + System.currentTimeMillis() + "@test.com");
-        pUser.setPasswordHash("pass");
-        pUser.setFirstName("Test");
-        pUser.setLastName("Patient");
-        pUser.setPhoneNumber("+12345678901");
-        pUser = userRepository.save(pUser);
-        
-        testPatient = new PatientProfile();
-        testPatient.setUserId(pUser.getId());
-        testPatient.setEmergencyContactName("EContact");
-        testPatient.setEmergencyContactPhone("+10987654321");
-        testPatient.setBranchId(1L);
-        testPatient = patientRepository.save(testPatient);
+    public void setup() {
+        testBranch = new Branch();
+        testBranch.setName("Workflow Branch");
+        testBranch.setAddress("123 Main St");
+        testBranch.setCity("Test City");
+        testBranch.setState("TS");
+        testBranch.setCountry("USA");
+        testBranch.setPostalCode("12345");
+        testBranch.setPhoneNumber("+11234567890");
+        testBranch.setEmail("workflow@test.com");
+        testBranch.setTimezone("UTC");
+        branchRepository.save(testBranch);
 
-        User dUser = new User();
-        dUser.setEmail("testd" + System.currentTimeMillis() + "@test.com");
-        dUser.setPasswordHash("pass");
-        dUser.setFirstName("Test");
-        dUser.setLastName("Doc");
-        dUser.setPhoneNumber("+12345678902");
-        dUser = userRepository.save(dUser);
-        
+        User patientUser = new User();
+        patientUser.setEmail("wfpatient@test.com");
+        patientUser.setPasswordHash("pass");
+        patientUser.setFirstName("Work");
+        patientUser.setLastName("Flow");
+        userRepository.save(patientUser);
+
+        testPatient = new PatientProfile();
+        testPatient.setUserId(patientUser.getId());
+        testPatient.setBranchId(testBranch.getId());
+        patientProfileRepository.save(testPatient);
+
+        User docUser = new User();
+        docUser.setEmail("wfdoc@test.com");
+        docUser.setPasswordHash("pass");
+        docUser.setFirstName("Dr");
+        docUser.setLastName("WF");
+        userRepository.save(docUser);
+
         testDoctor = new DoctorProfile();
-        testDoctor.setUserId(dUser.getId());
-        testDoctor.setSpecialty("Radiology");
-        testDoctor.setRegistrationNumber("LIC123");
-        testDoctor.setQualifications("MBBS, MD (Radiodiagnosis)");
-        testDoctor.setBranchId(1L);
-        testDoctor.setConsultationFee(java.math.BigDecimal.valueOf(50));
-        testDoctor = doctorRepository.save(testDoctor);
-        
+        testDoctor.setUserId(docUser.getId());
+        testDoctor.setSpecialty("General");
+        doctorProfileRepository.save(testDoctor);
+
         testProcedure = new ImagingProcedure();
-        testProcedure.setName("Chest X-Ray");
-        testProcedure.setCode("CXR01");
-        testProcedure.setModality("CR");
-        testProcedure.setPrice(java.math.BigDecimal.valueOf(100.0));
-        testProcedure = procedureRepository.save(testProcedure);
+        testProcedure.setCode("XR-CHEST");
+        testProcedure.setName("Chest X-Ray PA View");
+        testProcedure.setModality("XRAY");
+        testProcedure.setBodyPart("Chest");
+        testProcedure.setPrice(new BigDecimal("50.00"));
+        procedureRepository.save(testProcedure);
     }
 
     @Test
-    void testCompleteRadiologyWorkflow() {
+    public void testStatusTransitions() {
         // 1. Order phase
         ImagingRequest newRequest = new ImagingRequest();
         newRequest.setPatient(testPatient);
@@ -105,11 +119,11 @@ public class RadiologyWorkflowIntegrationTest {
         ImagingRequest created = radiologyService.createRequest(newRequest);
         assertThat(created.getId()).isNotNull();
         assertThat(created.getStatus()).isEqualTo("ORDERED");
-        assertThat(created.getInvoice()).isNotNull(); // Billing integration triggered
+        assertThat(created.getInvoice()).isNotNull();
 
         // 2. Schedule phase
         User patientUser = userRepository.findById(testPatient.getUserId()).orElseThrow();
-        ImagingRequest scheduled = radiologyService.bookPatientRequest(created.getId(), ZonedDateTime.now().plusDays(1), patientUser);
+        ImagingRequest scheduled = radiologyService.bookPatientRequest(created.getId(), ZonedDateTime.now().plusDays(1), toPrincipal(patientUser));
         assertThat(scheduled.getStatus()).isEqualTo("SCHEDULED");
         
         // 3. Acquire Image phase
@@ -130,40 +144,37 @@ public class RadiologyWorkflowIntegrationTest {
     }
 
     @Test
-    void testInvalidStateTransition_ThrowsException() {
+    public void testInvalidStatusTransition() {
         ImagingRequest newRequest = new ImagingRequest();
         newRequest.setPatient(testPatient);
         newRequest.setDoctor(testDoctor);
         newRequest.setProcedure(testProcedure);
-        newRequest.setPriority("ROUTINE");
-
-        ImagingRequest created = radiologyService.createRequest(newRequest);
+        newRequest.setPriority("STAT");
         
-        // Cannot go from ORDERED directly to VERIFIED
+        ImagingRequest created = radiologyService.createRequest(newRequest);
+
+        // Try jumping straight from ORDERED to RELEASED (Invalid)
         assertThrows(IllegalStateException.class, () -> {
-            radiologyService.updateRequestStatus(created.getId(), "VERIFIED");
+            radiologyService.updateRequestStatus(created.getId(), "RELEASED");
         });
     }
 
     @Test
-    void testDuplicateRequestPrevention_ThrowsException() {
-        ImagingRequest request1 = new ImagingRequest();
-        request1.setPatient(testPatient);
-        request1.setDoctor(testDoctor);
-        request1.setProcedure(testProcedure);
-        request1.setPriority("ROUTINE");
+    public void testDuplicateRequestOnSameDay() {
+        ImagingRequest req1 = new ImagingRequest();
+        req1.setPatient(testPatient);
+        req1.setDoctor(testDoctor);
+        req1.setProcedure(testProcedure);
+        radiologyService.createRequest(req1);
 
-        radiologyService.createRequest(request1);
-        
-        // Attempting the same request immediately
-        ImagingRequest request2 = new ImagingRequest();
-        request2.setPatient(testPatient);
-        request2.setDoctor(testDoctor);
-        request2.setProcedure(testProcedure);
-        request2.setPriority("ROUTINE");
-        
+        // Second request on same day for same patient & procedure should fail
+        ImagingRequest req2 = new ImagingRequest();
+        req2.setPatient(testPatient);
+        req2.setDoctor(testDoctor);
+        req2.setProcedure(testProcedure);
+
         assertThrows(IllegalArgumentException.class, () -> {
-            radiologyService.createRequest(request2);
+            radiologyService.createRequest(req2);
         });
     }
 }

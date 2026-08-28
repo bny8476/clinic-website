@@ -56,10 +56,10 @@ class PatientSettingsIntegrationTest {
         dependent.setRelationship("Child");
         dependent.setDateOfBirth(LocalDate.of(2015, 1, 1));
         
-        DependentProfile saved = patientSettingsService.addDependent(user, dependent);
+        DependentProfile saved = patientSettingsService.addDependent(user.getId(), dependent);
         assertThat(saved.getId()).isNotNull();
 
-        List<DependentProfile> dependents = patientSettingsService.getDependents(user);
+        List<DependentProfile> dependents = patientSettingsService.getDependents(user.getId());
         assertThat(dependents).hasSize(1);
         assertThat(dependents.get(0).getFirstName()).isEqualTo("Timmy");
     }
@@ -85,12 +85,12 @@ class PatientSettingsIntegrationTest {
         cv.setIsLatest(true);
         consentVersionRepository.save(cv);
 
-        PatientConsent consent = patientSettingsService.grantConsent(user, "TEST_CONSENT", "127.0.0.1", "TestAgent");
+        PatientConsent consent = patientSettingsService.grantConsent(user.getId(), "TEST_CONSENT", "127.0.0.1", "TestAgent");
         assertThat(consent.getId()).isNotNull();
         assertThat(consent.getIsGranted()).isTrue();
         assertThat(consent.getIpAddress()).isEqualTo("127.0.0.1");
 
-        List<PatientConsent> consents = patientSettingsService.getPatientConsents(user);
+        List<PatientConsent> consents = patientSettingsService.getPatientConsents(user.getId());
         assertThat(consents).hasSize(1);
     }
 }

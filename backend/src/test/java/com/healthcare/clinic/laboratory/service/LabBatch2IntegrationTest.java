@@ -12,6 +12,7 @@ import com.healthcare.clinic.patient.entity.PatientProfile;
 import com.healthcare.clinic.patient.repository.PatientProfileRepository;
 import com.healthcare.clinic.branch.entity.Branch;
 import com.healthcare.clinic.branch.repository.BranchRepository;
+import com.healthcare.clinic.security.UserPrincipal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +50,10 @@ public class LabBatch2IntegrationTest {
 
     private User labTech;
     private LabTestRequest request;
+
+    private UserPrincipal toPrincipal(User u) {
+        return u != null ? new UserPrincipal(u.getId(), u.getEmail(), u.getAuthorities(), u.getBranchId()) : null;
+    }
 
     @BeforeEach
     void setUp() {
@@ -104,7 +109,7 @@ public class LabBatch2IntegrationTest {
         LabResult result = new LabResult();
         result.setResultValue("85");
         
-        LabResult saved = resultService.addResult(request.getId(), result, labTech);
+        LabResult saved = resultService.addResult(request.getId(), result, toPrincipal(labTech));
         
         assertThat(saved.getIsAbnormal()).isFalse();
         assertThat(saved.getIsCritical()).isFalse();
@@ -117,9 +122,9 @@ public class LabBatch2IntegrationTest {
     @Test
     void testAbnormalResult() {
         LabResult result = new LabResult();
-        result.setResultValue("102"); // Just outside 99, but within 20% critical bound
+        result.setResultValue("102");
         
-        LabResult saved = resultService.addResult(request.getId(), result, labTech);
+        LabResult saved = resultService.addResult(request.getId(), result, toPrincipal(labTech));
         
         assertThat(saved.getIsAbnormal()).isTrue();
         assertThat(saved.getIsCritical()).isFalse();
@@ -128,9 +133,9 @@ public class LabBatch2IntegrationTest {
     @Test
     void testCriticalResult() {
         LabResult result = new LabResult();
-        result.setResultValue("130"); // Outside 99 + 20% of range (29 * 0.2 = 5.8, critical is > 104.8)
+        result.setResultValue("130");
         
-        LabResult saved = resultService.addResult(request.getId(), result, labTech);
+        LabResult saved = resultService.addResult(request.getId(), result, toPrincipal(labTech));
         
         assertThat(saved.getIsAbnormal()).isTrue();
         assertThat(saved.getIsCritical()).isTrue();

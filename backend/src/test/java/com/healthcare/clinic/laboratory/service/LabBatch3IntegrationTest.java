@@ -1,6 +1,5 @@
 package com.healthcare.clinic.laboratory.service;
 
-import com.healthcare.clinic.identity.entity.Role;
 import com.healthcare.clinic.identity.entity.User;
 import com.healthcare.clinic.identity.repository.UserRepository;
 import com.healthcare.clinic.laboratory.entity.LabResult;
@@ -13,24 +12,23 @@ import com.healthcare.clinic.patient.entity.PatientProfile;
 import com.healthcare.clinic.patient.repository.PatientProfileRepository;
 import com.healthcare.clinic.branch.entity.Branch;
 import com.healthcare.clinic.branch.repository.BranchRepository;
+import com.healthcare.clinic.security.UserPrincipal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
-@ActiveProfiles("test")
 @Transactional
 public class LabBatch3IntegrationTest {
+
+    @Autowired
+    private LabResultService resultService;
 
     @Autowired
     private LabReportVerificationService verificationService;
@@ -39,89 +37,83 @@ public class LabBatch3IntegrationTest {
     private LabReportPdfGenerator pdfGenerator;
 
     @Autowired
-    private LabResultService resultService;
-
-    @Autowired
     private LabTestRequestRepository requestRepository;
-
-    @Autowired
-    private LabResultRepository resultRepository;
 
     @Autowired
     private LabTestCatalogRepository catalogRepository;
 
     @Autowired
-    private PatientProfileRepository patientProfileRepository;
+    private LabResultRepository resultRepository;
 
     @Autowired
     private UserRepository userRepository;
-    
+
+    @Autowired
+    private PatientProfileRepository patientProfileRepository;
+
     @Autowired
     private BranchRepository branchRepository;
 
-    private User pathologist;
     private User labTech;
+    private User pathologist;
     private LabTestRequest pendingRequest;
+
+    private UserPrincipal toPrincipal(User u) {
+        return u != null ? new UserPrincipal(u.getId(), u.getEmail(), u.getAuthorities(), u.getBranchId()) : null;
+    }
 
     @BeforeEach
     public void setup() {
-        resultRepository.deleteAll();
-        requestRepository.deleteAll();
-        catalogRepository.deleteAll();
-        patientProfileRepository.deleteAll();
-        userRepository.deleteAll();
-        branchRepository.deleteAll();
-
-        // Create Pathologist
-        pathologist = new User();
-        pathologist.setFirstName("John");
-        pathologist.setLastName("Pathologist");
-        pathologist.setEmail("patho@clinic.com");
-        pathologist.setPasswordHash("test");
-        userRepository.save(pathologist);
-
-        // Create Tech
-        labTech = new User();
-        labTech.setFirstName("Tech");
-        labTech.setLastName("One");
-        labTech.setEmail("tech1@clinic.com");
-        labTech.setPasswordHash("test");
-        userRepository.save(labTech);
-
-        // Create Patient User
-        User patientUser = new User();
-        patientUser.setFirstName("Pat");
-        patientUser.setLastName("Ient");
-        patientUser.setEmail("patient@clinic.com");
-        patientUser.setPasswordHash("test");
-        userRepository.save(patientUser);
-
         // Branch
         Branch branch = new Branch();
-        branch.setName("Main");
+        branch.setName("Test Branch Batch 3");
         branch.setAddress("123 Main St");
-        branch.setCity("City");
-        branch.setState("State");
-        branch.setCountry("Country");
+        branch.setCity("Test City");
+        branch.setState("TS");
+        branch.setCountry("USA");
         branch.setPostalCode("12345");
+        branch.setPhoneNumber("+11234567890");
+        branch.setEmail("branch3@test.com");
         branch.setTimezone("UTC");
-        branch.setPhoneNumber("1234567890");
-        branch.setEmail("main@clinic.com");
-        branch = branchRepository.save(branch);
+        branchRepository.save(branch);
+
+        // Lab Tech
+        labTech = new User();
+        labTech.setEmail("labtech3@test.com");
+        labTech.setPasswordHash("password");
+        labTech.setFirstName("Lab");
+        labTech.setLastName("Tech");
+        userRepository.save(labTech);
+
+        // Pathologist
+        pathologist = new User();
+        pathologist.setEmail("pathologist3@test.com");
+        pathologist.setPasswordHash("password");
+        pathologist.setFirstName("Path");
+        pathologist.setLastName("Ologist");
+        userRepository.save(pathologist);
+
+        // Patient User
+        User patientUser = new User();
+        patientUser.setEmail("patient3@test.com");
+        patientUser.setPasswordHash("password");
+        patientUser.setFirstName("Patient");
+        patientUser.setLastName("Three");
+        userRepository.save(patientUser);
 
         // Patient Profile
         PatientProfile patient = new PatientProfile();
         patient.setUserId(patientUser.getId());
         patient.setBranchId(branch.getId());
-        patient = patientProfileRepository.save(patient);
+        patientProfileRepository.save(patient);
 
-        // Catalog
+        // Catalog Item
         LabTestCatalog catalog = new LabTestCatalog();
-        catalog.setTestCode("HGB");
-        catalog.setTestName("Hemoglobin");
-        catalog.setDepartment("Hematology");
-        catalog.setReferenceRange("13.5 - 17.5");
-        catalog.setPrice(new BigDecimal("15.00"));
+        catalog.setTestCode("CBC");
+        catalog.setTestName("Complete Blood Count");
+        catalog.setReferenceRange("12.0 - 16.0");
+        catalog.setUnit("g/dL");
+        catalog.setPrice(new java.math.BigDecimal("25.00"));
         catalog.setBranch(branch);
         catalogRepository.save(catalog);
 
@@ -135,7 +127,7 @@ public class LabBatch3IntegrationTest {
         // Add initial result
         LabResult res = new LabResult();
         res.setResultValue("14.2");
-        resultService.addResult(pendingRequest.getId(), res, labTech);
+        resultService.addResult(pendingRequest.getId(), res, toPrincipal(labTech));
         
         // Refresh request
         pendingRequest = requestRepository.findById(pendingRequest.getId()).get();
@@ -145,7 +137,7 @@ public class LabBatch3IntegrationTest {
     public void testVerificationAndDigitalSignature() {
         // Verify result
         String comments = "Looks good. Normal levels.";
-        LabResult verifiedResult = verificationService.verifyReport(pendingRequest.getId(), pathologist, comments);
+        LabResult verifiedResult = verificationService.verifyReport(pendingRequest.getId(), toPrincipal(pathologist), comments);
 
         // Assertions
         assertThat(verifiedResult.getVerifiedBy().getId()).isEqualTo(pathologist.getId());
@@ -159,7 +151,7 @@ public class LabBatch3IntegrationTest {
 
     @Test
     public void testPdfGeneration() {
-        verificationService.verifyReport(pendingRequest.getId(), pathologist, "Approved.");
+        verificationService.verifyReport(pendingRequest.getId(), toPrincipal(pathologist), "Approved.");
         
         LabTestRequest updatedRequest = requestRepository.findById(pendingRequest.getId()).get();
         LabResult result = resultRepository.findByRequestId(updatedRequest.getId()).get();
@@ -169,19 +161,17 @@ public class LabBatch3IntegrationTest {
         assertNotNull(pdfBytes);
         assertThat(pdfBytes.length).isGreaterThan(0);
         
-        // A minimal PDF byte array starts with %PDF
         String pdfHeader = new String(pdfBytes, 0, 4);
         assertThat(pdfHeader).isEqualTo("%PDF");
     }
 
     @Test
     public void testVerificationFailsIfNotPending() {
-        // Change status to requested
         pendingRequest.setStatus("REQUESTED");
         requestRepository.save(pendingRequest);
 
         assertThrows(IllegalStateException.class, () -> {
-            verificationService.verifyReport(pendingRequest.getId(), pathologist, "Should fail");
+            verificationService.verifyReport(pendingRequest.getId(), toPrincipal(pathologist), "Should fail");
         });
     }
 }
