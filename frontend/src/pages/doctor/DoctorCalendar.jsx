@@ -85,8 +85,8 @@ const DoctorCalendar = ({ onClose }) => {
       reason: 'ECG Review',
       timeRange: '02:30 - 03:00 PM',
       status: 'BOOKED',
-      statusColor: 'bg-purple-100 text-purple-700',
-      bgColor: 'bg-purple-50/70 border-l-4 border-purple-500',
+      statusColor: 'bg-[#2160FF]/10 text-[#2160FF]',
+      bgColor: 'bg-[#2160FF]/5 border-l-4 border-[#2160FF]',
       timeSlot: '03:00 PM',
     },
     {
@@ -101,17 +101,39 @@ const DoctorCalendar = ({ onClose }) => {
     },
   ];
 
+  const formatTimeRange = (startTime) => {
+    if (!startTime) return '09:00 AM';
+    try {
+      const d = new Date(startTime);
+      if (isNaN(d.getTime())) return '09:00 AM';
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch {
+      return '09:00 AM';
+    }
+  };
+
+  const formatTimeSlot = (startTime) => {
+    if (!startTime) return '09:00 AM';
+    try {
+      const d = new Date(startTime);
+      if (isNaN(d.getTime())) return '09:00 AM';
+      return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    } catch {
+      return '09:00 AM';
+    }
+  };
+
   const displayEvents = useMemo(() => {
     if (appointments.length > 0) {
       return appointments.map((apt, i) => ({
         id: apt.id || i,
         patientName: apt.patientFirstName ? `Patient #${apt.patientId || i+1}` : (apt.patientName || `Patient #${i+1}`),
         reason: apt.reasonForVisit || 'Consultation',
-        timeRange: `${apt.startTime ? new Date(apt.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '09:00 AM'}`,
+        timeRange: formatTimeRange(apt.startTime),
         status: apt.status || 'BOOKED',
         statusColor: apt.status === 'CONFIRMED' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700',
         bgColor: 'bg-blue-50/70 border-l-4 border-blue-500',
-        timeSlot: apt.startTime ? new Date(apt.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '00' }) : '09:00 AM',
+        timeSlot: formatTimeSlot(apt.startTime),
       }));
     }
     return defaultEvents;
@@ -133,28 +155,6 @@ const DoctorCalendar = ({ onClose }) => {
   return (
     <div className="w-full max-w-5xl bg-white rounded-3xl p-6 relative font-sans">
       
-      {/* ─── Modal Header ─── */}
-      <div className="flex items-center justify-between pb-6 border-b border-slate-100">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
-            <CalendarIcon className="w-6 h-6" />
-          </div>
-          <div>
-            <h2 className="text-xl font-black text-slate-900 leading-tight">Calendar</h2>
-            <p className="text-xs text-slate-500 font-medium">View and manage your schedule</p>
-          </div>
-        </div>
-
-        {onClose && (
-          <button 
-            onClick={onClose}
-            className="p-2.5 text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-2xl transition"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        )}
-      </div>
-
       {/* ─── Modal Body Grid (Left Mini Calendar + Right Main Schedule) ─── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-6">
         
@@ -262,7 +262,7 @@ const DoctorCalendar = ({ onClose }) => {
                 >
                   {filters.surgeries && <Check className="w-3 h-3 stroke-[3]" />}
                 </div>
-                <span className="w-2 h-2 rounded-full bg-purple-500" />
+                <span className="w-2 h-2 rounded-full bg-[#2160FF]" />
                 <span>Surgeries</span>
               </label>
 

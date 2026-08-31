@@ -7,29 +7,6 @@ import Modal from '../../components/ui/Modal';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 
-// Demonstration fallback inventory items if database table has 0 records
-const DEMO_STOCK_ITEMS = [
-  { id: 1, name: 'Amoxicillin 500mg Capsules', category: 'Antibiotics', currentStock: 450, reorderLevel: 100, unit: 'Capsules', salePrice: 12.50, genericName: 'Amoxicillin', barcode: 'AMX500123' },
-  { id: 2, name: 'Paracetamol 650mg Tablets', category: 'Analgesics', currentStock: 1200, reorderLevel: 250, unit: 'Tablets', salePrice: 4.00, genericName: 'Acetaminophen', barcode: 'PCM650456' },
-  { id: 3, name: 'Metformin 500mg SR', category: 'Antidiabetics', currentStock: 85, reorderLevel: 150, unit: 'Tablets', salePrice: 8.75, genericName: 'Metformin Hydrochloride', barcode: 'MET500789' },
-  { id: 4, name: 'Omeprazole 20mg Delayed Release', category: 'Gastroenterology', currentStock: 320, reorderLevel: 80, unit: 'Capsules', salePrice: 15.00, genericName: 'Omeprazole', barcode: 'OMP020321' },
-  { id: 5, name: 'Atorvastatin 10mg Tablets', category: 'Cardiovascular', currentStock: 42, reorderLevel: 100, unit: 'Tablets', salePrice: 22.00, genericName: 'Atorvastatin Calcium', barcode: 'ATV010654' },
-  { id: 6, name: 'Sterile Disposable Syringes 5ml', category: 'Medical Supplies', currentStock: 850, reorderLevel: 200, unit: 'Pieces', salePrice: 1.50, genericName: 'Syringes', barcode: 'SYR005987' },
-  { id: 7, name: 'Cetirizine 10mg Tablets', category: 'Antihistamines', currentStock: 600, reorderLevel: 120, unit: 'Tablets', salePrice: 5.50, genericName: 'Cetirizine', barcode: 'CTR010111' },
-  { id: 8, name: 'Elastic Cotton Bandage 10cm', category: 'Consumables', currentStock: 18, reorderLevel: 50, unit: 'Rolls', salePrice: 6.00, genericName: 'Bandage', barcode: 'BND010222' }
-];
-
-const DEMO_WAREHOUSES = [
-  { id: 1, name: 'Central Pharmacy Warehouse', code: 'WH-MAIN-01', location: 'Building A, Ground Floor', capacity: '10,000 Units', status: 'ACTIVE' },
-  { id: 2, name: 'Emergency Stock Depot', code: 'WH-EMG-02', location: 'ER Department Storage B', capacity: '2,500 Units', status: 'ACTIVE' },
-  { id: 3, name: 'Cold Chain Vaccine Vault', code: 'WH-[#2864FF]-03', location: 'Refrigerated Storage 2°C-8°C', capacity: '1,200 Units', status: 'ACTIVE' }
-];
-
-const DEMO_PURCHASE_ORDERS = [
-  { id: 'PO-2026-089', supplierName: 'MedTech Pharma Distro', orderDate: '2026-08-25', status: 'APPROVED', totalAmount: 4850.00, itemQty: 12 },
-  { id: 'PO-2026-090', supplierName: 'Apex Surgical Supplies', orderDate: '2026-08-27', status: 'PENDING_APPROVAL', totalAmount: 1920.50, itemQty: 5 },
-  { id: 'PO-2026-091', supplierName: 'Global BioLabs Ltd.', orderDate: '2026-08-28', status: 'DELIVERED', totalAmount: 8300.00, itemQty: 24 }
-];
 
 const AddStockModal = ({ isOpen, onClose, onSuccess }) => {
   const [name, setName] = useState('');
@@ -207,18 +184,17 @@ const InventoryDashboard = () => {
     refetchInterval: 10000
   });
 
-  // Use database records if available, otherwise demonstration items
-  const stockItems = rawMedicines.length > 0 ? rawMedicines : DEMO_STOCK_ITEMS;
-  const warehouses = rawSuppliers.length > 0 ? rawSuppliers.map((s, idx) => ({
+  const stockItems = rawMedicines;
+  const warehouses = rawSuppliers.map((s, idx) => ({
     id: s.id || idx + 1,
     name: s.name || s.companyName || 'Supplier Depot',
     code: `SUP-${s.id || idx + 1}`,
     location: s.address || s.city || 'Central Warehouse',
     capacity: `${s.contactPerson || 'Active Supplier'}`,
     status: 'ACTIVE'
-  })) : DEMO_WAREHOUSES;
+  }));
 
-  const purchaseOrders = rawPurchaseOrders.length > 0 ? rawPurchaseOrders : DEMO_PURCHASE_ORDERS;
+  const purchaseOrders = rawPurchaseOrders;
 
   const lowStockCount = stockItems.filter(item => {
     const qty = item.currentStock ?? item.quantity ?? 0;

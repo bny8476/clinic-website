@@ -9,50 +9,67 @@ import { Link } from 'react-router-dom';
 import { Badge } from '../../components/ui/Badge';
 
 export default function PharmacyDashboard() {
-  const { data: stats } = useQuery({
-    queryKey: ['pharmacy-kpis'],
-    queryFn: () => api.get('/dashboard').then(r => r.data?.data || {}).catch(() => ({})),
-    retry: false
+  const { data: summaryData } = useQuery({
+    queryKey: ['pharmacy-dashboard-summary'],
+    queryFn: () => api.get('/dashboard/summary').then(r => r.data?.data || {}).catch(() => ({})),
+    refetchInterval: 10000
   });
 
+  const { data: lowStockData = [] } = useQuery({
+    queryKey: ['pharmacy-low-stock'],
+    queryFn: () => api.get('/dashboard/low-stock').then(r => r.data?.data || []).catch(() => []),
+    refetchInterval: 10000
+  });
+
+  const { data: medicinesData = [] } = useQuery({
+    queryKey: ['pharmacy-medicines-recent'],
+    queryFn: () => api.get('/medicines').then(r => {
+      const content = r.data?.data?.content || r.data?.content || r.data || [];
+      return Array.isArray(content) ? content.slice(0, 5) : [];
+    }).catch(() => []),
+    refetchInterval: 10000
+  });
+
+  const stats = summaryData?.kpiData || {};
+
   // Mock data for charts and tables to perfectly match the design
-  const stockOverviewData = [
-    { name: '1 May', value: 12000 },
-    { name: '5 May', value: 19000 },
-    { name: '9 May', value: 24000 },
-    { name: '13 May', value: 20000 },
-    { name: '17 May', value: 27000 },
-    { name: '21 May', value: 24560 },
-  ];
+  const stockOverviewData = (summaryData?.chartData || []).map(point => ({
+    name: point.label,
+    value: point.value
+  }));
 
   const stockSummaryData = [
-    { name: 'In Stock', value: 876, color: '#10b981' },
-    { name: 'Low Stock', value: 32, color: '#f59e0b' },
-    { name: 'Out of Stock', value: 24, color: '#ef4444' },
-    { name: 'Expired', value: 7, color: '#8b5cf6' },
+    { name: 'Total SKUs', value: stats.totalSkus || 0, color: '#10b981' },
+    { name: 'Low Stock Alerts', value: stats.lowStockAlerts || 0, color: '#f59e0b' },
+    { name: 'Expiring Soon', value: stats.expiringIn30Days || 0, color: '#8b5cf6' },
   ];
 
-  const lowStockAlerts = [
-    { name: 'Paracetamol 650mg', type: 'Tablet', stock: 15, min: 50 },
-    { name: 'Amoxicillin 500mg', type: 'Capsule', stock: 8, min: 30 },
-    { name: 'Cetirizine 10mg', type: 'Tablet', stock: 12, min: 25 },
-    { name: 'Salbutamol 100mcg', type: 'Inhaler', stock: 5, min: 20 },
-    { name: 'Pantoprazole 40mg', type: 'Tablet', stock: 10, min: 20 },
-  ];
+  const lowStockAlerts = lowStockData.map(item => ({
+    name: item.medicineName || 'Unknown',
+    type: item.category || 'General',
+    stock: item.quantityAvailable || 0,
+    min: item.reorderLevel || 0
+  }));
 
-  const recentlyAdded = [
-    { name: 'Azithromycin 500mg', type: 'Tablet', category: 'Antibiotic', mfg: 'Cipla Ltd.', batch: 'AZ50023', exp: '31 Dec 2025', stock: 120, price: '$2.50', status: 'In Stock' },
-    { name: 'Vitamin D3 60000 IU', type: 'Capsule', category: 'Vitamins', mfg: 'Sun Pharma', batch: 'VD360023', exp: '30 Nov 2025', stock: 85, price: '$3.20', status: 'In Stock' },
-    { name: 'Metformin 500mg', type: 'Tablet', category: 'Diabetes', mfg: 'Mankind Pharma', batch: 'MF50023', exp: '30 Sep 2025', stock: 200, price: '$1.10', status: 'In Stock' },
-    { name: 'Losartan 50mg', type: 'Tablet', category: 'Cardiovascular', mfg: 'Zydus Cadila', batch: 'LS50023', exp: '31 Aug 2025', stock: 60, price: '$1.80', status: 'Low Stock' },
-    { name: 'Omeprazole 20mg', type: 'Capsule', category: 'Gastric', mfg: 'Dr. Reddy\'s', batch: 'OM20023', exp: '30 Jul 2025', stock: 25, price: '$1.40', status: 'Low Stock' },
-  ];
+  const recentlyAdded = medicinesData.map(m => ({
+    name: m.name,
+    type: m.unit || 'Unit',
+    category: m.category || 'General',
+    mfg: m.manufacturer || 'Unknown',
+    batch: m.barcode || 'N/A',
+    exp: 'N/A',
+    stock: m.currentStock || 0,
+    price: `$${m.salePrice || m.mrp || 0}`,
+    status: (m.currentStock > (m.reorderLevel || 0)) ? 'In Stock' : 'Low Stock'
+  }));
 
-  const expiryAlerts = [
-    { name: 'Doxycycline 100mg', exp: '15 Jun 2024', days: 25 },
-    { name: 'Ranitidine 150mg', exp: '22 Jun 2024', days: 32 },
-    { name: 'Albendazole 400mg', exp: '05 Jul 2024', days: 45 },
-  ];
+  const expiryAlerts = (summaryData?.alerts || [])
+    .filter(a => a.type === 'EXPIRY' || a.category === 'EXPIRY')
+    .map(a => ({
+      name: a.title,
+      exp: a.message,
+      days: 30
+    }));
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -100,9 +117,9 @@ export default function PharmacyDashboard() {
           <KPICard 
             icon={Package}
             label="Total Medicines"
-            value="1,248"
-            trend={{ value: "8.5%", isPositive: true }}
-            subtext="from last month"
+            value={stats.totalSkus || 0}
+            trend={{ value: "N/A", isPositive: true }}
+            subtext="registered items"
             colorToken="info"
           />
         </motion.div>
@@ -111,9 +128,9 @@ export default function PharmacyDashboard() {
           <KPICard 
             icon={Database}
             label="Total Stock Value"
-            value="₹24,560.80"
-            trend={{ value: "12.3%", isPositive: true }}
-            subtext="from last month"
+            value={`₹${stats.stockValue || 0}`}
+            trend={{ value: "N/A", isPositive: true }}
+            subtext="current value"
             colorToken="info"
           />
         </motion.div>
@@ -122,9 +139,9 @@ export default function PharmacyDashboard() {
           <KPICard 
             icon={ShoppingCart}
             label="Total Sales (Today)"
-            value="₹1,245.30"
-            trend={{ value: "6.7%", isPositive: true }}
-            subtext="from yesterday"
+            value={`₹${stats.totalSalesToday || stats.todayRevenue || 0}`}
+            trend={{ value: "N/A", isPositive: true }}
+            subtext="from today's bills"
             colorToken="info"
           />
         </motion.div>
@@ -133,9 +150,9 @@ export default function PharmacyDashboard() {
           <KPICard 
             icon={FileText}
             label="Low Stock Items"
-            value="32"
-            trend={{ value: "5", isPositive: false }}
-            subtext="from yesterday"
+            value={stats.lowStockAlerts || stats.lowStockSkus || stats.lowStockItems || 0}
+            trend={{ value: "Check", isPositive: false }}
+            subtext="needs attention"
             colorToken="warning"
           />
         </motion.div>
@@ -143,10 +160,10 @@ export default function PharmacyDashboard() {
         <motion.div variants={fadeIn}>
           <KPICard 
             icon={AlertOctagon}
-            label="Expired Items"
-            value="7"
-            trend={{ value: "2", isPositive: false }}
-            subtext="from yesterday"
+            label="Expiring Soon"
+            value={stats.expiringIn30Days || 0}
+            trend={{ value: "30 Days", isPositive: false }}
+            subtext="items near expiry"
             colorToken="danger"
           />
         </motion.div>
@@ -203,12 +220,14 @@ export default function PharmacyDashboard() {
               </PieChart>
             </ResponsiveContainer>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-[24px] font-black text-[var(--color-text)]">1,248</span>
+              <span className="text-[24px] font-black text-[var(--color-text)]">{stats.totalSkus || 0}</span>
               <span className="text-[12px] text-[var(--color-text-muted)] font-bold">Total Items</span>
             </div>
           </div>
           <div className="mt-2 space-y-2.5">
-            {stockSummaryData.map(item => (
+            {stockSummaryData.map(item => {
+              const totalItems = stats.totalSkus || 1; // Prevent div by 0
+              return (
               <div key={item.name} className="flex items-center justify-between text-[12px]">
                 <div className="flex items-center gap-2">
                   <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
@@ -216,10 +235,10 @@ export default function PharmacyDashboard() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="font-black text-[var(--color-text)]">{item.value}</span>
-                  <span className="text-[var(--color-text-muted)] w-10 text-right font-bold">({(item.value / 1248 * 100).toFixed(1)}%)</span>
+                  <span className="text-[var(--color-text-muted)] w-10 text-right font-bold">({((item.value / totalItems) * 100).toFixed(1)}%)</span>
                 </div>
               </div>
-            ))}
+            )})}
           </div>
         </div>
 

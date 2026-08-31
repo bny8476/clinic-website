@@ -38,12 +38,12 @@ export default function PatientDashboard() {
   const queryClient = useQueryClient();
 
   const tabs = [
-    { label: 'Dashboard', icon: LayoutGridIcon },
-    { label: 'Appointments', icon: CalendarIcon },
-    { label: 'Prescriptions', icon: FileText },
-    { label: 'Lab Reports', icon: FlaskConical },
-    { label: 'Invoices', icon: ClipboardList },
-    { label: 'Health Summary', icon: Stethoscope }
+    { label: 'Dashboard', icon: LayoutGridIcon, path: '/patient/dashboard' },
+    { label: 'Appointments', icon: CalendarIcon, path: '/patient/appointments' },
+    { label: 'Prescriptions', icon: FileText, path: '/patient/prescriptions' },
+    { label: 'Lab Reports', icon: FlaskConical, path: '/patient/lab-reports' },
+    { label: 'Invoices', icon: ClipboardList, path: '/patient/billing' },
+    { label: 'Health Summary', icon: Stethoscope, path: '/patient/records' }
   ];
 
   const topActions = [
@@ -169,7 +169,12 @@ export default function PatientDashboard() {
           return (
             <button
               key={tab.label}
-              onClick={() => setActiveTab(tab.label)}
+              onClick={() => {
+                setActiveTab(tab.label);
+                if (tab.path && tab.path !== '/patient/dashboard') {
+                  navigate(tab.path);
+                }
+              }}
               className={`px-5 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
                 isActive
                   ? 'bg-blue-600 text-white shadow-xs'

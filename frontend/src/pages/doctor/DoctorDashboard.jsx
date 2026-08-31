@@ -117,47 +117,60 @@ const DoctorDashboard = () => {
   useEffect(() => {
     if (!token) return;
     let evtSource;
-    try {
-      evtSource = new EventSource(`${BASE_URL.replace('/api', '')}/api/sse/appointments?token=${token}`);
-      
-      evtSource.addEventListener('appointment-booked', (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          if (String(data.doctorId) === String(user?.id)) {
-            queryClient.invalidateQueries(['doctor-today-appointments']);
-            queryClient.invalidateQueries(['doctorAllAppointments', user?.id]);
-          }
-        } catch {}
-      });
-      
-      evtSource.addEventListener('appointment-cancelled', (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          if (String(data.doctorId) === String(user?.id)) {
-            queryClient.invalidateQueries(['doctor-today-appointments']);
-            queryClient.invalidateQueries(['doctorAllAppointments', user?.id]);
-            queryClient.invalidateQueries(['doctor-queue']);
-          }
-        } catch {}
-      });
-
-      evtSource.addEventListener('appointment-status-changed', (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          if (String(data.doctorId) === String(user?.id)) {
-            queryClient.invalidateQueries(['doctor-today-appointments']);
-            queryClient.invalidateQueries(['doctorAllAppointments', user?.id]);
-            queryClient.invalidateQueries(['doctor-queue']);
-          }
-        } catch {}
-      });
-
-      evtSource.onerror = () => {
-        if (evtSource) evtSource.close();
-      };
-    } catch {}
+    let isMounted = true;
+    
+    const connectSSE = async () => {
+      try {
+        const res = await axiosPrivate.post('/sse/appointments/ticket');
+        if (!isMounted) return;
+        const ticket = res.data.ticket;
+        
+        evtSource = new EventSource(`${BASE_URL.replace('/api', '')}/api/sse/appointments?ticket=${ticket}`);
+        
+        evtSource.addEventListener('appointment-booked', (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (String(data.doctorId) === String(user?.id)) {
+              queryClient.invalidateQueries(['doctor-today-appointments']);
+              queryClient.invalidateQueries(['doctorAllAppointments', user?.id]);
+            }
+          } catch {}
+        });
+        
+        evtSource.addEventListener('appointment-cancelled', (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (String(data.doctorId) === String(user?.id)) {
+              queryClient.invalidateQueries(['doctor-today-appointments']);
+              queryClient.invalidateQueries(['doctorAllAppointments', user?.id]);
+              queryClient.invalidateQueries(['doctor-queue']);
+            }
+          } catch {}
+        });
+  
+        evtSource.addEventListener('appointment-status-changed', (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (String(data.doctorId) === String(user?.id)) {
+              queryClient.invalidateQueries(['doctor-today-appointments']);
+              queryClient.invalidateQueries(['doctorAllAppointments', user?.id]);
+              queryClient.invalidateQueries(['doctor-queue']);
+            }
+          } catch {}
+        });
+  
+        evtSource.onerror = () => {
+          if (evtSource) evtSource.close();
+        };
+      } catch (err) {
+        console.error('SSE connection failed:', err);
+      }
+    };
+    
+    connectSSE();
 
     return () => {
+      isMounted = false;
       if (evtSource) evtSource.close();
     };
   }, [user?.id, queryClient, token]);
@@ -667,7 +680,7 @@ const DoctorDashboard = () => {
         <ModulePanel 
           isOpen={true} onClose={closePanel} 
           title="Patient Queue" icon={Users} 
-          variant="panel" colorHex="#4F46E5" stackIndex={0}
+          variant="panel" colorHex="#2160FF" stackIndex={0}
         >
           <ConsultationQueue />
         </ModulePanel>
@@ -677,7 +690,7 @@ const DoctorDashboard = () => {
         <ModulePanel 
           isOpen={true} onClose={closePanel} 
           title="Calendar" icon={CalendarIcon} 
-          variant="modal" colorHex="#4F46E5" stackIndex={0}
+          variant="modal" colorHex="#2160FF" stackIndex={0}
         >
           <DoctorCalendar />
         </ModulePanel>
@@ -687,7 +700,7 @@ const DoctorDashboard = () => {
         <ModulePanel 
           isOpen={true} onClose={closePanel} 
           title="Follow-ups" icon={FileText} 
-          variant="modal" colorHex="#4F46E5" stackIndex={0}
+          variant="modal" colorHex="#2160FF" stackIndex={0}
         >
           <FollowUps />
         </ModulePanel>
@@ -697,7 +710,7 @@ const DoctorDashboard = () => {
         <ModulePanel 
           isOpen={true} onClose={closePanel} 
           title="Patients" icon={Users} 
-          variant="panel" colorHex="#4F46E5" 
+          variant="panel" colorHex="#2160FF" 
           stackIndex={patientId ? 1 : 0}
         >
           <PatientList onPatientClick={handlePatientClick} />
@@ -708,7 +721,7 @@ const DoctorDashboard = () => {
         <ModulePanel 
           isOpen={true} onClose={closeTopPanel} 
           title="Patient Detail" icon={Users} 
-          variant="panel" colorHex="#4F46E5" 
+          variant="panel" colorHex="#2160FF" 
           stackIndex={0}
         >
           <PatientDetail patientIdOverride={patientId} />
@@ -719,7 +732,7 @@ const DoctorDashboard = () => {
         <ModulePanel 
           isOpen={true} onClose={closePanel} 
           title="New Appointment" icon={CalendarIcon} 
-          variant="panel" colorHex="#4F46E5" stackIndex={0}
+          variant="panel" colorHex="#2160FF" stackIndex={0}
         >
           <NewAppointmentPanel onClose={closePanel} />
         </ModulePanel>

@@ -833,8 +833,9 @@ const NewPrescription = () => {
                         <input 
                           type="text" 
                           value={item.dosage ? parseInt(item.dosage) * parseInt(item.durationDays || 1) : ''} 
+                          readOnly
                           placeholder="e.g. 10"
-                          className="w-full px-2 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 font-medium placeholder-slate-400 focus:outline-none text-center"
+                          className="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 font-medium placeholder-slate-400 focus:outline-none text-center cursor-not-allowed"
                         />
                       </td>
 

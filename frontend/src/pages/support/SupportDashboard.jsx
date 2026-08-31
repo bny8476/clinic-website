@@ -27,10 +27,10 @@ const SupportDashboard = () => {
           <button
             key={tab}
             onClick={() => setFilterStatus(tab)}
-            className={`px-8 py-2.5 rounded-xl text-[13px] font-bold tracking-wide transition-all shadow-[0_1px_2px_rgba(0,0,0,0.03)] ${
+            className={`px-8 py-2.5 rounded-xl text-[13px] font-bold tracking-wide transition-all shadow-sm ${
               filterStatus === tab 
-                ? 'bg-[#2864FF] text-white border-transparent' 
-                : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
+                ? 'bg-white text-[#2864FF] border-2 border-[#2864FF]' 
+                : 'bg-white text-slate-500 border-2 border-transparent hover:bg-slate-50 hover:text-slate-700'
             }`}
           >
             {tab}

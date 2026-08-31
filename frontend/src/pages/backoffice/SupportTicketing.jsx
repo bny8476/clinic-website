@@ -101,7 +101,7 @@ const SupportTicketing = () => {
                           <h3 className="font-extrabold text-slate-800 text-[15px] group-hover:text-[#2160FF] transition-colors">{ticket.subject}</h3>
                         </div>
                         <p className="text-[13px] font-semibold text-slate-500 mt-0.5 flex items-center gap-1.5">
-                          <User size={14} className="text-slate-400" /> User: {ticket.user}
+                          <User size={14} className="text-slate-400" /> User: {ticket.user?.firstName} {ticket.user?.lastName}
                         </p>
                         <div className="mt-3 flex flex-wrap gap-2">
                           <span className={`text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider ${
@@ -119,7 +119,7 @@ const SupportTicketing = () => {
                             {ticket.priority} Priority
                           </span>
                           <span className="text-[10px] font-bold bg-blue-50 text-[#2160FF] px-2 py-1 rounded-md uppercase tracking-wider">
-                            {ticket.type}
+                            {ticket.category}
                           </span>
                         </div>
                       </div>

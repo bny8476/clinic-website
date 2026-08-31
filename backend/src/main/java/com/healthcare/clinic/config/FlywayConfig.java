@@ -39,6 +39,7 @@ public class FlywayConfig {
                 .baselineOnMigrate(baselineOnMigrate)
                 .baselineVersion(baselineVersion)
                 .validateOnMigrate(false)
+                .outOfOrder(true)
                 .load();
 
         if (Boolean.parseBoolean(

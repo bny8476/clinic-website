@@ -2,6 +2,7 @@ package com.healthcare.clinic.patient.service;
 
 import com.healthcare.clinic.patient.entity.*;
 import com.healthcare.clinic.patient.repository.*;
+import com.healthcare.clinic.patient.exception.PatientProfileNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,7 +24,8 @@ public class PatientSettingsService {
 
     private PatientProfile getPatientProfileForUser(Long userId) {
         return patientProfileRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Patient profile not found for userId: " + userId));
+                .orElseThrow(() -> new PatientProfileNotFoundException(
+                        "No patient profile linked to userId " + userId + " — registration may not have completed."));
     }
 
     // --- Dependents ---

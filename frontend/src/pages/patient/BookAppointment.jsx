@@ -46,12 +46,12 @@ export default function BookAppointment() {
   const { user, token } = useAuthStore();
 
   // Step state (default to 3 for immediate visualization or step navigation)
-  const [currentStep, setCurrentStep] = useState(3);
-  const [selectedDoctorId, setSelectedDoctorId] = useState(doctorId || '1');
+  const [currentStep, setCurrentStep] = useState(1);
+  const [selectedDoctorId, setSelectedDoctorId] = useState(doctorId || null);
 
-  const [currentMonth, setCurrentMonth] = useState(new Date(2026, 7, 1)); // August 2026
-  const [selectedDate, setSelectedDate] = useState(new Date(2026, 7, 17)); // Monday, 17 August 2026
-  const [selectedSlotId, setSelectedSlotId] = useState('mock-slot-0');
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedSlotId, setSelectedSlotId] = useState(null);
 
   // Step 3 Form State
   const [visitType, setVisitType] = useState('In-person'); // 'In-person' | 'Teleconsultation'
@@ -171,23 +171,8 @@ export default function BookAppointment() {
 
   // Default fallback slots for demo
   const displaySlots = useMemo(() => {
-    if (slots && slots.length > 0) return slots;
-
-    const baseTimes = [
-      '09:00 AM', '09:30 AM', '10:00 AM',
-      '10:30 AM', '11:00 AM', '11:30 AM',
-      '12:00 PM', '12:30 PM', '02:00 PM',
-      '02:30 PM', '03:00 PM', '03:30 PM',
-      '04:00 PM', '04:30 PM', '05:00 PM'
-    ];
-
-    return baseTimes.map((timeStr, idx) => ({
-      id: `mock-slot-${idx}`,
-      startTime: selectedDate.toISOString(),
-      label: timeStr,
-      isBooked: false
-    }));
-  }, [slots, selectedDate]);
+    return Array.isArray(slots) ? slots : [];
+  }, [slots]);
 
   // Calendar calculations
   const monthStart = startOfMonth(currentMonth);
@@ -203,24 +188,37 @@ export default function BookAppointment() {
   useEffect(() => {
     if (!token) return;
     let evtSource;
-    try {
-      evtSource = new EventSource(`${BASE_URL.replace('/api', '')}/api/sse/appointments?token=${token}`);
-      evtSource.addEventListener('appointment-booked', (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          if (String(data.doctorId) === String(selectedDoctorId) && selectedDate) {
-            queryClient.invalidateQueries(['availableSlots', selectedDoctorId, selectedDate.toISOString()]);
+    let isMounted = true;
+    
+    const connectSSE = async () => {
+      try {
+        const res = await axiosPrivate.post('/sse/appointments/ticket');
+        if (!isMounted) return;
+        const ticket = res.data.ticket;
+        
+        evtSource = new EventSource(`${BASE_URL.replace('/api', '')}/api/sse/appointments?ticket=${ticket}`);
+        evtSource.addEventListener('appointment-booked', (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (String(data.doctorId) === String(selectedDoctorId) && selectedDate) {
+              queryClient.invalidateQueries(['availableSlots', selectedDoctorId, selectedDate.toISOString()]);
+            }
+          } catch {}
+        });
+        evtSource.onerror = () => {
+          if (evtSource) {
+            evtSource.close();
           }
-        } catch {}
-      });
-      evtSource.onerror = () => {
-        if (evtSource) {
-          evtSource.close();
-        }
-      };
-    } catch {}
+        };
+      } catch (err) {
+        console.error('SSE Error:', err);
+      }
+    };
+
+    connectSSE();
 
     return () => {
+      isMounted = false;
       if (evtSource) evtSource.close();
     };
   }, [selectedDoctorId, selectedDate, queryClient, token]);
@@ -228,11 +226,13 @@ export default function BookAppointment() {
   const mutation = useMutation({
     mutationFn: async (data) => {
       const payload = { ...data, idempotencyKey };
-      if (typeof payload.slotId === 'string' && payload.slotId.startsWith('mock-')) {
-        delete payload.slotId;
+      
+      if (!payload.slotId || String(payload.slotId).startsWith('mock-')) {
+        throw new Error('Please select a valid available appointment slot.');
       }
+      
       if (holdId) payload.holdId = holdId;
-      if (patientUserId) payload.patientUserId = parseInt(patientUserId);
+      if (patientUserId) payload.patientUserId = parseInt(patientUserId, 10);
 
       if (rescheduleId) {
         const res = await axiosPrivate.patch(`/appointments/${rescheduleId}/reschedule?newSlotId=${payload.slotId}`);
@@ -247,15 +247,36 @@ export default function BookAppointment() {
     onSuccess: () => {
       queryClient.invalidateQueries(['patientAppointments']);
       queryClient.invalidateQueries(['doctor-today-appointments']);
+      queryClient.invalidateQueries(['availableSlots']);
       setCurrentStep(5);
     },
     onError: (err) => {
-      setError(err.response?.data?.message || 'Failed to book appointment. Please try again.');
+      if (err.response?.status === 409) {
+        setError('This appointment slot is no longer available. Please select another available time.');
+        setSelectedSlotId(null);
+        queryClient.invalidateQueries(['availableSlots']);
+        setCurrentStep(2);
+        return;
+      }
+      setError(err.response?.data?.message || err.message || 'Failed to book appointment. Please try again.');
     }
   });
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     setError('');
+    if (!selectedSlotId) {
+      setError('Please select an available appointment slot.');
+      setCurrentStep(2);
+      return;
+    }
+    if (String(selectedSlotId).startsWith('mock-')) {
+      setError('Please select a valid available appointment slot.');
+      setCurrentStep(2);
+      return;
+    }
+
+    await queryClient.invalidateQueries(['availableSlots', selectedDoctorId, selectedDate?.toISOString()]);
+
     const fullReason = [reason, symptomsNotes].filter(Boolean).join(' - ') || 'Routine Consultation & Checkup';
     mutation.mutate({ slotId: selectedSlotId, reasonForVisit: fullReason });
   };
@@ -614,6 +635,11 @@ export default function BookAppointment() {
                   </div>
 
                   <div className="grid grid-cols-3 gap-2">
+                    {displaySlots.length === 0 && (
+                      <div className="col-span-3 p-4 text-center text-sm text-slate-500">
+                        No appointment slots are currently available for this date.
+                      </div>
+                    )}
                     {displaySlots.map((slot) => {
                       const isSelected = selectedSlotId === slot.id;
 
@@ -621,15 +647,21 @@ export default function BookAppointment() {
                         <button
                           key={slot.id}
                           onClick={() => {
+                            if (slot.isBooked) return;
                             setSelectedSlotId(slot.id);
+                            setError('');
                           }}
-                          className={`py-2 px-1.5 rounded-xl text-xs font-semibold transition-all text-center border cursor-pointer ${
+                          className={`py-2 px-1.5 rounded-xl text-xs font-semibold transition-all text-center border ${
                             isSelected
-                              ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                              : 'bg-white text-blue-600 border-blue-200/90 hover:bg-blue-50'
+                              ? 'border-blue-600 bg-blue-50 text-blue-600 shadow-sm'
+                              : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                          } ${
+                            slot.isBooked
+                              ? 'opacity-50 cursor-not-allowed'
+                              : 'cursor-pointer'
                           }`}
                         >
-                          {slot.label}
+                          {slot.label || (slot.startTime ? format(new Date(slot.startTime), 'hh:mm a') : '')}
                         </button>
                       );
                     })}
@@ -642,9 +674,31 @@ export default function BookAppointment() {
                 </div>
               </div>
 
-              <div className="flex justify-end pt-2">
+              <div className="flex justify-between items-center pt-2">
+                <div className="flex-1 px-1">
+                  {error && (
+                    <div className="text-red-600 text-xs font-semibold flex items-center gap-1.5">
+                      <AlertCircle className="w-3.5 h-3.5" />
+                      {error}
+                    </div>
+                  )}
+                </div>
                 <button
-                  onClick={() => setCurrentStep(3)}
+                  onClick={() => {
+                    if (!selectedDoctorId) {
+                      setError('Please select a doctor.');
+                      return;
+                    }
+                    if (!selectedDate) {
+                      setError('Please select a date.');
+                      return;
+                    }
+                    if (!selectedSlotId || String(selectedSlotId).startsWith('mock-')) {
+                      setError('Please select an available time slot.');
+                      return;
+                    }
+                    setCurrentStep(3);
+                  }}
                   className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs sm:text-sm px-8 py-3.5 rounded-xl shadow-md flex items-center gap-2 transition-all cursor-pointer"
                 >
                   <span>Continue</span>

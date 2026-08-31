@@ -38,7 +38,7 @@ public class ReceptionPatientController {
     }
 
     @PostMapping("/patients/register")
-    @PreAuthorize("hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_DOCTOR')")
     public ResponseEntity<Map<String, Object>> registerPatient(@RequestBody Map<String, Object> request) {
         return ResponseEntity.ok(patientService.registerPatient(request));
     }

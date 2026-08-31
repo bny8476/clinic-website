@@ -1,31 +1,33 @@
-import React, { useState } from 'react';
-import { Users, Calendar, FileText, UserPlus } from 'lucide-react';
+import React from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Users, Calendar, FileText, UserPlus, ArrowRight, CheckCircle, Clock, Gift, FileSignature, DollarSign, Activity } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const HrDashboard = () => {
-  const [activeTab, setActiveTab] = useState('employees');
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const tabs = [
-    { id: 'employees', label: 'Employees', icon: Users },
-    { id: 'attendance', label: 'Attendance', icon: Calendar },
-    { id: 'leaves', label: 'Leaves', icon: FileText },
+    { id: 'employees', label: 'Employees', icon: Users, path: '/hr/employees' },
+    { id: 'attendance', label: 'Attendance', icon: Calendar, path: '/hr/attendance' },
+    { id: 'leaves', label: 'Leaves', icon: FileText, path: '/hr/leave' },
   ];
 
   return (
-    <div className="p-6 w-full space-y-6">
-      {/* Tabs */}
+    <div className="p-6 w-full max-w-[1400px] mx-auto space-y-6">
+      {/* Navigation Tabs - styling matched to user's screenshot */}
       <div className="flex items-center gap-2 bg-white p-2 rounded-2xl shadow-sm border border-gray-100 w-fit">
         {tabs.map((tab) => {
           const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
+          const isActive = location.pathname.startsWith(tab.path);
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => navigate(tab.path)}
               className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-                isActive
-                  ? 'bg-[#2864FF] text-white shadow-md shadow-blue-500/20'
-                  : 'text-gray-600 hover:bg-gray-50 border border-gray-100 bg-white'
+                isActive 
+                  ? 'bg-[#2864FF] text-white shadow-md shadow-blue-500/20 border border-transparent' 
+                  : 'text-gray-600 hover:bg-gray-50 bg-white border border-transparent'
               }`}
             >
               <Icon size={18} />
@@ -43,14 +45,14 @@ const HrDashboard = () => {
               <UserPlus className="w-6 h-6 text-[#2864FF]" />
             </div>
             <h1 className="text-3xl font-bold text-gray-900">
-              HR & Staff Operations
+              HR Command Center
             </h1>
           </div>
           <p className="text-gray-600 text-lg mb-2">
-            Manage your workforce efficiently with our HR tools.
+            Manage your workforce efficiently with real-time insights.
           </p>
           <p className="text-gray-500">
-            Access employee directory, track shift attendance, and streamline leave approvals.
+            Monitor attendance, process leaves, and run payroll all from one unified place.
           </p>
         </div>
 
@@ -62,49 +64,117 @@ const HrDashboard = () => {
                 <stop offset="0%" stopColor="#2864FF" stopOpacity="0.05" />
                 <stop offset="100%" stopColor="#2864FF" stopOpacity="0.15" />
               </linearGradient>
-              <linearGradient id="hr-card" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#ffffff" stopOpacity="0.9" />
-                <stop offset="100%" stopColor="#f8faff" stopOpacity="0.95" />
-              </linearGradient>
-              <filter id="hr-shadow" x="-20%" y="-20%" width="140%" height="140%">
-                <feDropShadow dx="0" dy="8" stdDeviation="12" floodOpacity="0.06" />
-              </filter>
             </defs>
             <path d="M150 300 Q 250 100 450 300 Z" fill="url(#hr-grad)" />
-            {/* Card 1 */}
-            <g transform="translate(140, 50) rotate(-10)" filter="url(#hr-shadow)">
-              <rect width="110" height="150" rx="16" fill="url(#hr-card)" />
-              <circle cx="55" cy="45" r="22" fill="#EBF0FF" />
-              <path d="M25 100 Q 55 75 85 100 L 85 120 L 25 120 Z" fill="#EBF0FF" />
-              <rect x="25" y="130" width="60" height="6" rx="3" fill="#D3E0FF" />
-            </g>
-            {/* Card 2 */}
-            <g transform="translate(210, 80) rotate(5)" filter="url(#hr-shadow)">
-              <rect width="130" height="180" rx="16" fill="url(#hr-card)" />
-              <circle cx="65" cy="55" r="26" fill="#D3E0FF" />
-              <path d="M30 120 Q 65 85 100 120 L 100 140 L 30 140 Z" fill="#D3E0FF" />
-              <rect x="30" y="150" width="70" height="8" rx="4" fill="#2864FF" fillOpacity="0.4" />
-            </g>
           </svg>
         </div>
       </div>
 
-      {/* Empty State */}
-      <motion.div 
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="border-2 border-dashed border-blue-200 rounded-3xl p-16 flex flex-col items-center justify-center bg-gray-50/50"
-      >
-        <div className="w-20 h-20 bg-[#EBF0FF] rounded-full flex items-center justify-center mb-6">
-          <Users className="w-10 h-10 text-[#2864FF]" />
+      {/* Key Metrics Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { label: 'Total Employees', value: '142', icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
+          { label: 'Present Today', value: '128', icon: CheckCircle, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+          { label: 'On Leave', value: '14', icon: Calendar, color: 'text-amber-600', bg: 'bg-amber-50' },
+          { label: 'Pending Approvals', value: '5', icon: Clock, color: 'text-purple-600', bg: 'bg-purple-50' },
+        ].map((metric, idx) => (
+          <motion.div 
+            key={idx}
+            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.1 }}
+            className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4"
+          >
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${metric.bg} ${metric.color}`}>
+              <metric.icon size={24} />
+            </div>
+            <div>
+              <p className="text-gray-500 text-sm font-medium">{metric.label}</p>
+              <h3 className="text-2xl font-bold text-gray-900 mt-1">{metric.value}</h3>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Quick Actions */}
+        <div className="lg:col-span-2 bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
+          <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <Activity className="w-5 h-5 text-[#2864FF]" /> Quick Actions
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <button onClick={() => navigate('/hr/employees')} className="flex items-center p-4 bg-gray-50 hover:bg-blue-50 border border-gray-100 hover:border-blue-200 rounded-2xl transition-all group text-left">
+              <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm mr-4 group-hover:scale-110 transition-transform">
+                <UserPlus className="w-5 h-5 text-[#2864FF]" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 text-sm">Add New Employee</h3>
+                <p className="text-xs text-gray-500 mt-0.5">Onboard a new staff member</p>
+              </div>
+            </button>
+            <button onClick={() => navigate('/hr/leave')} className="flex items-center p-4 bg-gray-50 hover:bg-blue-50 border border-gray-100 hover:border-blue-200 rounded-2xl transition-all group text-left">
+              <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm mr-4 group-hover:scale-110 transition-transform">
+                <FileSignature className="w-5 h-5 text-emerald-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 text-sm">Review Leaves</h3>
+                <p className="text-xs text-gray-500 mt-0.5">Approve or reject requests</p>
+              </div>
+            </button>
+            <button onClick={() => navigate('/hr/attendance')} className="flex items-center p-4 bg-gray-50 hover:bg-blue-50 border border-gray-100 hover:border-blue-200 rounded-2xl transition-all group text-left">
+              <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm mr-4 group-hover:scale-110 transition-transform">
+                <Calendar className="w-5 h-5 text-amber-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 text-sm">Update Timesheets</h3>
+                <p className="text-xs text-gray-500 mt-0.5">Manage daily attendance</p>
+              </div>
+            </button>
+            <button onClick={() => navigate('/hr/payroll')} className="flex items-center p-4 bg-gray-50 hover:bg-blue-50 border border-gray-100 hover:border-blue-200 rounded-2xl transition-all group text-left">
+              <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm mr-4 group-hover:scale-110 transition-transform">
+                <DollarSign className="w-5 h-5 text-purple-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 text-sm">Run Payroll</h3>
+                <p className="text-xs text-gray-500 mt-0.5">Process monthly salaries</p>
+              </div>
+            </button>
+          </div>
         </div>
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">
-          No data available
-        </h3>
-        <p className="text-gray-500">
-          Select a module from above to get started.
-        </p>
-      </motion.div>
+
+        {/* Alerts & Upcoming */}
+        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 flex flex-col">
+          <h2 className="text-lg font-bold text-gray-900 mb-4">Alerts & Upcoming</h2>
+          <div className="flex-1 space-y-4">
+            <div className="flex items-start gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100 cursor-pointer">
+              <div className="mt-0.5 text-amber-500 bg-amber-50 p-2 rounded-lg"><Clock size={16} /></div>
+              <div>
+                <p className="text-sm font-semibold text-gray-900">3 Pending Leaves</p>
+                <p className="text-xs text-gray-500">Require approval by tomorrow</p>
+              </div>
+              <ArrowRight size={14} className="ml-auto mt-2 text-gray-400" />
+            </div>
+            
+            <div className="flex items-start gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100 cursor-pointer">
+              <div className="mt-0.5 text-purple-500 bg-purple-50 p-2 rounded-lg"><Gift size={16} /></div>
+              <div>
+                <p className="text-sm font-semibold text-gray-900">Dr. Smith's Birthday</p>
+                <p className="text-xs text-gray-500">Tomorrow • Cardiology Dept</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100 cursor-pointer">
+              <div className="mt-0.5 text-blue-500 bg-blue-50 p-2 rounded-lg"><UserPlus size={16} /></div>
+              <div>
+                <p className="text-sm font-semibold text-gray-900">New Hire Onboarding</p>
+                <p className="text-xs text-gray-500">Jane Doe starting next Monday</p>
+              </div>
+            </div>
+          </div>
+          
+          <button className="w-full mt-4 py-2.5 text-sm font-medium text-[#2864FF] bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors">
+            View All Alerts
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

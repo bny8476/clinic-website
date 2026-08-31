@@ -7,6 +7,8 @@ import { motion } from 'framer-motion';
 export default function FinanceDashboard() {
     const queryClient = useQueryClient();
     const [activeTab, setActiveTab] = useState('overview');
+    const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
+    const [newExpense, setNewExpense] = useState({ category: '', description: '', amount: '', incurredOn: new Date().toISOString().split('T')[0] });
 
     const { data: dashboard = {} } = useQuery({
         queryKey: ['finance-dashboard'],
@@ -39,6 +41,18 @@ export default function FinanceDashboard() {
             return await axiosPrivate.post(`/finance/expenses/${id}/pay?payerId=${userId}`);
         },
         onSuccess: () => queryClient.invalidateQueries(['finance-expenses'])
+    });
+
+    const addExpenseMutation = useMutation({
+        mutationFn: async (expenseData) => {
+            return await axiosPrivate.post('/finance/expenses', expenseData);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries(['finance-expenses']);
+            queryClient.invalidateQueries(['finance-dashboard']);
+            setIsExpenseModalOpen(false);
+            setNewExpense({ category: '', description: '', amount: '', incurredOn: new Date().toISOString().split('T')[0] });
+        }
     });
 
     return (
@@ -142,7 +156,7 @@ export default function FinanceDashboard() {
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="p-6 border-b border-gray-100 flex items-center justify-between">
                     <h3 className="text-lg font-bold text-gray-900">Expense Management & Approvals</h3>
-                    <button className="flex items-center gap-2 bg-[#2864FF] hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm">
+                    <button onClick={() => setIsExpenseModalOpen(true)} className="flex items-center gap-2 bg-[#2864FF] hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm">
                         <Plus className="w-4 h-4" /> Add Expense
                     </button>
                 </div>
@@ -225,7 +239,7 @@ export default function FinanceDashboard() {
                                             <p className="text-gray-500 text-sm mb-6">
                                                 Add your first expense to get started.
                                             </p>
-                                            <button className="flex items-center gap-2 border-2 border-[#2864FF] text-[#2864FF] hover:bg-[#F4F7FF] px-6 py-2 rounded-xl text-sm font-semibold transition-colors">
+                                            <button onClick={() => setIsExpenseModalOpen(true)} className="flex items-center gap-2 border-2 border-[#2864FF] text-[#2864FF] hover:bg-[#F4F7FF] px-6 py-2 rounded-xl text-sm font-semibold transition-colors">
                                                 <Plus className="w-4 h-4" /> Add Expense
                                             </button>
                                         </div>
@@ -236,6 +250,71 @@ export default function FinanceDashboard() {
                     </table>
                 </div>
             </div>
+
+            {isExpenseModalOpen && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl">
+                        <h2 className="text-xl font-bold text-gray-900 mb-4">Add New Expense</h2>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                                <input 
+                                    type="text" 
+                                    className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#2864FF]"
+                                    placeholder="e.g. Utilities, Equipment, Supplies"
+                                    value={newExpense.category}
+                                    onChange={e => setNewExpense({...newExpense, category: e.target.value})}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                                <input 
+                                    type="text" 
+                                    className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#2864FF]"
+                                    value={newExpense.description}
+                                    onChange={e => setNewExpense({...newExpense, description: e.target.value})}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Amount (₹)</label>
+                                <input 
+                                    type="number" 
+                                    className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#2864FF]"
+                                    value={newExpense.amount}
+                                    onChange={e => setNewExpense({...newExpense, amount: e.target.value})}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Date Incurred</label>
+                                <input 
+                                    type="date" 
+                                    className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-[#2864FF]"
+                                    value={newExpense.incurredOn}
+                                    onChange={e => setNewExpense({...newExpense, incurredOn: e.target.value})}
+                                />
+                            </div>
+                        </div>
+                        <div className="flex items-center justify-end gap-3 mt-8">
+                            <button 
+                                onClick={() => setIsExpenseModalOpen(false)}
+                                className="px-4 py-2 text-gray-600 font-medium hover:bg-gray-50 rounded-lg transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                onClick={() => addExpenseMutation.mutate({
+                                    ...newExpense,
+                                    amount: parseFloat(newExpense.amount)
+                                })}
+                                disabled={addExpenseMutation.isLoading || !newExpense.category || !newExpense.amount}
+                                className="px-4 py-2 bg-[#2864FF] text-white font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                            >
+                                {addExpenseMutation.isLoading ? 'Saving...' : 'Save Expense'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

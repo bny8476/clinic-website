@@ -367,6 +367,7 @@ function App() {
             <Route path="consultation/:id" element={<ClinicalWorkspace />} />
             <Route path="calendar" element={<DoctorCalendar />} />
             <Route path="patients" element={<PatientList />} />
+            <Route path="register" element={<PatientRegistration />} />
             <Route path="patients/:patientId" element={<PatientDetail />} />
             <Route path="patients/:patientId/notes" element={<ClinicalNotes />} />
             <Route path="patients/:patientId/prescriptions/new" element={<NewPrescription />} />

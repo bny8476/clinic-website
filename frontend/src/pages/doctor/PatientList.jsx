@@ -112,7 +112,7 @@ const PatientList = ({ onPatientClick }) => {
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 placeholder="Search patients by name, phone, or ID..."
-                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all"
+                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2160FF] focus:bg-white transition-all"
               />
             </div>
             
@@ -121,7 +121,7 @@ const PatientList = ({ onPatientClick }) => {
               <select 
                 value={statusFilter}
                 onChange={e => setStatusFilter(e.target.value)}
-                className="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-700 text-sm font-semibold rounded-lg pl-4 pr-10 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-700 text-sm font-semibold rounded-lg pl-4 pr-10 py-2 focus:outline-none focus:ring-2 focus:ring-[#2160FF]"
               >
                 <option value="ALL">All Status</option>
                 <option value="Active">Active</option>
@@ -135,7 +135,7 @@ const PatientList = ({ onPatientClick }) => {
               <select 
                 value={sortField}
                 onChange={e => setSortField(e.target.value)}
-                className="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-700 text-sm font-semibold rounded-lg pl-4 pr-10 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-700 text-sm font-semibold rounded-lg pl-4 pr-10 py-2 focus:outline-none focus:ring-2 focus:ring-[#2160FF]"
               >
                 <option value="name">Sort by Name</option>
                 <option value="lastVisit">Sort by Last Visit</option>
@@ -145,8 +145,8 @@ const PatientList = ({ onPatientClick }) => {
 
             {/* Add Patient Button */}
             <button 
-              onClick={() => navigate('/reception/register')}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#5B21B6] hover:bg-indigo-800 text-white px-5 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors whitespace-nowrap"
+              onClick={() => navigate('/doctor/register')}
+              className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#2160FF] hover:bg-[#1a4acc] text-white px-5 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors whitespace-nowrap"
             >
               <Plus size={16} strokeWidth={2.5} /> Add Patient
             </button>
@@ -207,7 +207,7 @@ const PatientList = ({ onPatientClick }) => {
                       <td className="py-4 px-6 whitespace-nowrap text-sm font-semibold text-slate-600">
                         {formatDate(p.lastVisitDate)}
                       </td>
-                      <td className="py-4 px-6 whitespace-nowrap text-sm font-bold text-[#5B21B6]">
+                      <td className="py-4 px-6 whitespace-nowrap text-sm font-bold text-[#2160FF]">
                         {p.upcomingAppointmentDate ? formatDateTime(p.upcomingAppointmentDate) : <span className="text-slate-400 font-semibold">-</span>}
                       </td>
                       <td className="py-4 px-6 whitespace-nowrap">
@@ -219,14 +219,14 @@ const PatientList = ({ onPatientClick }) => {
                         <div className="flex items-center justify-end gap-3 text-[#5B21B6]" onClick={e => e.stopPropagation()}>
                           <button 
                             onClick={() => onPatientClick ? onPatientClick(p.patientId) : navigate(`/doctor/patients/${p.patientId}`)}
-                            className="hover:text-indigo-900 transition-colors bg-indigo-50 p-1.5 rounded" 
+                            className="hover:text-[#1a4acc] transition-colors bg-[#EFF4FF] p-1.5 rounded" 
                             title="View Patient"
                           >
                             <Eye size={16} strokeWidth={2.5} />
                           </button>
                           <button 
                             onClick={() => openEdit(p)}
-                            className="hover:text-indigo-900 transition-colors bg-indigo-50 p-1.5 rounded" 
+                            className="hover:text-[#1a4acc] transition-colors bg-[#EFF4FF] p-1.5 rounded" 
                             title="Edit Patient"
                           >
                             <Edit2 size={16} strokeWidth={2.5} />
@@ -234,7 +234,7 @@ const PatientList = ({ onPatientClick }) => {
                           <div className="relative">
                             <button 
                               onClick={() => setActionsOpenId(actionsOpenId === p.patientId ? null : p.patientId)}
-                              className="hover:text-indigo-900 transition-colors bg-indigo-50 p-1.5 rounded" 
+                              className="hover:text-[#1a4acc] transition-colors bg-[#EFF4FF] p-1.5 rounded" 
                               title="More Actions"
                             >
                               <MoreVertical size={16} strokeWidth={2.5} />
@@ -277,7 +277,7 @@ const PatientList = ({ onPatientClick }) => {
                     onClick={() => setCurrentPage(page)}
                     className={`w-8 h-8 flex items-center justify-center rounded text-xs font-bold transition-colors ${
                       currentPage === page 
-                        ? 'bg-[#5B21B6] text-white border border-[#5B21B6]' 
+                        ? 'bg-[#2160FF] text-white border border-[#2160FF]' 
                         : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
                     }`}
                   >
@@ -315,7 +315,7 @@ const PatientList = ({ onPatientClick }) => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wide">Gender</label>
-                  <select value={editForm.gender} onChange={e => setEditForm({...editForm, gender: e.target.value})} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                  <select value={editForm.gender} onChange={e => setEditForm({...editForm, gender: e.target.value})} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2160FF]">
                     <option value="">Not set</option>
                     <option value="MALE">Male</option>
                     <option value="FEMALE">Female</option>
@@ -324,7 +324,7 @@ const PatientList = ({ onPatientClick }) => {
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wide">Blood Group</label>
-                  <select value={editForm.bloodGroup} onChange={e => setEditForm({...editForm, bloodGroup: e.target.value})} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                  <select value={editForm.bloodGroup} onChange={e => setEditForm({...editForm, bloodGroup: e.target.value})} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2160FF]">
                     <option value="">Not set</option>
                     {['A+','A-','B+','B-','O+','O-','AB+','AB-'].map(g => <option key={g} value={g}>{g}</option>)}
                   </select>
@@ -332,29 +332,29 @@ const PatientList = ({ onPatientClick }) => {
               </div>
               <div>
                 <label className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wide">Address</label>
-                <input type="text" value={editForm.address} onChange={e => setEditForm({...editForm, address: e.target.value})} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                <input type="text" value={editForm.address} onChange={e => setEditForm({...editForm, address: e.target.value})} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2160FF]" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wide">Emergency Contact Name</label>
-                  <input type="text" value={editForm.emergencyContactName} onChange={e => setEditForm({...editForm, emergencyContactName: e.target.value})} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                  <input type="text" value={editForm.emergencyContactName} onChange={e => setEditForm({...editForm, emergencyContactName: e.target.value})} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2160FF]" />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wide">Emergency Contact Phone</label>
-                  <input type="tel" value={editForm.emergencyContactPhone} onChange={e => setEditForm({...editForm, emergencyContactPhone: e.target.value})} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                  <input type="tel" value={editForm.emergencyContactPhone} onChange={e => setEditForm({...editForm, emergencyContactPhone: e.target.value})} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2160FF]" />
                 </div>
               </div>
               <div>
                 <label className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wide">Allergies</label>
-                <input type="text" value={editForm.allergies} onChange={e => setEditForm({...editForm, allergies: e.target.value})} placeholder="e.g. Penicillin, Aspirin" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                <input type="text" value={editForm.allergies} onChange={e => setEditForm({...editForm, allergies: e.target.value})} placeholder="e.g. Penicillin, Aspirin" className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2160FF]" />
               </div>
               <div>
                 <label className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wide">Medical History Summary</label>
-                <textarea rows={3} value={editForm.medicalHistorySummary} onChange={e => setEditForm({...editForm, medicalHistorySummary: e.target.value})} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none" />
+                <textarea rows={3} value={editForm.medicalHistorySummary} onChange={e => setEditForm({...editForm, medicalHistorySummary: e.target.value})} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2160FF] resize-none" />
               </div>
               <div className="flex justify-end gap-3 pt-2 border-t border-slate-100">
                 <button type="button" onClick={() => setEditPatient(null)} className="px-4 py-2 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">Cancel</button>
-                <button type="submit" disabled={editMutation.isPending} className="px-5 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors disabled:opacity-60">
+                <button type="submit" disabled={editMutation.isPending} className="px-5 py-2 text-sm font-semibold text-white bg-[#2160FF] hover:bg-[#1a4acc] rounded-lg transition-colors disabled:opacity-60">
                   {editMutation.isPending ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>

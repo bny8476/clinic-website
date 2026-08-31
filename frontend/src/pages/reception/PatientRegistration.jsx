@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import toast from 'react-hot-toast';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, UserPlus, Phone, Mail, User, Droplet, Stethoscope, FileText, ChevronDown } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fadeIn, staggerContainer } from '../../components/ui/motion';
@@ -14,12 +14,16 @@ const PatientRegistration = () => {
     address: '', bloodGroup: 'O+', emergencyContact: '', reasonForVisit: ''
   });
 
+  const location = useLocation();
+  const isDoctor = location.pathname.startsWith('/doctor');
+  const returnPath = isDoctor ? '/doctor/dashboard?panel=patients' : '/reception';
+
   const registerPatient = useMutation({
     mutationFn: async () => axiosPrivate.post('/reception/patients/register', patient),
     onSuccess: (data) => {
       toast.success(`Patient registered successfully! OP Number: ${data.data.opNumber}`);
       setPatient({ firstName: '', lastName: '', age: '', gender: 'Male', phone: '', email: '', address: '', bloodGroup: 'O+', emergencyContact: '', reasonForVisit: '' });
-      navigate('/reception');
+      navigate(returnPath);
     },
     onError: (err) => {
       toast.error(err.response?.data?.message || 'Failed to register patient');
@@ -234,7 +238,7 @@ const PatientRegistration = () => {
             </motion.div>
 
             <div className="pt-8 mt-8 border-t border-gray-100 flex items-center justify-end gap-4">
-              <Link to="/reception" className="px-8 py-3.5 rounded-xl text-sm font-bold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 transition-colors">
+              <Link to={returnPath} className="px-8 py-3.5 rounded-xl text-sm font-bold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 transition-colors">
                 Cancel
               </Link>
               <button 

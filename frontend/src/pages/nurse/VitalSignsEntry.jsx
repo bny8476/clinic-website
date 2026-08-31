@@ -8,7 +8,7 @@ import { AlertTriangle, HeartPulse, Heart, Stethoscope, Ruler, Scale, Droplet, S
 const VitalSignsEntry = () => {
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
-  const patientIdFromUrl = searchParams.get('patientId') || '101';
+  const patientIdFromUrl = searchParams.get('patientId') || '1';
   
   const [vitals, setVitals] = useState({
     patientId: patientIdFromUrl,
@@ -40,7 +40,7 @@ const VitalSignsEntry = () => {
         pulseBpm: vitals.heartRate,
         bloodPressure: `${vitals.systolicBp}/${vitals.diastolicBp}`,
       };
-      return axiosPrivate.post(`/patients/${vitals.patientId}/vitals`, payload);
+      return axiosPrivate.post(`/patients/${vitals.patientId}/vitals/record`, payload);
     },
     onSuccess: () => {
       toast.success('Vital signs recorded successfully!');

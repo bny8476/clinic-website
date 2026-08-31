@@ -61,11 +61,29 @@ const DoctorLabReports = () => {
   const filteredRequests = myRequests?.filter(req => {
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
-      return req.patient?.firstName?.toLowerCase().includes(q) || 
+      const matchesSearch = req.patient?.firstName?.toLowerCase().includes(q) || 
              req.patient?.lastName?.toLowerCase().includes(q) ||
              req.testCatalog?.testName?.toLowerCase().includes(q);
+      if (!matchesSearch) return false;
     }
-    return true;
+
+    if (activeTab === 'All Reports') return true;
+    
+    const testName = (req.testCatalog?.testName || '').toLowerCase();
+    
+    const isBlood = testName.includes('blood') || testName.includes('cbc') || testName.includes('lipid') || testName.includes('glucose') || testName.includes('hemoglobin');
+    const isImaging = testName.includes('x-ray') || testName.includes('mri') || testName.includes('ultrasound') || testName.includes('scan');
+    const isPathology = testName.includes('biopsy') || testName.includes('cytology') || testName.includes('smear');
+    const isMicrobiology = testName.includes('culture') || testName.includes('urine') || testName.includes('stool') || testName.includes('swab');
+    
+    switch(activeTab) {
+      case 'Blood Tests': return isBlood;
+      case 'Imaging': return isImaging;
+      case 'Pathology': return isPathology;
+      case 'Microbiology': return isMicrobiology;
+      case 'Other Tests': return !isBlood && !isImaging && !isPathology && !isMicrobiology;
+      default: return true;
+    }
   }) || [];
 
   const tabs = ['All Reports', 'Blood Tests', 'Imaging', 'Pathology', 'Microbiology', 'Other Tests'];
@@ -81,7 +99,10 @@ const DoctorLabReports = () => {
             <h1 className="text-2xl font-bold text-slate-800">Lab Reports</h1>
             <p className="text-sm font-medium text-slate-500 mt-1">View and manage all patient lab reports</p>
           </div>
-          <button className="flex items-center gap-2 bg-[#2160FF] hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm transition-colors">
+          <button 
+            onClick={() => navigate('/doctor/lab-reports/upload')}
+            className="flex items-center gap-2 bg-[#2160FF] hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm transition-colors"
+          >
             <Upload size={16} strokeWidth={2.5} /> Upload Report
           </button>
         </div>

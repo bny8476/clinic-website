@@ -71,7 +71,7 @@ const NewAppointmentPanel = ({ onClose }) => {
     <div className="p-6 h-full flex flex-col bg-slate-50 overflow-y-auto">
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 max-w-2xl mx-auto w-full">
         <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-indigo-600" />
+          <Calendar className="w-5 h-5 text-[#2160FF]" />
           Schedule New Appointment
         </h2>
         
@@ -83,20 +83,20 @@ const NewAppointmentPanel = ({ onClose }) => {
                 <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">First Name *</label>
                 <div className="relative">
                   <User className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input required name="patientFirstName" value={formData.patientFirstName} onChange={handleChange} className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="First Name" />
+                  <input required name="patientFirstName" value={formData.patientFirstName} onChange={handleChange} className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#2160FF] outline-none" placeholder="First Name" />
                 </div>
               </div>
               <div>
                 <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Last Name</label>
-                <input name="patientLastName" value={formData.patientLastName} onChange={handleChange} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Last Name" />
+                <input name="patientLastName" value={formData.patientLastName} onChange={handleChange} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#2160FF] outline-none" placeholder="Last Name" />
               </div>
               <div>
                 <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Phone</label>
-                <input name="patientPhone" value={formData.patientPhone} onChange={handleChange} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Phone Number" />
+                <input name="patientPhone" value={formData.patientPhone} onChange={handleChange} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#2160FF] outline-none" placeholder="Phone Number" />
               </div>
               <div>
                 <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Email</label>
-                <input type="email" name="patientEmail" value={formData.patientEmail} onChange={handleChange} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Email Address" />
+                <input type="email" name="patientEmail" value={formData.patientEmail} onChange={handleChange} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#2160FF] outline-none" placeholder="Email Address" />
               </div>
             </div>
           </div>
@@ -108,26 +108,26 @@ const NewAppointmentPanel = ({ onClose }) => {
                 <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Date *</label>
                 <div className="relative">
                   <Calendar className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input type="date" required name="appointmentDate" value={formData.appointmentDate} onChange={handleChange} className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
+                  <input type="date" required name="appointmentDate" value={formData.appointmentDate} onChange={handleChange} className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#2160FF] outline-none" />
                 </div>
               </div>
               <div>
                 <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Time *</label>
                 <div className="relative">
                   <Clock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input type="time" required name="startTime" value={formData.startTime} onChange={handleChange} className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
+                  <input type="time" required name="startTime" value={formData.startTime} onChange={handleChange} className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#2160FF] outline-none" />
                 </div>
               </div>
               <div className="col-span-2">
                 <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Reason for Visit</label>
                 <div className="relative">
                   <FileText className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
-                  <textarea name="reasonForVisit" value={formData.reasonForVisit} onChange={handleChange} rows="2" className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none" placeholder="Brief reason for visit..."></textarea>
+                  <textarea name="reasonForVisit" value={formData.reasonForVisit} onChange={handleChange} rows="2" className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#2160FF] outline-none resize-none" placeholder="Brief reason for visit..."></textarea>
                 </div>
               </div>
               <div>
                 <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Type</label>
-                <select name="type" value={formData.type} onChange={handleChange} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                <select name="type" value={formData.type} onChange={handleChange} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#2160FF] outline-none">
                   <option value="CONSULTATION">Consultation</option>
                   <option value="FOLLOW_UP">Follow Up</option>
                   <option value="PROCEDURE">Procedure</option>
@@ -136,7 +136,7 @@ const NewAppointmentPanel = ({ onClose }) => {
               </div>
               <div>
                 <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Priority</label>
-                <select name="priority" value={formData.priority} onChange={handleChange} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                <select name="priority" value={formData.priority} onChange={handleChange} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#2160FF] outline-none">
                   <option value="ROUTINE">Routine</option>
                   <option value="URGENT">Urgent</option>
                   <option value="EMERGENCY">Emergency</option>
@@ -149,7 +149,7 @@ const NewAppointmentPanel = ({ onClose }) => {
             <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
               Cancel
             </button>
-            <button type="submit" disabled={isSubmitting} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50">
+            <button type="submit" disabled={isSubmitting} className="px-4 py-2 bg-[#2160FF] hover:bg-[#1a4acc] text-white text-sm font-bold rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50">
               <CheckCircle2 className="w-4 h-4" />
               {isSubmitting ? 'Scheduling...' : 'Schedule Appointment'}
             </button>

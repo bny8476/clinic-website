@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { CalendarX } from 'lucide-react';
+import { User, Layers, Calendar, MessageSquare, Flag, Settings, CheckCircle, XCircle, Hourglass } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { fadeIn, staggerChildren } from '../../components/ui/motion';
 
 const LeaveManagement = () => {
   const { data: leaves = [] } = useQuery({
@@ -9,62 +11,146 @@ const LeaveManagement = () => {
   });
 
   const sampleLeaves = leaves.length > 0 ? leaves : [
-    { id: 1, employeeName: 'Nurse Sunita Sharma', leaveType: 'Casual Leave', startDate: '2026-07-30', endDate: '2026-07-31', days: 2, status: 'PENDING', reason: 'Personal family event' },
-    { id: 2, employeeName: 'Anjali Gupta', leaveType: 'Sick Leave', startDate: '2026-07-24', endDate: '2026-07-24', days: 1, status: 'APPROVED', reason: 'Fever' },
+    { id: 1, employeeName: 'Nurse Sunita Sharma', initials: 'NS', leaveType: 'Casual Leave', startDate: '2026-07-30', endDate: '2026-07-31', days: 2, status: 'PENDING', reason: 'Personal family event' },
+    { id: 2, employeeName: 'Anjali Gupta', initials: 'AG', leaveType: 'Sick Leave', startDate: '2026-07-24', endDate: '2026-07-24', days: 1, status: 'APPROVED', reason: 'Fever' },
   ];
 
   return (
-    
-    <div className="p-4 sm:p-6" style={{ maxWidth: '1000px', margin: '0 auto' }}>
-      <h1 className="text-xl sm:text-2xl font-bold mb-5 flex items-center gap-2" style={{ color: 'var(--color-text)' }}>
-        <CalendarX size={22} color="#be185d" aria-hidden="true" /> Leave Requests Management
-      </h1>
+    <motion.div initial="hidden" animate="visible" variants={fadeIn} className="w-full max-w-full px-4 sm:px-6 pt-6 sm:pt-8 space-y-6 font-sans">
+      
+      {/* Custom Header matching mockup */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <div className="flex items-center gap-4">
+          <div className="w-[60px] h-[60px] bg-[#EEF2FF] rounded-[16px] flex items-center justify-center shrink-0">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="4" width="18" height="16" rx="2" stroke="#2160FF" strokeWidth="2" strokeLinecap="round" />
+              <path d="M16 2V6" stroke="#2160FF" strokeWidth="2" strokeLinecap="round" />
+              <path d="M8 2V6" stroke="#2160FF" strokeWidth="2" strokeLinecap="round" />
+              <path d="M3 10H21" stroke="#2160FF" strokeWidth="2" strokeLinecap="round" />
+              <circle cx="12" cy="15" r="2.5" stroke="#2160FF" strokeWidth="2" />
+            </svg>
+          </div>
+          <div>
+            <h1 className="text-[28px] font-bold text-slate-900 m-0 leading-tight tracking-tight">
+              Leave Requests Management
+            </h1>
+            <p className="text-[15px] text-slate-500 m-0 mt-1">
+              Review and manage employee leave requests efficiently.
+            </p>
+          </div>
+        </div>
+      </div>
 
-      <div style={{ background: 'var(--color-surface)', borderRadius: '12px', border: '1px solid var(--color-border)', overflow: 'hidden' }}>
+      {/* Main Content Card */}
+      <div className="bg-white rounded-[24px] border border-slate-100 shadow-[0_2px_12px_rgba(0,0,0,0.03)] w-full overflow-hidden">
         <div className="overflow-x-auto">
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '580px' }}>
-            <thead style={{ background: 'var(--color-surface-alt)', borderBottom: '1px solid var(--color-border)' }}>
-              <tr>
-                <th style={{ padding: '12px 16px', color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>Employee</th>
-                <th style={{ padding: '12px 16px', color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>Type</th>
-                <th style={{ padding: '12px 16px', color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>Dates &amp; Duration</th>
-                <th style={{ padding: '12px 16px', color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>Reason</th>
-                <th style={{ padding: '12px 16px', color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>Status</th>
-                <th style={{ padding: '12px 16px', color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>Action</th>
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-[#FAFCFF] border-b border-slate-100">
+                <th className="px-8 py-6">
+                  <div className="flex items-center gap-3 text-[#2160FF] font-bold text-[14px]">
+                    <User size={18} strokeWidth={2} /> Employee
+                  </div>
+                </th>
+                <th className="px-8 py-6">
+                  <div className="flex items-center gap-3 text-[#2160FF] font-bold text-[14px]">
+                    <Layers size={18} strokeWidth={2} /> Type
+                  </div>
+                </th>
+                <th className="px-8 py-6">
+                  <div className="flex items-center gap-3 text-[#2160FF] font-bold text-[14px]">
+                    <Calendar size={18} strokeWidth={2} /> Dates &amp; Duration
+                  </div>
+                </th>
+                <th className="px-8 py-6">
+                  <div className="flex items-center gap-3 text-[#2160FF] font-bold text-[14px]">
+                    <MessageSquare size={18} strokeWidth={2} /> Reason
+                  </div>
+                </th>
+                <th className="px-8 py-6">
+                  <div className="flex items-center gap-3 text-[#2160FF] font-bold text-[14px]">
+                    <Flag size={18} strokeWidth={2} /> Status
+                  </div>
+                </th>
+                <th className="px-8 py-6">
+                  <div className="flex items-center gap-3 text-[#2160FF] font-bold text-[14px]">
+                    <Settings size={18} strokeWidth={2} /> Action
+                  </div>
+                </th>
               </tr>
             </thead>
-            <tbody>
+            <motion.tbody
+              variants={staggerChildren}
+              initial="hidden"
+              animate="visible"
+              className="divide-y divide-slate-100"
+            >
               {sampleLeaves.map(l => (
-                <tr key={l.id} style={{ borderBottom: '1px solid var(--color-surface-alt)' }}>
-                  <td style={{ padding: '12px 16px', fontWeight: 600, fontSize: '0.85rem', color: 'var(--color-text)' }}>{l.employeeName}</td>
-                  <td style={{ padding: '12px 16px', fontSize: '0.8rem', color: 'var(--color-text)' }}>{l.leaveType}</td>
-                  <td style={{ padding: '12px 16px', fontSize: '0.8rem', color: 'var(--color-text-muted)', whiteSpace: 'nowrap' }}>{l.startDate} to {l.endDate} ({l.days}d)</td>
-                  <td style={{ padding: '12px 16px', fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>{l.reason}</td>
-                  <td style={{ padding: '12px 16px' }}>
-                    <span style={{
-                      padding: '3px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, whiteSpace: 'nowrap',
-                      background: l.status === 'APPROVED' ? 'var(--color-success-bg)' : l.status === 'PENDING' ? '#fef9c3' : 'var(--color-danger-bg)',
-                      color: l.status === 'APPROVED' ? 'var(--color-success)' : l.status === 'PENDING' ? '#854d0e' : 'var(--color-danger)'
-                    }}>
-                      {l.status}
+                <motion.tr key={l.id} variants={fadeIn} className="hover:bg-slate-50/70 transition-colors">
+                  
+                  {/* Employee */}
+                  <td className="px-8 py-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-[12px] bg-[#EEF2FF] text-[#2160FF] font-bold text-[15px] flex items-center justify-center shrink-0">
+                        {l.initials || (l.employeeName && l.employeeName.substring(0, 2).toUpperCase()) || 'U'}
+                      </div>
+                      <span className="text-[15px] font-bold text-slate-900">{l.employeeName}</span>
+                    </div>
+                  </td>
+                  
+                  {/* Type */}
+                  <td className="px-8 py-6">
+                    <span className={`inline-flex px-3 py-1.5 rounded-lg text-[13px] font-bold ${l.leaveType === 'Casual Leave' ? 'bg-[#EEF2FF] text-[#2160FF]' : 'bg-[#E5F7ED] text-[#00B661]'}`}>
+                      {l.leaveType}
                     </span>
                   </td>
-                  <td style={{ padding: '12px 16px' }}>
-                    {l.status === 'PENDING' && (
-                      <div style={{ display: 'flex', gap: '6px' }}>
-                        <button style={{ background: 'var(--color-success)', color: 'var(--color-surface)', border: 'none', padding: '4px 10px', borderRadius: '4px', fontSize: '0.75rem', cursor: 'pointer' }}>Approve</button>
-                        <button style={{ background: 'var(--color-danger)', color: 'var(--color-surface)', border: 'none', padding: '4px 10px', borderRadius: '4px', fontSize: '0.75rem', cursor: 'pointer' }}>Reject</button>
+                  
+                  {/* Dates & Duration */}
+                  <td className="px-8 py-6">
+                    <div className="flex items-center gap-2 text-[15px] font-medium text-slate-500">
+                      <Calendar size={18} className="text-[#2160FF]" strokeWidth={2.5} /> 
+                      {l.startDate} to {l.endDate} 
+                      <span className="text-[#2160FF] bg-[#EEF2FF] px-2 py-0.5 rounded-[6px] text-[13px] font-bold ml-1">({l.days}d)</span>
+                    </div>
+                  </td>
+                  
+                  {/* Reason */}
+                  <td className="px-8 py-6">
+                    <span className="text-[15px] font-medium text-slate-500">{l.reason}</span>
+                  </td>
+                  
+                  {/* Status */}
+                  <td className="px-8 py-6">
+                    {l.status === 'PENDING' ? (
+                      <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-[8px] bg-[#FFF8E6] text-[#FFA000] text-[13px] font-bold border border-[#FFA000]/20">
+                        <Hourglass size={14} strokeWidth={2.5} /> PENDING
+                      </div>
+                    ) : (
+                      <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-[8px] bg-[#E5F7ED] text-[#00B661] text-[13px] font-bold border border-[#00B661]/20">
+                        <CheckCircle size={14} strokeWidth={2.5} /> APPROVED
                       </div>
                     )}
                   </td>
-                </tr>
+                  
+                  {/* Action */}
+                  <td className="px-8 py-6">
+                    <div className="flex items-center gap-2">
+                      <button className="bg-[#2160FF] text-white px-4 py-2 rounded-[8px] flex items-center gap-1.5 text-[14px] font-bold transition-all hover:bg-[#1A4CE6] shadow-sm">
+                        <CheckCircle size={16} strokeWidth={2.5} /> Approve
+                      </button>
+                      <button className="border border-[#A6C8FF] text-[#2160FF] bg-white px-4 py-2 rounded-[8px] flex items-center gap-1.5 text-[14px] font-bold transition-all hover:bg-[#EEF2FF] shadow-sm">
+                        <XCircle size={16} strokeWidth={2.5} /> Reject
+                      </button>
+                    </div>
+                  </td>
+
+                </motion.tr>
               ))}
-            </tbody>
+            </motion.tbody>
           </table>
         </div>
       </div>
-    </div>
-    
+    </motion.div>
   );
 };
 

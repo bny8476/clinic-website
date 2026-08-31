@@ -21,7 +21,7 @@ public class SupportController {
     private final SupportService supportService;
 
     @GetMapping("/tickets")
-    @PreAuthorize("hasAnyAuthority('ROLE_CUSTOMER_SUPPORT', 'ROLE_SUPER_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPPORT', 'ROLE_CUSTOMER_SUPPORT', 'ROLE_SUPER_ADMIN', 'ROLE_ADMIN')")
     public ResponseEntity<List<SupportTicket>> getAllTickets() {
         return ResponseEntity.ok(supportService.getAllTickets());
     }
@@ -76,7 +76,8 @@ public class SupportController {
         boolean isAgent = sender != null &&
                 sender.getAuthorities().stream()
                         .anyMatch(r ->
-                                r.getAuthority().equals("ROLE_CUSTOMER_SUPPORT")
+                                r.getAuthority().equals("ROLE_SUPPORT")
+                                || r.getAuthority().equals("ROLE_CUSTOMER_SUPPORT")
                                 || r.getAuthority().equals("ROLE_SUPER_ADMIN")
                         );
 
@@ -91,7 +92,7 @@ public class SupportController {
     }
 
     @PatchMapping("/tickets/{ticketId}/status")
-    @PreAuthorize("hasAnyAuthority('ROLE_CUSTOMER_SUPPORT', 'ROLE_SUPER_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPPORT', 'ROLE_CUSTOMER_SUPPORT', 'ROLE_SUPER_ADMIN', 'ROLE_ADMIN')")
     public ResponseEntity<SupportTicket> updateStatus(
             @PathVariable Long ticketId,
             @RequestParam String status) {

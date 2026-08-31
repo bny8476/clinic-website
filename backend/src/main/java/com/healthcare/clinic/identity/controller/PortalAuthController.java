@@ -10,6 +10,7 @@ import com.healthcare.clinic.identity.service.OtpService;
 import com.healthcare.clinic.identity.service.RefreshTokenService;
 import com.healthcare.clinic.patient.entity.PatientProfile;
 import com.healthcare.clinic.patient.repository.PatientProfileRepository;
+import com.healthcare.clinic.identity.service.PatientRegistrationService;
 import com.healthcare.clinic.security.JwtUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -42,6 +43,7 @@ public class PortalAuthController {
     private final PasswordEncoder encoder;
     private final JwtUtils jwtUtils;
     private final LoginHistoryRepository loginHistoryRepository;
+    private final PatientRegistrationService patientRegistrationService;
     private final RefreshTokenService refreshTokenService;
     private final OtpService otpService;
     private final UserDetailsService userDetailsService;
@@ -153,36 +155,18 @@ public class PortalAuthController {
     }
 
     @PostMapping("/register")
-    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
-        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-            return ResponseEntity.badRequest().body("Error: Email is already in use!");
+        try {
+            patientRegistrationService.registerPatient(
+                    signUpRequest.getEmail(),
+                    signUpRequest.getPassword(),
+                    signUpRequest.getFirstName(),
+                    signUpRequest.getLastName()
+            );
+            return ResponseEntity.ok("User registered successfully!");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
-
-        User user = User.builder()
-                .email(signUpRequest.getEmail())
-                .firstName(signUpRequest.getFirstName())
-                .lastName(signUpRequest.getLastName())
-                .passwordHash(encoder.encode(signUpRequest.getPassword()))
-                .build();
-
-        Set<Role> roles = new HashSet<>();
-        Role userRole = roleRepository.findByName("ROLE_PATIENT")
-                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-        roles.add(userRole);
-
-        user.setRoles(roles);
-        User savedUser = userRepository.save(user);
-
-        PatientProfile profile = PatientProfile.builder()
-                .userId(savedUser.getId())
-                .emergencyContactName("Not Provided")
-                .emergencyContactPhone("+10000000000")
-                .branchId(1L)
-                .build();
-        patientProfileRepository.save(profile);
-
-        return ResponseEntity.ok("User registered successfully!");
     }
 
     private void logLoginHistory(User user, HttpServletRequest request, boolean success) {

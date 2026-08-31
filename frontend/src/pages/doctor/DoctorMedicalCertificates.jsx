@@ -2,10 +2,13 @@ import Pagination from '../../components/ui/Pagination';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Activity, ArrowUp, Briefcase, ChevronDown, Download, Eye, FileText, MoreVertical, PenTool, Plane, Plus, Search, Trash2 } from 'lucide-react';
+import NewCertificateModal from './NewCertificateModal';
 
 const DoctorMedicalCertificates = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('All Certificates');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const certificates = [
     {
@@ -103,6 +106,18 @@ const DoctorMedicalCertificates = () => {
 
   const tabs = ['All Certificates', 'Draft', 'Issued', 'Expired', 'Cancelled'];
 
+  const filteredCertificates = certificates.filter(cert => {
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      const matchesSearch = cert.patient.name.toLowerCase().includes(q) || 
+                            cert.type.name.toLowerCase().includes(q) || 
+                            cert.id.toLowerCase().includes(q);
+      if (!matchesSearch) return false;
+    }
+    if (activeTab === 'All Certificates') return true;
+    return cert.status === activeTab;
+  });
+
   return (
     <div className="p-6 md:p-8 bg-white min-h-full font-sans">
       <div className="max-w-[1500px] mx-auto">
@@ -113,7 +128,10 @@ const DoctorMedicalCertificates = () => {
             <h1 className="text-2xl font-bold text-slate-800">Medical Certificates</h1>
             <p className="text-sm font-medium text-slate-500 mt-1">Create, manage and view all patient medical certificates</p>
           </div>
-          <button className="flex items-center gap-2 bg-[#2160FF] hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm transition-colors">
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center gap-2 bg-[#2160FF] hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm transition-colors"
+          >
             <Plus size={16} strokeWidth={2.5} /> New Certificate
           </button>
         </div>
@@ -143,6 +161,8 @@ const DoctorMedicalCertificates = () => {
               <input 
                 type="text" 
                 placeholder="Search certificates..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-[13px] font-medium text-slate-700 focus:outline-none focus:border-[#2160FF] w-[220px]"
               />
             </div>
@@ -175,8 +195,15 @@ const DoctorMedicalCertificates = () => {
                 </tr>
               </thead>
               <tbody>
-                {certificates.map((cert, idx) => (
-                  <tr key={idx} className="border-b border-slate-100 hover:bg-slate-50 transition-colors bg-white">
+                {filteredCertificates.length === 0 ? (
+                  <tr>
+                    <td colSpan="7" className="text-center py-8 text-slate-500">
+                      No certificates found.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredCertificates.map((cert, idx) => (
+                    <tr key={idx} className="border-b border-slate-100 hover:bg-slate-50 transition-colors bg-white">
                     <td className="py-4 px-6">
                       <p className="text-[13px] font-bold text-slate-800 leading-tight">{cert.id}</p>
                     </td>
@@ -242,8 +269,9 @@ const DoctorMedicalCertificates = () => {
                         </button>
                       </div>
                     </td>
-                  </tr>
-                ))}
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
             
@@ -359,6 +387,11 @@ const DoctorMedicalCertificates = () => {
         </div>
 
       </div>
+      
+      <NewCertificateModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+      />
     </div>
   );
 };

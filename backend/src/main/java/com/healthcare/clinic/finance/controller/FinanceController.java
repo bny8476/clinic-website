@@ -42,13 +42,13 @@ public class FinanceController {
     }
 
     @PostMapping("/expenses/{id}/approve")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('FINANCE_MANAGER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('FINANCE') or hasRole('ACCOUNTANT')")
     public ResponseEntity<Expense> approveExpense(@PathVariable Long id, @RequestParam Long approverId) {
         return ResponseEntity.ok(financeService.approveExpense(id, approverId));
     }
 
     @PostMapping("/expenses/{id}/reject")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('FINANCE_MANAGER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('FINANCE') or hasRole('ACCOUNTANT')")
     public ResponseEntity<Expense> rejectExpense(
             @PathVariable Long id, 
             @RequestParam Long approverId,
@@ -57,7 +57,7 @@ public class FinanceController {
     }
     
     @PostMapping("/expenses/{id}/pay")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('FINANCE_MANAGER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('FINANCE') or hasRole('ACCOUNTANT')")
     public ResponseEntity<Expense> payExpense(@PathVariable Long id, @RequestParam Long payerId) {
         return ResponseEntity.ok(financeService.payExpense(id, payerId));
     }
@@ -78,7 +78,7 @@ public class FinanceController {
     }
 
     @GetMapping("/dashboard")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('FINANCE_MANAGER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('FINANCE') or hasRole('ACCOUNTANT')")
     public ResponseEntity<com.healthcare.clinic.finance.dto.DashboardResponse> getDashboardData(
             @RequestParam(required = false) Long branchId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,

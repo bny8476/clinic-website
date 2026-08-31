@@ -4,7 +4,7 @@ import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { CheckCircle2, Clock, CreditCard, Download, FileText, Receipt, XCircle } from 'lucide-react';
+import { CheckCircle2, Clock, CreditCard, Download, FileText, Receipt, XCircle, Sparkles, DollarSign } from 'lucide-react';
 
 const PatientBilling = () => {
   const { user } = useAuthStore();
@@ -87,23 +87,45 @@ const PatientBilling = () => {
   };
 
   return (
-    <div className="billing-page">
-      <header className="page-header" style={{ marginBottom: '1rem', borderBottom: 'none' }}>
-        <h2 className="page-title">Billing &amp; Payments</h2>
-      </header>
+    <div className="min-h-screen bg-[#f8fafc] font-sans pb-16 pt-3 px-4 sm:px-6 lg:px-8 text-slate-800 space-y-6">
+      
+      {/* ── Top Header ── */}
+      <div className="flex items-center gap-4 mb-6">
+        <div className="w-12 h-12 bg-white rounded-[14px] flex items-center justify-center shadow-sm border border-slate-100 shrink-0">
+          <div className="relative">
+            <FileText className="w-6 h-6 text-blue-600" />
+            <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-blue-100 rounded-full flex items-center justify-center">
+              <span className="text-[9px] font-bold text-blue-700">$</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <h2 className="text-xl font-extrabold text-slate-900 leading-tight">Billing & Payments</h2>
+          <p className="text-[13px] font-medium text-slate-500 mt-0.5">Manage your invoices, payments, and billing history.</p>
+        </div>
+      </div>
 
-      <div className="flex gap-4 mb-6 border-b border-slate-200">
+      {/* ── Tabs ── */}
+      <div className="flex items-center gap-6 border-b border-slate-200/80 mb-6 px-2">
         <button 
           onClick={() => setActiveTab('invoices')}
-          className={`pb-2 px-1 font-medium transition ${activeTab === 'invoices' ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}
+          className={`pb-3 font-bold text-[13px] flex items-center gap-2 transition-all cursor-pointer relative ${activeTab === 'invoices' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}
         >
-          Outstanding Invoices
+          <FileText className="w-4 h-4" />
+          <span>Outstanding Invoices</span>
+          {activeTab === 'invoices' && (
+            <div className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-blue-600 rounded-t-full" />
+          )}
         </button>
         <button 
           onClick={() => setActiveTab('history')}
-          className={`pb-2 px-1 font-medium transition ${activeTab === 'history' ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}
+          className={`pb-3 font-bold text-[13px] flex items-center gap-2 transition-all cursor-pointer relative ${activeTab === 'history' ? 'text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}
         >
-          Payment History
+          <Clock className="w-4 h-4" />
+          <span>Payment History</span>
+          {activeTab === 'history' && (
+            <div className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-blue-600 rounded-t-full" />
+          )}
         </button>
       </div>
 
@@ -173,10 +195,49 @@ const PatientBilling = () => {
               ))}
             </div>
           ) : (
-            <div className="card empty-state">
-              <FileText size={48} className="text-navy-300" />
-              <h3>No invoices found</h3>
-              <p>You have no pending or paid invoices.</p>
+            <div className="bg-white rounded-[24px] border border-slate-200/60 shadow-sm p-6 lg:p-8">
+              <div className="border border-dashed border-slate-200/80 rounded-[20px] p-10 flex flex-col items-center justify-center text-center min-h-[400px]">
+                
+                {/* Glowing Illustration */}
+                <div className="relative w-32 h-32 flex items-center justify-center mb-6">
+                  {/* Background glow and circle */}
+                  <div className="absolute inset-0 bg-blue-50/50 rounded-full scale-110" />
+                  <div className="absolute inset-4 bg-gradient-to-tr from-blue-50 to-blue-50/20 rounded-full" />
+                  
+                  {/* Sparkles/Stars */}
+                  <Sparkles className="absolute top-2 right-4 w-4 h-4 text-blue-200 fill-blue-200" />
+                  <Sparkles className="absolute bottom-6 left-2 w-3 h-3 text-blue-200 fill-blue-200" />
+                  <Sparkles className="absolute top-8 left-4 w-2 h-2 text-blue-200 fill-blue-200" />
+                  <Sparkles className="absolute bottom-8 right-6 w-3 h-3 text-blue-200 fill-blue-200" />
+                  
+                  {/* Document + Dollar Sign */}
+                  <div className="relative z-10 w-[52px] h-[64px] bg-gradient-to-b from-[#87a0ff] to-[#6082ff] rounded-[10px] shadow-lg flex flex-col p-[7px]">
+                    {/* Folded Corner Effect (visual only) */}
+                    <div className="absolute top-0 right-0 w-4 h-4 bg-white/20 rounded-bl-lg" />
+                    
+                    {/* Document lines */}
+                    <div className="w-5 h-[3px] bg-white/60 rounded-full mb-[6px] mt-2" />
+                    <div className="w-[30px] h-[3px] bg-white/60 rounded-full mb-[6px]" />
+                    <div className="w-[22px] h-[3px] bg-white/60 rounded-full mb-auto" />
+                    
+                    {/* Coin */}
+                    <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-8 h-8 bg-blue-600 border-[2.5px] border-white rounded-full flex items-center justify-center shadow-md">
+                      <span className="text-white text-[13px] font-black">$</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <h3 className="text-[19px] font-extrabold text-slate-900 mb-1">No invoices found</h3>
+                <p className="text-[13px] font-medium text-slate-500 mb-7">You have no pending or paid invoices.</p>
+                
+                <button 
+                  onClick={() => setActiveTab('history')}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-[13px] px-6 py-2.5 rounded-xl shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
+                >
+                  <FileText className="w-[15px] h-[15px]" />
+                  <span>View Payment History</span>
+                </button>
+              </div>
             </div>
           )}
         </>
@@ -225,10 +286,44 @@ const PatientBilling = () => {
                 </table>
             </div>
           ) : (
-            <div className="card empty-state">
-              <Receipt size={48} className="text-navy-300" />
-              <h3>No payment history</h3>
-              <p>You haven't made any payments yet.</p>
+            <div className="bg-white rounded-[24px] border border-slate-200/60 shadow-sm p-6 lg:p-8">
+              <div className="border border-dashed border-slate-200/80 rounded-[20px] p-10 flex flex-col items-center justify-center text-center min-h-[400px]">
+                
+                {/* Glowing Illustration */}
+                <div className="relative w-32 h-32 flex items-center justify-center mb-6">
+                  {/* Background glow and circle */}
+                  <div className="absolute inset-0 bg-blue-50/50 rounded-full scale-110" />
+                  <div className="absolute inset-4 bg-gradient-to-tr from-blue-50 to-blue-50/20 rounded-full" />
+                  
+                  {/* Sparkles/Stars */}
+                  <Sparkles className="absolute top-2 right-4 w-4 h-4 text-blue-200 fill-blue-200" />
+                  <Sparkles className="absolute bottom-6 left-2 w-3 h-3 text-blue-200 fill-blue-200" />
+                  <Sparkles className="absolute top-8 left-4 w-2 h-2 text-blue-200 fill-blue-200" />
+                  <Sparkles className="absolute bottom-8 right-6 w-3 h-3 text-blue-200 fill-blue-200" />
+                  
+                  {/* Document + Dollar Sign */}
+                  <div className="relative z-10 w-[52px] h-[64px] bg-gradient-to-b from-[#87a0ff] to-[#6082ff] rounded-[10px] shadow-lg flex flex-col p-[7px]">
+                    <div className="absolute top-0 right-0 w-4 h-4 bg-white/20 rounded-bl-lg" />
+                    <div className="w-5 h-[3px] bg-white/60 rounded-full mb-[6px] mt-2" />
+                    <div className="w-[30px] h-[3px] bg-white/60 rounded-full mb-[6px]" />
+                    <div className="w-[22px] h-[3px] bg-white/60 rounded-full mb-auto" />
+                    <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-8 h-8 bg-blue-600 border-[2.5px] border-white rounded-full flex items-center justify-center shadow-md">
+                      <span className="text-white text-[13px] font-black">$</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <h3 className="text-[19px] font-extrabold text-slate-900 mb-1">No payment history</h3>
+                <p className="text-[13px] font-medium text-slate-500 mb-7">You haven't made any payments yet.</p>
+                
+                <button 
+                  onClick={() => setActiveTab('invoices')}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-[13px] px-6 py-2.5 rounded-xl shadow-xs transition-colors flex items-center gap-2 cursor-pointer"
+                >
+                  <Clock className="w-[15px] h-[15px]" />
+                  <span>View Outstanding Invoices</span>
+                </button>
+              </div>
             </div>
           )}
         </>
