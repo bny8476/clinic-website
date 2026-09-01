@@ -27,8 +27,8 @@ public class ChartSummaryService {
     private final ExternalMedicationHistoryEntryRepository medicationRepository;
 
     public ChartSummaryDTO getChartSummary(Long patientId) {
-        PatientProfile patient = patientProfileRepository.findById(patientId)
-                .orElseThrow(() -> new RuntimeException("Patient not found"));
+        PatientProfile patient = patientProfileRepository.findByUserId(patientId)
+                .orElseThrow(() -> new com.healthcare.clinic.exception.ResourceNotFoundException("Patient not found"));
 
         List<Allergy> activeAllergies = allergyRepository.findByPatientId(patientId)
                 .stream().filter(a -> "ACTIVE".equalsIgnoreCase(a.getStatus()))

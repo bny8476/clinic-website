@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import toast from 'react-hot-toast';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
@@ -9,6 +9,7 @@ import { fadeIn, staggerContainer } from '../../components/ui/motion';
 
 const PatientRegistration = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [patient, setPatient] = useState({
     firstName: '', lastName: '', age: '', gender: 'Male', phone: '', email: '',
     address: '', bloodGroup: 'O+', emergencyContact: '', reasonForVisit: ''
@@ -23,6 +24,7 @@ const PatientRegistration = () => {
     onSuccess: (data) => {
       toast.success(`Patient registered successfully! OP Number: ${data.data.opNumber}`);
       setPatient({ firstName: '', lastName: '', age: '', gender: 'Male', phone: '', email: '', address: '', bloodGroup: 'O+', emergencyContact: '', reasonForVisit: '' });
+      queryClient.invalidateQueries(['doctor-patients']);
       navigate(returnPath);
     },
     onError: (err) => {

@@ -89,10 +89,10 @@ const LabDashboard = () => {
 
           {/* Right Column - Sidebar style */}
           <div className="lg:col-span-4 xl:col-span-3 space-y-6 flex flex-col">
-            <div className="h-64 flex-shrink-0">
+            <div className="flex-shrink-0">
                <LabStatusSidebar summary={summary} />
             </div>
-            <div className="h-64 flex-shrink-0">
+            <div className="flex-shrink-0">
                <LabAlerts summary={summary} />
             </div>
             <div className="flex-1 min-h-[300px]">

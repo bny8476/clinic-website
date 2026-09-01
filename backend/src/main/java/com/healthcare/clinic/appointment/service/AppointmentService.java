@@ -19,6 +19,9 @@ import com.healthcare.clinic.billing.entity.ItemType;
 import com.healthcare.clinic.doctor.repository.DoctorProfileRepository;
 import com.healthcare.clinic.doctor.entity.DoctorProfile;
 import com.healthcare.clinic.reception.repository.NoShowRepository;
+import com.healthcare.clinic.identity.repository.RoleRepository;
+import com.healthcare.clinic.identity.entity.Role;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -51,6 +54,8 @@ public class AppointmentService {
     private final NoShowRepository noShowRepository;
     private final AppointmentHoldService holdService;
     private final com.healthcare.clinic.appointment.repository.WaitlistEntryRepository waitlistRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional(readOnly = true)
     public List<AppointmentSlot> getAvailableSlots(Long doctorId, ZonedDateTime start, ZonedDateTime end) {
@@ -137,9 +142,24 @@ public class AppointmentService {
                     .build());
         }
 
-        if (holdId != null && !holdId.isEmpty() && slot.getDoctor() != null) {
-            if (!holdService.validateHold(slot.getDoctor().getId(), slot.getStartTime().toInstant().toString(), holdId)) {
-                log.warn("Hold expired or invalid, proceeding with booking.");
+        // The slot is now row-locked (PESSIMISTIC_WRITE) — safe to check availability directly.
+        if (Boolean.TRUE.equals(slot.getIsBooked())) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.CONFLICT,
+                    "This time slot was just booked by someone else. Please choose another.");
+        }
+
+        if (slot.getDoctor() != null) {
+            String slotKey = slot.getStartTime().toInstant().toString();
+            boolean isCurrentlyHeld = holdService.isHeld(slot.getDoctor().getId(), slotKey);
+            if (isCurrentlyHeld) {
+                boolean holdMatches = holdId != null && !holdId.isEmpty()
+                        && holdService.validateHold(slot.getDoctor().getId(), slotKey, holdId);
+                if (!holdMatches) {
+                    throw new org.springframework.web.server.ResponseStatusException(
+                            org.springframework.http.HttpStatus.CONFLICT,
+                            "This slot is currently being booked by another patient. Please wait a moment and try again, or choose a different slot.");
+                }
             }
         }
 
@@ -193,6 +213,104 @@ public class AppointmentService {
         eventPublisher.publishEvent(event);
 
         return savedAppointment;
+    }
+
+    /**
+     * Lets a Doctor (or Admin) create an appointment directly for an arbitrary time slot,
+     * auto-creating the patient account (matched by email) and the underlying
+     * AppointmentSlot if they don't already exist. Used by the Doctor portal's
+     * "Schedule New Appointment" panel for walk-ins / new patients.
+     */
+    @Transactional
+    public Appointment createDirectAppointment(Long doctorUserId, String firstName, String lastName, String email,
+                                                 String phone, ZonedDateTime startTime, ZonedDateTime endTime,
+                                                 String reasonForVisit, String appointmentType, String notes) {
+
+        DoctorProfile doctor = doctorProfileRepository.findByUserId(doctorUserId)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.BAD_REQUEST, "Doctor profile not found."));
+
+        if (startTime == null || endTime == null || !endTime.isAfter(startTime)) {
+            throw new IllegalArgumentException("Appointment end time must be after the start time.");
+        }
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("Patient email is required.");
+        }
+
+        // Find the patient by email, or auto-create a minimal account for a new walk-in patient.
+        User patientUser = userRepository.findByEmail(email).orElseGet(() -> {
+            log.info("No user found for email {}. Auto-creating a new patient account.", email);
+            Role patientRole = roleRepository.findByName("ROLE_PATIENT")
+                    .orElseThrow(() -> new RuntimeException("ROLE_PATIENT not found."));
+            User newUser = User.builder()
+                    .email(email)
+                    .firstName(firstName != null && !firstName.isBlank() ? firstName : "Unknown")
+                    .lastName(lastName != null && !lastName.isBlank() ? lastName : "Patient")
+                    .phoneNumber(phone)
+                    .passwordHash(passwordEncoder.encode(java.util.UUID.randomUUID().toString()))
+                    .roles(new java.util.HashSet<>(java.util.Set.of(patientRole)))
+                    .build();
+            return userRepository.save(newUser);
+        });
+
+        Long patientUserId = patientUser.getId();
+        PatientProfile patient = patientRepository.findByUserId(patientUserId)
+                .orElseGet(() -> {
+                    log.info("No PatientProfile found for user ID: {}. Auto-creating a minimal profile.", patientUserId);
+                    return patientRepository.save(PatientProfile.builder()
+                            .userId(patientUserId)
+                            .emergencyContactName("Not provided")
+                            .emergencyContactPhone("+10000000000")
+                            .branchId(doctor.getBranchId())
+                            .build());
+                });
+
+        // Reject overlapping bookings for this doctor.
+        List<AppointmentSlot> overlapping = slotRepository.findByDoctorUserIdAndStartTimeBetween(
+                doctorUserId, startTime.minusHours(6), endTime.plusHours(6));
+        boolean conflict = overlapping.stream().anyMatch(s -> Boolean.TRUE.equals(s.getIsBooked())
+                && s.getStartTime().isBefore(endTime) && s.getEndTime().isAfter(startTime));
+        if (conflict) {
+            throw new IllegalArgumentException("This doctor already has an appointment overlapping that time.");
+        }
+
+        AppointmentSlot slot = slotRepository.save(AppointmentSlot.builder()
+                .doctor(doctor)
+                .startTime(startTime)
+                .endTime(endTime)
+                .branchId(doctor.getBranchId())
+                .isBooked(true)
+                .isPriority(false)
+                .build());
+
+        Appointment appointment = Appointment.builder()
+                .patient(patient)
+                .doctor(doctor)
+                .slot(slot)
+                .status(AppointmentStatus.BOOKED)
+                .appointmentType(appointmentType)
+                .reasonForVisit(reasonForVisit)
+                .notes(notes)
+                .branchId(doctor.getBranchId())
+                .build();
+
+        Appointment saved = appointmentRepository.save(appointment);
+
+        User doctorUser = userRepository.findById(doctorUserId)
+                .orElseThrow(() -> new RuntimeException("Doctor user not found"));
+
+        AppointmentBookedEvent event = AppointmentBookedEvent.builder()
+                .appointmentId(saved.getId())
+                .patientUserId(patientUserId)
+                .doctorUserId(doctorUserId)
+                .startTime(slot.getStartTime())
+                .endTime(slot.getEndTime())
+                .doctorName("Dr. " + doctorUser.getFirstName() + " " + doctorUser.getLastName())
+                .patientEmail(patientUser.getEmail())
+                .build();
+        eventPublisher.publishEvent(event);
+
+        return saved;
     }
 
     @Transactional(readOnly = true)

@@ -36,7 +36,6 @@ public class AiPatientService {
         
         // Simulate LLM Processing with safety guardrails
         String aiResponse = simulateLlmResponse(content);
-        boolean flagged = aiResponse.contains("[URGENT]");
         
         AiChatMessage aiMessage = AiChatMessage.builder()
             .session(session)

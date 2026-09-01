@@ -53,7 +53,7 @@ public class SseController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> generateTicket(@AuthenticationPrincipal UserPrincipal user) {
         boolean isAdmin = user.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_RECEPTIONIST"));
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_RECEPTION"));
         String ticket = sseTicketService.generateTicket(user.getUserId(), isAdmin);
         return ResponseEntity.ok(Map.of("ticket", ticket));
     }

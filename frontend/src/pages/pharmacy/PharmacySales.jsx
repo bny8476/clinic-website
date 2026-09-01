@@ -374,7 +374,7 @@ export default function PharmacySales() {
         isOpen={isModalOpen}
         onClose={() => { setIsModalOpen(false); posStore.resetForm(); }}
         title="Create New Pharmacy Sale"
-        maxWidth="sm:max-w-6xl"
+        size="full"
         footer={
           <div className="flex justify-between items-center w-full">
             <button onClick={() => { setIsModalOpen(false); posStore.resetForm(); }} className="px-6 py-2 border border-gray-200 rounded-xl text-sm font-bold text-gray-500 flex items-center gap-2 hover:bg-gray-50 transition-all">
@@ -598,7 +598,7 @@ export default function PharmacySales() {
                 columns={[
                   {
                     header: 'Medicine Name',
-                    render: (item, idx) => (
+                    render: (_, item, idx) => (
                       <div className="relative">
                         <input
                           type="text"
@@ -628,11 +628,11 @@ export default function PharmacySales() {
                   },
                   {
                     header: 'Batch',
-                    render: (item) => <div className="text-slate-500 uppercase">{item.batchNo || '-'}</div>
+                    render: (_, item) => <div className="text-slate-500 uppercase">{item.batchNo || '-'}</div>
                   },
                   {
                     header: <div className="text-center w-20">Qty</div>,
-                    render: (item, idx) => (
+                    render: (_, item, idx) => (
                       <input 
                         type="number" 
                         value={item.qty} 
@@ -643,19 +643,19 @@ export default function PharmacySales() {
                   },
                   {
                     header: <div className="text-right">Rate</div>,
-                    render: (item) => <div className="text-right">₹{Number(item.rate).toFixed(2)}</div>
+                    render: (_, item) => <div className="text-right">₹{Number(item.rate).toFixed(2)}</div>
                   },
                   {
                     header: <div className="text-center w-16">GST%</div>,
-                    render: (item) => <div className="text-center">{item.gst}%</div>
+                    render: (_, item) => <div className="text-center">{item.gst}%</div>
                   },
                   {
                     header: <div className="text-right">Amount</div>,
-                    render: (item) => <div className="text-right font-bold">₹{Number(item.amount).toFixed(2)}</div>
+                    render: (_, item) => <div className="text-right font-bold">₹{Number(item.amount).toFixed(2)}</div>
                   },
                   {
                     header: <div className="text-center w-12"></div>,
-                    render: (item, idx) => (
+                    render: (_, item, idx) => (
                       <div className="text-center">
                         <button onClick={() => posStore.removeRow(idx)} className="text-slate-300 hover:text-red-500">
                           <Trash2 className="w-4 h-4" />

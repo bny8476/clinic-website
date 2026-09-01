@@ -250,13 +250,13 @@ const Insurance = () => {
                                             </div>
                                         </div>
                                         <div className="flex flex-col justify-center">
-                                            <div className="text-[13.5px] font-bold text-slate-900">{claim.provider}</div>
+                                            <div className="text-[13.5px] font-bold text-slate-900">{claim.provider || claim.providerName}</div>
                                             <div className="text-[11px] font-medium text-slate-500 mt-0.5">Pol: {claim.policyNumber}</div>
                                         </div>
                                         <div className="flex flex-col justify-center">
                                             <div className="text-[14px] font-extrabold text-slate-900 flex items-center">
                                                 <IndianRupee size={13} className="text-slate-400 mr-0.5" />
-                                                {claim.claimAmount.toFixed(2)}
+                                                {(claim.claimAmount || claim.estimatedCost || 0).toFixed(2)}
                                             </div>
                                         </div>
                                         <div className="flex items-center">

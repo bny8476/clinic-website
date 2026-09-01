@@ -88,6 +88,11 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                     
                     authorities.add(new SimpleGrantedAuthority(roleWithPrefix));
                     authorities.add(new SimpleGrantedAuthority(roleWithoutPrefix));
+
+                    if (roleWithPrefix.equals("ROLE_SUPER_ADMIN")) {
+                        authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+                        authorities.add(new SimpleGrantedAuthority("ADMIN"));
+                    }
                 }
 
                 UserPrincipal userPrincipal =

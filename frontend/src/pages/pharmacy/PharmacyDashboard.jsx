@@ -110,7 +110,7 @@ export default function PharmacyDashboard() {
       <motion.div 
         variants={staggerContainer}
         initial="hidden"
-        animate="show"
+        animate="visible"
         className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4 mb-6 shrink-0"
       >
         <motion.div variants={fadeIn}>
@@ -278,7 +278,7 @@ export default function PharmacyDashboard() {
           className="xl:col-span-6 glass-panel p-6 overflow-hidden"
           variants={fadeIn}
           initial="hidden"
-          animate="show"
+          animate="visible"
         >
           <div className="flex justify-between items-center mb-6">
             <h3 className="font-bold text-[var(--color-text)] text-[16px]">Recently Added Medicines</h3>
@@ -301,7 +301,7 @@ export default function PharmacyDashboard() {
               <motion.tbody
                 variants={staggerContainer}
                 initial="hidden"
-                animate="show"
+                animate="visible"
                 className="divide-y divide-[var(--color-border)]"
               >
                 {recentlyAdded.map((item, idx) => (

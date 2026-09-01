@@ -22,7 +22,7 @@ public class PatientController {
     private final com.healthcare.clinic.patient.service.Patient360Service patient360Service;
 
     @GetMapping("/profile/{userId}")
-    @PreAuthorize("hasAuthority('ROLE_PATIENT') or hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_PATIENT') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     @AuditableAction(module = "PATIENT", action = "VIEW", resourceType = "PatientProfile", sensitivityLevel = "NORMAL")
     public ResponseEntity<PatientProfile> getPatientProfile(@PathVariable Long userId) {
         com.healthcare.clinic.security.SecurityUtils.assertOwnerOrAdmin(userId);
@@ -32,7 +32,7 @@ public class PatientController {
     }
 
     @GetMapping("/{patientId}")
-    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     @AuditableAction(module = "PATIENT", action = "VIEW", resourceType = "PatientProfile", sensitivityLevel = "NORMAL")
     public ResponseEntity<PatientProfile> getPatientById(@PathVariable Long patientId) {
         return patientRepository.findById(patientId)
@@ -41,7 +41,7 @@ public class PatientController {
     }
 
     @GetMapping("/{patientId}/360")
-    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_NURSE') or hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_PHARMACIST') or hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_NURSE') or hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_PHARMACIST') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<com.healthcare.clinic.patient.dto.Patient360DTO> getPatient360(@PathVariable Long patientId) {
         return ResponseEntity.ok(patient360Service.getPatient360(patientId));
     }
@@ -71,19 +71,22 @@ public class PatientController {
     }
 
     @GetMapping("/my")
-    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<java.util.List<PatientProfile>> getMyPatients() {
         return ResponseEntity.ok(java.util.List.of());
     }
 
     @PutMapping("/{patientId}")
-    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     @AuditableAction(module = "PATIENT", action = "EDIT", resourceType = "PatientProfile", sensitivityLevel = "HIGH")
     public ResponseEntity<PatientProfile> updatePatientByDoctor(
             @PathVariable Long patientId,
             @RequestBody PatientProfileRequest request) {
         
         Optional<PatientProfile> existing = patientRepository.findById(patientId);
+        if (existing.isEmpty()) {
+            existing = patientRepository.findByUserId(patientId);
+        }
         if (existing.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
@@ -105,7 +108,7 @@ public class PatientController {
     }
 
     @GetMapping("/search")
-    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     @AuditableAction(module = "PATIENT", action = "SEARCH", resourceType = "PatientList", sensitivityLevel = "NORMAL")
     public ResponseEntity<java.util.List<java.util.Map<String, Object>>> searchPatients(@RequestParam(required = false) String query) {
         if (query == null || query.trim().isEmpty()) {
@@ -133,7 +136,7 @@ public class PatientController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     @AuditableAction(module = "PATIENT", action = "LIST", resourceType = "PatientList", sensitivityLevel = "NORMAL")
     public ResponseEntity<org.springframework.data.domain.Page<java.util.Map<String, Object>>> getAllPatients(
             @org.springframework.data.web.PageableDefault(size = 20) org.springframework.data.domain.Pageable pageable) {
@@ -156,7 +159,7 @@ public class PatientController {
     }
 
     @GetMapping("/{patientId}/vitals/latest")
-    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     @AuditableAction(module = "PATIENT", action = "VIEW", resourceType = "Vitals", sensitivityLevel = "HIGH")
     public ResponseEntity<com.healthcare.clinic.patient.entity.Vitals> getLatestVitals(@PathVariable Long patientId) {
         return vitalsRepository.findTopByPatientIdOrderByRecordedAtDesc(patientId)
@@ -165,7 +168,7 @@ public class PatientController {
     }
 
     @GetMapping("/{patientId}/vitals/history")
-    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     @AuditableAction(module = "PATIENT", action = "VIEW", resourceType = "VitalsHistory", sensitivityLevel = "HIGH")
     public ResponseEntity<java.util.List<com.healthcare.clinic.patient.entity.Vitals>> getAllVitals(@PathVariable Long patientId) {
         return ResponseEntity.ok(vitalsRepository.findByPatientIdOrderByRecordedAtDesc(patientId));
@@ -201,5 +204,21 @@ public class PatientController {
         
         com.healthcare.clinic.patient.entity.Vitals saved = vitalsRepository.save(vitals);
         return ResponseEntity.ok(saved);
+    }
+
+    @DeleteMapping("/{patientId}")
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
+    @AuditableAction(module = "PATIENT", action = "DELETE", resourceType = "PatientProfile", sensitivityLevel = "HIGH")
+    public ResponseEntity<Void> deletePatient(@PathVariable Long patientId) {
+        Optional<PatientProfile> profile = patientRepository.findById(patientId);
+        if (profile.isEmpty()) {
+            profile = patientRepository.findByUserId(patientId);
+        }
+        if (profile.isPresent()) {
+            patientRepository.delete(profile.get());
+            userRepository.findById(profile.get().getUserId()).ifPresent(userRepository::delete);
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
     }
 }

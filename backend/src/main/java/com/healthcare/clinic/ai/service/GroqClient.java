@@ -1,7 +1,7 @@
 package com.healthcare.clinic.ai.service;
 
 import com.healthcare.clinic.ai.config.GroqConfig;
-import lombok.RequiredArgsConstructor;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
@@ -15,7 +15,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,7 +61,12 @@ public class GroqClient {
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
             log.info("Sending chat request to Groq API using model: {}", model);
-            ResponseEntity<Map> response = restTemplate.postForEntity(apiUrl, entity, Map.class);
+            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                    apiUrl,
+                    org.springframework.http.HttpMethod.POST,
+                    entity,
+                    new org.springframework.core.ParameterizedTypeReference<Map<String, Object>>() {}
+            );
 
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
                 Map<String, Object> body = response.getBody();

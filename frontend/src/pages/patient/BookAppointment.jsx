@@ -161,7 +161,7 @@ export default function BookAppointment() {
         const res = await axiosPrivate.get(
           `/appointments/slots?doctorId=${selectedDoctorId}&start=${start.toISOString()}&end=${end.toISOString()}`
         );
-        return Array.isArray(res.data) ? res.data : [];
+        return Array.isArray(res.data?.data) ? res.data.data : (Array.isArray(res.data) ? res.data : []);
       } catch {
         return [];
       }

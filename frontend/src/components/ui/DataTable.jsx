@@ -96,9 +96,9 @@ export default function DataTable({
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-[var(--color-surface-alt)] border-b border-[var(--color-border)] text-sm font-semibold text-[var(--color-navy-900)] select-none">
-                  {columns.map((col) => (
+                  {columns.map((col, index) => (
                     <th
-                      key={col.key}
+                      key={col.key || index}
                       onClick={() => col.sortable && handleSort(col.key)}
                       className={`p-4 ${col.sortable ? 'cursor-pointer hover:text-[var(--color-text)]' : ''} ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'}`}
                     >
@@ -132,9 +132,9 @@ export default function DataTable({
                       key={row.id || index} 
                       className="hover:bg-white/20 dark:hover:bg-white/10 transition-colors bg-transparent"
                     >
-                      {columns.map((col) => (
+                      {columns.map((col, colIndex) => (
                         <td 
-                          key={col.key} 
+                          key={col.key || colIndex} 
                           className={`p-4 ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'}`}
                         >
                           {col.render ? col.render(row[col.key], row, index) : row[col.key]}
@@ -159,8 +159,8 @@ export default function DataTable({
                   key={row.id || index} 
                   className="p-4 space-y-2 bg-[var(--color-surface)]"
                 >
-                {columns.map((col) => (
-                  <div key={col.key} className="flex justify-between items-center text-xs">
+                {columns.map((col, colIndex) => (
+                  <div key={col.key || colIndex} className="flex justify-between items-center text-xs">
                     <span className="font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
                       {col.title}
                     </span>

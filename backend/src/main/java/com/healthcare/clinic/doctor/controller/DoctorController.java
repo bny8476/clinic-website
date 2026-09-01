@@ -31,7 +31,7 @@ public class DoctorController {
 
 
     @GetMapping("/{userId}/full-profile")
-    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<java.util.Map<String, Object>> getDoctorFullProfile(@PathVariable Long userId) {
         com.healthcare.clinic.security.SecurityUtils.assertOwnerOrAdmin(userId);
         
@@ -59,7 +59,7 @@ public class DoctorController {
     }
 
     @GetMapping("/admin/all")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     @com.healthcare.clinic.audit.annotation.AuditableAction(module = "DOCTOR", action = "LIST", resourceType = "DoctorList", sensitivityLevel = "NORMAL")
     public ResponseEntity<org.springframework.data.domain.Page<java.util.Map<String, Object>>> getAllDoctorsAdmin(
             @org.springframework.data.web.PageableDefault(size = 20) org.springframework.data.domain.Pageable pageable) {
@@ -92,7 +92,7 @@ public class DoctorController {
     }
 
     @PostMapping("/profile")
-    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<DoctorProfile> createOrUpdateProfile(@jakarta.validation.Valid @RequestBody DoctorProfileRequest request) {
         Long currentUserId = SecurityUtils.getCurrentUserId();
         Optional<DoctorProfile> existing = doctorRepository.findByUserId(currentUserId);

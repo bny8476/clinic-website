@@ -9,6 +9,6 @@ import java.util.List;
 @Repository("pharmacySupplierRepository")
 public interface SupplierRepository extends JpaRepository<Supplier, Long> {
     List<Supplier> findAllByDeletedFalse();
-    
+
     java.util.Optional<Supplier> findTopByOrderByIdAsc();
 }

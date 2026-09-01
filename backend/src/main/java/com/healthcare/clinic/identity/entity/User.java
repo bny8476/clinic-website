@@ -102,6 +102,9 @@ public class User implements UserDetails {
             }
             if (roleName != null) {
                 authorities.add(new SimpleGrantedAuthority(roleName));
+                if (roleName.equals("ROLE_SUPER_ADMIN")) {
+                    authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+                }
             }
             authorities.addAll(role.getPermissions().stream()
                     .map(p -> new SimpleGrantedAuthority(p.getName()))

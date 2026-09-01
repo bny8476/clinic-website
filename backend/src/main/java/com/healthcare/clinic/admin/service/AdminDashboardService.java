@@ -16,7 +16,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import com.healthcare.clinic.reception.entity.ClinicPayment;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 @Service
@@ -48,7 +47,7 @@ public class AdminDashboardService {
         long completedConsultations = appointmentRepository.countByStatus(com.healthcare.clinic.appointment.entity.AppointmentStatus.COMPLETED);
 
         long totalStaff = userRepository.countByRolesName("ROLE_NURSE") + 
-                          userRepository.countByRolesName("ROLE_RECEPTIONIST") + 
+                          userRepository.countByRolesName("ROLE_RECEPTION") + 
                           userRepository.countByRolesName("ROLE_PHARMACIST") + 
                           userRepository.countByRolesName("ROLE_LAB_TECHNICIAN") + 
                           userRepository.countByRolesName("ROLE_ADMIN");
@@ -64,8 +63,8 @@ public class AdminDashboardService {
         List<ClinicPayment> todaysPayments = clinicPaymentRepository.findByCreatedAtBetween(
                 startOfDay.toLocalDateTime(), endOfDay.toLocalDateTime());
         BigDecimal todaysRevenue = todaysPayments.stream()
-                .map(ClinicPayment::getAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .map(p -> p.getAmount() != null ? p.getAmount() : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, (a, b) -> a.add(b));
 
         return AdminDashboardMetricsDto.builder()
                 .totalPatients(totalPatients)

@@ -6,7 +6,7 @@ import Card from '../../components/ui/Card';
 import Modal from '../../components/ui/Modal';
 import PrescriptionDocument from '../../components/doctor/PrescriptionDocument';
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { Activity, AlertTriangle, ArrowLeft, Check, CheckCircle, CheckCircle2, ChevronLeft, ChevronRight, Clock, Edit, Edit2, Eye, FileCode, FileText, Heart, Info, Moon, Plus, Printer, Save, Send, Sparkles, Sun, Sunrise, Trash2, X } from 'lucide-react';
@@ -34,6 +34,8 @@ const DURATIONS = [
 
 const NewPrescription = () => {
   const { patientId, prescriptionId: routePrescriptionId } = useParams();
+  const [searchParams] = useSearchParams();
+  const templateId = searchParams.get('templateId');
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
@@ -74,8 +76,33 @@ const NewPrescription = () => {
           toast.error("Failed to load draft prescription.");
           logger.error(err);
         });
+    } else if (templateId) {
+      axiosPrivate.get(`/prescriptions/templates/${templateId}`)
+        .then(res => {
+          const data = res.data;
+          setChiefComplaint(data.chiefComplaint || '');
+          setDiagnosis(data.diagnosis || '');
+          if (data.items && data.items.length > 0) {
+            setItems(data.items.map(i => ({
+              id: Date.now() + Math.random(),
+              medicineName: i.medicationName,
+              type: i.type,
+              dosage: i.dosage,
+              frequency: i.frequency,
+              duration: i.duration,
+              timing: i.timing,
+              instructions: i.instructions || '',
+              strength: i.strength || ''
+            })));
+          }
+        })
+        .catch(err => {
+          toast.error("Failed to load template.");
+          logger.error(err);
+        });
     }
-  }, [routePrescriptionId]);
+  }, [routePrescriptionId, templateId]);
+
 
   const [isPreview, setIsPreview] = useState(false);
   const [sentAt, setSentAt] = useState(null);

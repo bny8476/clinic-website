@@ -24,4 +24,6 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 
     @Query("SELECT COUNT(i) FROM Invoice i WHERE i.status = 'OVERDUE'")
     Long countOverdue();
+
+    java.util.Optional<Invoice> findFirstByInvoiceNumberStartingWithOrderByInvoiceNumberDesc(String prefix);
 }

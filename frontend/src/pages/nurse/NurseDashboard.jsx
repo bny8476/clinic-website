@@ -23,6 +23,8 @@ import {
   Users 
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import NurseAssignedPatients from './NurseAssignedPatients';
+import WardManagement from './WardManagement';
 
 const NurseDashboard = () => {
   const { user } = useAuthStore();
@@ -46,12 +48,21 @@ const NurseDashboard = () => {
     { icon: FlaskConical, label: 'Lab Collection', desc: 'Manage lab collections', color: 'text-sky-600', bg: 'bg-sky-50', link: '/nurse/lab' }
   ];
 
-  // OP Patients Mock / Live Data
-  const opPatients = [
-    { token: '101', name: 'Pat lent', time: '09:00 AM', status: 'Waiting', statusBg: 'bg-amber-50 text-amber-600' },
-    { token: '102', name: 'James Smith', time: '09:30 AM', status: 'In Queue', statusBg: 'bg-blue-50 text-blue-600' },
-    { token: '103', name: 'Linda Brown', time: '10:00 AM', status: 'Waiting', statusBg: 'bg-amber-50 text-amber-600' }
-  ];
+  const { data: livePatients = [], isLoading: opLoading } = useQuery({
+    queryKey: ['nurse-dashboard-op-patients'],
+    queryFn: async () => (await axiosPrivate.get('/nursing/assignments/op')).data,
+    refetchInterval: 10000 // Realtime updates
+  });
+
+  // OP Patients Live Data
+  const opPatients = livePatients.map(p => ({
+    id: p.patientId,
+    token: p.tokenNumber || '-',
+    name: p.patientName,
+    time: p.appointmentTime || 'Today',
+    status: p.status || 'Waiting',
+    statusBg: 'bg-amber-50 text-amber-600'
+  })).slice(0, 5);
 
   // Scheduled Timeline Events
   const scheduleEvents = [
@@ -127,7 +138,8 @@ const NurseDashboard = () => {
         })}
       </div>
 
-      {/* ─── 3. Main 3-Column Content Layout ─── */}
+      {/* ─── 3. Main Content Rendering based on Tab ─── */}
+      {activeTab === 'Dashboard' && (
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
         {/* ── LEFT COLUMN (3/12 = 25%) ── */}
@@ -157,8 +169,12 @@ const NurseDashboard = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50 font-medium">
-                  {opPatients.map((pt, pIdx) => (
-                    <tr key={pIdx} className="hover:bg-slate-50/50">
+                  {opLoading ? (
+                    <tr><td colSpan="4" className="text-center py-4 text-slate-500">Loading...</td></tr>
+                  ) : opPatients.length === 0 ? (
+                    <tr><td colSpan="4" className="text-center py-4 text-slate-500">No OP patients assigned</td></tr>
+                  ) : opPatients.map((pt, pIdx) => (
+                    <tr key={pIdx} className="hover:bg-slate-50/50 cursor-pointer" onClick={() => navigate(`/nurse/workspace/${pt.id}`)}>
                       <td className="py-2.5 font-bold text-slate-900">{pt.token}</td>
                       <td className="py-2.5 font-extrabold text-slate-900">{pt.name}</td>
                       <td className="py-2.5 text-slate-500">{pt.time}</td>
@@ -416,6 +432,23 @@ const NurseDashboard = () => {
         </div>
 
       </div>
+      )}
+
+      {activeTab === 'OP Queue' && (
+        <NurseAssignedPatients />
+      )}
+
+      {activeTab === 'IP Wards' && (
+        <WardManagement />
+      )}
+
+      {activeTab === 'Inventory' && (
+        <div className="flex flex-col items-center justify-center p-20 bg-white rounded-3xl border border-slate-100 shadow-sm mt-6">
+          <Clipboard className="w-16 h-16 text-slate-200 mb-4" />
+          <h2 className="text-2xl font-bold text-slate-800 mb-2">Inventory Module</h2>
+          <p className="text-slate-500 font-medium">Supply inventory management is coming soon.</p>
+        </div>
+      )}
 
     </div>
   );

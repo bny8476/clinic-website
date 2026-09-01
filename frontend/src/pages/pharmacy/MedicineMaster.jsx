@@ -529,7 +529,7 @@ export default function MedicineMaster() {
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)}
         title={isEditMode ? "Edit Medicine Record" : "Register New Medicine"}
-        maxWidth="sm:max-w-6xl"
+        size="full"
         footer={
           <div className="flex justify-end gap-3 w-full border-t border-slate-100 pt-4">
             <button onClick={() => setIsModalOpen(false)} className="px-6 py-2 border border-slate-200 rounded-md text-sm font-medium text-slate-700 hover:bg-slate-50">Cancel</button>

@@ -19,7 +19,7 @@ export default function QuickActionDropdown() {
     <div className="relative hidden sm:block" ref={dropdownRef}>
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="bg-[#2160FF] hover:bg-blue-700 text-white px-4.5 py-2 rounded-full flex items-center gap-2 text-sm font-semibold transition shadow-sm border-none cursor-pointer"
+        className="bg-[#2160FF] hover:bg-blue-700 text-white px-4.5 py-2 rounded-lg flex items-center gap-2 text-sm font-semibold transition shadow-sm border-none cursor-pointer"
       >
         <Zap size={16} className="fill-current" />
         Quick Action

@@ -23,6 +23,7 @@ const PatientList = ({ onPatientClick }) => {
   const { data: patients = [], isLoading } = useQuery({
     queryKey: ['doctor-patients'],
     queryFn: async () => (await axiosPrivate.get('/doctor/patients/my')).data,
+    refetchInterval: 10000,
   });
 
   const filteredAndSorted = patients
@@ -80,13 +81,27 @@ const PatientList = ({ onPatientClick }) => {
   };
 
   const editMutation = useMutation({
-    mutationFn: async () => (await axiosPrivate.put(`/patients/${editPatient.patientId}`, editForm)).data,
+    mutationFn: async () => {
+      const targetId = editPatient.id || editPatient.patientId;
+      return (await axiosPrivate.put(`/patients/${targetId}`, editForm)).data;
+    },
     onSuccess: () => {
-      toast.success('Patient profile updated');
+      toast.success('Patient profile updated successfully');
       queryClient.invalidateQueries(['doctor-patients']);
       setEditPatient(null);
     },
     onError: (err) => toast.error(err?.response?.data?.message || 'Update failed'),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id) => {
+      return (await axiosPrivate.delete(`/patients/${id}`)).data;
+    },
+    onSuccess: () => {
+      toast.success('Patient deleted successfully');
+      queryClient.invalidateQueries(['doctor-patients']);
+    },
+    onError: (err) => toast.error(err?.response?.data?.message || 'Delete failed'),
   });
 
   return (
@@ -218,32 +233,81 @@ const PatientList = ({ onPatientClick }) => {
                       <td className="py-4 px-6 whitespace-nowrap text-right">
                         <div className="flex items-center justify-end gap-3 text-[#5B21B6]" onClick={e => e.stopPropagation()}>
                           <button 
-                            onClick={() => onPatientClick ? onPatientClick(p.patientId) : navigate(`/doctor/patients/${p.patientId}`)}
-                            className="hover:text-[#1a4acc] transition-colors bg-[#EFF4FF] p-1.5 rounded" 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (onPatientClick) onPatientClick(p.patientId);
+                              else navigate(`/doctor/patients/${p.patientId}`);
+                            }}
+                            className="hover:text-[#1a4acc] transition-colors bg-[#EFF4FF] p-1.5 rounded cursor-pointer border-none" 
                             title="View Patient"
                           >
                             <Eye size={16} strokeWidth={2.5} />
                           </button>
                           <button 
-                            onClick={() => openEdit(p)}
-                            className="hover:text-[#1a4acc] transition-colors bg-[#EFF4FF] p-1.5 rounded" 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openEdit(p);
+                            }}
+                            className="hover:text-[#1a4acc] transition-colors bg-[#EFF4FF] p-1.5 rounded cursor-pointer border-none" 
                             title="Edit Patient"
                           >
                             <Edit2 size={16} strokeWidth={2.5} />
                           </button>
                           <div className="relative">
                             <button 
-                              onClick={() => setActionsOpenId(actionsOpenId === p.patientId ? null : p.patientId)}
-                              className="hover:text-[#1a4acc] transition-colors bg-[#EFF4FF] p-1.5 rounded" 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActionsOpenId(actionsOpenId === p.patientId ? null : p.patientId);
+                              }}
+                              className="hover:text-[#1a4acc] transition-colors bg-[#EFF4FF] p-1.5 rounded cursor-pointer border-none" 
                               title="More Actions"
                             >
                               <MoreVertical size={16} strokeWidth={2.5} />
                             </button>
                             {actionsOpenId === p.patientId && (
-                              <div className="absolute right-0 mt-1 w-44 bg-white border border-slate-200 rounded-lg shadow-lg z-20 py-1">
-                                <button onClick={() => { navigate(`/doctor/patients/${p.patientId}`); setActionsOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">View Profile</button>
-                                <button onClick={() => { navigate(`/doctor/appointments/new?patientId=${p.patientId}`); setActionsOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Book Appointment</button>
-                                <button onClick={() => { navigate(`/doctor/prescriptions/new?patientId=${p.patientId}`); setActionsOpenId(null); }} className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">New Prescription</button>
+                              <div 
+                                className="absolute right-0 mt-1 w-48 bg-white border border-slate-200 rounded-xl shadow-xl z-30 py-1"
+                                onClick={e => e.stopPropagation()}
+                              >
+                                <button 
+                                  onClick={() => { 
+                                    setActionsOpenId(null); 
+                                    if (onPatientClick) onPatientClick(p.patientId);
+                                    else navigate(`/doctor/patients/${p.patientId}`); 
+                                  }} 
+                                  className="w-full text-left px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 border-none bg-transparent cursor-pointer"
+                                >
+                                  View Profile
+                                </button>
+                                <button 
+                                  onClick={() => { 
+                                    setActionsOpenId(null); 
+                                    navigate('/doctor/dashboard?panel=new-appointment'); 
+                                  }} 
+                                  className="w-full text-left px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 border-none bg-transparent cursor-pointer"
+                                >
+                                  Book Appointment
+                                </button>
+                                <button 
+                                  onClick={() => { 
+                                    setActionsOpenId(null); 
+                                    openEdit(p);
+                                  }} 
+                                  className="w-full text-left px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 border-none bg-transparent cursor-pointer"
+                                >
+                                  Edit Patient Info
+                                </button>
+                                <button 
+                                  onClick={() => { 
+                                    setActionsOpenId(null);
+                                    if(window.confirm('Are you sure you want to delete this patient?')) {
+                                      deleteMutation.mutate(p.patientId || p.id);
+                                    }
+                                  }} 
+                                  className="w-full text-left px-4 py-2 text-xs font-bold text-red-600 hover:bg-red-50 border-none bg-transparent cursor-pointer"
+                                >
+                                  Delete Patient
+                                </button>
                               </div>
                             )}
                           </div>

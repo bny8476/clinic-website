@@ -17,7 +17,8 @@ const DoctorLabReports = () => {
     queryFn: async () => {
       const response = await axiosPrivate.get('/lab/doctor/my-requests');
       return response.data;
-    }
+    },
+    refetchInterval: 10000 // Realtime data fetching every 10s
   });
 
   const handleDownloadPdf = async (id) => {
@@ -85,6 +86,20 @@ const DoctorLabReports = () => {
       default: return true;
     }
   }) || [];
+
+  // Calculate top test types for sidebar
+  const topTestTypes = (() => {
+    if (!myRequests || myRequests.length === 0) return [];
+    const counts = {};
+    myRequests.forEach(req => {
+      const name = req.testCatalog?.testName || 'Unknown Test';
+      counts[name] = (counts[name] || 0) + 1;
+    });
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 4)
+      .map(([name, count]) => ({ name, count }));
+  })();
 
   const tabs = ['All Reports', 'Blood Tests', 'Imaging', 'Pathology', 'Microbiology', 'Other Tests'];
 
@@ -297,7 +312,21 @@ const DoctorLabReports = () => {
               </div>
 
               <div className="flex flex-col gap-4">
-                <div className="text-center py-4 text-sm text-slate-500 font-medium">Data unavailable</div>
+                {topTestTypes.length > 0 ? (
+                  topTestTypes.map((test, idx) => (
+                    <div key={idx} className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center">
+                          {getIconForTest(test.name)}
+                        </div>
+                        <span className="text-[13px] font-bold text-slate-800">{test.name}</span>
+                      </div>
+                      <span className="text-[12px] font-bold text-slate-500 bg-slate-50 px-2 py-0.5 rounded-md">{test.count}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-4 text-sm text-slate-500 font-medium">Data unavailable</div>
+                )}
               </div>
             </div>
 

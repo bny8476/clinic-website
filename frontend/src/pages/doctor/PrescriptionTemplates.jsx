@@ -33,10 +33,12 @@ const PrescriptionTemplates = () => {
 
   const [activeCategory, setActiveCategory] = useState(null);
   const [viewMode, setViewMode] = useState('grid');
+  const [sortBy, setSortBy] = useState('Recently Updated');
   
   // Modals state
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [isPatientModalOpen, setIsPatientModalOpen] = useState(false);
+  const [selectedTemplateForUse, setSelectedTemplateForUse] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState({ isOpen: false, templateId: null });
 
   // Search
@@ -79,7 +81,11 @@ const PrescriptionTemplates = () => {
   const filteredTemplates = templates.filter(t => 
     !debouncedSearch || t.name.toLowerCase().includes(debouncedSearch.toLowerCase()) || 
     (t.diagnosis && t.diagnosis.toLowerCase().includes(debouncedSearch.toLowerCase()))
-  );
+  ).sort((a, b) => {
+    if (sortBy === 'A-Z') return a.name.localeCompare(b.name);
+    if (sortBy === 'Oldest First') return new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
+    return new Date(b.createdAt || 0) - new Date(a.createdAt || 0); // Recently Updated
+  });
 
   return (
     
@@ -163,9 +169,13 @@ const PrescriptionTemplates = () => {
               </div>
               
               <div className="relative w-full sm:w-48">
-                <select className="appearance-none w-full pl-4 pr-10 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-600 font-medium focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 shadow-sm cursor-pointer">
-                  <option>All Categories</option>
-                  {CATEGORIES.map(c => <option key={c.name}>{c.name}</option>)}
+                <select 
+                  value={activeCategory || 'All Categories'}
+                  onChange={e => setActiveCategory(e.target.value === 'All Categories' ? null : e.target.value)}
+                  className="appearance-none w-full pl-4 pr-10 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-600 font-medium focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 shadow-sm cursor-pointer"
+                >
+                  <option value="All Categories">All Categories</option>
+                  {CATEGORIES.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
                 </select>
                 <ChevronDown className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               </div>
@@ -173,10 +183,14 @@ const PrescriptionTemplates = () => {
 
             <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto">
               <div className="relative w-full sm:w-48">
-                <select className="appearance-none w-full pl-4 pr-10 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-600 font-medium focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 shadow-sm cursor-pointer">
-                  <option>Recently Updated</option>
-                  <option>Oldest First</option>
-                  <option>A-Z</option>
+                <select 
+                  value={sortBy}
+                  onChange={e => setSortBy(e.target.value)}
+                  className="appearance-none w-full pl-4 pr-10 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-600 font-medium focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 shadow-sm cursor-pointer"
+                >
+                  <option value="Recently Updated">Recently Updated</option>
+                  <option value="Oldest First">Oldest First</option>
+                  <option value="A-Z">A-Z</option>
                 </select>
                 <ChevronDown className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               </div>
@@ -215,7 +229,12 @@ const PrescriptionTemplates = () => {
                 </div>
               </div>
               <h3 className="text-[22px] font-extrabold text-slate-900 mb-2">No templates found</h3>
-              <p className="text-slate-500 text-[15px] font-medium max-w-sm mb-8">You haven't created any templates yet.<br/>Create your first template to get started.</p>
+              <p className="text-slate-500 text-[15px] font-medium max-w-sm mb-8">
+                {activeCategory 
+                  ? `You haven't created any ${activeCategory} templates yet.` 
+                  : `You haven't created any templates yet.`}
+                <br/>Create your first template to get started.
+              </p>
               <button 
                 onClick={() => setIsTemplateModalOpen(true)}
                 className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-colors shadow-md"
@@ -242,7 +261,15 @@ const PrescriptionTemplates = () => {
                   
                   <div className="mt-auto pt-5 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-slate-500">
                     <span className="bg-slate-50 px-2.5 py-1 rounded-md border border-slate-100 text-slate-600">{template.items?.length || 0} Medicines</span>
-                    <button className="text-blue-600 hover:text-blue-800 transition-opacity flex items-center gap-1 group-hover:underline">Use Template <ChevronRight className="w-3 h-3"/></button>
+                    <button 
+                      onClick={() => {
+                        setSelectedTemplateForUse(template.id);
+                        setIsPatientModalOpen(true);
+                      }}
+                      className="text-blue-600 hover:text-blue-800 transition-opacity flex items-center gap-1 group-hover:underline"
+                    >
+                      Use Template <ChevronRight className="w-3 h-3"/>
+                    </button>
                   </div>
                 </div>
               ))}
@@ -282,7 +309,10 @@ const PrescriptionTemplates = () => {
 
       {/* Patient Picker Modal */}
       <Transition show={isPatientModalOpen} as={React.Fragment}>
-        <Dialog as="div" className="relative z-50" onClose={() => setIsPatientModalOpen(false)}>
+        <Dialog as="div" className="relative z-50" onClose={() => {
+          setIsPatientModalOpen(false);
+          setSelectedTemplateForUse(null);
+        }}>
           <Transition.Child
             as={React.Fragment}
             enter="ease-out duration-300"
@@ -311,7 +341,10 @@ const PrescriptionTemplates = () => {
                     <Dialog.Title as="h3" className="text-xl font-extrabold leading-6 text-slate-900">
                       Select Patient
                     </Dialog.Title>
-                    <button onClick={() => setIsPatientModalOpen(false)} className="text-slate-400 hover:text-slate-600 bg-slate-50 hover:bg-slate-100 p-2 rounded-full transition-colors">
+                    <button onClick={() => {
+                      setIsPatientModalOpen(false);
+                      setSelectedTemplateForUse(null);
+                    }} className="text-slate-400 hover:text-slate-600 bg-slate-50 hover:bg-slate-100 p-2 rounded-full transition-colors">
                       <X className="w-5 h-5" />
                     </button>
                   </div>
@@ -336,7 +369,10 @@ const PrescriptionTemplates = () => {
                     ) : patients.map(p => (
                       <div 
                         key={p.id}
-                        onClick={() => navigate(`/doctor/patients/${p.patientId || p.id}/prescriptions/new`)}
+                        onClick={() => {
+                          const url = `/doctor/patients/${p.patientId || p.id}/prescriptions/new` + (selectedTemplateForUse ? `?templateId=${selectedTemplateForUse}` : '');
+                          navigate(url);
+                        }}
                         className="flex items-center gap-4 p-3.5 rounded-2xl hover:bg-slate-50 cursor-pointer border border-transparent hover:border-slate-200 transition-colors group"
                       >
                         <div className="w-11 h-11 rounded-full bg-slate-200 flex-shrink-0 overflow-hidden ring-2 ring-transparent group-hover:ring-blue-100 transition-all">

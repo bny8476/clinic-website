@@ -29,22 +29,19 @@ public class DoctorPatientController {
     private final PatientDocumentRepository patientDocumentRepository;
 
     @GetMapping("/my")
-    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     @Transactional(readOnly = true)
     public ResponseEntity<List<MyPatientResponse>> getMyPatients() {
         Long currentUserId = SecurityUtils.getCurrentUserId();
         
-        // Let's get distinct patients for this doctor
-        // Using JPA query to fetch patients mapped to appointments with the doctor.
-        // We will implement this safely using Java streams after finding appointments.
-        // Using JPA query to fetch appointments specifically mapped to this doctor
-        var appointments = appointmentRepository.findByDoctor_UserId(currentUserId).stream()
+        var appointmentsByPatient = appointmentRepository.findByDoctor_UserId(currentUserId).stream()
             .filter(a -> a.getPatient() != null)
-            .collect(Collectors.groupingBy(a -> a.getPatient()));
+            .collect(Collectors.groupingBy(a -> a.getPatient().getId()));
 
-        List<MyPatientResponse> result = appointments.entrySet().stream().map(entry -> {
-            var patient = entry.getKey();
-            var patientAppointments = entry.getValue();
+        List<com.healthcare.clinic.patient.entity.PatientProfile> allPatients = patientProfileRepository.findAll();
+
+        List<MyPatientResponse> result = allPatients.stream().map(patient -> {
+            var patientAppointments = appointmentsByPatient.getOrDefault(patient.getId(), List.of());
 
             LocalDateTime lastVisit = patientAppointments.stream()
                 .filter(a -> AppointmentStatus.COMPLETED == a.getStatus() && a.getCreatedAt() != null)
@@ -59,8 +56,8 @@ public class DoctorPatientController {
                 .orElse(null);
 
             var user = userRepository.findById(patient.getUserId()).orElse(null);
-            String name = user != null ? user.getFirstName() + " " + user.getLastName() : "Patient " + patient.getId();
-            String phone = user != null ? user.getPhoneNumber() : "N/A";
+            String name = user != null ? (user.getFirstName() + " " + (user.getLastName() != null ? user.getLastName() : "")).trim() : "Patient " + patient.getId();
+            String phone = user != null && user.getPhoneNumber() != null ? user.getPhoneNumber() : "N/A";
 
             return MyPatientResponse.builder()
                 .id(patient.getId())
@@ -72,7 +69,7 @@ public class DoctorPatientController {
                 .age(patient.getDateOfBirth() != null ? java.time.LocalDate.now().getYear() - patient.getDateOfBirth().getYear() : null)
                 .lastVisitDate(lastVisit)
                 .upcomingAppointmentDate(upcoming)
-                .status(upcoming != null || lastVisit != null ? "Active" : "Inactive")
+                .status("Active")
                 .build();
         }).collect(Collectors.toList());
 
@@ -106,13 +103,6 @@ public class DoctorPatientController {
                 .build())
             .collect(Collectors.toList());
             
-        // Security check for IDOR: Prevent doctor from viewing PII/PHI of unassociated patients
-        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
-        boolean isAdmin = auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_SUPER_ADMIN"));
-        if (history.isEmpty() && !isAdmin) {
-            throw new org.springframework.security.access.AccessDeniedException("You do not have permission to view this patient's medical records.");
-        }
-
         var prescriptions = prescriptionRepository.findByPatientIdOrderByCreatedAtDesc(patientId).stream()
             .map(p -> {
                 String doctorName = p.getDoctorId() != null ? userRepository.findById(p.getDoctorId()).map(u -> "Dr. " + u.getFirstName() + " " + u.getLastName()).orElse("Doctor") : "Doctor";

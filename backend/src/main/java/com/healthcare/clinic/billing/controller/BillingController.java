@@ -26,7 +26,7 @@ public class BillingController {
 
     @GetMapping("/patient/{patientId}")
     @PreAuthorize("(hasAuthority('ROLE_PATIENT') and @securityUtils.isSameUser(#patientId)) " +
-                  "or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_ACCOUNTANT') or hasAuthority('ROLE_RECEPTIONIST')")
+                  "or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_ACCOUNTANT') or hasAuthority('ROLE_RECEPTION')")
     @AuditableAction(module = "BILLING", action = "VIEW", resourceType = "Invoice", sensitivityLevel = "NORMAL")
     public ResponseEntity<List<InvoiceResponse>> getPatientInvoices(@PathVariable Long patientId) {
         return ResponseEntity.ok(billingService.getInvoicesForPatient(patientId));
@@ -65,7 +65,7 @@ public class BillingController {
     }
 
     @PostMapping("/invoices")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_BRANCH_ADMIN') or hasAuthority('ROLE_ACCOUNTANT') or hasAuthority('ROLE_RECEPTIONIST')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_BRANCH_ADMIN') or hasAuthority('ROLE_ACCOUNTANT') or hasAuthority('ROLE_RECEPTION')")
     public ResponseEntity<InvoiceResponse> createInvoice(@Valid @RequestBody InvoiceRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(billingService.createInvoice(request));
     }
@@ -78,7 +78,7 @@ public class BillingController {
     }
 
     @PatchMapping("/invoices/{id}/mark-paid")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_ACCOUNTANT') or hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_RECEPTIONIST')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_ACCOUNTANT') or hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_RECEPTION')")
     @AuditableAction(module = "BILLING", action = "MARK_PAID", resourceType = "Invoice", sensitivityLevel = "HIGH")
     public ResponseEntity<InvoiceResponse> markPaid(@PathVariable Long id,
                                                      @RequestParam String paymentMethod) {
@@ -89,7 +89,7 @@ public class BillingController {
 
     @GetMapping("/invoices/{id}/pdf")
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_ACCOUNTANT') " +
-                  "or hasAuthority('ROLE_PATIENT') or hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_RECEPTIONIST')")
+                  "or hasAuthority('ROLE_PATIENT') or hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_RECEPTION')")
     @AuditableAction(module = "BILLING", action = "DOWNLOAD_PDF", resourceType = "Invoice", sensitivityLevel = "HIGH")
     public ResponseEntity<byte[]> downloadPdf(@PathVariable Long id) {
         InvoiceResponse response = billingService.getInvoice(id);
@@ -108,7 +108,7 @@ public class BillingController {
             a.getAuthority().equals("ROLE_ADMIN") || 
             a.getAuthority().equals("ROLE_ACCOUNTANT") ||
             a.getAuthority().equals("ROLE_SUPER_ADMIN") ||
-            a.getAuthority().equals("ROLE_RECEPTIONIST")
+            a.getAuthority().equals("ROLE_RECEPTION")
         );
         if (hasPrivilegedRole) {
             return;

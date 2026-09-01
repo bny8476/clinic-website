@@ -20,7 +20,7 @@ const ReceptionBilling = () => {
     queryKey: ['patient-search', debouncedQuery],
     queryFn: async () => {
       if (!debouncedQuery || debouncedQuery.length < 2) return [];
-      const res = await axiosPrivate.get(`/patients/search?query=${encodeURIComponent(debouncedQuery)}`);
+      const res = await axiosPrivate.get(`/reception/patients/search?query=${encodeURIComponent(debouncedQuery)}`);
       return res.data;
     },
     enabled: debouncedQuery.length >= 2 && !selectedPatient,

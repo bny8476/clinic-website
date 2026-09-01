@@ -15,9 +15,16 @@ public interface LabTestRequestRepository extends JpaRepository<LabTestRequest, 
 
     @EntityGraph(attributePaths = {"patient", "doctor", "testCatalog"})
     List<LabTestRequest> findByStatus(String status);
+    @EntityGraph(attributePaths = {"patient", "doctor", "testCatalog"})
     List<LabTestRequest> findByPatientIdOrderByRequestedAtDesc(Long patientId);
+    
+    @EntityGraph(attributePaths = {"patient", "doctor", "testCatalog"})
     List<LabTestRequest> findByPatientIdAndAcknowledgedAtIsNotNullOrderByRequestedAtDesc(Long patientId);
+    
+    @EntityGraph(attributePaths = {"patient", "doctor", "testCatalog"})
     List<LabTestRequest> findByDoctorUserIdOrderByRequestedAtDesc(Long doctorUserId);
+    
+    @EntityGraph(attributePaths = {"patient", "doctor", "testCatalog"})
     List<LabTestRequest> findByDoctorUserIdAndAcknowledgedAtIsNullAndStatusOrderByRequestedAtDesc(Long doctorUserId, String status);
 
     @Query("SELECT r.status, COUNT(r) FROM LabTestRequest r GROUP BY r.status")

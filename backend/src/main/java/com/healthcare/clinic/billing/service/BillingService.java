@@ -20,6 +20,9 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.transaction.TransactionDefinition;
 
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
@@ -38,6 +41,7 @@ public class BillingService {
     private final UserRepository userRepository;
     private final BranchRepository branchRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final PlatformTransactionManager transactionManager;
 
     // ─── Queries ──────────────────────────────────────────────────────────────
 
@@ -73,9 +77,11 @@ public class BillingService {
             throw new ResourceNotFoundException("Patient not found: " + request.getPatientId());
         }
 
-        Branch branch = null;
+        final Branch finalBranch;
         if (request.getBranchId() != null) {
-            branch = branchRepository.findById(request.getBranchId()).orElse(null);
+            finalBranch = branchRepository.findById(request.getBranchId()).orElse(null);
+        } else {
+            finalBranch = null;
         }
 
         // Build items and compute subtotal
@@ -104,26 +110,41 @@ public class BillingService {
             subtotal = total;
         }
 
-        // Generate human-readable invoice number
-        long count = invoiceRepository.count() + 1;
-        String invoiceNumber = String.format("INV-%s-%05d",
-                LocalDateTime.now().getYear(), count);
+        // Generate human-readable invoice number and save with retry
+        int year = LocalDateTime.now().getYear();
+        Invoice saved = null;
+        String invoiceNumber = null;
+        int attempts = 0;
+        
+        while (attempts < 5) {
+            try {
+                invoiceNumber = nextInvoiceNumber(year);
+                
+                Invoice invoice = Invoice.builder()
+                        .invoiceNumber(invoiceNumber)
+                        .patientId(request.getPatientId())
+                        .appointmentId(request.getAppointmentId())
+                        .branch(finalBranch)
+                        .amount(subtotal)
+                        .taxAmount(tax)
+                        .discountAmount(discount)
+                        .totalAmount(total)
+                        .status(InvoiceStatus.ISSUED)
+                        .description(request.getDescription())
+                        .dueDate(request.getDueDate())
+                        .build();
 
-        Invoice invoice = Invoice.builder()
-                .invoiceNumber(invoiceNumber)
-                .patientId(request.getPatientId())
-                .appointmentId(request.getAppointmentId())
-                .branch(branch)
-                .amount(subtotal)
-                .taxAmount(tax)
-                .discountAmount(discount)
-                .totalAmount(total)
-                .status(InvoiceStatus.ISSUED)
-                .description(request.getDescription())
-                .dueDate(request.getDueDate())
-                .build();
-
-        Invoice saved = invoiceRepository.save(invoice);
+                TransactionTemplate tt = new TransactionTemplate(transactionManager);
+                tt.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+                saved = tt.execute(status -> invoiceRepository.save(invoice));
+                break;
+            } catch (org.springframework.dao.DataIntegrityViolationException e) {
+                attempts++;
+                if (attempts >= 5) {
+                    throw new RuntimeException("Could not generate a unique invoice number after 5 attempts", e);
+                }
+            }
+        }
 
         // Link items and save
         for (InvoiceItem item : items) {
@@ -350,6 +371,21 @@ public class BillingService {
     }
 
     // ─── PDF helpers ──────────────────────────────────────────────────────────
+
+    private String nextInvoiceNumber(int year) {
+        String prefix = "INV-" + year + "-";
+        java.util.Optional<Invoice> maxInvoiceOpt = invoiceRepository.findFirstByInvoiceNumberStartingWithOrderByInvoiceNumberDesc(prefix);
+        long nextSequence = 1;
+        if (maxInvoiceOpt.isPresent()) {
+            String maxInvoice = maxInvoiceOpt.get().getInvoiceNumber();
+            if (maxInvoice != null && maxInvoice.length() > 9) {
+                try {
+                    nextSequence = Long.parseLong(maxInvoice.substring(maxInvoice.lastIndexOf('-') + 1)) + 1;
+                } catch (NumberFormatException ignored) {}
+            }
+        }
+        return String.format("INV-%s-%05d", year, nextSequence);
+    }
 
     private void addMetaRow(PdfPTable t, String label, String value, Font labelFont, Font valueFont) {
         PdfPCell l = new PdfPCell(new Phrase(label, labelFont));
