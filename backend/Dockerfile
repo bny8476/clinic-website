@@ -2,12 +2,12 @@
 FROM maven:3.9.6-eclipse-temurin-21-jammy AS build
 WORKDIR /app
 
-# Copy only pom.xml first to cache dependencies
-COPY pom.xml .
+# Copy pom.xml first to cache dependencies (supports building from root or backend context)
+COPY pom.xml* backend/pom.xml* ./
 RUN mvn dependency:go-offline -q
 
 # Copy source and build
-COPY src ./src
+COPY src* backend/src* ./src/
 RUN mvn clean package -DskipTests -q
 
 # Stage 2: Run the application
