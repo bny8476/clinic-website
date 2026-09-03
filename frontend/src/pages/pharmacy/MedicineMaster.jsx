@@ -12,7 +12,7 @@ import { cn } from '../../utils/pharmacy/cn';
 import { usePageData } from '../../hooks/pharmacy/usePageData';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Activity, AlertTriangle, ArrowDown, ArrowLeftRight, ArrowUp, Barcode, Box, Calendar, Download, Edit, Filter, Info, List, Pill, Plus, Printer, RotateCcw, Save, Scan, Search, Settings, ShieldAlert, ShoppingCart, Upload, X } from 'lucide-react';
-import { INDIAN_MEDICINES } from '../../data/indianMedicinesData';
+import { ALL_INDIAN_MEDICINES } from '../../data/indianMedicinesData';
 
 const TABS = ['Basic Info', 'Pricing & Tax', 'Stock Settings', 'Clinical Details', 'Storage & Handling', 'Barcode'];
 
@@ -63,7 +63,7 @@ export default function MedicineMaster() {
     });
   };
 
-  const medicines = (Array.isArray(allMedicines) && allMedicines.length > 0) ? allMedicines : INDIAN_MEDICINES;
+  const medicines = (Array.isArray(allMedicines) && allMedicines.length > 0) ? allMedicines : ALL_INDIAN_MEDICINES;
 
   useEffect(() => {
     goToPage(0);

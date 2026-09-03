@@ -8,7 +8,7 @@ import { Area, AreaChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContaine
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Badge } from '../../components/ui/Badge';
-import { INDIAN_MEDICINES } from '../../data/indianMedicinesData';
+import { ALL_INDIAN_MEDICINES } from '../../data/indianMedicinesData';
 
 export default function PharmacyDashboard() {
   const [dashboardSearch, setDashboardSearch] = useState('');
@@ -49,8 +49,8 @@ export default function PharmacyDashboard() {
     ? (summaryData?.chartData || []).map(point => ({ name: point.label, value: point.value }))
     : defaultChartData;
 
-  const totalItemsCount = stats.totalSkus || INDIAN_MEDICINES.length;
-  const lowStockCount = stats.lowStockAlerts || INDIAN_MEDICINES.filter(m => m.currentStock <= m.reorderLevel).length;
+  const totalItemsCount = stats.totalSkus || ALL_INDIAN_MEDICINES.length;
+  const lowStockCount = stats.lowStockAlerts || ALL_INDIAN_MEDICINES.filter(m => m.currentStock <= m.reorderLevel).length;
 
   const stockSummaryData = [
     { name: 'Total SKUs', value: totalItemsCount, color: '#10b981' },
@@ -60,7 +60,7 @@ export default function PharmacyDashboard() {
 
   const rawLowStockList = (Array.isArray(lowStockData) && lowStockData.length > 0)
     ? lowStockData
-    : INDIAN_MEDICINES.filter(m => m.currentStock <= m.reorderLevel);
+    : ALL_INDIAN_MEDICINES.filter(m => m.currentStock <= m.reorderLevel);
 
   const lowStockAlerts = rawLowStockList.map(item => ({
     name: item.name || item.medicineName || 'Unknown',
@@ -72,7 +72,7 @@ export default function PharmacyDashboard() {
 
   const allMedicinesList = (Array.isArray(medicinesData) && medicinesData.length > 0)
     ? medicinesData
-    : INDIAN_MEDICINES;
+    : ALL_INDIAN_MEDICINES;
 
   const filteredMedicines = allMedicinesList.filter(m =>
     !dashboardSearch ||

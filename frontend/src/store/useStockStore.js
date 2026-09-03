@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import pharmacyService from '../utils/pharmacy/pharmacyService';
 import { toast } from 'react-hot-toast';
-import { INDIAN_MEDICINES } from '../data/indianMedicinesData';
+import { ALL_INDIAN_MEDICINES } from '../data/indianMedicinesData';
 
 export const useStockStore = create((set, get) => ({
   // Medicine Stock State
@@ -30,7 +30,7 @@ export const useStockStore = create((set, get) => ({
       };
 
       const fetchedMeds = extractArray(medRes);
-      const meds = fetchedMeds.length > 0 ? fetchedMeds : INDIAN_MEDICINES;
+      const meds = fetchedMeds.length > 0 ? fetchedMeds : ALL_INDIAN_MEDICINES;
 
       const fetchedStocks = extractArray(stockRes);
       const defaultStocks = meds.map(m => ({

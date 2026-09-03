@@ -608,6 +608,11 @@ export const INDIAN_MEDICINES = [
   }
 ];
 
+import { JAN_AUSHADHI_MEDICINES } from './janAushadhiCatalog';
+
+export { JAN_AUSHADHI_MEDICINES };
+export const ALL_INDIAN_MEDICINES = [...INDIAN_MEDICINES, ...JAN_AUSHADHI_MEDICINES];
+
 export const INDIAN_SUPPLIERS = [
   { id: 1, name: 'Sun Pharmaceutical Distributors', code: 'SUP-IND-01', contactPerson: 'Rajesh Sharma', phone: '+91 98200 12345', city: 'Mumbai', gstNo: '27AAAAA0000A1Z5' },
   { id: 2, name: 'Cipla Regional Supply Hub', code: 'SUP-IND-02', contactPerson: 'Anil Kumar', phone: '+91 98450 67890', city: 'Bengaluru', gstNo: '29BBBBB1111B2Z6' },
