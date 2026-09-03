@@ -18,7 +18,7 @@ public class RateLimitAndAuditInterceptor implements HandlerInterceptor {
     private final ConcurrentHashMap<String, AtomicInteger> requestCounts = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, Long> requestTimestamps = new ConcurrentHashMap<>();
 
-    private static final int MAX_REQUESTS_PER_MINUTE = 5;
+    private static final int MAX_REQUESTS_PER_MINUTE = 30;
     private static final long MINUTE_IN_MS = 60000;
     private static final int MAX_MAP_SIZE = 1000;
 
@@ -44,10 +44,14 @@ public class RateLimitAndAuditInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            return true;
+        }
+
         String uri = request.getRequestURI();
         
         // Apply to all auth endpoints (including portal logins like /api/auth/doctor/login)
-        if (uri.startsWith("/api/auth/") && (uri.endsWith("/login") || uri.contains("/login/mfa") || uri.endsWith("/register"))) {
+        if (uri != null && uri.startsWith("/api/auth/") && (uri.endsWith("/login") || uri.contains("/login/mfa") || uri.endsWith("/register"))) {
             String clientId = getClientIdentifier(request);
             String key = clientId + ":" + uri;
 
@@ -64,6 +68,11 @@ public class RateLimitAndAuditInterceptor implements HandlerInterceptor {
             
             if (count.incrementAndGet() > MAX_REQUESTS_PER_MINUTE) {
                 log.warn("AUDIT ALARM: Rate limit exceeded for ID {} on URI {}", clientId, uri);
+                String origin = request.getHeader("Origin");
+                if (origin != null && !origin.isBlank()) {
+                    response.setHeader("Access-Control-Allow-Origin", origin);
+                    response.setHeader("Access-Control-Allow-Credentials", "true");
+                }
                 response.setStatus(429); // Too Many Requests
                 response.getWriter().write("Too many requests. Please try again later.");
                 return false;
