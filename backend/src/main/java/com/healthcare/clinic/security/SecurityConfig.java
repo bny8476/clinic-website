@@ -82,12 +82,23 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
+        java.util.List<String> patterns = new java.util.ArrayList<>();
+
         if (allowedOrigins != null && !allowedOrigins.isBlank()) {
-            configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
-        } else {
-            // Fail fast rather than opening credentialed CORS to any origin
-            throw new IllegalStateException("cors.allowed-origins must be configured");
+            for (String origin : allowedOrigins.split(",")) {
+                String trimmed = origin.trim();
+                if (!trimmed.isEmpty()) {
+                    patterns.add(trimmed);
+                }
+            }
         }
+
+        patterns.add("https://*.vercel.app");
+        patterns.add("https://*.up.railway.app");
+        patterns.add("http://localhost:*");
+        patterns.add("http://127.0.0.1:*");
+
+        configuration.setAllowedOriginPatterns(patterns);
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "authorization", "content-type", "x-auth-token", "*"));
         configuration.setExposedHeaders(Arrays.asList("x-auth-token", "Authorization"));

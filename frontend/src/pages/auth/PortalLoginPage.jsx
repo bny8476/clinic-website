@@ -114,6 +114,19 @@ const InputField = ({ icon: Icon, rightSlot, ...props }) => (
   </div>
 );
 
+const DEMO_CREDENTIALS = {
+  patient: { email: 'patient@clinic.com', pass: 'Clinic@2026#Patient' },
+  doctor: { email: 'doctor@clinic.com', pass: 'Doctor@2026#Clinic' },
+  reception: { email: 'receptionist@clinic.com', pass: 'Clinic@2026#Reception' },
+  nurse: { email: 'nurse@clinic.com', pass: 'Clinic@2026#Nurse' },
+  pharmacy: { email: 'pharmacist@clinic.com', pass: 'Clinic@2026#Pharmacy' },
+  pharmacist: { email: 'pharmacist@clinic.com', pass: 'Clinic@2026#Pharmacy' },
+  lab: { email: 'labtech@clinic.com', pass: 'Clinic@2026#LabTech' },
+  radiologist: { email: 'radiologist@clinic.com', pass: 'Clinic@2026#Radio' },
+  admin: { email: 'admin@clinic.com', pass: 'Admin@2026#Clinic' },
+  'super-admin': { email: 'admin@clinic.com', pass: 'Admin@2026#Clinic' },
+};
+
 /* ═══════════════════════════════════════════════════════════════════════════
    Main Component
 ═══════════════════════════════════════════════════════════════════════════ */
@@ -307,9 +320,23 @@ export default function PortalLoginPage() {
               <h2 className="text-[22px] font-bold text-gray-900 mb-0.5">
                 Sign <span style={{ color: BLUE }}>In</span>
               </h2>
-              <p className="text-[12px] text-gray-500 mb-6">
-                Welcome back! Please sign in to your account.
-              </p>
+              <div className="flex items-center justify-between mb-6">
+                <p className="text-[12px] text-gray-500">
+                  Welcome back! Please sign in to your account.
+                </p>
+                {DEMO_CREDENTIALS[portalSlug] && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail(DEMO_CREDENTIALS[portalSlug].email);
+                      setPassword(DEMO_CREDENTIALS[portalSlug].pass);
+                    }}
+                    className="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition-all"
+                  >
+                    Auto-fill Demo Credentials
+                  </button>
+                )}
+              </div>
 
               <div className="space-y-3">
                 <InputField
