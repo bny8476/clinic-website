@@ -107,6 +107,14 @@ const pharmacyService = {
     const response = await api.get('/medicines');
     return response.data;
   },
+  searchMedicines: async (query = '', page = 0, size = 20, drugClass = 'ALL', schedule = 'ALL') => {
+    const response = await api.get(`/medicines/search?q=${encodeURIComponent(query)}&page=${page}&size=${size}&drugClass=${drugClass}&schedule=${schedule}`);
+    return response.data;
+  },
+  getMedicineCategories: async () => {
+    const response = await api.get('/medicines/categories');
+    return response.data;
+  },
   createMedicine: async (medicineData) => {
     const response = await api.post('/medicines', medicineData);
     return response.data;

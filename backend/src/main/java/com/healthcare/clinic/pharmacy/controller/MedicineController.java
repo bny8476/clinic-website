@@ -68,6 +68,42 @@ public class MedicineController {
         return ResponseEntity.ok(ApiResponse.success(dtos, "Medicines fetched successfully"));
     }
 
+    @GetMapping("/medicines/search")
+    public ResponseEntity<ApiResponse<org.springframework.data.domain.Page<MedicineDTO>>> searchMedicines(
+            @RequestParam(name = "q", required = false, defaultValue = "") String query,
+            @RequestParam(name = "drugClass", required = false, defaultValue = "ALL") String drugClass,
+            @RequestParam(name = "schedule", required = false, defaultValue = "ALL") String schedule,
+            @RequestParam(name = "productType", required = false, defaultValue = "ALL") String productType,
+            @org.springframework.data.web.PageableDefault(size = 20) org.springframework.data.domain.Pageable pageable) {
+        
+        org.springframework.data.domain.Page<Medicine> medicines = medicineRepository.searchMedicines(query, drugClass, schedule, productType, pageable);
+        List<Object[]> stockSummary = stockRepository.getStockQuantitiesGroupByMedicine();
+        java.util.Map<Long, Integer> stockMap = stockSummary.stream()
+                .filter(arr -> arr[0] != null && arr[1] != null)
+                .collect(java.util.stream.Collectors.toMap(
+                        arr -> (Long) arr[0],
+                        arr -> ((Number) arr[1]).intValue()
+                ));
+
+        org.springframework.data.domain.Page<MedicineDTO> dtos = medicines.map(medicine -> {
+            MedicineDTO dto = medicineMapper.toDto(medicine);
+            dto.setCurrentStock(stockMap.getOrDefault(medicine.getId(), 0));
+            return dto;
+        });
+        return ResponseEntity.ok(ApiResponse.success(dtos, "Medicines search results fetched successfully"));
+    }
+
+    @GetMapping("/medicines/categories")
+    public ResponseEntity<ApiResponse<List<String>>> getMedicineCategories() {
+        List<String> categories = medicineRepository.findAll().stream()
+                .map(Medicine::getCategory)
+                .filter(c -> c != null && !c.trim().isEmpty())
+                .distinct()
+                .sorted()
+                .collect(java.util.stream.Collectors.toList());
+        return ResponseEntity.ok(ApiResponse.success(categories, "Categories fetched successfully"));
+    }
+
     @PreAuthorize("hasAnyAuthority('ROLE_SYSTEM_ADMIN','ROLE_PHARMACIST')")
     @PostMapping("/medicines")
     public ResponseEntity<ApiResponse<MedicineDTO>> createMedicine(@Valid @RequestBody Medicine medicine) {
