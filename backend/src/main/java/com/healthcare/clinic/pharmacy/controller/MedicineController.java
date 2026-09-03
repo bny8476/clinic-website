@@ -176,8 +176,8 @@ public class MedicineController {
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_SYSTEM_ADMIN','ROLE_PHARMACIST','ROLE_DOCTOR')")
-    @GetMapping("/medicines/search")
-    public ResponseEntity<List<MedicineDTO>> searchMedicines(@RequestParam String name) {
+    @GetMapping("/medicines/search-by-name")
+    public ResponseEntity<List<MedicineDTO>> searchMedicinesByName(@RequestParam(name = "name", required = false, defaultValue = "") String name) {
         List<Medicine> medicines = medicineRepository.findByNameContainingIgnoreCase(name);
         if (medicines.isEmpty()) {
             return ResponseEntity.ok(List.of());
