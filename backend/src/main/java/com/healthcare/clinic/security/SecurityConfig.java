@@ -63,6 +63,7 @@ public class SecurityConfig {
             .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> {
+                auth.requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll();
                 auth.requestMatchers("/api/auth/**", "/api/health", "/api/pharmacy/config/public", "/api/ai/**").permitAll();
                 auth.requestMatchers(org.springframework.http.HttpMethod.GET, "/api/sse/appointments").permitAll();
                 auth.requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/finance/payments/webhook/stripe").permitAll();
@@ -93,16 +94,18 @@ public class SecurityConfig {
             }
         }
 
+        patterns.add("https://clinic-website-bny2.vercel.app");
         patterns.add("https://*.vercel.app");
         patterns.add("https://*.up.railway.app");
         patterns.add("http://localhost:*");
         patterns.add("http://127.0.0.1:*");
 
         configuration.setAllowedOriginPatterns(patterns);
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "authorization", "content-type", "x-auth-token", "*"));
-        configuration.setExposedHeaders(Arrays.asList("x-auth-token", "Authorization"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "authorization", "content-type", "x-auth-token", "Idempotency-Key", "idempotency-key", "*"));
+        configuration.setExposedHeaders(Arrays.asList("x-auth-token", "Authorization", "Idempotency-Key"));
         configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;

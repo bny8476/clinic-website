@@ -12,7 +12,7 @@ import { cn } from '../../utils/pharmacy/cn';
 import { usePageData } from '../../hooks/pharmacy/usePageData';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Activity, AlertTriangle, ArrowDown, ArrowLeftRight, ArrowUp, Barcode, Box, Calendar, Download, Edit, Filter, Info, List, Pill, Plus, Printer, RotateCcw, Save, Scan, Search, Settings, ShieldAlert, ShoppingCart, Upload, X } from 'lucide-react';
-import { ALL_INDIAN_MEDICINES } from '../../data/indianMedicinesData';
+import { ALL_INDIAN_MEDICINES, INDIAN_SUPPLIERS } from '../../data/indianMedicinesData';
 
 const TABS = ['Basic Info', 'Pricing & Tax', 'Stock Settings', 'Clinical Details', 'Storage & Handling', 'Barcode'];
 
@@ -69,10 +69,12 @@ export default function MedicineMaster() {
     goToPage(0);
   }, [debouncedSearch, drugClassFilter, scheduleFilter, productTypeFilter]);
 
-  const { data: suppliers = [] } = useQuery({
+  const { data: rawSuppliers } = useQuery({
     queryKey: ['suppliers'],
-    queryFn: () => pharmacyService.getSuppliers().then(res => res.data)
+    queryFn: () => pharmacyService.getSuppliers().then(res => res?.data?.data || res?.data || []).catch(() => INDIAN_SUPPLIERS)
   });
+
+  const suppliers = (Array.isArray(rawSuppliers) && rawSuppliers.length > 0) ? rawSuppliers : INDIAN_SUPPLIERS;
 
   const createMedicineMutation = useMutation({
     mutationFn: (formData) => pharmacyService.createMedicine(formData),
