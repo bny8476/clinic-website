@@ -52,10 +52,10 @@ public class ClinicDatabaseConfig {
             driver = environment.getProperty("SPRING_DATASOURCE_CLINIC_DRIVER_CLASS_NAME");
         }
 
-        boolean isRender = java.util.Arrays.asList(environment.getActiveProfiles()).contains("render");
+        boolean isProduction = java.util.Arrays.asList(environment.getActiveProfiles()).contains("prod") || java.util.Arrays.asList(environment.getActiveProfiles()).contains("production") || java.util.Arrays.asList(environment.getActiveProfiles()).contains("railway") || java.util.Arrays.asList(environment.getActiveProfiles()).contains("render");
         boolean isH2Fallback = url == null || url.trim().isEmpty() || url.contains("jdbc:h2");
         
-        if (isRender) {
+        if (isProduction) {
             if (isH2Fallback) throw new IllegalStateException("FATAL: SPRING_DATASOURCE_CLINIC_URL is missing in production.");
             if (username == null || username.trim().isEmpty()) throw new IllegalStateException("FATAL: Database username is missing in production.");
         }

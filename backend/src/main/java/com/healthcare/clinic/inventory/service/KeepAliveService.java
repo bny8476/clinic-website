@@ -8,12 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 /**
- * Keep-alive service for Render free tier deployments.
- *
- * Render's free tier spins down web services after ~15 minutes of inactivity,
- * causing a 30–60 second cold-start delay for the next request.
- * This service pings the app's own health endpoint every 10 minutes to keep
- * the server warm and eliminate cold starts for end users.
+ * Keep-alive service for production deployments.
  */
 @Service("pharmacyKeepAliveService")
 public class KeepAliveService {
@@ -23,15 +18,13 @@ public class KeepAliveService {
     @Value("${app.url:http://localhost:5173}")
     private String appUrl;
 
-    @Value("${RENDER_EXTERNAL_URL:}")
-    private String renderExternalUrl;
+    @Value("${RAILWAY_STATIC_URL:}")
+    private String railwayStaticUrl;
 
     private final RestTemplate restTemplate = new RestTemplate();
 
     /**
      * Pings /actuator/health every 10 minutes (600,000 ms).
-     * The RENDER_EXTERNAL_URL env variable is automatically set by Render
-     * (e.g. https://your-app.onrender.com). Falls back gracefully on localhost.
      */
     @Scheduled(fixedRate = 600_000)
     public void keepAlive() {
@@ -50,13 +43,9 @@ public class KeepAliveService {
         }
     }
 
-    /**
-     * Prefer the Render-provided external URL; fall back to APP_URL only if
-     * it is a real HTTPS address (not localhost), to avoid pointless local pings.
-     */
     private String resolveBaseUrl() {
-        if (renderExternalUrl != null && !renderExternalUrl.isBlank()) {
-            return renderExternalUrl;
+        if (railwayStaticUrl != null && !railwayStaticUrl.isBlank()) {
+            return railwayStaticUrl.startsWith("http") ? railwayStaticUrl : "https://" + railwayStaticUrl;
         }
         if (appUrl != null && appUrl.startsWith("https://")) {
             return appUrl;

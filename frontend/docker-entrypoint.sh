@@ -1,7 +1,7 @@
 #!/bin/sh
 # Runtime environment variable injection
 # Writes a /usr/share/nginx/html/env-config.js that exposes env vars to the React app.
-# This allows VITE_API_BASE_URL to be set as a Render env var without rebuilding.
+# This allows VITE_API_BASE_URL to be set as a container/deployment env var without rebuilding.
 
 set -e
 
