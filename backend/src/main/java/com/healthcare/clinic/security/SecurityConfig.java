@@ -2,8 +2,10 @@ package com.healthcare.clinic.security;
 
 import org.springframework.beans.factory.annotation.Value;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -18,7 +20,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 import java.util.Arrays;
+
 @Configuration
 @EnableMethodSecurity
 @RequiredArgsConstructor
@@ -28,7 +32,7 @@ public class SecurityConfig {
     private final AuthEntryPointJwt unauthorizedHandler;
     private final AuthTokenFilter authTokenFilter;
 
-    @Value("${cors.allowed-origins}")
+    @Value("${cors.allowed-origins:}")
     private String allowedOrigins;
 
     @Bean
@@ -64,7 +68,7 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> {
                 auth.requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll();
-                auth.requestMatchers("/api/auth/**", "/api/health", "/api/pharmacy/config/public", "/api/ai/**").permitAll();
+                auth.requestMatchers("/api/auth/**", "/api/health", "/api/pharmacy/config/public", "/api/ai/**", "/error").permitAll();
                 auth.requestMatchers(org.springframework.http.HttpMethod.GET, "/api/sse/appointments").permitAll();
                 auth.requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/finance/payments/webhook/stripe").permitAll();
                 if (!isProd) {
@@ -109,5 +113,12 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+
+    @Bean
+    public FilterRegistrationBean<CorsFilter> corsFilterRegistrationBean() {
+        FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(new CorsFilter(corsConfigurationSource()));
+        bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
+        return bean;
     }
 }
