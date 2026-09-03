@@ -1,4 +1,6 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense } from 'react';
+import safeLazy from '../../utils/safeLazy';
+const lazy = safeLazy;
 import { Link, Navigate, Outlet, Route, Routes, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 const AdminDashboard = lazy(() => import('./AdminDashboard'));

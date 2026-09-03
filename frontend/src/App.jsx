@@ -1,4 +1,6 @@
-import React, { Suspense, lazy, useEffect } from 'react';
+import React, { Suspense, useEffect } from 'react';
+import safeLazy from './utils/safeLazy';
+const lazy = safeLazy;
 import RoleRoute from './components/auth/RoleRoute';
 import DashboardLayout from './layouts/DashboardLayout';
 import PublicLayout from './layouts/PublicLayout';
