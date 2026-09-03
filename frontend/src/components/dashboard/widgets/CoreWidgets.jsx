@@ -56,8 +56,11 @@ export const NextAppointmentWidget = ({ appointments, navigate }) => {
         <button onClick={() => navigate && navigate('?panel=calendar')} className="text-xs font-bold text-[#5244F2]">View Calendar</button>
       </div>
       
-        {appointments && appointments.length > 0 ? (() => {
-            const next = appointments.find(a => new Date(a.startTime) > new Date()) || appointments[0];
+        {Array.isArray(appointments) && appointments.length > 0 ? (() => {
+            const next = appointments.find(a => a && a.startTime && !isNaN(new Date(a.startTime)) && new Date(a.startTime) > new Date()) || appointments[0];
+            if (!next || !next.startTime || isNaN(new Date(next.startTime))) {
+              return <p className="text-xs text-gray-500 py-3">No upcoming appointments</p>;
+            }
             const date = new Date(next.startTime);
             return (
             <div className="flex gap-4 items-start mb-5">

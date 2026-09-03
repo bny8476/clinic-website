@@ -547,16 +547,6 @@ export default function BookAppointment() {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <IndianRupee className="w-4 h-4 text-slate-400 shrink-0" />
-                    <div>
-                      <div className="text-[10px] text-slate-400 font-medium">Consultation Fee</div>
-                      <div className="font-bold text-slate-900 text-sm">
-                        ₹ {selectedDoctor?.consultationFee || 800}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
                     <User className="w-4 h-4 text-slate-400 shrink-0" />
                     <div>
                       <div className="text-[10px] text-slate-400 font-medium">Consultation Type</div>
@@ -967,15 +957,6 @@ export default function BookAppointment() {
                     </div>
                     <div className="font-bold text-slate-900">{visitType === 'In-person' ? 'In-person Visit' : 'Teleconsultation'}</div>
                   </div>
-
-                  {/* Consultation Fee */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2.5 text-slate-500">
-                      <IndianRupee className="w-4 h-4 text-slate-400 shrink-0" />
-                      <span>Consultation Fee</span>
-                    </div>
-                    <div className="font-bold text-slate-900 text-sm">₹ {selectedDoctor?.consultationFee || 800}</div>
-                  </div>
                 </div>
 
                 {/* Light Blue Please Note Alert Box */}
@@ -1067,13 +1048,6 @@ export default function BookAppointment() {
                   {reason || 'General Checkup & Routine Consultation'}
                 </span>
               </div>
-
-              <div className="flex items-center justify-between pt-1">
-                <span className="text-xs font-semibold text-slate-500">Total Consultation Fee</span>
-                <span className="text-base font-extrabold text-blue-600">
-                  ₹ {selectedDoctor?.consultationFee || 800}
-                </span>
-              </div>
             </div>
 
             {/* Navigation & Submit Action Buttons */}
@@ -1144,8 +1118,8 @@ export default function BookAppointment() {
                 </span>
               </div>
 
-              {/* 5-Section Horizontal Info Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-4 pt-2 border-t border-slate-100 items-center">
+              {/* 4-Section Horizontal Info Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-2 border-t border-slate-100 items-center">
                 {/* 1. Doctor Profile */}
                 <div className="flex items-center gap-3 md:col-span-1">
                   <div className="relative shrink-0">
@@ -1221,20 +1195,6 @@ export default function BookAppointment() {
                     <span className="block text-xs font-bold text-slate-900">
                       {visitType === 'In-person' ? 'In-person Visit' : 'Teleconsultation'}
                     </span>
-                  </div>
-                </div>
-
-                {/* 5. Fee */}
-                <div className="flex items-center gap-3 bg-slate-50/60 p-3 rounded-xl border border-slate-100">
-                  <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-                    <IndianRupee className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <span className="block text-[10px] text-slate-400 font-medium">Consultation Fee</span>
-                    <span className="block text-xs font-bold text-slate-900">
-                      ₹ {selectedDoctor?.consultationFee || 800}
-                    </span>
-                    <span className="block text-[10px] font-bold text-emerald-600">Paid</span>
                   </div>
                 </div>
               </div>

@@ -177,11 +177,11 @@ const Patient360View = ({ patientId, onBack, onNavigateToPrescription }) => {
                   </div>
                   <div>
                     <p className="text-[11px] font-bold text-slate-500 mb-1">Last Appointment</p>
-                    {recentAppointments?.length > 0 ? (
+                    {recentAppointments?.length > 0 && recentAppointments[0]?.startTime ? (
                       <>
                         <p className="text-[14px] font-bold text-slate-800">{format(parseISO(recentAppointments[0].startTime), 'dd MMM yyyy')}</p>
                         <p className="text-[11px] font-semibold text-slate-500 mt-1">{format(parseISO(recentAppointments[0].startTime), 'hh:mm a')}</p>
-                        <p className="text-[11px] font-semibold text-slate-500">with Dr. {recentAppointments[0].doctorLastName}</p>
+                        <p className="text-[11px] font-semibold text-slate-500">with Dr. {recentAppointments[0].doctorLastName || 'Doctor'}</p>
                       </>
                     ) : (
                       <p className="text-[13px] font-medium text-slate-400 mt-2 italic">No past appointments</p>
@@ -195,11 +195,11 @@ const Patient360View = ({ patientId, onBack, onNavigateToPrescription }) => {
                   </div>
                   <div>
                     <p className="text-[11px] font-bold text-slate-500 mb-1">Next Appointment</p>
-                    {upcomingAppointments?.length > 0 ? (
+                    {upcomingAppointments?.length > 0 && upcomingAppointments[0]?.startTime ? (
                       <>
                         <p className="text-[14px] font-bold text-slate-800">{format(parseISO(upcomingAppointments[0].startTime), 'dd MMM yyyy')}</p>
                         <p className="text-[11px] font-semibold text-slate-500 mt-1">{format(parseISO(upcomingAppointments[0].startTime), 'hh:mm a')}</p>
-                        <p className="text-[11px] font-semibold text-slate-500">with Dr. {upcomingAppointments[0].doctorLastName}</p>
+                        <p className="text-[11px] font-semibold text-slate-500">with Dr. {upcomingAppointments[0].doctorLastName || 'Doctor'}</p>
                       </>
                     ) : (
                       <p className="text-[13px] font-medium text-slate-400 mt-2 italic">No upcoming</p>
