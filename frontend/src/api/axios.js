@@ -6,10 +6,25 @@ import toast from 'react-hot-toast';
 //   1. window.__ENV__ — injected at container start by docker-entrypoint.sh (Render / Docker deployment)
 //   2. import.meta.env — set at build time by Vite (works in local dev and CI builds)
 //   3. Hard-coded localhost fallback (local dev without Docker)
-export const BASE_URL =
+const rawUrl =
     (typeof window !== 'undefined' && window.__ENV__?.VITE_API_BASE_URL) ||
     import.meta.env.VITE_API_BASE_URL ||
+    import.meta.env.VITE_API_URL ||
     'http://localhost:8080/api';
+
+const formatApiUrl = (url) => {
+    if (!url) return 'http://localhost:8080/api';
+    let trimmed = url.trim();
+    if (trimmed.endsWith('/')) {
+        trimmed = trimmed.slice(0, -1);
+    }
+    if (!trimmed.endsWith('/api')) {
+        trimmed = trimmed + '/api';
+    }
+    return trimmed;
+};
+
+export const BASE_URL = formatApiUrl(rawUrl);
 
 
 export const axiosPrivate = axios.create({
