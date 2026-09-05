@@ -137,8 +137,8 @@ const AppointmentHistory = () => {
                       <>
                         {cancelId === a.id ? (
                           <div className="flex items-center gap-2 bg-red-50 p-1.5 rounded-xl">
-                            <button onClick={() => handleCancel(a.id)} className="px-4 py-2 bg-red-600 text-white text-xs font-bold rounded-lg shadow-sm shadow-red-200">Confirm Cancel</button>
-                            <button onClick={() => setCancelId(null)} className="px-4 py-2 text-red-700 text-xs font-bold hover:bg-red-100 rounded-lg">Back</button>
+                            <button onClick={() => handleCancel(a.id)} disabled={cancelMutation.isPending} className="px-4 py-2 bg-red-600 text-white text-xs font-bold rounded-lg shadow-sm shadow-red-200 disabled:opacity-50">Confirm Cancel</button>
+                            <button onClick={() => setCancelId(null)} disabled={cancelMutation.isPending} className="px-4 py-2 text-red-700 text-xs font-bold hover:bg-red-100 rounded-lg disabled:opacity-50">Back</button>
                           </div>
                         ) : (
                           <button

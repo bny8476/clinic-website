@@ -20,7 +20,7 @@ public class SseNotificationService {
     public SseEmitter subscribe(Long userId) {
         SseEmitter emitter = new SseEmitter(30 * 60 * 1000L); // 30 minutes timeout
         
-        userEmitters.computeIfAbsent(userId, k -> new ArrayList<>()).add(emitter);
+        userEmitters.computeIfAbsent(userId, k -> new java.util.concurrent.CopyOnWriteArrayList<>()).add(emitter);
 
         emitter.onCompletion(() -> removeEmitter(userId, emitter));
         emitter.onTimeout(() -> removeEmitter(userId, emitter));
@@ -67,5 +67,23 @@ public class SseNotificationService {
                 userEmitters.remove(userId);
             }
         }
+    }
+
+    @org.springframework.scheduling.annotation.Scheduled(fixedRate = 20000)
+    public void sendHeartbeats() {
+        userEmitters.forEach((userId, emitters) -> {
+            List<SseEmitter> deadEmitters = new ArrayList<>();
+            for (SseEmitter emitter : emitters) {
+                try {
+                    emitter.send(SseEmitter.event().comment("heartbeat"));
+                } catch (Exception e) {
+                    deadEmitters.add(emitter);
+                }
+            }
+            if (!deadEmitters.isEmpty()) {
+                emitters.removeAll(deadEmitters);
+            }
+        });
+        userEmitters.entrySet().removeIf(entry -> entry.getValue().isEmpty());
     }
 }

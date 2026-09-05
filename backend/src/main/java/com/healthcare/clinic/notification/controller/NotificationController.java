@@ -36,7 +36,7 @@ public class NotificationController {
         return ResponseEntity.ok(Map.of("ticket", ticket));
     }
 
-    @GetMapping("/stream")
+    @GetMapping(value = "/stream", produces = org.springframework.http.MediaType.TEXT_EVENT_STREAM_VALUE)
     public org.springframework.web.servlet.mvc.method.annotation.SseEmitter streamNotifications(
             @AuthenticationPrincipal UserPrincipal user,
             @RequestParam(value = "ticket", required = false) String ticket) {

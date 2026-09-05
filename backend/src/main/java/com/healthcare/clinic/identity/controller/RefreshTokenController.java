@@ -53,7 +53,7 @@ public class RefreshTokenController {
                                 .secure(true)
                                 .path("/api/auth")
                                 .maxAge(7 * 24 * 60 * 60)
-                                .sameSite("Strict")
+                                .sameSite("None")
                                 .build();
 
                         return ResponseEntity.ok()
@@ -87,7 +87,7 @@ public class RefreshTokenController {
                 .secure(true)
                 .path("/api/auth")
                 .maxAge(0)
-                .sameSite("Strict")
+                .sameSite("None")
                 .build();
                 
         return ResponseEntity.ok()
