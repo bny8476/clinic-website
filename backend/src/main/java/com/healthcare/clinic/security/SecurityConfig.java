@@ -101,7 +101,12 @@ public class SecurityConfig {
             }
         }
 
-        if (!isProd) {
+        if (isProd) {
+            // Production profile: strictly enforce explicit trusted origins without broad wildcards
+            if (!patterns.contains("https://clinic-website-bny2.vercel.app")) {
+                patterns.add("https://clinic-website-bny2.vercel.app");
+            }
+        } else {
             // Development origins allowed under non-production profiles
             if (patterns.isEmpty()) {
                 patterns.add("http://localhost:5173");
@@ -110,19 +115,14 @@ public class SecurityConfig {
             }
             patterns.add("http://localhost:*");
             patterns.add("http://127.0.0.1:*");
-        }
-
-        // Always ensure production Vercel origins are trusted across environments
-        if (!patterns.contains("https://clinic-website-bny2.vercel.app")) {
-            patterns.add("https://clinic-website-bny2.vercel.app");
-        }
-        if (!patterns.contains("https://*.vercel.app")) {
-            patterns.add("https://*.vercel.app");
+            if (!patterns.contains("https://clinic-website-bny2.vercel.app")) {
+                patterns.add("https://clinic-website-bny2.vercel.app");
+            }
         }
 
         configuration.setAllowedOriginPatterns(patterns);
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "authorization", "content-type", "x-auth-token", "Idempotency-Key", "idempotency-key", "*"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "authorization", "Content-Type", "content-type", "Accept", "Origin", "X-Requested-With", "x-auth-token", "Idempotency-Key", "idempotency-key", "*"));
         configuration.setExposedHeaders(Arrays.asList("x-auth-token", "Authorization", "Idempotency-Key"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
