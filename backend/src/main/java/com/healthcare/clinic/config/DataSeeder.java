@@ -24,10 +24,7 @@ import org.springframework.stereotype.Component;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.springframework.context.annotation.Profile;
-
 @Component
-@Profile("dev")
 @RequiredArgsConstructor
 @Slf4j
 public class DataSeeder implements CommandLineRunner {
@@ -40,10 +37,10 @@ public class DataSeeder implements CommandLineRunner {
     private final TenantRepository tenantRepository;
     private final BranchRepository branchRepository;
 
-    @Value("${SEED_ADMIN_PASSWORD:CHANGE_ME_ADMIN}")
+    @Value("${SEED_ADMIN_PASSWORD:Clinic@2026#Admin}")
     private String seedAdminPassword;
 
-    @Value("${SEED_DOCTOR_PASSWORD:CHANGE_ME_DOCTOR}")
+    @Value("${SEED_DOCTOR_PASSWORD:Clinic@2026#Doctor}")
     private String seedDoctorPassword;
 
     @Override
