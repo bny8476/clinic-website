@@ -63,7 +63,7 @@ twilio:
 
 app:
   flyway:
-    baseline-on-migrate: false
+    baseline-on-migrate: ${FLYWAY_BASELINE_ON_MIGRATE:true}
     baseline-version-clinic: "0"
 
   datasource:
