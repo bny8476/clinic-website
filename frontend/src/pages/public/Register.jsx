@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { axiosPublic } from '../../api/axios';
 import { Eye, EyeOff, Heart, Lock, Mail, Phone, Stethoscope, User } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { listStagger, staggerChildren, fadeUp, pageTransition } from '../../components/ui/motion';
 
 /* ─── Medvice colour tokens ──────────────────────────────────────────────── */
 const BLUE = '#2B4AFE';

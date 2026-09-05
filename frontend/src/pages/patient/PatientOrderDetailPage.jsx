@@ -2,7 +2,7 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { ArrowLeft, CheckCircle2, Clock, Package, Truck, HomeCheck, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Clock, Package, Truck, ShieldCheck } from 'lucide-react';
 
 export default function PatientOrderDetailPage() {
   const { orderId } = useParams();
