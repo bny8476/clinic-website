@@ -96,16 +96,19 @@ export default function DataTable({
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-[var(--color-surface-alt)] border-b border-[var(--color-border)] text-sm font-semibold text-[var(--color-navy-900)] select-none">
-                  {columns.map((col, index) => (
+                  {columns.map((col, index) => {
+                    const colKey = col.key || col.accessor;
+                    const colTitle = col.title || col.header;
+                    return (
                     <th
-                      key={col.key || index}
-                      onClick={() => col.sortable && handleSort(col.key)}
+                      key={colKey || index}
+                      onClick={() => col.sortable && handleSort(colKey)}
                       className={`p-4 ${col.sortable ? 'cursor-pointer hover:text-[var(--color-text)]' : ''} ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'}`}
                     >
                       <div className={`inline-flex items-center gap-1.5 ${col.align === 'right' ? 'justify-end' : col.align === 'center' ? 'justify-center' : 'justify-start'}`}>
-                        <span>{col.title}</span>
+                        <span>{colTitle}</span>
                         {col.sortable && (
-                          sortConfig.key === col.key ? (
+                          sortConfig.key === colKey ? (
                             sortConfig.direction === 'asc'
                               ? <ChevronUp className="w-3.5 h-3.5 text-[var(--color-gold)]" />
                               : <ChevronDown className="w-3.5 h-3.5 text-[var(--color-gold)]" />
@@ -115,7 +118,7 @@ export default function DataTable({
                         )}
                       </div>
                     </th>
-                  ))}
+                  )})}
                 </tr>
               </thead>
               <motion.tbody 
@@ -132,14 +135,18 @@ export default function DataTable({
                       key={row.id || index} 
                       className="hover:bg-white/20 dark:hover:bg-white/10 transition-colors bg-transparent"
                     >
-                      {columns.map((col, colIndex) => (
+                      {columns.map((col, colIndex) => {
+                        const isLegacy = col.header !== undefined || col.accessor !== undefined;
+                        const colKey = col.key || col.accessor;
+                        const val = colKey ? row[colKey] : undefined;
+                        return (
                         <td 
-                          key={col.key || colIndex} 
+                          key={colKey || colIndex} 
                           className={`p-4 ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'}`}
                         >
-                          {col.render ? col.render(row[col.key], row, index) : row[col.key]}
+                          {col.render ? (isLegacy ? col.render(row, index) : col.render(val, row, index)) : val}
                         </td>
-                      ))}
+                      )})}
                     </motion.tr>
                   ))}
                 </AnimatePresence>
@@ -159,16 +166,21 @@ export default function DataTable({
                   key={row.id || index} 
                   className="p-4 space-y-2 bg-[var(--color-surface)]"
                 >
-                {columns.map((col, colIndex) => (
-                  <div key={col.key || colIndex} className="flex justify-between items-center text-xs">
+                {columns.map((col, colIndex) => {
+                  const isLegacy = col.header !== undefined || col.accessor !== undefined;
+                  const colKey = col.key || col.accessor;
+                  const colTitle = col.title || col.header;
+                  const val = colKey ? row[colKey] : undefined;
+                  return (
+                  <div key={colKey || colIndex} className="flex justify-between items-center text-xs">
                     <span className="font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
-                      {col.title}
+                      {colTitle}
                     </span>
                     <span className="font-medium text-[var(--color-text)]">
-                      {col.render ? col.render(row[col.key], row, index) : row[col.key]}
+                      {col.render ? (isLegacy ? col.render(row, index) : col.render(val, row, index)) : val}
                     </span>
                   </div>
-                ))}
+                )})}
                 </motion.div>
               ))}
             </AnimatePresence>
