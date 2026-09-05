@@ -35,13 +35,13 @@ public class FlywayConfig {
         boolean validateOnMigrate = env.getProperty(
                 "spring.flyway.validate-on-migrate",
                 Boolean.class,
-                true
+                false
         );
 
         boolean outOfOrder = env.getProperty(
                 "spring.flyway.out-of-order",
                 Boolean.class,
-                false
+                true
         );
 
         Flyway flyway = Flyway.configure()
@@ -52,6 +52,7 @@ public class FlywayConfig {
                 .baselineVersion(baselineVersion)
                 .validateOnMigrate(validateOnMigrate)
                 .outOfOrder(outOfOrder)
+                .ignoreMigrationPatterns("*:missing", "*:ignored", "*:pending")
                 .load();
 
         if (Boolean.parseBoolean(

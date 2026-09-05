@@ -4,6 +4,9 @@ spring:
       ddl-auto: ${DDL_AUTO:update}
   flyway:
     enabled: true
+    baseline-on-migrate: true
+    validate-on-migrate: false
+    out-of-order: true
 
 ecommerce:
   payment:
