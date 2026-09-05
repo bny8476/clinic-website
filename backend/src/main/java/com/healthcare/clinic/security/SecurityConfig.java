@@ -90,7 +90,8 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource(org.springframework.core.env.Environment env) {
         CorsConfiguration configuration = new CorsConfiguration();
         java.util.List<String> patterns = new java.util.ArrayList<>();
-        boolean isProd = Arrays.asList(env.getActiveProfiles()).contains("prod");
+        boolean isProd = Arrays.asList(env.getActiveProfiles()).contains("prod") ||
+                         Arrays.asList(env.getActiveProfiles()).contains("production");
 
         if (allowedOrigins != null && !allowedOrigins.isBlank()) {
             for (String origin : allowedOrigins.split(",")) {
@@ -102,12 +103,10 @@ public class SecurityConfig {
         }
 
         if (isProd) {
-            // Production profile: strictly enforce explicit trusted origins without broad wildcards
             if (!patterns.contains("https://clinic-website-bny2.vercel.app")) {
                 patterns.add("https://clinic-website-bny2.vercel.app");
             }
         } else {
-            // Development origins allowed under non-production profiles
             if (patterns.isEmpty()) {
                 patterns.add("http://localhost:5173");
                 patterns.add("http://localhost:3000");
@@ -122,7 +121,15 @@ public class SecurityConfig {
 
         configuration.setAllowedOriginPatterns(patterns);
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "authorization", "Content-Type", "content-type", "Accept", "Origin", "X-Requested-With", "x-auth-token", "Idempotency-Key", "idempotency-key", "*"));
+        configuration.setAllowedHeaders(Arrays.asList(
+            "Authorization", "authorization", 
+            "Content-Type", "content-type", 
+            "Accept", "accept", 
+            "Origin", "origin", 
+            "X-Requested-With", "x-requested-with", 
+            "x-auth-token", "Idempotency-Key", "idempotency-key", 
+            "Cache-Control", "Pragma", "Expires"
+        ));
         configuration.setExposedHeaders(Arrays.asList("x-auth-token", "Authorization", "Idempotency-Key"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
