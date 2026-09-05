@@ -112,7 +112,7 @@ public class PortalAuthController {
 
         return ResponseEntity.ok()
                 .header(org.springframework.http.HttpHeaders.SET_COOKIE, refreshCookie.toString())
-                .body(new JwtResponse(jwt));
+                .body(new JwtResponse(jwt, refreshToken));
     }
 
     @PostMapping("/{portal}/login/mfa")
@@ -151,7 +151,7 @@ public class PortalAuthController {
 
         return ResponseEntity.ok()
                 .header(org.springframework.http.HttpHeaders.SET_COOKIE, refreshCookie.toString())
-                .body(new JwtResponse(jwt));
+                .body(new JwtResponse(jwt, refreshToken));
     }
 
     @PostMapping("/register")
@@ -252,10 +252,12 @@ class SignupRequest {
 @Data
 class JwtResponse {
     private String token;
+    private String refreshToken;
     private String type = "Bearer";
 
-    public JwtResponse(String accessToken) {
+    public JwtResponse(String accessToken, String refreshToken) {
         this.token = accessToken;
+        this.refreshToken = refreshToken;
     }
 }
 
