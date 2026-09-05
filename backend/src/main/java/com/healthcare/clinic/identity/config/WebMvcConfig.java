@@ -22,4 +22,22 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     // Uploads are now served via an authenticated REST controller,
     // not as a publicly accessible static resource directory.
+
+    @Override
+    public void addCorsMappings(org.springframework.web.servlet.config.annotation.CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOriginPatterns(
+                        "https://clinic-website-bny2.vercel.app",
+                        "http://localhost:5173",
+                        "http://localhost:3000",
+                        "http://localhost:5174",
+                        "http://localhost:*",
+                        "http://127.0.0.1:*"
+                )
+                .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD")
+                .allowedHeaders("*")
+                .exposedHeaders("*")
+                .allowCredentials(true)
+                .maxAge(3600);
+    }
 }
