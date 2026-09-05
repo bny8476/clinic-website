@@ -3,7 +3,7 @@ import Card from '../../components/ui/Card';
 import Skeleton from '../../components/ui/Skeleton';
 import EmptyState from '../../components/ui/EmptyState';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronDown, ChevronUp, Search } from 'lucide-react';
+import { ChevronDown, ChevronUp, Search, ArrowUpDown } from 'lucide-react';
 
 /**
  * Enterprise DataTable Primitive

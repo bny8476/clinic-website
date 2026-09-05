@@ -64,7 +64,7 @@ export default function MedicineMaster() {
     });
   };
 
-  const medicines = (Array.isArray(allMedicines) && allMedicines.length > 0) ? allMedicines : ALL_INDIAN_MEDICINES;
+  const medicines = Array.isArray(allMedicines) ? allMedicines.filter(Boolean) : [];
 
   useEffect(() => {
     goToPage(0);
@@ -243,37 +243,37 @@ export default function MedicineMaster() {
 
   const columns = React.useMemo(() => [
     { header: 'S.NO', render: (r, i) => <span className="text-slate-500 font-medium text-xs">{i + 1}</span> },
-    { header: 'CODE', accessor: 'medicineCode', render: (r) => <span className="font-mono text-xs">{r.medicineCode || '-'}</span> },
+    { header: 'CODE', accessor: 'medicineCode', render: (r) => <span className="font-mono text-xs">{r?.medicineCode || '-'}</span> },
     { header: 'MEDICINE NAME', render: (r) => (
       <div className="flex items-center gap-3">
         <div className="w-8 h-8 bg-indigo-50 border border-indigo-100 rounded flex items-center justify-center shrink-0">
           <Pill className="w-4 h-4 text-indigo-600" />
         </div>
         <div className="flex flex-col">
-          <span className="font-medium text-slate-900 whitespace-nowrap text-sm">{r.name}</span>
-          <span className="text-[11px] text-slate-500">{r.unit === 'Strip' ? 'Tablet' : r.unit === 'Bottle' ? 'Syrup' : r.category || 'Medicine'}</span>
+          <span className="font-medium text-slate-900 whitespace-nowrap text-sm">{r?.name || '-'}</span>
+          <span className="text-[11px] text-slate-500">{r?.unit === 'Strip' ? 'Tablet' : r?.unit === 'Bottle' ? 'Syrup' : r?.category || 'Medicine'}</span>
         </div>
       </div>
     )},
-    { header: 'GENERIC NAME', render: (r) => <span className="text-slate-600 whitespace-nowrap text-xs">{r.genericName}</span> },
-    { header: 'MANUFACTURER', accessor: 'manufacturer', render: (r) => <span className="text-slate-600 whitespace-nowrap text-xs">{r.manufacturer || '-'}</span> },
+    { header: 'GENERIC NAME', render: (r) => <span className="text-slate-600 whitespace-nowrap text-xs">{r?.genericName || '-'}</span> },
+    { header: 'MANUFACTURER', accessor: 'manufacturer', render: (r) => <span className="text-slate-600 whitespace-nowrap text-xs">{r?.manufacturer || '-'}</span> },
     { header: 'CATEGORY', accessor: 'category', render: (r) => (
-      <span className={cn("text-[11px] font-medium px-2 py-0.5 rounded-full", r.drugClass === 'Analgesic' ? "bg-indigo-50 text-indigo-600" : r.drugClass === 'Antibiotic' ? "bg-blue-50 text-blue-600" : r.drugClass === 'Antihistamine' ? "bg-blue-50 text-blue-600" : r.drugClass === 'Respiratory' ? "bg-purple-50 text-purple-600" : r.drugClass === 'Gastric' ? "bg-amber-50 text-amber-600" : "bg-slate-100 text-slate-600")}>
-        {r.drugClass || r.category || '-'}
+      <span className={cn("text-[11px] font-medium px-2 py-0.5 rounded-full", r?.drugClass === 'Analgesic' ? "bg-indigo-50 text-indigo-600" : r?.drugClass === 'Antibiotic' ? "bg-blue-50 text-blue-600" : r?.drugClass === 'Antihistamine' ? "bg-blue-50 text-blue-600" : r?.drugClass === 'Respiratory' ? "bg-purple-50 text-purple-600" : r?.drugClass === 'Gastric' ? "bg-amber-50 text-amber-600" : "bg-slate-100 text-slate-600")}>
+        {r?.drugClass || r?.category || '-'}
       </span>
     )},
-    { header: 'UNIT', accessor: 'unit', render: (r) => <span className="text-slate-600 text-xs">{r.unit || '-'}</span> },
+    { header: 'UNIT', accessor: 'unit', render: (r) => <span className="text-slate-600 text-xs">{r?.unit || '-'}</span> },
     { header: 'STOCK', render: (r) => (
       <div className="flex flex-col">
-        <span className="font-medium text-slate-800 text-sm">{r.currentStock || 0}</span>
-        {r.currentStock > 0 && <span className="text-[10px] text-blue-600">({(Math.random() * 5 + 1).toFixed(1)}%)</span>}
+        <span className="font-medium text-slate-800 text-sm">{r?.currentStock || 0}</span>
+        {(r?.currentStock || 0) > 0 && <span className="text-[10px] text-blue-600">({(Math.random() * 5 + 1).toFixed(1)}%)</span>}
       </div>
     )},
-    { header: 'MRP', render: (r) => <span className="text-sm font-medium">₹{r.mrp || 0}</span> },
-    { header: 'GST %', render: (r) => <span className="text-sm text-slate-600">{r.taxPercentage || 0}%</span> },
+    { header: 'MRP', render: (r) => <span className="text-sm font-medium">₹{r?.mrp || 0}</span> },
+    { header: 'GST %', render: (r) => <span className="text-sm text-slate-600">{r?.taxPercentage || 0}%</span> },
     { header: 'STATUS', render: (r) => {
-      const stock = r.currentStock || 0;
-      const reorder = r.reorderLevel || 10;
+      const stock = r?.currentStock || 0;
+      const reorder = r?.reorderLevel || 10;
       if (stock === 0) return <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-rose-50 text-rose-600 border border-rose-100">Out of Stock</span>;
       if (stock <= reorder) return <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-amber-50 text-amber-600 border border-amber-100">Low Stock</span>;
       return <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-blue-50 text-blue-600 border border-blue-100">In Stock</span>;
