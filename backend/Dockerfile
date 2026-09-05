@@ -8,7 +8,7 @@ RUN mvn dependency:go-offline -q
 
 # Copy source and build
 COPY src* backend/src* ./src/
-RUN mvn clean package -DskipTests -q
+RUN mvn clean package -DskipTests -q && rm -f target/*.original
 
 # Stage 2: Run the application
 FROM eclipse-temurin:21-jre-jammy
