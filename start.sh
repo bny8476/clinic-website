@@ -16,6 +16,9 @@ else
   cd backend
   chmod +x mvnw
   ./mvnw clean package -DskipTests
-  JAR_FILE=$(ls target/*.jar | head -n 1)
-  java -XX:MaxRAMPercentage=60.0 -XX:+UseSerialGC -jar "$JAR_FILE"
+  JAR_FILE=$(ls target/clinic-app-*.jar | grep -v '\.original$' | head -n 1)
+  if [ -z "$JAR_FILE" ]; then
+    JAR_FILE=$(ls target/*.jar | grep -v '\.original$' | head -n 1)
+  fi
+  exec java -XX:MaxRAMPercentage=60.0 -XX:+UseSerialGC -jar "$JAR_FILE"
 fi

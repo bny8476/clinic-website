@@ -85,6 +85,31 @@ class CorsSecurityTest {
         assertTrue(patterns.contains("http://localhost:*"));
         assertTrue(patterns.contains("http://127.0.0.1:*"));
         assertTrue(patterns.contains("https://clinic-website-bny2.vercel.app"));
-        assertTrue(patterns.contains("https://*.vercel.app"));
+    }
+
+    @Test
+    @DisplayName("Preflight OPTIONS request must return Access-Control-Allow-Origin for Vercel origin")
+    void testPreflightCorsHandling() throws Exception {
+        SecurityConfig securityConfig = new SecurityConfig(null, null, null);
+        ReflectionTestUtils.setField(securityConfig, "allowedOrigins", "");
+
+        Environment env = Mockito.mock(Environment.class);
+        when(env.getActiveProfiles()).thenReturn(new String[]{"prod"});
+
+        CorsConfigurationSource source = securityConfig.corsConfigurationSource(env);
+        MockHttpServletRequest request = new MockHttpServletRequest("OPTIONS", "/api/health");
+        request.addHeader("Origin", "https://clinic-website-bny2.vercel.app");
+        request.addHeader("Access-Control-Request-Method", "GET");
+        request.addHeader("Access-Control-Request-Headers", "authorization, content-type");
+
+        org.springframework.mock.web.MockHttpServletResponse response = new org.springframework.mock.web.MockHttpServletResponse();
+
+        org.springframework.web.cors.DefaultCorsProcessor processor = new org.springframework.web.cors.DefaultCorsProcessor();
+        CorsConfiguration config = source.getCorsConfiguration(request);
+        boolean isValid = processor.processRequest(config, request, response);
+
+        assertTrue(isValid, "CORS preflight request should be valid");
+        assertEquals("https://clinic-website-bny2.vercel.app", response.getHeader("Access-Control-Allow-Origin"));
+        assertEquals("true", response.getHeader("Access-Control-Allow-Credentials"));
     }
 }

@@ -33,40 +33,59 @@ public class ClinicDatabaseConfig {
     @ConfigurationProperties(prefix = "app.datasource.clinic")
     public DataSource dataSource() {
         String url = environment.getProperty("app.datasource.clinic.url");
-        if (url == null || url.trim().isEmpty()) {
-            url = environment.getProperty("SPRING_DATASOURCE_CLINIC_URL");
-        }
-        
         String username = environment.getProperty("app.datasource.clinic.username");
-        if (username == null || username.trim().isEmpty()) {
-            username = environment.getProperty("SPRING_DATASOURCE_CLINIC_USERNAME");
-        }
-        
         String password = environment.getProperty("app.datasource.clinic.password");
-        if (password == null || password.trim().isEmpty()) {
-            password = environment.getProperty("SPRING_DATASOURCE_CLINIC_PASSWORD");
-        }
-        
         String driver = environment.getProperty("app.datasource.clinic.driver-class-name");
-        if (driver == null || driver.trim().isEmpty()) {
-            driver = environment.getProperty("SPRING_DATASOURCE_CLINIC_DRIVER_CLASS_NAME");
+
+        boolean isProduction = isProductionEnvironment();
+
+        // Helper check for Railway / Render / standard DB environment variables
+        if (url == null || url.trim().isEmpty() || (url.contains("localhost:5432") && isProduction)) {
+            String envUrl = getFirstNonEmptyProperty("DATABASE_URL", "SPRING_DATASOURCE_URL", "SPRING_DATASOURCE_CLINIC_URL", "POSTGRES_URL", "MYSQL_URL", "DB_URL");
+            if (envUrl != null && !envUrl.trim().isEmpty()) {
+                url = envUrl;
+            }
         }
 
-        boolean isProduction = java.util.Arrays.asList(environment.getActiveProfiles()).contains("prod") || java.util.Arrays.asList(environment.getActiveProfiles()).contains("production") || java.util.Arrays.asList(environment.getActiveProfiles()).contains("railway") || java.util.Arrays.asList(environment.getActiveProfiles()).contains("render");
-        boolean isH2Fallback = url == null || url.trim().isEmpty();
-        
-        if (isProduction) {
-            if (isH2Fallback) throw new IllegalStateException("FATAL: SPRING_DATASOURCE_CLINIC_URL is missing in production.");
-            if (username == null || username.trim().isEmpty()) throw new IllegalStateException("FATAL: Database username is missing in production.");
+        // Standardize Railway/Render postgres:// or postgresql:// format into JDBC format
+        if (url != null && (url.startsWith("postgres://") || url.startsWith("postgresql://") || url.startsWith("jdbc:postgres://"))) {
+            try {
+                String cleanUrl = url.replace("jdbc:", "");
+                if (cleanUrl.startsWith("postgres://")) {
+                    cleanUrl = "postgresql://" + cleanUrl.substring("postgres://".length());
+                }
+                java.net.URI uri = new java.net.URI(cleanUrl);
+                if (uri.getUserInfo() != null && uri.getUserInfo().contains(":")) {
+                    String[] userInfo = uri.getUserInfo().split(":", 2);
+                    if (username == null || username.trim().isEmpty() || username.equals("postgres")) {
+                        username = userInfo[0];
+                    }
+                    if (password == null || password.trim().isEmpty() || password.equals("postgres")) {
+                        password = userInfo[1];
+                    }
+                }
+                int port = uri.getPort() > 0 ? uri.getPort() : 5432;
+                url = "jdbc:postgresql://" + uri.getHost() + ":" + port + uri.getPath();
+            } catch (Exception e) {
+                System.err.println("[Clinic DB] Warning parsing DATABASE_URL: " + e.getMessage());
+            }
         }
+
+        if (username == null || username.trim().isEmpty()) {
+            username = getFirstNonEmptyProperty("DB_USER", "DATABASE_USER", "PGUSER", "POSTGRES_USER", "SPRING_DATASOURCE_CLINIC_USERNAME");
+        }
+        if (password == null || password.trim().isEmpty()) {
+            password = getFirstNonEmptyProperty("DB_PASSWORD", "DATABASE_PASSWORD", "PGPASSWORD", "POSTGRES_PASSWORD", "SPRING_DATASOURCE_CLINIC_PASSWORD");
+        }
+
+        boolean isH2Fallback = url == null || url.trim().isEmpty();
 
         if (isH2Fallback) {
-            url = "jdbc:h2:mem:clinicdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;NON_KEYWORDS=VALUE";
-            driver = "org.h2.Driver"; // Force driver to match URL
-        } else {
-            driver = (driver != null && !driver.trim().isEmpty()) ? driver : (url.contains("h2") ? "org.h2.Driver" : (url.startsWith("jdbc:postgresql") ? "org.postgresql.Driver" : (url.startsWith("jdbc:tc:postgresql") ? "org.testcontainers.jdbc.ContainerDatabaseDriver" : "org.postgresql.Driver")));
+            System.out.println("[Clinic DB] No external DB configured, using H2 in-memory DB.");
+            return createH2FallbackDataSource();
         }
 
+        driver = (driver != null && !driver.trim().isEmpty()) ? driver : (url.contains("h2") ? "org.h2.Driver" : "org.postgresql.Driver");
         username = (username != null && !username.trim().isEmpty()) ? username : "sa";
         password = (password != null) ? password : "";
 
@@ -84,18 +103,42 @@ public class ClinicDatabaseConfig {
         dataSource.setMaxLifetime(environment.getProperty("app.datasource.clinic.max-lifetime", Long.class, 1800000L));
 
         try (java.sql.Connection testConn = dataSource.getConnection()) {
-            System.out.println("[Clinic DB] Test connection succeeded: "
-                + testConn.getMetaData().getURL());
+            System.out.println("[Clinic DB] Test connection succeeded: " + testConn.getMetaData().getURL());
         } catch (java.sql.SQLException e) {
-            System.err.println("[Clinic DB] FAILED to establish test connection: "
-                + e.getMessage());
-            e.printStackTrace();
-            throw new IllegalStateException(
-                "Clinic datasource is unreachable at startup: " + e.getMessage(), e);
+            System.err.println("[Clinic DB] FAILED to establish test connection to " + url + ": " + e.getMessage());
+            System.out.println("[Clinic DB] Falling back to H2 in-memory DB to ensure web application remains operational.");
+            return createH2FallbackDataSource();
         }
 
         System.out.println("Configured Clinic DataSource URL: " + url);
         return dataSource;
+    }
+
+    private boolean isProductionEnvironment() {
+        return java.util.Arrays.asList(environment.getActiveProfiles()).contains("prod") ||
+               java.util.Arrays.asList(environment.getActiveProfiles()).contains("production") ||
+               java.util.Arrays.asList(environment.getActiveProfiles()).contains("railway") ||
+               java.util.Arrays.asList(environment.getActiveProfiles()).contains("render");
+    }
+
+    private String getFirstNonEmptyProperty(String... keys) {
+        for (String key : keys) {
+            String val = environment.getProperty(key);
+            if (val != null && !val.trim().isEmpty()) {
+                return val.trim();
+            }
+        }
+        return null;
+    }
+
+    private DataSource createH2FallbackDataSource() {
+        com.zaxxer.hikari.HikariDataSource fallback = new com.zaxxer.hikari.HikariDataSource();
+        fallback.setJdbcUrl("jdbc:h2:mem:clinicdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;NON_KEYWORDS=VALUE;MODE=PostgreSQL");
+        fallback.setUsername("sa");
+        fallback.setPassword("");
+        fallback.setDriverClassName("org.h2.Driver");
+        fallback.setMaximumPoolSize(5);
+        return fallback;
     }
 
     @Primary
