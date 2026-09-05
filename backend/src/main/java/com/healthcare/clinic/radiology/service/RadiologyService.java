@@ -128,6 +128,21 @@ public class RadiologyService {
 
     @Transactional
     public ImagingRequest createRequest(ImagingRequest request) {
+        if (request.getPatient() == null || request.getPatient().getId() == null) {
+            throw new IllegalArgumentException("Patient ID is required");
+        }
+        if (request.getProcedure() == null || request.getProcedure().getId() == null) {
+            throw new IllegalArgumentException("Procedure ID is required");
+        }
+
+        PatientProfile patient = patientProfileRepository.findById(request.getPatient().getId())
+                .orElseThrow(() -> new IllegalArgumentException("Patient not found"));
+        ImagingProcedure procedure = procedureRepository.findById(request.getProcedure().getId())
+                .orElseThrow(() -> new IllegalArgumentException("Procedure not found"));
+
+        request.setPatient(patient);
+        request.setProcedure(procedure);
+
         ZonedDateTime startOfDay = ZonedDateTime.now().toLocalDate().atStartOfDay(ZoneId.systemDefault());
         if (requestRepository.existsByPatientIdAndProcedureIdAndRequestedAtGreaterThanEqual(
                 request.getPatient().getId(), request.getProcedure().getId(), startOfDay)) {
