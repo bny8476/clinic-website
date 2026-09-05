@@ -2,7 +2,7 @@
 -- medicine_batches (from V13) is the shared source of truth for medicine stock.
 -- stock_items unifies medicines + general supplies in one table.
 
-CREATE TABLE warehouses (
+CREATE TABLE IF NOT EXISTS warehouses (
     id        BIGSERIAL PRIMARY KEY,
     name      VARCHAR(200) NOT NULL,
     branch_id BIGINT REFERENCES branches(id) ON DELETE SET NULL,
@@ -11,7 +11,7 @@ CREATE TABLE warehouses (
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE backoffice_suppliers (
+CREATE TABLE IF NOT EXISTS backoffice_suppliers (
     id              BIGSERIAL PRIMARY KEY,
     name            VARCHAR(200) NOT NULL,
     contact_person  VARCHAR(200),
@@ -24,7 +24,7 @@ CREATE TABLE backoffice_suppliers (
 
 -- Unified stock table: medicines AND general supplies
 -- For medicines: medicine_batch_id links back to medicine_batches (V13)
-CREATE TABLE stock_items (
+CREATE TABLE IF NOT EXISTS stock_items (
     id                  BIGSERIAL PRIMARY KEY,
     warehouse_id        BIGINT NOT NULL REFERENCES warehouses(id) ON DELETE CASCADE,
     item_type           VARCHAR(20) NOT NULL DEFAULT 'SUPPLY', -- 'MEDICINE' | 'SUPPLY'
@@ -37,7 +37,7 @@ CREATE TABLE stock_items (
     last_updated        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE stock_transfers (
+CREATE TABLE IF NOT EXISTS stock_transfers (
     id                  BIGSERIAL PRIMARY KEY,
     from_warehouse_id   BIGINT REFERENCES warehouses(id) ON DELETE SET NULL,
     to_warehouse_id     BIGINT REFERENCES warehouses(id) ON DELETE SET NULL,
@@ -48,7 +48,7 @@ CREATE TABLE stock_transfers (
     notes               TEXT
 );
 
-CREATE TABLE backoffice_purchase_orders (
+CREATE TABLE IF NOT EXISTS backoffice_purchase_orders (
     id                  BIGSERIAL PRIMARY KEY,
     supplier_id         BIGINT NOT NULL REFERENCES backoffice_suppliers(id) ON DELETE CASCADE,
     warehouse_id        BIGINT REFERENCES warehouses(id) ON DELETE SET NULL,
@@ -60,7 +60,7 @@ CREATE TABLE backoffice_purchase_orders (
     created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE backoffice_po_items (
+CREATE TABLE IF NOT EXISTS backoffice_po_items (
     id                  BIGSERIAL PRIMARY KEY,
     po_id               BIGINT NOT NULL REFERENCES backoffice_purchase_orders(id) ON DELETE CASCADE,
     stock_item_id       BIGINT REFERENCES stock_items(id) ON DELETE SET NULL,
@@ -70,7 +70,7 @@ CREATE TABLE backoffice_po_items (
     quantity_received   INT NOT NULL DEFAULT 0
 );
 
-CREATE INDEX idx_stock_items_warehouse     ON stock_items(warehouse_id);
-CREATE INDEX idx_stock_items_type          ON stock_items(item_type);
-CREATE INDEX idx_stock_items_batch         ON stock_items(medicine_batch_id);
-CREATE INDEX idx_stock_transfers_item      ON stock_transfers(stock_item_id);
+CREATE INDEX IF NOT EXISTS idx_stock_items_warehouse     ON stock_items(warehouse_id);
+CREATE INDEX IF NOT EXISTS idx_stock_items_type          ON stock_items(item_type);
+CREATE INDEX IF NOT EXISTS idx_stock_items_batch         ON stock_items(medicine_batch_id);
+CREATE INDEX IF NOT EXISTS idx_stock_transfers_item      ON stock_transfers(stock_item_id);

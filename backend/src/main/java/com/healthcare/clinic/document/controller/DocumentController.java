@@ -49,6 +49,12 @@ public class DocumentController {
             @RequestParam(value = "expiresAt", required = false) String expiresAtStr,
             @AuthenticationPrincipal UserPrincipal user) {
 
+        // For PATIENTS, enforce ownerId = authenticated user ID to prevent spoofing
+        if (user.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_PATIENT"))) {
+            ownerType = "PATIENT";
+            ownerId = user.getUserId();
+        }
+
         ZonedDateTime expiresAt = expiresAtStr != null ? ZonedDateTime.parse(expiresAtStr) : null;
         Document doc = documentService.uploadNewDocument(file, ownerType, ownerId, documentType, title, description, expiresAt, user.getBranchId(), user.getUserId());
         return ResponseEntity.ok(doc);
@@ -60,6 +66,8 @@ public class DocumentController {
             @PathVariable Long id,
             @RequestParam("file") MultipartFile file,
             @AuthenticationPrincipal UserPrincipal user) {
+        Document parent = documentService.getDocumentForUser(id, user);
+        documentService.checkDocumentOwnership(parent, user);
         Document newVersion = documentService.uploadNewVersion(id, file, user.getUserId());
         return ResponseEntity.ok(newVersion);
     }
@@ -86,14 +94,18 @@ public class DocumentController {
 
     @GetMapping("/{id}")
     @AuditableAction(module = "DOCUMENT", action = "VIEW_METADATA")
-    public ResponseEntity<Document> getDocument(@PathVariable Long id) {
-        return ResponseEntity.ok(documentService.getDocumentById(id));
+    public ResponseEntity<Document> getDocument(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal user) {
+        return ResponseEntity.ok(documentService.getDocumentForUser(id, user));
     }
 
     @GetMapping("/{id}/download")
     @AuditableAction(module = "DOCUMENT", action = "DOWNLOAD")
-    public ResponseEntity<InputStreamResource> downloadDocument(@PathVariable Long id) {
-        Document doc = documentService.getDocumentById(id);
+    public ResponseEntity<InputStreamResource> downloadDocument(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal user) {
+        Document doc = documentService.getDocumentForUser(id, user);
         InputStreamResource resource = new InputStreamResource(storageService.downloadFile(doc.getStorageKey()));
 
         return ResponseEntity.ok()
@@ -105,13 +117,20 @@ public class DocumentController {
 
     @GetMapping("/{id}/versions")
     @AuditableAction(module = "DOCUMENT", action = "VIEW_HISTORY")
-    public ResponseEntity<List<Document>> getVersionHistory(@PathVariable Long id) {
-        return ResponseEntity.ok(documentService.getVersionHistory(id));
+    public ResponseEntity<List<Document>> getVersionHistory(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal user) {
+        Document doc = documentService.getDocumentForUser(id, user);
+        return ResponseEntity.ok(documentService.getVersionHistory(doc.getId()));
     }
 
     @DeleteMapping("/{id}")
     @AuditableAction(module = "DOCUMENT", action = "DELETE")
-    public ResponseEntity<Void> softDeleteDocument(@PathVariable Long id) {
+    public ResponseEntity<Void> softDeleteDocument(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal user) {
+        Document doc = documentService.getDocumentForUser(id, user);
+        documentService.checkDocumentOwnership(doc, user);
         documentService.softDeleteDocument(id);
         return ResponseEntity.noContent().build();
     }
@@ -124,16 +143,20 @@ public class DocumentController {
             HttpServletRequest request,
             @AuthenticationPrincipal UserPrincipal user) {
         
+        Document doc = documentService.getDocumentForUser(id, user);
         String ipAddress = request.getRemoteAddr();
         String signatureNote = payload.get("signatureNote");
-        DocumentSignature signature = signatureService.signDocument(id, user.getUserId(), ipAddress, signatureNote);
+        DocumentSignature signature = signatureService.signDocument(doc.getId(), user.getUserId(), ipAddress, signatureNote);
         return ResponseEntity.ok(signature);
     }
     
     @GetMapping("/{id}/signatures")
     @AuditableAction(module = "DOCUMENT", action = "VIEW_SIGNATURES")
-    public ResponseEntity<List<DocumentSignature>> getSignatures(@PathVariable Long id) {
-        return ResponseEntity.ok(signatureService.getSignaturesForDocument(id));
+    public ResponseEntity<List<DocumentSignature>> getSignatures(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal user) {
+        Document doc = documentService.getDocumentForUser(id, user);
+        return ResponseEntity.ok(signatureService.getSignaturesForDocument(doc.getId()));
     }
 
     @PostMapping("/{id}/share/external")
@@ -143,17 +166,25 @@ public class DocumentController {
             @RequestBody Map<String, String> payload,
             @AuthenticationPrincipal UserPrincipal user) {
         
+        Document doc = documentService.getDocumentForUser(id, user);
+        documentService.checkDocumentOwnership(doc, user);
+
         String permission = payload.getOrDefault("permissionLevel", "VIEW");
         String expiresAtStr = payload.get("expiresAt");
         ZonedDateTime expiresAt = expiresAtStr != null ? ZonedDateTime.parse(expiresAtStr) : ZonedDateTime.now().plusDays(7);
         
-        DocumentShare share = shareService.createExternalShare(id, permission, expiresAt, user.getUserId());
+        DocumentShare share = shareService.createExternalShare(doc.getId(), permission, expiresAt, user.getUserId());
         return ResponseEntity.ok(share);
     }
 
     @DeleteMapping("/{id}/share/{shareId}")
     @AuditableAction(module = "DOCUMENT", action = "REVOKE_SHARE")
-    public ResponseEntity<Void> revokeShare(@PathVariable Long id, @PathVariable Long shareId) {
+    public ResponseEntity<Void> revokeShare(
+            @PathVariable Long id,
+            @PathVariable Long shareId,
+            @AuthenticationPrincipal UserPrincipal user) {
+        Document doc = documentService.getDocumentForUser(id, user);
+        documentService.checkDocumentOwnership(doc, user);
         shareService.revokeShare(shareId);
         return ResponseEntity.noContent().build();
     }

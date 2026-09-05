@@ -1,7 +1,7 @@
 -- V67__add_patient_portal_batch_4.sql
 -- Add tables for Insurance Claims, Payments, and Notifications
 
-CREATE TABLE patient_insurance_claims (
+CREATE TABLE IF NOT EXISTS patient_insurance_claims (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL REFERENCES patient_profiles(id),
     provider VARCHAR(255) NOT NULL,
@@ -13,9 +13,9 @@ CREATE TABLE patient_insurance_claims (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_patient_insurance_claims_patient ON patient_insurance_claims(patient_id);
+CREATE INDEX IF NOT EXISTS idx_patient_insurance_claims_patient ON patient_insurance_claims(patient_id);
 
-CREATE TABLE patient_portal_payments (
+CREATE TABLE IF NOT EXISTS patient_portal_payments (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL REFERENCES patient_profiles(id),
     amount DECIMAL(10,2) NOT NULL,
@@ -25,9 +25,9 @@ CREATE TABLE patient_portal_payments (
     payment_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_patient_portal_payments_patient ON patient_portal_payments(patient_id);
+CREATE INDEX IF NOT EXISTS idx_patient_portal_payments_patient ON patient_portal_payments(patient_id);
 
-CREATE TABLE patient_notifications (
+CREATE TABLE IF NOT EXISTS patient_notifications (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL REFERENCES patient_profiles(id),
     title VARCHAR(255) NOT NULL,
@@ -36,4 +36,4 @@ CREATE TABLE patient_notifications (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_patient_notif_patient ON patient_notifications(patient_id);
+CREATE INDEX IF NOT EXISTS idx_patient_notif_patient ON patient_notifications(patient_id);

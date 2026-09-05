@@ -1,4 +1,4 @@
-CREATE TABLE doctor_prescription_templates (
+CREATE TABLE IF NOT EXISTS doctor_prescription_templates (
     id BIGSERIAL PRIMARY KEY,
     doctor_id BIGINT NOT NULL,
     name VARCHAR(255) NOT NULL,
@@ -8,10 +8,10 @@ CREATE TABLE doctor_prescription_templates (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-CREATE INDEX idx_doc_template ON doctor_prescription_templates (doctor_id);
+CREATE INDEX IF NOT EXISTS idx_doc_template ON doctor_prescription_templates (doctor_id);
 
 
-CREATE TABLE doctor_prescription_template_items (
+CREATE TABLE IF NOT EXISTS doctor_prescription_template_items (
     id BIGSERIAL PRIMARY KEY,
     template_id BIGINT NOT NULL,
     medication_name VARCHAR(255) NOT NULL,

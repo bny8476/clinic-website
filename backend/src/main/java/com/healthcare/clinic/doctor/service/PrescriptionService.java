@@ -54,6 +54,31 @@ public class PrescriptionService {
     private final AppointmentRepository appointmentRepository;
 
     @Transactional(readOnly = true)
+    public List<PrescriptionResponse> getAllPrescriptions() {
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        
+        if (auth != null && auth.getAuthorities().stream().anyMatch(a -> 
+                a.getAuthority().equals("ROLE_DOCTOR"))) {
+            return prescriptionRepository.findByDoctorIdOrderByCreatedAtDesc(currentUserId)
+                    .stream()
+                    .map(this::mapToResponse)
+                    .collect(Collectors.toList());
+        } else if (auth != null && auth.getAuthorities().stream().anyMatch(a -> 
+                a.getAuthority().equals("ROLE_PATIENT"))) {
+            return prescriptionRepository.findByPatientIdOrderByCreatedAtDesc(currentUserId)
+                    .stream()
+                    .map(this::mapToResponse)
+                    .collect(Collectors.toList());
+        } else {
+            return prescriptionRepository.findAll()
+                    .stream()
+                    .map(this::mapToResponse)
+                    .collect(Collectors.toList());
+        }
+    }
+
+    @Transactional(readOnly = true)
     public List<PrescriptionResponse> getPrescriptionsForPatient(Long patientId) {
         return prescriptionRepository.findByPatientIdOrderByCreatedAtDesc(patientId)
                 .stream()
@@ -439,6 +464,8 @@ public class PrescriptionService {
                         .frequency(item.getFrequency())
                         .duration(item.getDuration())
                         .instructions(item.getInstructions())
+                        .strength(item.getStrength())
+                        .timing(item.getTiming())
                         .medicineId(item.getMedicineId())
                         .prescribedQuantity(item.getPrescribedQuantity())
                         .dispensedQuantity(item.getDispensedQuantity())

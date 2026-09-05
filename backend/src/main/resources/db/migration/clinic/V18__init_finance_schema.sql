@@ -1,7 +1,7 @@
 -- V18: Finance Module Schema
 -- invoices table already exists from V7 + V15. Finance adds payments, expenses, insurance_claims.
 
-CREATE TABLE payments (
+CREATE TABLE IF NOT EXISTS payments (
     id                BIGSERIAL PRIMARY KEY,
     invoice_id        BIGINT NOT NULL REFERENCES invoices(id) ON DELETE CASCADE,
     amount            DECIMAL(12, 2) NOT NULL,
@@ -13,7 +13,7 @@ CREATE TABLE payments (
     notes             TEXT
 );
 
-CREATE TABLE expenses (
+CREATE TABLE IF NOT EXISTS expenses (
     id           BIGSERIAL PRIMARY KEY,
     branch_id    BIGINT REFERENCES branches(id) ON DELETE SET NULL,
     category     VARCHAR(80) NOT NULL,  -- UTILITIES, SALARY, SUPPLIES, MAINTENANCE, OTHER
@@ -25,7 +25,7 @@ CREATE TABLE expenses (
     created_at   TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE insurance_claims (
+CREATE TABLE IF NOT EXISTS insurance_claims (
     id               BIGSERIAL PRIMARY KEY,
     patient_id       BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     invoice_id       BIGINT REFERENCES invoices(id) ON DELETE SET NULL,
@@ -39,6 +39,7 @@ CREATE TABLE insurance_claims (
     notes            TEXT
 );
 
-CREATE INDEX idx_payments_invoice      ON payments(invoice_id);
-CREATE INDEX idx_expenses_branch_date  ON expenses(branch_id, incurred_on);
-CREATE INDEX idx_insurance_status      ON insurance_claims(status);
+ALTER TABLE payments ADD COLUMN IF NOT EXISTS invoice_id BIGINT REFERENCES invoices(id) ON DELETE CASCADE;
+CREATE INDEX IF NOT EXISTS idx_payments_invoice      ON payments(invoice_id);
+CREATE INDEX IF NOT EXISTS idx_expenses_branch_date  ON expenses(branch_id, incurred_on);
+CREATE INDEX IF NOT EXISTS idx_insurance_status      ON insurance_claims(status);

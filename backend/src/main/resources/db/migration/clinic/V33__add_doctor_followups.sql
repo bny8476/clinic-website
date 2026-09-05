@@ -1,4 +1,4 @@
-CREATE TABLE doctor_followups (
+CREATE TABLE IF NOT EXISTS doctor_followups (
     id BIGSERIAL PRIMARY KEY,
     doctor_id BIGINT NOT NULL,
     patient_id BIGINT NOT NULL,
@@ -13,6 +13,6 @@ CREATE TABLE doctor_followups (
     FOREIGN KEY (linked_appointment_id) REFERENCES appointments(id)
 );
 
-CREATE INDEX idx_followup_doctor ON doctor_followups(doctor_id);
-CREATE INDEX idx_followup_patient ON doctor_followups(patient_id);
-CREATE INDEX idx_followup_date ON doctor_followups(follow_up_date);
+CREATE INDEX IF NOT EXISTS idx_followup_doctor ON doctor_followups(doctor_id);
+CREATE INDEX IF NOT EXISTS idx_followup_patient ON doctor_followups(patient_id);
+CREATE INDEX IF NOT EXISTS idx_followup_date ON doctor_followups(follow_up_date);

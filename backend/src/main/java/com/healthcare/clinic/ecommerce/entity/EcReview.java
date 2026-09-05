@@ -33,7 +33,7 @@ public class EcReview {
     @Column(columnDefinition = "TEXT")
     private String body;
 
-    @Column(name = "images", columnDefinition = "TEXT")
+    @Column(name = "images")
     @JdbcTypeCode(SqlTypes.JSON)
     private String images; // JSON array of image URLs
 

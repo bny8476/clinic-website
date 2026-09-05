@@ -56,20 +56,6 @@ ALTER TABLE IF EXISTS doctor_performance ADD CONSTRAINT UKl0f0slbb2o379joaedgrp3
 ALTER TABLE IF EXISTS prescription_dispensed_items DROP CONSTRAINT IF EXISTS fk_disp_items_batch CASCADE;
 ALTER TABLE IF EXISTS prescription_dispensed_items DROP CONSTRAINT IF EXISTS fkarymp3jegumlgjjcnutpu61g8 CASCADE;
 
-DO $$
-DECLARE
-    r RECORD;
-BEGIN
-    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'prescription_dispensed_items') THEN
-        FOR r IN (
-            SELECT constraint_name
-            FROM information_schema.key_column_usage
-            WHERE table_name = 'prescription_dispensed_items' AND column_name = 'batch_id'
-        ) LOOP
-            EXECUTE 'ALTER TABLE prescription_dispensed_items DROP CONSTRAINT IF EXISTS ' || quote_ident(r.constraint_name) || ' CASCADE';
-        END LOOP;
-    END IF;
-END $$;
-
 ALTER TABLE IF EXISTS prescription_dispensed_items ALTER COLUMN batch_id TYPE VARCHAR(36);
+
 

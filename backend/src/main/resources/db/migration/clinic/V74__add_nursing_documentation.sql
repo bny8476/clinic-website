@@ -1,9 +1,9 @@
-ALTER TABLE nursing_notes ADD COLUMN encounter_id BIGINT;
-ALTER TABLE nursing_notes ADD COLUMN note_type VARCHAR(50) DEFAULT 'PROGRESS';
-ALTER TABLE nursing_notes ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
-ALTER TABLE nursing_notes ADD COLUMN version INT DEFAULT 0;
+ALTER TABLE nursing_notes ADD COLUMN IF NOT EXISTS encounter_id BIGINT;
+ALTER TABLE nursing_notes ADD COLUMN IF NOT EXISTS note_type VARCHAR(50) DEFAULT 'PROGRESS';
+ALTER TABLE nursing_notes ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE nursing_notes ADD COLUMN IF NOT EXISTS version INT DEFAULT 0;
 
-CREATE TABLE nursing_care_plans (
+CREATE TABLE IF NOT EXISTS nursing_care_plans (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL REFERENCES patient_profiles(id) ON DELETE CASCADE,
     encounter_id BIGINT,
@@ -17,7 +17,7 @@ CREATE TABLE nursing_care_plans (
     version INT DEFAULT 0
 );
 
-CREATE TABLE fall_risk_assessments (
+CREATE TABLE IF NOT EXISTS fall_risk_assessments (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL REFERENCES patient_profiles(id) ON DELETE CASCADE,
     encounter_id BIGINT,
@@ -28,7 +28,7 @@ CREATE TABLE fall_risk_assessments (
     notes TEXT
 );
 
-CREATE TABLE pain_assessments (
+CREATE TABLE IF NOT EXISTS pain_assessments (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL REFERENCES patient_profiles(id) ON DELETE CASCADE,
     encounter_id BIGINT,

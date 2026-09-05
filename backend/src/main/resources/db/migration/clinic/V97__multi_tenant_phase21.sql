@@ -1,4 +1,4 @@
-CREATE TABLE tenants (
+CREATE TABLE IF NOT EXISTS tenants (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL UNIQUE,
     legal_entity_name VARCHAR(150),
@@ -11,4 +11,4 @@ CREATE TABLE tenants (
     updated_at TIMESTAMP WITH TIME ZONE
 );
 
-CREATE INDEX idx_tenants_status ON tenants(status);
+CREATE INDEX IF NOT EXISTS idx_tenants_status ON tenants(status);

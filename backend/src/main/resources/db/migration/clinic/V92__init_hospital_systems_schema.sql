@@ -5,7 +5,7 @@ DROP TABLE IF EXISTS beds CASCADE;
 DROP TABLE IF EXISTS wards CASCADE;
 DROP TABLE IF EXISTS rooms CASCADE;
 
-CREATE TABLE wards (
+CREATE TABLE IF NOT EXISTS wards (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     ward_type VARCHAR(50) NOT NULL,
@@ -14,7 +14,7 @@ CREATE TABLE wards (
     capacity INT NOT NULL DEFAULT 0
 );
 
-CREATE TABLE rooms (
+CREATE TABLE IF NOT EXISTS rooms (
     id BIGSERIAL PRIMARY KEY,
     ward_id BIGINT NOT NULL REFERENCES wards(id),
     room_number VARCHAR(50) NOT NULL,
@@ -25,7 +25,7 @@ CREATE TABLE rooms (
 -- Note: beds table might already exist. If it does, we modify it. If not, we create it.
 -- We will just DROP and CREATE because the existing one was a stub.
 DROP TABLE IF EXISTS beds CASCADE;
-CREATE TABLE beds (
+CREATE TABLE IF NOT EXISTS beds (
     id BIGSERIAL PRIMARY KEY,
     room_id BIGINT NOT NULL REFERENCES rooms(id),
     bed_number VARCHAR(50) NOT NULL,
@@ -36,7 +36,7 @@ CREATE TABLE beds (
 
 -- 2. Inpatient: Admission & Care
 DROP TABLE IF EXISTS inpatient_admissions CASCADE;
-CREATE TABLE admissions (
+CREATE TABLE IF NOT EXISTS admissions (
     id BIGSERIAL PRIMARY KEY,
     admission_number VARCHAR(50) UNIQUE NOT NULL,
     patient_id BIGINT NOT NULL REFERENCES patient_profiles(id),
@@ -50,7 +50,7 @@ CREATE TABLE admissions (
     branch_id BIGINT NOT NULL
 );
 
-CREATE TABLE bed_transfers (
+CREATE TABLE IF NOT EXISTS bed_transfers (
     id BIGSERIAL PRIMARY KEY,
     admission_id BIGINT NOT NULL REFERENCES admissions(id),
     from_bed_id BIGINT NOT NULL REFERENCES beds(id),
@@ -60,7 +60,7 @@ CREATE TABLE bed_transfers (
     transferred_by_user_id BIGINT NOT NULL REFERENCES users(id)
 );
 
-CREATE TABLE discharge_summaries (
+CREATE TABLE IF NOT EXISTS discharge_summaries (
     id BIGSERIAL PRIMARY KEY,
     admission_id BIGINT NOT NULL REFERENCES admissions(id),
     discharging_doctor_id BIGINT NOT NULL REFERENCES doctor_profiles(id),
@@ -73,13 +73,13 @@ CREATE TABLE discharge_summaries (
 );
 
 -- Modify Existing Nursing Tables to link to admissions
-ALTER TABLE nurse_patient_assignment ADD COLUMN admission_id BIGINT REFERENCES admissions(id);
-ALTER TABLE vital_signs ADD COLUMN admission_id BIGINT REFERENCES admissions(id);
-ALTER TABLE nursing_notes ADD COLUMN admission_id BIGINT REFERENCES admissions(id);
-ALTER TABLE medication_administration_records ADD COLUMN admission_id BIGINT REFERENCES admissions(id);
+ALTER TABLE nurse_patient_assignment ADD COLUMN IF NOT EXISTS admission_id BIGINT REFERENCES admissions(id);
+ALTER TABLE vital_signs ADD COLUMN IF NOT EXISTS admission_id BIGINT REFERENCES admissions(id);
+ALTER TABLE nursing_notes ADD COLUMN IF NOT EXISTS admission_id BIGINT REFERENCES admissions(id);
+ALTER TABLE medication_administration_records ADD COLUMN IF NOT EXISTS admission_id BIGINT REFERENCES admissions(id);
 
 -- 3. Emergency Department
-CREATE TABLE emergency_encounters (
+CREATE TABLE IF NOT EXISTS emergency_encounters (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT REFERENCES patient_profiles(id),
     arrival_mode VARCHAR(50) NOT NULL,
@@ -92,7 +92,7 @@ CREATE TABLE emergency_encounters (
     branch_id BIGINT NOT NULL
 );
 
-CREATE TABLE triage_assessments (
+CREATE TABLE IF NOT EXISTS triage_assessments (
     id BIGSERIAL PRIMARY KEY,
     emergency_encounter_id BIGINT NOT NULL REFERENCES emergency_encounters(id),
     triaged_by_user_id BIGINT NOT NULL REFERENCES users(id),
@@ -101,7 +101,7 @@ CREATE TABLE triage_assessments (
     triaged_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE emergency_orders (
+CREATE TABLE IF NOT EXISTS emergency_orders (
     id BIGSERIAL PRIMARY KEY,
     emergency_encounter_id BIGINT NOT NULL REFERENCES emergency_encounters(id),
     ordered_by_user_id BIGINT NOT NULL REFERENCES users(id),
@@ -111,12 +111,12 @@ CREATE TABLE emergency_orders (
 );
 
 -- Modify existing tables to link to emergency encounters
-ALTER TABLE vital_signs ADD COLUMN emergency_encounter_id BIGINT REFERENCES emergency_encounters(id);
-ALTER TABLE invoices ADD COLUMN emergency_encounter_id BIGINT REFERENCES emergency_encounters(id);
+ALTER TABLE vital_signs ADD COLUMN IF NOT EXISTS emergency_encounter_id BIGINT REFERENCES emergency_encounters(id);
+ALTER TABLE invoices ADD COLUMN IF NOT EXISTS emergency_encounter_id BIGINT REFERENCES emergency_encounters(id);
 
 
 -- 4. Operation Theatre
-CREATE TABLE operation_theatres (
+CREATE TABLE IF NOT EXISTS operation_theatres (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     branch_id BIGINT NOT NULL,
@@ -124,7 +124,7 @@ CREATE TABLE operation_theatres (
     version BIGINT NOT NULL DEFAULT 0
 );
 
-CREATE TABLE surgery_bookings (
+CREATE TABLE IF NOT EXISTS surgery_bookings (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL REFERENCES patient_profiles(id),
     admission_id BIGINT REFERENCES admissions(id),
@@ -138,7 +138,7 @@ CREATE TABLE surgery_bookings (
     version BIGINT NOT NULL DEFAULT 0
 );
 
-CREATE TABLE pre_op_checklists (
+CREATE TABLE IF NOT EXISTS pre_op_checklists (
     id BIGSERIAL PRIMARY KEY,
     surgery_booking_id BIGINT NOT NULL UNIQUE REFERENCES surgery_bookings(id),
     items JSONB NOT NULL,
@@ -146,14 +146,14 @@ CREATE TABLE pre_op_checklists (
     completed_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE surgical_team_members (
+CREATE TABLE IF NOT EXISTS surgical_team_members (
     id BIGSERIAL PRIMARY KEY,
     surgery_booking_id BIGINT NOT NULL REFERENCES surgery_bookings(id),
     user_id BIGINT NOT NULL REFERENCES users(id),
     role VARCHAR(50) NOT NULL
 );
 
-CREATE TABLE anesthesia_records (
+CREATE TABLE IF NOT EXISTS anesthesia_records (
     id BIGSERIAL PRIMARY KEY,
     surgery_booking_id BIGINT NOT NULL UNIQUE REFERENCES surgery_bookings(id),
     anesthetist_id BIGINT NOT NULL REFERENCES doctor_profiles(id),
@@ -163,7 +163,7 @@ CREATE TABLE anesthesia_records (
     anesthesia_end TIMESTAMP WITH TIME ZONE
 );
 
-CREATE TABLE surgery_notes (
+CREATE TABLE IF NOT EXISTS surgery_notes (
     id BIGSERIAL PRIMARY KEY,
     surgery_booking_id BIGINT NOT NULL REFERENCES surgery_bookings(id),
     note_type VARCHAR(50) NOT NULL,
@@ -172,7 +172,7 @@ CREATE TABLE surgery_notes (
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE surgery_inventory_usages (
+CREATE TABLE IF NOT EXISTS surgery_inventory_usages (
     id BIGSERIAL PRIMARY KEY,
     surgery_booking_id BIGINT NOT NULL REFERENCES surgery_bookings(id),
     stock_adjustment_id BIGINT NOT NULL,
@@ -181,4 +181,4 @@ CREATE TABLE surgery_inventory_usages (
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-ALTER TABLE vital_signs ADD COLUMN surgery_booking_id BIGINT REFERENCES surgery_bookings(id);
+ALTER TABLE vital_signs ADD COLUMN IF NOT EXISTS surgery_booking_id BIGINT REFERENCES surgery_bookings(id);

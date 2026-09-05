@@ -1,7 +1,7 @@
 -- V68__add_clinical_encounter_tables.sql
 -- Phase 9 Batch 1: Encounter, SOAP Note, Diagnosis, Allergies
 
-CREATE TABLE clinical_encounters (
+CREATE TABLE IF NOT EXISTS clinical_encounters (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL REFERENCES patient_profiles(id),
     doctor_id BIGINT NOT NULL REFERENCES doctor_profiles(id),
@@ -14,10 +14,10 @@ CREATE TABLE clinical_encounters (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_clinical_encounters_patient ON clinical_encounters(patient_id);
-CREATE INDEX idx_clinical_encounters_doctor ON clinical_encounters(doctor_id);
+CREATE INDEX IF NOT EXISTS idx_clinical_encounters_patient ON clinical_encounters(patient_id);
+CREATE INDEX IF NOT EXISTS idx_clinical_encounters_doctor ON clinical_encounters(doctor_id);
 
-CREATE TABLE soap_notes (
+CREATE TABLE IF NOT EXISTS soap_notes (
     id BIGSERIAL PRIMARY KEY,
     encounter_id BIGINT NOT NULL REFERENCES clinical_encounters(id) ON DELETE CASCADE,
     subjective TEXT,
@@ -31,9 +31,9 @@ CREATE TABLE soap_notes (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_soap_notes_encounter ON soap_notes(encounter_id);
+CREATE INDEX IF NOT EXISTS idx_soap_notes_encounter ON soap_notes(encounter_id);
 
-CREATE TABLE patient_diagnoses (
+CREATE TABLE IF NOT EXISTS patient_diagnoses (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL REFERENCES patient_profiles(id),
     encounter_id BIGINT REFERENCES clinical_encounters(id),
@@ -51,9 +51,9 @@ CREATE TABLE patient_diagnoses (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_patient_diagnoses_patient ON patient_diagnoses(patient_id);
+CREATE INDEX IF NOT EXISTS idx_patient_diagnoses_patient ON patient_diagnoses(patient_id);
 
-CREATE TABLE patient_allergies (
+CREATE TABLE IF NOT EXISTS patient_allergies (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL REFERENCES patient_profiles(id),
     allergen VARCHAR(255) NOT NULL,
@@ -70,4 +70,4 @@ CREATE TABLE patient_allergies (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_patient_allergies_patient ON patient_allergies(patient_id);
+CREATE INDEX IF NOT EXISTS idx_patient_allergies_patient ON patient_allergies(patient_id);

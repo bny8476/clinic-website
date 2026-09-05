@@ -15,6 +15,17 @@ import { BrowserRouter, Link, Navigate, Outlet, Route, Routes, useNavigate, useP
 import { Toaster } from 'react-hot-toast';
 import { Ambulance } from 'lucide-react';
 
+import { useRealtimeNotifications } from './hooks/useRealtimeNotifications';
+
+// Medicine E-Commerce pages
+const MedicineMarketplace = lazy(() => import('./pages/patient/MedicineMarketplace'));
+const MedicineDetailsPage = lazy(() => import('./pages/patient/MedicineDetailsPage'));
+const CartPage = lazy(() => import('./pages/patient/CartPage'));
+const MedicineCheckoutPage = lazy(() => import('./pages/patient/CheckoutPage'));
+const PatientOrdersPage = lazy(() => import('./pages/patient/PatientOrdersPage'));
+const PatientOrderDetailPage = lazy(() => import('./pages/patient/PatientOrderDetailPage'));
+const DoctorMedicineOrders = lazy(() => import('./pages/doctor/DoctorMedicineOrders'));
+
 // Layouts
 
 // Route guard
@@ -237,6 +248,11 @@ const DashboardRoute = ({ path, portalSlug, allowedRoles, defaultRedirect, child
   </Route>
 );
 
+function RealtimeNotificationsListener() {
+  useRealtimeNotifications();
+  return null;
+}
+
 function App() {
   useEffect(() => {
     // Wake up backend (e.g., Render free tier) on app load
@@ -250,6 +266,7 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <RealtimeNotificationsListener />
       <BrowserRouter>
         <Toaster 
           position="top-right"
@@ -286,6 +303,12 @@ function App() {
           <Route element={<PublicLayout />}>
             <Route path="/" element={<Home />} />
             <Route path="/doctors" element={<DoctorList />} />
+            <Route path="/medicines" element={<MedicineMarketplace />} />
+            <Route path="/medicines/:medicineId" element={<MedicineDetailsPage />} />
+            <Route path="/cart" element={<CartPage />} />
+            <Route path="/checkout" element={<MedicineCheckoutPage />} />
+            <Route path="/my-orders" element={<PatientOrdersPage />} />
+            <Route path="/my-orders/:orderId" element={<PatientOrderDetailPage />} />
             <Route path="/register" element={<Register />} />
             <Route path="/:portalSlug/register" element={<Register />} />
           </Route>
@@ -392,6 +415,8 @@ function App() {
             <Route path="care-pathways/builder" element={<CarePathwayBuilder />} />
             <Route path="schedule-settings" element={<DoctorScheduleSettings />} />
             <Route path="manage-medicines" element={<ManageMedicines />} />
+            <Route path="orders" element={<DoctorMedicineOrders />} />
+            <Route path="orders/:orderId" element={<DoctorMedicineOrders />} />
           </Route>
 
           {/* ── Nurse Routes ────────────────────────────────────────────── */}

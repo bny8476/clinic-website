@@ -1,4 +1,4 @@
-CREATE TABLE medication_administration_records (
+CREATE TABLE IF NOT EXISTS medication_administration_records (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT,
     prescription_item_id BIGINT,

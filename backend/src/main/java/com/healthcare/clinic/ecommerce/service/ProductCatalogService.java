@@ -3,8 +3,13 @@ package com.healthcare.clinic.ecommerce.service;
 import com.healthcare.clinic.ecommerce.entity.EcommerceProduct;
 import com.healthcare.clinic.ecommerce.repository.EcommerceProductRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -16,46 +21,39 @@ public class ProductCatalogService {
 
     @Transactional(readOnly = true)
     public List<EcommerceProduct> getActiveProducts() {
-        return productRepository.findAll().stream()
-                .filter(p -> Boolean.TRUE.equals(p.getIsActive()) && "ACTIVE".equals(p.getProductStatus()))
-                .toList();
+        return productRepository.findByIsActiveTrue();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<EcommerceProduct> searchProducts(String query, String category, Boolean rxRequired, String sortBy, int page, int size) {
+        Sort sort = switch (sortBy != null ? sortBy : "") {
+            case "price_asc" -> Sort.by(Sort.Direction.ASC, "price");
+            case "price_desc" -> Sort.by(Sort.Direction.DESC, "price");
+            case "name_asc" -> Sort.by(Sort.Direction.ASC, "title");
+            case "name_desc" -> Sort.by(Sort.Direction.DESC, "title");
+            default -> Sort.by(Sort.Direction.DESC, "createdAt");
+        };
+
+        Pageable pageable = PageRequest.of(Math.max(0, page), size > 0 ? size : 20, sort);
+        String searchQuery = (query != null && !query.trim().isEmpty()) ? query.trim() : null;
+        String categoryFilter = (category != null && !category.trim().isEmpty() && !"ALL".equalsIgnoreCase(category)) ? category.trim() : null;
+
+        return productRepository.searchMedicines(searchQuery, categoryFilter, rxRequired, pageable);
     }
 
     @Transactional(readOnly = true)
     public EcommerceProduct getProductDetails(Long id) {
-        return productRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Product not found"));
+        return productRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + id));
     }
 
     @Transactional
     public EcommerceProduct createOrUpdateProduct(EcommerceProduct product) {
-        // Prevent duplicate SKU
-        if (product.getSku() != null && !product.getSku().isBlank()) {
-            productRepository.findAll().stream()
-                    .filter(p -> product.getSku().equals(p.getSku()) && !p.getId().equals(product.getId()))
-                    .findFirst()
-                    .ifPresent(p -> { throw new IllegalArgumentException("Duplicate SKU"); });
-        }
-        
-        // Prevent duplicate Barcode
-        if (product.getBarcode() != null && !product.getBarcode().isBlank()) {
-            productRepository.findAll().stream()
-                    .filter(p -> product.getBarcode().equals(p.getBarcode()) && !p.getId().equals(product.getId()))
-                    .findFirst()
-                    .ifPresent(p -> { throw new IllegalArgumentException("Duplicate Barcode"); });
-        }
-
         if (product.getId() == null) {
             product.setCreatedAt(ZonedDateTime.now());
-            if ("ACTIVE".equals(product.getProductStatus())) {
-                product.setActivatedAt(ZonedDateTime.now());
-            }
-        } else {
-            EcommerceProduct existing = productRepository.findById(product.getId()).orElseThrow();
-            if (!"ACTIVE".equals(existing.getProductStatus()) && "ACTIVE".equals(product.getProductStatus())) {
-                product.setActivatedAt(ZonedDateTime.now());
+            if (product.getIsActive() == null) {
+                product.setIsActive(true);
             }
         }
-
         return productRepository.save(product);
     }
 

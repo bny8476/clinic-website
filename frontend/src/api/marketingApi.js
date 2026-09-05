@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { axiosPrivate } from '../../api/axios';
+import { axiosPrivate } from './axios';
 
 const BASE = '/api/marketing';
 

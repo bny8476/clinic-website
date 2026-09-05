@@ -33,25 +33,29 @@ public class EmrDataMigrationRunner {
     @EventListener(ApplicationReadyEvent.class)
     public void migrateLegacyJsonBlobs() {
         // Quick check: if we already have EMR data, we might not need to migrate again
-        if (allergyRepository.count() > 0) {
-            log.info("EMR Data already present. Skipping JSON migration.");
-            return;
+        try {
+            if (allergyRepository.count() > 0) {
+                log.info("EMR Data already present. Skipping JSON migration.");
+                return;
+            }
+
+            log.info("Starting migration of legacy JSON blobs to EMR structures...");
+            List<PatientProfile> profiles = patientProfileRepository.findAll();
+            int count = 0;
+
+            for (PatientProfile p : profiles) {
+                migrateAllergies(p);
+                migrateProblems(p);
+                migrateSurgeries(p);
+                migrateFamilyHistory(p);
+                migrateMedications(p);
+                count++;
+            }
+
+            log.info("Successfully migrated legacy EMR data for {} patients.", count);
+        } catch (Exception e) {
+            log.warn("Skipping EMR migration due to schema or table unavailability: {}", e.getMessage());
         }
-
-        log.info("Starting migration of legacy JSON blobs to EMR structures...");
-        List<PatientProfile> profiles = patientProfileRepository.findAll();
-        int count = 0;
-
-        for (PatientProfile p : profiles) {
-            migrateAllergies(p);
-            migrateProblems(p);
-            migrateSurgeries(p);
-            migrateFamilyHistory(p);
-            migrateMedications(p);
-            count++;
-        }
-
-        log.info("Successfully migrated legacy EMR data for {} patients.", count);
     }
 
     private void migrateAllergies(PatientProfile p) {

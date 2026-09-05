@@ -17,6 +17,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import com.healthcare.clinic.security.SseTicketService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +37,7 @@ import java.util.stream.Collectors;
 public class PatientMedicineSseController {
 
     private final AppointmentRepository appointmentRepository;
+    private final SseTicketService sseTicketService;
 
     private static class ClientConnection {
         final SseEmitter emitter;
@@ -47,12 +54,34 @@ public class PatientMedicineSseController {
     // Cache: doctorId -> set of patient user IDs
     private final Map<Long, List<Long>> doctorToPatientsCache = new ConcurrentHashMap<>();
 
+    @PostMapping("/ticket")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Map<String, String>> generateTicket(@AuthenticationPrincipal UserPrincipal user) {
+        if (user == null) {
+            return ResponseEntity.status(401).build();
+        }
+        String ticket = sseTicketService.generateTicket(user);
+        return ResponseEntity.ok(Map.of("ticket", ticket));
+    }
+
     @GetMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    @PreAuthorize("hasAuthority('ROLE_PATIENT')")
-    public SseEmitter subscribe(@AuthenticationPrincipal UserPrincipal user) {
+    public SseEmitter subscribe(
+            @AuthenticationPrincipal UserPrincipal user,
+            @RequestParam(value = "ticket", required = false) String ticket) {
+        UserPrincipal principal = user;
+        if (principal == null && StringUtils.hasText(ticket)) {
+            SseTicketService.TicketDetails details = sseTicketService.consumeTicket(ticket);
+            if (details != null) {
+                principal = details.userPrincipal();
+            }
+        }
+        if (principal == null) {
+            throw new org.springframework.security.access.AccessDeniedException("Authentication required for patient medicine SSE stream");
+        }
+
         SseEmitter emitter = new SseEmitter(60 * 60 * 1000L); // 1 hour timeout
         
-        ClientConnection connection = new ClientConnection(emitter, user.getUserId());
+        ClientConnection connection = new ClientConnection(emitter, principal.getUserId());
         connections.add(connection);
 
         emitter.onCompletion(() -> connections.remove(connection));

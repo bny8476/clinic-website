@@ -93,7 +93,7 @@ public class PatientPortalBatch3IntegrationTest {
         PatientDocument saved = patientDocumentService.saveDocumentMetadata(toPrincipal(testPatient), doc, null);
 
         assertThat(saved.getId()).isNotNull();
-        assertThat(saved.getFileUrl()).isEqualTo("https://example.com/mock-document-url.pdf");
+        assertThat(saved.getFileUrl()).isEqualTo("");
 
         // 2. Retrieve documents
         List<PatientDocument> documents = patientDocumentService.getPatientDocuments(toPrincipal(testPatient));

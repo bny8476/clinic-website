@@ -69,7 +69,22 @@ public class EcShipment {
     @Builder.Default
     private Boolean otpVerified = false;
 
-    @Column(name = "cold_chain_evidence", columnDefinition = "TEXT")
+    @Column(name = "otp_hash", length = 128)
+    private String otpHash;
+
+    @Column(name = "otp_expires_at")
+    private ZonedDateTime otpExpiresAt;
+
+    @Column(name = "otp_attempts", nullable = false)
+    @Builder.Default
+    private Integer otpAttempts = 0;
+
+    @Column(name = "max_otp_attempts", nullable = false)
+    @Builder.Default
+    private Integer maxOtpAttempts = 3;
+
+
+    @Column(name = "cold_chain_evidence")
     @JdbcTypeCode(SqlTypes.JSON)
     private String coldChainEvidence;
 

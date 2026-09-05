@@ -1,4 +1,4 @@
-CREATE TABLE walk_in_registrations (
+CREATE TABLE IF NOT EXISTS walk_in_registrations (
     id BIGSERIAL PRIMARY KEY,
     branch_id BIGINT NOT NULL REFERENCES branches(id) ON DELETE CASCADE,
     patient_id BIGINT REFERENCES patient_profiles(id) ON DELETE SET NULL, -- Can be null if new patient
@@ -10,7 +10,7 @@ CREATE TABLE walk_in_registrations (
     status VARCHAR(50) DEFAULT 'WAITING' -- WAITING, IN_CONSULTATION, COMPLETED, CANCELLED
 );
 
-CREATE TABLE queue_tokens (
+CREATE TABLE IF NOT EXISTS queue_tokens (
     id BIGSERIAL PRIMARY KEY,
     branch_id BIGINT NOT NULL REFERENCES branches(id) ON DELETE CASCADE,
     walk_in_id BIGINT REFERENCES walk_in_registrations(id) ON DELETE CASCADE,

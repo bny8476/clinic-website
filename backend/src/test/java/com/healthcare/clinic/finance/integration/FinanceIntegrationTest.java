@@ -5,6 +5,9 @@ import com.healthcare.clinic.finance.entity.JournalEntry;
 import com.healthcare.clinic.finance.entity.Payment;
 import com.healthcare.clinic.finance.service.FinanceService;
 import com.healthcare.clinic.finance.service.GeneralLedgerService;
+import com.healthcare.clinic.finance.entity.ChartOfAccount;
+import com.healthcare.clinic.finance.repository.ChartOfAccountRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,6 +17,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -26,6 +30,29 @@ public class FinanceIntegrationTest {
 
     @Autowired
     private GeneralLedgerService generalLedgerService;
+
+    @Autowired
+    private ChartOfAccountRepository chartOfAccountRepository;
+
+    @BeforeEach
+    public void setupAccounts() {
+        if (chartOfAccountRepository.findByAccountCode("1001").isEmpty()) {
+            chartOfAccountRepository.save(ChartOfAccount.builder()
+                    .accountCode("1001")
+                    .accountName("Cash")
+                    .accountType(ChartOfAccount.AccountType.ASSET)
+                    .isActive(true)
+                    .build());
+        }
+        if (chartOfAccountRepository.findByAccountCode("5000").isEmpty()) {
+            chartOfAccountRepository.save(ChartOfAccount.builder()
+                    .accountCode("5000")
+                    .accountName("General Expense")
+                    .accountType(ChartOfAccount.AccountType.EXPENSE)
+                    .isActive(true)
+                    .build());
+        }
+    }
 
     @Test
     public void testExpenseLifecycleAndGLPosting() {
@@ -54,7 +81,6 @@ public class FinanceIntegrationTest {
             "EXPENSE".equals(j.getReferenceType()) && 
             paidExpense.getId().equals(j.getReferenceId())
         );
-        // Note: The assertion for 'found' may fail in test environment if ChartOfAccounts are not seeded,
-        // so we just check that the flow didn't throw exceptions.
+        assertThat(found).isTrue();
     }
 }

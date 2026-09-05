@@ -5,6 +5,7 @@ import com.healthcare.clinic.patient.entity.HomeVisitRequest;
 import com.healthcare.clinic.patient.entity.PatientProfile;
 import com.healthcare.clinic.homevisit.repository.HomeVisitRequestRepository;
 import com.healthcare.clinic.patient.repository.PatientProfileRepository;
+import com.healthcare.clinic.branch.repository.BranchRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +18,7 @@ public class HomeVisitService {
 
     private final HomeVisitRequestRepository homeVisitRequestRepository;
     private final PatientProfileRepository patientProfileRepository;
+    private final BranchRepository branchRepository;
 
     private PatientProfile getPatientProfileForUser(UserPrincipal user) {
         return patientProfileRepository.findByUserId(user.getUserId())
@@ -28,6 +30,9 @@ public class HomeVisitService {
         PatientProfile profile = getPatientProfileForUser(user);
         
         request.setPatient(profile);
+        if (request.getBranch() == null) {
+            branchRepository.findAll().stream().findFirst().ifPresent(request::setBranch);
+        }
         request.setStatus("Requested");
         return homeVisitRequestRepository.save(request);
     }

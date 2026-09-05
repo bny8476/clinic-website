@@ -1,6 +1,6 @@
-ALTER TABLE appointment_slots ADD COLUMN is_priority BOOLEAN DEFAULT FALSE;
+ALTER TABLE appointment_slots ADD COLUMN IF NOT EXISTS is_priority BOOLEAN DEFAULT FALSE;
 
-CREATE TABLE queue_transfers (
+CREATE TABLE IF NOT EXISTS queue_transfers (
     id BIGSERIAL PRIMARY KEY,
     token_id BIGINT NOT NULL REFERENCES queue_tokens(id) ON DELETE CASCADE,
     from_doctor_id BIGINT REFERENCES users(id),
@@ -10,7 +10,7 @@ CREATE TABLE queue_transfers (
     transferred_by_user_id BIGINT REFERENCES users(id)
 );
 
-CREATE TABLE no_shows (
+CREATE TABLE IF NOT EXISTS no_shows (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL REFERENCES patient_profiles(id) ON DELETE CASCADE,
     appointment_id BIGINT REFERENCES appointments(id),
@@ -20,5 +20,5 @@ CREATE TABLE no_shows (
     reason TEXT
 );
 
-ALTER TABLE queue_tokens ADD COLUMN priority_level INT DEFAULT 0;
-ALTER TABLE queue_tokens ADD COLUMN current_department VARCHAR(100) DEFAULT 'GENERAL';
+ALTER TABLE queue_tokens ADD COLUMN IF NOT EXISTS priority_level INT DEFAULT 0;
+ALTER TABLE queue_tokens ADD COLUMN IF NOT EXISTS current_department VARCHAR(100) DEFAULT 'GENERAL';

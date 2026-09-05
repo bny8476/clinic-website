@@ -1,5 +1,5 @@
 ALTER TABLE vital_signs
-ADD COLUMN appointment_id BIGINT;
+ADD COLUMN IF NOT EXISTS appointment_id BIGINT;
 
 ALTER TABLE vital_signs
 ADD CONSTRAINT fk_vital_signs_appointment

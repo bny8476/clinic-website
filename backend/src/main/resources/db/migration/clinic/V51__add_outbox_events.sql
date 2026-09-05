@@ -1,4 +1,4 @@
-CREATE TABLE clinic_outbox_events (
+CREATE TABLE IF NOT EXISTS clinic_outbox_events (
     id BIGSERIAL PRIMARY KEY,
     aggregate_type VARCHAR(100) NOT NULL,
     aggregate_id VARCHAR(100) NOT NULL,
@@ -8,4 +8,4 @@ CREATE TABLE clinic_outbox_events (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     processed_at TIMESTAMP WITH TIME ZONE
 );
-CREATE INDEX idx_clinic_outbox_status ON clinic_outbox_events(status);
+CREATE INDEX IF NOT EXISTS idx_clinic_outbox_status ON clinic_outbox_events(status);

@@ -1,0 +1,12 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+
+ecommerce:
+  payment:
+    provider: ${PAYMENT_PROVIDER:STRIPE}
+    mode: PRODUCTION
+    allow-mock: false

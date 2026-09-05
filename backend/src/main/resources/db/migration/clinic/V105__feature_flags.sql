@@ -1,4 +1,4 @@
-CREATE TABLE feature_flags (
+CREATE TABLE IF NOT EXISTS feature_flags (
     id BIGSERIAL PRIMARY KEY,
     flag_key VARCHAR(100) NOT NULL UNIQUE,
     is_enabled BOOLEAN DEFAULT FALSE,

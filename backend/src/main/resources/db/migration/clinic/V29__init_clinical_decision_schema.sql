@@ -1,8 +1,8 @@
 -- V29: Clinical Decision Support (CDS), Care Pathways, and Order Sets Schema
 
 -- Additive migration for patient_profiles: add allergies and chronic_conditions JSONB columns
-ALTER TABLE patient_profiles ADD COLUMN allergies JSONB DEFAULT '[]'::jsonb;
-ALTER TABLE patient_profiles ADD COLUMN chronic_conditions JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE patient_profiles ADD COLUMN IF NOT EXISTS allergies JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE patient_profiles ADD COLUMN IF NOT EXISTS chronic_conditions JSONB DEFAULT '[]'::jsonb;
 
 -- CDS Rules Table
 CREATE TABLE IF NOT EXISTS cds_rules (

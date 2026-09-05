@@ -1,4 +1,4 @@
-CREATE TABLE inventory_transfers (
+CREATE TABLE IF NOT EXISTS inventory_transfers (
     id BIGSERIAL PRIMARY KEY,
     tenant_id BIGINT NOT NULL,
     source_branch_id BIGINT NOT NULL,
@@ -17,7 +17,7 @@ CREATE TABLE inventory_transfers (
     CONSTRAINT fk_inv_transfer_dest FOREIGN KEY (destination_branch_id) REFERENCES branches(id)
 );
 
-CREATE TABLE inventory_transfer_items (
+CREATE TABLE IF NOT EXISTS inventory_transfer_items (
     id BIGSERIAL PRIMARY KEY,
     transfer_id BIGINT NOT NULL,
     item_id BIGINT NOT NULL,
@@ -30,5 +30,5 @@ CREATE TABLE inventory_transfer_items (
     CONSTRAINT fk_inv_transfer_items_transfer FOREIGN KEY (transfer_id) REFERENCES inventory_transfers(id) ON DELETE CASCADE
 );
 
-CREATE INDEX idx_inv_transfer_status ON inventory_transfers(status);
-CREATE INDEX idx_inv_transfer_tenant ON inventory_transfers(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_inv_transfer_status ON inventory_transfers(status);
+CREATE INDEX IF NOT EXISTS idx_inv_transfer_tenant ON inventory_transfers(tenant_id);

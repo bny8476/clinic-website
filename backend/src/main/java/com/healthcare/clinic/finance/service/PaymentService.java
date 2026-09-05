@@ -15,6 +15,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+import com.healthcare.clinic.finance.repository.PaymentAllocationRepository;
+import org.springframework.dao.DataIntegrityViolationException;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -22,15 +25,16 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final InvoiceRepository invoiceRepository;
+    private final PaymentAllocationRepository paymentAllocationRepository;
     private final UnifiedBillingService unifiedBillingService;
 
     @Transactional
     public Payment initiatePayment(BigDecimal amount, String paymentMethod, String idempotencyKey) {
-        // Simple idempotency check
-        if (idempotencyKey != null) {
-            paymentRepository.findByIdempotencyKey(idempotencyKey).ifPresent(p -> {
+        if (idempotencyKey != null && !idempotencyKey.trim().isEmpty()) {
+            var existing = paymentRepository.findByIdempotencyKey(idempotencyKey);
+            if (existing.isPresent()) {
                 throw new IllegalStateException("Payment already initiated with this idempotency key");
-            });
+            }
         }
         
         Payment payment = Payment.builder()
@@ -41,7 +45,16 @@ public class PaymentService {
                 .idempotencyKey(idempotencyKey)
                 .build();
                 
-        return paymentRepository.save(payment);
+        try {
+            return paymentRepository.save(payment);
+        } catch (DataIntegrityViolationException e) {
+            if (idempotencyKey != null && !idempotencyKey.trim().isEmpty()) {
+                log.warn("Database unique constraint prevented duplicate payment insertion for idempotency key: {}", idempotencyKey);
+                return paymentRepository.findByIdempotencyKey(idempotencyKey)
+                        .orElseThrow(() -> new IllegalStateException("Payment already initiated with this idempotency key"));
+            }
+            throw e;
+        }
     }
     
     @Transactional
@@ -60,6 +73,10 @@ public class PaymentService {
     
     @Transactional
     public PaymentAllocation allocatePaymentToInvoice(Long paymentId, Long invoiceId, BigDecimal allocationAmount) {
+        if (allocationAmount == null || allocationAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Allocation amount must be positive");
+        }
+
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new IllegalArgumentException("Payment not found"));
                 
@@ -69,19 +86,36 @@ public class PaymentService {
         
         Invoice invoice = invoiceRepository.findById(invoiceId)
                 .orElseThrow(() -> new IllegalArgumentException("Invoice not found"));
-                
-        // In a real app we'd verify that the total allocated amount doesn't exceed payment amount
+
+        // 1. Enforce allocated amount <= remaining payment amount
+        BigDecimal totalAlreadyAllocated = paymentAllocationRepository.sumAmountByPaymentId(paymentId);
+        BigDecimal remainingPayment = payment.getAmount().subtract(totalAlreadyAllocated);
+        if (allocationAmount.compareTo(remainingPayment) > 0) {
+            throw new IllegalArgumentException("Allocated amount (" + allocationAmount + ") exceeds remaining payment balance (" + remainingPayment + ")");
+        }
+
+        // 2. Enforce allocated amount <= invoice outstanding balance
+        BigDecimal outstandingInvoice = invoice.getOutstandingBalance();
+        if (outstandingInvoice == null || outstandingInvoice.compareTo(BigDecimal.ZERO) == 0) {
+            BigDecimal paid = invoice.getAmountPaid() != null ? invoice.getAmountPaid() : BigDecimal.ZERO;
+            outstandingInvoice = invoice.getTotalAmount().subtract(paid);
+        }
+        if (allocationAmount.compareTo(outstandingInvoice) > 0) {
+            throw new IllegalArgumentException("Allocated amount (" + allocationAmount + ") exceeds invoice outstanding balance (" + outstandingInvoice + ")");
+        }
         
         PaymentAllocation allocation = PaymentAllocation.builder()
                 .payment(payment)
                 .invoice(invoice)
                 .amount(allocationAmount)
                 .build();
+
+        // 3. Persist allocation before returning
+        allocation = paymentAllocationRepository.save(allocation);
                 
-        // Here we need to update the invoice balance
+        // 4. Update invoice balance
         unifiedBillingService.recordPayment(invoiceId, allocationAmount);
         
-        // Return allocation (normally saved to DB first)
         return allocation;
     }
 }

@@ -53,7 +53,7 @@ public class ClinicDatabaseConfig {
         }
 
         boolean isProduction = java.util.Arrays.asList(environment.getActiveProfiles()).contains("prod") || java.util.Arrays.asList(environment.getActiveProfiles()).contains("production") || java.util.Arrays.asList(environment.getActiveProfiles()).contains("railway") || java.util.Arrays.asList(environment.getActiveProfiles()).contains("render");
-        boolean isH2Fallback = url == null || url.trim().isEmpty() || url.contains("jdbc:h2");
+        boolean isH2Fallback = url == null || url.trim().isEmpty();
         
         if (isProduction) {
             if (isH2Fallback) throw new IllegalStateException("FATAL: SPRING_DATASOURCE_CLINIC_URL is missing in production.");
@@ -64,7 +64,7 @@ public class ClinicDatabaseConfig {
             url = "jdbc:h2:mem:clinicdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;NON_KEYWORDS=VALUE";
             driver = "org.h2.Driver"; // Force driver to match URL
         } else {
-            driver = (driver != null && !driver.trim().isEmpty()) ? driver : (url.startsWith("jdbc:postgresql") ? "org.postgresql.Driver" : (url.startsWith("jdbc:tc:postgresql") ? "org.testcontainers.jdbc.ContainerDatabaseDriver" : "org.postgresql.Driver"));
+            driver = (driver != null && !driver.trim().isEmpty()) ? driver : (url.contains("h2") ? "org.h2.Driver" : (url.startsWith("jdbc:postgresql") ? "org.postgresql.Driver" : (url.startsWith("jdbc:tc:postgresql") ? "org.testcontainers.jdbc.ContainerDatabaseDriver" : "org.postgresql.Driver")));
         }
 
         username = (username != null && !username.trim().isEmpty()) ? username : "sa";
@@ -113,10 +113,11 @@ public class ClinicDatabaseConfig {
         em.setJpaVendorAdapter(new org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter());
         
         java.util.HashMap<String, Object> properties = new java.util.HashMap<>();
-        String driver = env.getProperty("spring.datasource.clinic.driver-class-name", "org.postgresql.Driver");
-        String dialect = "org.hibernate.dialect.PostgreSQLDialect";
-        if (driver.contains("mysql")) dialect = "org.hibernate.dialect.MySQLDialect";
-        else if (driver.contains("h2")) dialect = "org.hibernate.dialect.H2Dialect";
+        String url = env.getProperty("app.datasource.clinic.url", "");
+        String driver = env.getProperty("app.datasource.clinic.driver-class-name", "");
+        boolean isH2 = url.contains("jdbc:h2") || url.isEmpty();
+        String dialect = (isH2 || driver.contains("h2")) ? "org.hibernate.dialect.H2Dialect" : (driver.contains("mysql") ? "org.hibernate.dialect.MySQLDialect" : "org.hibernate.dialect.PostgreSQLDialect");
+
         
         String ddlAuto = env.getProperty("spring.jpa.hibernate.ddl-auto", "validate");
         properties.put("hibernate.dialect", dialect);

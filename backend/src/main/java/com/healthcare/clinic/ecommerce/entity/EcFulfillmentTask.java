@@ -34,7 +34,7 @@ public class EcFulfillmentTask {
     @Column(name = "prescription_verified_at")
     private ZonedDateTime prescriptionVerifiedAt;
 
-    @Column(name = "items_picked", columnDefinition = "TEXT")
+    @Column(name = "items_picked")
     @JdbcTypeCode(SqlTypes.JSON)
     private String itemsPicked; // JSON: [{productId, batchId, qty, pickedAt}]
 

@@ -63,6 +63,9 @@ public class EcommerceOrderItem {
     @Column(name = "product_name_snapshot", length = 300)
     private String productNameSnapshot;
 
+    @Column(name = "medicine_name_snapshot", length = 300)
+    private String medicineNameSnapshot;
+
     @Column(name = "batch_id")
     private Long batchId;
 

@@ -1,6 +1,6 @@
 -- V22: eCommerce Schema
 
-CREATE TABLE ecommerce_products (
+CREATE TABLE IF NOT EXISTS ecommerce_products (
     id             BIGSERIAL PRIMARY KEY,
     title          VARCHAR(255) NOT NULL,
     description    TEXT,
@@ -14,7 +14,7 @@ CREATE TABLE ecommerce_products (
     created_at     TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE ecommerce_orders (
+CREATE TABLE IF NOT EXISTS ecommerce_orders (
     id               BIGSERIAL PRIMARY KEY,
     user_id          BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     total_amount     DECIMAL(10, 2) NOT NULL,
@@ -27,7 +27,7 @@ CREATE TABLE ecommerce_orders (
     shipped_at       TIMESTAMP WITH TIME ZONE
 );
 
-CREATE TABLE ecommerce_order_items (
+CREATE TABLE IF NOT EXISTS ecommerce_order_items (
     id          BIGSERIAL PRIMARY KEY,
     order_id    BIGINT NOT NULL REFERENCES ecommerce_orders(id) ON DELETE CASCADE,
     product_id  BIGINT NOT NULL REFERENCES ecommerce_products(id) ON DELETE CASCADE,
@@ -36,6 +36,6 @@ CREATE TABLE ecommerce_order_items (
     total_price DECIMAL(10, 2) NOT NULL
 );
 
-CREATE INDEX idx_ecommerce_products_category ON ecommerce_products(category);
-CREATE INDEX idx_ecommerce_orders_user ON ecommerce_orders(user_id);
-CREATE INDEX idx_ecommerce_orders_status ON ecommerce_orders(status);
+CREATE INDEX IF NOT EXISTS idx_ecommerce_products_category ON ecommerce_products(category);
+CREATE INDEX IF NOT EXISTS idx_ecommerce_orders_user ON ecommerce_orders(user_id);
+CREATE INDEX IF NOT EXISTS idx_ecommerce_orders_status ON ecommerce_orders(status);

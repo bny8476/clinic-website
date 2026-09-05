@@ -1,6 +1,6 @@
 -- V24: Vendor Portal Schema
 
-CREATE TABLE vendor_deliveries (
+CREATE TABLE IF NOT EXISTS vendor_deliveries (
     id                 BIGSERIAL PRIMARY KEY,
     po_id              BIGINT NOT NULL REFERENCES backoffice_purchase_orders(id) ON DELETE CASCADE,
     vendor_user_id     BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -13,5 +13,5 @@ CREATE TABLE vendor_deliveries (
     created_at         TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_vendor_deliveries_po ON vendor_deliveries(po_id);
-CREATE INDEX idx_vendor_deliveries_vendor ON vendor_deliveries(vendor_user_id);
+CREATE INDEX IF NOT EXISTS idx_vendor_deliveries_po ON vendor_deliveries(po_id);
+CREATE INDEX IF NOT EXISTS idx_vendor_deliveries_vendor ON vendor_deliveries(vendor_user_id);

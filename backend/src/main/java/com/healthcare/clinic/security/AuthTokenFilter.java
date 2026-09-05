@@ -148,15 +148,6 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             return headerAuth.substring(7);
         }
 
-        // Support SSE query parameter authentication
-        String path = request.getServletPath();
-        if (path != null && (path.equals("/api/sse/appointments") || path.startsWith("/api/sse/"))) {
-            String tokenParam = request.getParameter("token");
-            if (StringUtils.hasText(tokenParam)) {
-                return tokenParam;
-            }
-        }
-
         return null;
     }
 }

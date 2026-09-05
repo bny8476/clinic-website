@@ -1,11 +1,27 @@
 spring:
+  datasource:
+    url: "jdbc:h2:mem:standard_test_db;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE"
+    username: sa
+    password: ""
   flyway:
     enabled: false
   jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: update
+
 app:
   datasource:
     clinic:
-      url: jdbc:tc:postgresql:16-alpine:///clinic_test
-      driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+      url: "jdbc:h2:mem:standard_test_db;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE"
+      username: sa
+      password: ""
+
+
+
+ecommerce:
+  payment:
+    provider: ${PAYMENT_PROVIDER:MOCK}
+    mode: TEST
+    allow-mock: true
+

@@ -1,7 +1,7 @@
-ALTER TABLE branches ADD COLUMN tenant_id BIGINT;
+ALTER TABLE branches ADD COLUMN IF NOT EXISTS tenant_id BIGINT;
 -- Set a default tenant for existing branches or they will violate NOT NULL later if enforced
 
-CREATE TABLE tenant_settings (
+CREATE TABLE IF NOT EXISTS tenant_settings (
     id BIGSERIAL PRIMARY KEY,
     tenant_id BIGINT NOT NULL,
     setting_key VARCHAR(100) NOT NULL,
@@ -13,7 +13,7 @@ CREATE TABLE tenant_settings (
     CONSTRAINT uk_tenant_setting UNIQUE (tenant_id, setting_key)
 );
 
-CREATE TABLE branch_settings (
+CREATE TABLE IF NOT EXISTS branch_settings (
     id BIGSERIAL PRIMARY KEY,
     branch_id BIGINT NOT NULL,
     setting_key VARCHAR(100) NOT NULL,

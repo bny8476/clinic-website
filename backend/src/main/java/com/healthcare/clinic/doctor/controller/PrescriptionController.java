@@ -26,6 +26,12 @@ public class PrescriptionController {
     private final com.healthcare.clinic.identity.repository.UserRepository userRepository;
     private final PrescriptionRefillService prescriptionRefillService;
 
+    @GetMapping
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_PATIENT')")
+    public ResponseEntity<List<PrescriptionResponse>> getAllPrescriptions() {
+        return ResponseEntity.ok(prescriptionService.getAllPrescriptions());
+    }
+
     @GetMapping("/patient/{patientId}")
     @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN') or (hasAuthority('ROLE_PATIENT') and principal.userId == #patientId)")
     public ResponseEntity<List<PrescriptionResponse>> getPatientPrescriptions(@PathVariable Long patientId) {

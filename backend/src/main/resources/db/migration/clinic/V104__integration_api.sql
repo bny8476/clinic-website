@@ -1,4 +1,4 @@
-CREATE TABLE api_credentials (
+CREATE TABLE IF NOT EXISTS api_credentials (
     id BIGSERIAL PRIMARY KEY,
     tenant_id BIGINT NOT NULL,
     client_id VARCHAR(100) NOT NULL UNIQUE,
@@ -13,7 +13,7 @@ CREATE TABLE api_credentials (
     CONSTRAINT fk_api_credentials_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id)
 );
 
-CREATE TABLE integration_configs (
+CREATE TABLE IF NOT EXISTS integration_configs (
     id BIGSERIAL PRIMARY KEY,
     tenant_id BIGINT,
     provider_name VARCHAR(100) NOT NULL,
@@ -27,4 +27,4 @@ CREATE TABLE integration_configs (
     CONSTRAINT fk_integration_configs_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id)
 );
 
-CREATE INDEX idx_integration_configs_type ON integration_configs(integration_type);
+CREATE INDEX IF NOT EXISTS idx_integration_configs_type ON integration_configs(integration_type);

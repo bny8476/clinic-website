@@ -44,7 +44,7 @@ public class Payment {
     @Column(name = "recorded_by")
     private Long recordedBy;
 
-    @Column(name = "idempotency_key", length = 100)
+    @Column(name = "idempotency_key", length = 100, unique = true)
     private String idempotencyKey;
 
     @CreationTimestamp

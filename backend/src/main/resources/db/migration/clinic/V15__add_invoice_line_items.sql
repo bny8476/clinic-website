@@ -11,7 +11,7 @@ ALTER TABLE invoices ADD COLUMN IF NOT EXISTS branch_id BIGINT REFERENCES branch
 UPDATE invoices SET invoice_number = CONCAT('INV-', LPAD(CAST(id AS VARCHAR), 5, '0')) WHERE invoice_number IS NULL;
 
 -- Create invoice line items table
-CREATE TABLE invoice_items (
+CREATE TABLE IF NOT EXISTS invoice_items (
     id BIGSERIAL PRIMARY KEY,
     invoice_id BIGINT NOT NULL REFERENCES invoices(id) ON DELETE CASCADE,
     description VARCHAR(500) NOT NULL,

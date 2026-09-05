@@ -1,6 +1,6 @@
 import useAuthStore from '../store/authStore';
 import './AuthLayout.css';
-import ErrorBoundary from '../components/ErrorBoundary';
+import ErrorBoundary from '../components/ui/ErrorBoundary';
 import { useState } from 'react';
 import { Link, Navigate, Outlet, Route, Routes, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';

@@ -1,6 +1,6 @@
 -- V17: HR Module Schema
 -- employees links to users via user_id — no name/email duplication
-CREATE TABLE employees (
+CREATE TABLE IF NOT EXISTS employees (
     id          BIGSERIAL PRIMARY KEY,
     user_id     BIGINT NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
     department  VARCHAR(100) NOT NULL,
@@ -14,7 +14,7 @@ CREATE TABLE employees (
     updated_at  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE attendance (
+CREATE TABLE IF NOT EXISTS attendance (
     id          BIGSERIAL PRIMARY KEY,
     employee_id BIGINT NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
     date        DATE NOT NULL,
@@ -24,7 +24,7 @@ CREATE TABLE attendance (
     UNIQUE (employee_id, date)
 );
 
-CREATE TABLE leave_requests (
+CREATE TABLE IF NOT EXISTS leave_requests (
     id           BIGSERIAL PRIMARY KEY,
     employee_id  BIGINT NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
     leave_type   VARCHAR(30) NOT NULL DEFAULT 'CASUAL', -- CASUAL, SICK, EARNED, MATERNITY, UNPAID
@@ -37,5 +37,5 @@ CREATE TABLE leave_requests (
     created_at   TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_attendance_employee_date ON attendance(employee_id, date);
-CREATE INDEX idx_leave_requests_status    ON leave_requests(status);
+CREATE INDEX IF NOT EXISTS idx_attendance_employee_date ON attendance(employee_id, date);
+CREATE INDEX IF NOT EXISTS idx_leave_requests_status    ON leave_requests(status);

@@ -1,6 +1,6 @@
 -- V58: Seed CDS Rules for Dynamic Safety Checks
 
-INSERT INTO cds_rules (name, description, trigger_event, conditions, severity, action_type, is_active, version) VALUES
+INSERT INTO cds_rules (name, description, trigger_event, conditions, severity, action_type, is_active, version, created_at, updated_at) VALUES
 (
     'Penicillin Allergy Cross-Reactivity',
     'Checks for prescribing Penicillin class drugs (Amoxicillin, Ampicillin) to patients with a registered Penicillin allergy.',
@@ -9,7 +9,9 @@ INSERT INTO cds_rules (name, description, trigger_event, conditions, severity, a
     'CRITICAL',
     'BLOCK_ACTION',
     true,
-    1
+    1,
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
 ),
 (
     'Sulfa Allergy Cross-Reactivity',
@@ -19,7 +21,9 @@ INSERT INTO cds_rules (name, description, trigger_event, conditions, severity, a
     'CRITICAL',
     'BLOCK_ACTION',
     true,
-    1
+    1,
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
 ),
 (
     'NSAID Contraindication - Chronic Kidney Disease (CKD)',
@@ -29,7 +33,9 @@ INSERT INTO cds_rules (name, description, trigger_event, conditions, severity, a
     'CRITICAL',
     'BLOCK_ACTION',
     true,
-    1
+    1,
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
 ),
 (
     'NSAID Contraindication - Peptic Ulcer',
@@ -39,7 +45,9 @@ INSERT INTO cds_rules (name, description, trigger_event, conditions, severity, a
     'CRITICAL',
     'BLOCK_ACTION',
     true,
-    1
+    1,
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
 ),
 (
     'Metformin Contraindication - Renal Impairment',
@@ -49,7 +57,9 @@ INSERT INTO cds_rules (name, description, trigger_event, conditions, severity, a
     'CRITICAL',
     'BLOCK_ACTION',
     true,
-    1
+    1,
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
 ),
 (
     'Pregnancy Contraindication - ACE Inhibitors',
@@ -59,5 +69,7 @@ INSERT INTO cds_rules (name, description, trigger_event, conditions, severity, a
     'CRITICAL',
     'BLOCK_ACTION',
     true,
-    1
+    1,
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
 );

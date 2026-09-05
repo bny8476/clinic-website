@@ -1,13 +1,13 @@
 -- ============================================================
 -- V84: Phase 17 — Healthcare eCommerce Complete Schema
--- Non-destructive: ALTER TABLE ADD COLUMN only (no data loss)
+-- Non-destructive: ALTER TABLE ADD COLUMN IF NOT EXISTS only (no data loss)
 -- H2-compatible: TEXT used for JSON fields (not JSONB)
 -- ============================================================
 
 -- ──────────────────────────────────────────────────────────────
 -- 1. CATEGORIES
 -- ──────────────────────────────────────────────────────────────
-CREATE TABLE ec_categories (
+CREATE TABLE IF NOT EXISTS ec_categories (
     id               BIGSERIAL PRIMARY KEY,
     name             VARCHAR(200) NOT NULL,
     slug             VARCHAR(200) NOT NULL UNIQUE,
@@ -22,13 +22,13 @@ CREATE TABLE ec_categories (
     created_at       TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at       TIMESTAMP WITH TIME ZONE
 );
-CREATE INDEX idx_ec_categories_parent ON ec_categories(parent_id);
-CREATE INDEX idx_ec_categories_active ON ec_categories(is_active);
+CREATE INDEX IF NOT EXISTS idx_ec_categories_parent ON ec_categories(parent_id);
+CREATE INDEX IF NOT EXISTS idx_ec_categories_active ON ec_categories(is_active);
 
 -- ──────────────────────────────────────────────────────────────
 -- 2. BRANDS
 -- ──────────────────────────────────────────────────────────────
-CREATE TABLE ec_brands (
+CREATE TABLE IF NOT EXISTS ec_brands (
     id                  BIGSERIAL PRIMARY KEY,
     name                VARCHAR(200) NOT NULL UNIQUE,
     slug                VARCHAR(200) NOT NULL UNIQUE,
@@ -60,8 +60,8 @@ ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS cold_chain_required  BOO
 ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS regulatory_status    VARCHAR(50) NOT NULL DEFAULT 'APPROVED';
 ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS product_status       VARCHAR(30) NOT NULL DEFAULT 'ACTIVE';
 ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS return_eligible      BOOLEAN NOT NULL DEFAULT true;
-ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS images               TEXT;          -- JSON array of image URLs
-ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS specifications       TEXT;          -- JSON key-value pairs
+ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS images               JSON;          -- JSON array of image URLs
+ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS specifications       JSON;          -- JSON key-value pairs
 ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS ingredients          TEXT;
 ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS warnings             TEXT;
 ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS warranty_months      INT;
@@ -80,7 +80,7 @@ CREATE INDEX IF NOT EXISTS idx_ec_products_rx        ON ecommerce_products(presc
 -- ──────────────────────────────────────────────────────────────
 -- 4. STOCK BATCHES (FEFO)
 -- ──────────────────────────────────────────────────────────────
-CREATE TABLE ec_stock_batches (
+CREATE TABLE IF NOT EXISTS ec_stock_batches (
     id              BIGSERIAL PRIMARY KEY,
     product_id      BIGINT NOT NULL REFERENCES ecommerce_products(id) ON DELETE CASCADE,
     branch_id       BIGINT,
@@ -97,14 +97,14 @@ CREATE TABLE ec_stock_batches (
     updated_at      TIMESTAMP WITH TIME ZONE,
     UNIQUE (product_id, branch_id, batch_number)
 );
-CREATE INDEX idx_ec_stock_batches_product   ON ec_stock_batches(product_id);
-CREATE INDEX idx_ec_stock_batches_expiry    ON ec_stock_batches(expiry_date);
-CREATE INDEX idx_ec_stock_batches_branch    ON ec_stock_batches(branch_id);
+CREATE INDEX IF NOT EXISTS idx_ec_stock_batches_product   ON ec_stock_batches(product_id);
+CREATE INDEX IF NOT EXISTS idx_ec_stock_batches_expiry    ON ec_stock_batches(expiry_date);
+CREATE INDEX IF NOT EXISTS idx_ec_stock_batches_branch    ON ec_stock_batches(branch_id);
 
 -- ──────────────────────────────────────────────────────────────
 -- 5. STOCK MOVEMENTS (AUDIT LOG)
 -- ──────────────────────────────────────────────────────────────
-CREATE TABLE ec_stock_movements (
+CREATE TABLE IF NOT EXISTS ec_stock_movements (
     id              BIGSERIAL PRIMARY KEY,
     product_id      BIGINT NOT NULL REFERENCES ecommerce_products(id),
     batch_id        BIGINT REFERENCES ec_stock_batches(id),
@@ -117,13 +117,13 @@ CREATE TABLE ec_stock_movements (
     notes           VARCHAR(500),
     created_at      TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-CREATE INDEX idx_ec_stock_movements_product ON ec_stock_movements(product_id);
-CREATE INDEX idx_ec_stock_movements_ref     ON ec_stock_movements(reference_type, reference_id);
+CREATE INDEX IF NOT EXISTS idx_ec_stock_movements_product ON ec_stock_movements(product_id);
+CREATE INDEX IF NOT EXISTS idx_ec_stock_movements_ref     ON ec_stock_movements(reference_type, reference_id);
 
 -- ──────────────────────────────────────────────────────────────
 -- 6. STOCK RESERVATIONS (CART HOLD)
 -- ──────────────────────────────────────────────────────────────
-CREATE TABLE ec_stock_reservations (
+CREATE TABLE IF NOT EXISTS ec_stock_reservations (
     id          BIGSERIAL PRIMARY KEY,
     cart_id     BIGINT NOT NULL,
     product_id  BIGINT NOT NULL REFERENCES ecommerce_products(id),
@@ -134,13 +134,13 @@ CREATE TABLE ec_stock_reservations (
     released_at TIMESTAMP WITH TIME ZONE,
     created_at  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-CREATE INDEX idx_ec_reservations_cart    ON ec_stock_reservations(cart_id);
-CREATE INDEX idx_ec_reservations_expires ON ec_stock_reservations(expires_at, status);
+CREATE INDEX IF NOT EXISTS idx_ec_reservations_cart    ON ec_stock_reservations(cart_id);
+CREATE INDEX IF NOT EXISTS idx_ec_reservations_expires ON ec_stock_reservations(expires_at, status);
 
 -- ──────────────────────────────────────────────────────────────
 -- 7. CARTS
 -- ──────────────────────────────────────────────────────────────
-CREATE TABLE ec_carts (
+CREATE TABLE IF NOT EXISTS ec_carts (
     id                      BIGSERIAL PRIMARY KEY,
     patient_id              BIGINT REFERENCES users(id),
     session_key             VARCHAR(128) UNIQUE,
@@ -153,14 +153,14 @@ CREATE TABLE ec_carts (
     created_at              TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at              TIMESTAMP WITH TIME ZONE
 );
-CREATE INDEX idx_ec_carts_patient ON ec_carts(patient_id);
-CREATE INDEX idx_ec_carts_session ON ec_carts(session_key);
-CREATE INDEX idx_ec_carts_status  ON ec_carts(status);
+CREATE INDEX IF NOT EXISTS idx_ec_carts_patient ON ec_carts(patient_id);
+CREATE INDEX IF NOT EXISTS idx_ec_carts_session ON ec_carts(session_key);
+CREATE INDEX IF NOT EXISTS idx_ec_carts_status  ON ec_carts(status);
 
 -- ──────────────────────────────────────────────────────────────
 -- 8. CART ITEMS
 -- ──────────────────────────────────────────────────────────────
-CREATE TABLE ec_cart_items (
+CREATE TABLE IF NOT EXISTS ec_cart_items (
     id              BIGSERIAL PRIMARY KEY,
     cart_id         BIGINT NOT NULL REFERENCES ec_carts(id) ON DELETE CASCADE,
     product_id      BIGINT NOT NULL REFERENCES ecommerce_products(id),
@@ -172,12 +172,12 @@ CREATE TABLE ec_cart_items (
     added_at        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (cart_id, product_id)
 );
-CREATE INDEX idx_ec_cart_items_cart ON ec_cart_items(cart_id);
+CREATE INDEX IF NOT EXISTS idx_ec_cart_items_cart ON ec_cart_items(cart_id);
 
 -- ──────────────────────────────────────────────────────────────
 -- 9. WISHLISTS
 -- ──────────────────────────────────────────────────────────────
-CREATE TABLE ec_wishlists (
+CREATE TABLE IF NOT EXISTS ec_wishlists (
     id                      BIGSERIAL PRIMARY KEY,
     patient_id              BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     product_id              BIGINT NOT NULL REFERENCES ecommerce_products(id) ON DELETE CASCADE,
@@ -186,12 +186,12 @@ CREATE TABLE ec_wishlists (
     added_at                TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (patient_id, product_id)
 );
-CREATE INDEX idx_ec_wishlists_patient ON ec_wishlists(patient_id);
+CREATE INDEX IF NOT EXISTS idx_ec_wishlists_patient ON ec_wishlists(patient_id);
 
 -- ──────────────────────────────────────────────────────────────
 -- 10. DELIVERY ADDRESSES
 -- ──────────────────────────────────────────────────────────────
-CREATE TABLE ec_delivery_addresses (
+CREATE TABLE IF NOT EXISTS ec_delivery_addresses (
     id                      BIGSERIAL PRIMARY KEY,
     patient_id              BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     label                   VARCHAR(50) NOT NULL DEFAULT 'HOME', -- HOME, WORK, OTHER
@@ -211,12 +211,12 @@ CREATE TABLE ec_delivery_addresses (
     created_at              TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at              TIMESTAMP WITH TIME ZONE
 );
-CREATE INDEX idx_ec_addresses_patient ON ec_delivery_addresses(patient_id);
+CREATE INDEX IF NOT EXISTS idx_ec_addresses_patient ON ec_delivery_addresses(patient_id);
 
 -- ──────────────────────────────────────────────────────────────
 -- 11. DELIVERY ZONES (SERVICEABILITY)
 -- ──────────────────────────────────────────────────────────────
-CREATE TABLE ec_delivery_zones (
+CREATE TABLE IF NOT EXISTS ec_delivery_zones (
     id                  BIGSERIAL PRIMARY KEY,
     pincode             VARCHAR(10) NOT NULL,
     city                VARCHAR(100),
@@ -231,7 +231,7 @@ CREATE TABLE ec_delivery_zones (
     updated_at          TIMESTAMP WITH TIME ZONE,
     UNIQUE (pincode)
 );
-CREATE INDEX idx_ec_delivery_zones_pincode ON ec_delivery_zones(pincode);
+CREATE INDEX IF NOT EXISTS idx_ec_delivery_zones_pincode ON ec_delivery_zones(pincode);
 
 -- ──────────────────────────────────────────────────────────────
 -- 12. EXTEND ecommerce_orders TABLE
@@ -269,7 +269,7 @@ CREATE INDEX IF NOT EXISTS idx_ec_orders_ful_status ON ecommerce_orders(fulfillm
 -- ──────────────────────────────────────────────────────────────
 -- 13. ORDER STATUS HISTORY (IMMUTABLE LOG)
 -- ──────────────────────────────────────────────────────────────
-CREATE TABLE ec_order_status_history (
+CREATE TABLE IF NOT EXISTS ec_order_status_history (
     id          BIGSERIAL PRIMARY KEY,
     order_id    BIGINT NOT NULL REFERENCES ecommerce_orders(id) ON DELETE CASCADE,
     status      VARCHAR(50) NOT NULL,
@@ -278,12 +278,12 @@ CREATE TABLE ec_order_status_history (
     note        VARCHAR(500),
     created_at  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-CREATE INDEX idx_ec_order_history_order ON ec_order_status_history(order_id);
+CREATE INDEX IF NOT EXISTS idx_ec_order_history_order ON ec_order_status_history(order_id);
 
 -- ──────────────────────────────────────────────────────────────
 -- 14. PRESCRIPTION LINKS
 -- ──────────────────────────────────────────────────────────────
-CREATE TABLE ec_prescription_links (
+CREATE TABLE IF NOT EXISTS ec_prescription_links (
     id              BIGSERIAL PRIMARY KEY,
     order_item_id   BIGINT NOT NULL REFERENCES ecommerce_order_items(id) ON DELETE CASCADE,
     prescription_id BIGINT NOT NULL,
@@ -297,14 +297,14 @@ CREATE TABLE ec_prescription_links (
     verified_at     TIMESTAMP WITH TIME ZONE,
     created_at      TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-CREATE INDEX idx_ec_rx_links_order_item    ON ec_prescription_links(order_item_id);
-CREATE INDEX idx_ec_rx_links_prescription  ON ec_prescription_links(prescription_id);
-CREATE INDEX idx_ec_rx_links_patient       ON ec_prescription_links(patient_id);
+CREATE INDEX IF NOT EXISTS idx_ec_rx_links_order_item    ON ec_prescription_links(order_item_id);
+CREATE INDEX IF NOT EXISTS idx_ec_rx_links_prescription  ON ec_prescription_links(prescription_id);
+CREATE INDEX IF NOT EXISTS idx_ec_rx_links_patient       ON ec_prescription_links(patient_id);
 
 -- ──────────────────────────────────────────────────────────────
 -- 15. PAYMENTS
 -- ──────────────────────────────────────────────────────────────
-CREATE TABLE ec_payments (
+CREATE TABLE IF NOT EXISTS ec_payments (
     id                  BIGSERIAL PRIMARY KEY,
     order_id            BIGINT NOT NULL REFERENCES ecommerce_orders(id),
     provider            VARCHAR(50) NOT NULL DEFAULT 'MOCK',  -- RAZORPAY, STRIPE, MOCK
@@ -313,7 +313,7 @@ CREATE TABLE ec_payments (
     amount              DECIMAL(10,2) NOT NULL,
     currency            VARCHAR(10) NOT NULL DEFAULT 'INR',
     status              VARCHAR(30) NOT NULL DEFAULT 'INITIATED',
-    pg_response         TEXT,                                  -- JSON blob from provider
+    pg_response         JSON,                                  -- JSON blob from provider
     webhook_verified    BOOLEAN NOT NULL DEFAULT false,
     payment_method      VARCHAR(50),                           -- UPI, CARD, WALLET, COD, NETBANKING
     error_code          VARCHAR(100),
@@ -326,14 +326,14 @@ CREATE TABLE ec_payments (
     refunded_at         TIMESTAMP WITH TIME ZONE,
     refunded_amount     DECIMAL(10,2)
 );
-CREATE INDEX idx_ec_payments_order         ON ec_payments(order_id);
-CREATE INDEX idx_ec_payments_provider_ref  ON ec_payments(provider_ref);
-CREATE INDEX idx_ec_payments_status        ON ec_payments(status);
+CREATE INDEX IF NOT EXISTS idx_ec_payments_order         ON ec_payments(order_id);
+CREATE INDEX IF NOT EXISTS idx_ec_payments_provider_ref  ON ec_payments(provider_ref);
+CREATE INDEX IF NOT EXISTS idx_ec_payments_status        ON ec_payments(status);
 
 -- ──────────────────────────────────────────────────────────────
 -- 16. SHIPMENTS
 -- ──────────────────────────────────────────────────────────────
-CREATE TABLE ec_shipments (
+CREATE TABLE IF NOT EXISTS ec_shipments (
     id                      BIGSERIAL PRIMARY KEY,
     order_id                BIGINT NOT NULL REFERENCES ecommerce_orders(id),
     carrier                 VARCHAR(100),
@@ -352,19 +352,19 @@ CREATE TABLE ec_shipments (
     proof_of_delivery_url   VARCHAR(500),
     otp_required            BOOLEAN NOT NULL DEFAULT false,
     otp_verified            BOOLEAN NOT NULL DEFAULT false,
-    cold_chain_evidence     TEXT,                              -- JSON
+    cold_chain_evidence     JSON,                              -- JSON
     return_to_origin        BOOLEAN NOT NULL DEFAULT false,
     created_at              TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at              TIMESTAMP WITH TIME ZONE
 );
-CREATE INDEX idx_ec_shipments_order    ON ec_shipments(order_id);
-CREATE INDEX idx_ec_shipments_tracking ON ec_shipments(tracking_number);
-CREATE INDEX idx_ec_shipments_status   ON ec_shipments(status);
+CREATE INDEX IF NOT EXISTS idx_ec_shipments_order    ON ec_shipments(order_id);
+CREATE INDEX IF NOT EXISTS idx_ec_shipments_tracking ON ec_shipments(tracking_number);
+CREATE INDEX IF NOT EXISTS idx_ec_shipments_status   ON ec_shipments(status);
 
 -- ──────────────────────────────────────────────────────────────
 -- 17. SHIPMENT EVENTS (IMMUTABLE TRACKING LOG)
 -- ──────────────────────────────────────────────────────────────
-CREATE TABLE ec_shipment_events (
+CREATE TABLE IF NOT EXISTS ec_shipment_events (
     id           BIGSERIAL PRIMARY KEY,
     shipment_id  BIGINT NOT NULL REFERENCES ec_shipments(id) ON DELETE CASCADE,
     event_type   VARCHAR(50) NOT NULL,
@@ -372,12 +372,12 @@ CREATE TABLE ec_shipment_events (
     notes        VARCHAR(500),
     created_at   TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-CREATE INDEX idx_ec_shipment_events ON ec_shipment_events(shipment_id);
+CREATE INDEX IF NOT EXISTS idx_ec_shipment_events ON ec_shipment_events(shipment_id);
 
 -- ──────────────────────────────────────────────────────────────
 -- 18. FULFILLMENT TASKS
 -- ──────────────────────────────────────────────────────────────
-CREATE TABLE ec_fulfillment_tasks (
+CREATE TABLE IF NOT EXISTS ec_fulfillment_tasks (
     id                      BIGSERIAL PRIMARY KEY,
     order_id                BIGINT NOT NULL REFERENCES ecommerce_orders(id),
     assigned_to             BIGINT,
@@ -385,7 +385,7 @@ CREATE TABLE ec_fulfillment_tasks (
     prescription_verified   BOOLEAN NOT NULL DEFAULT false,
     prescription_verified_by BIGINT,
     prescription_verified_at TIMESTAMP WITH TIME ZONE,
-    items_picked            TEXT,                              -- JSON
+    items_picked            JSON,                              -- JSON
     packing_evidence_url    VARCHAR(500),
     notes                   VARCHAR(500),
     started_at              TIMESTAMP WITH TIME ZONE,
@@ -393,19 +393,19 @@ CREATE TABLE ec_fulfillment_tasks (
     created_at              TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (order_id)
 );
-CREATE INDEX idx_ec_fulfillment_order  ON ec_fulfillment_tasks(order_id);
-CREATE INDEX idx_ec_fulfillment_status ON ec_fulfillment_tasks(status);
+CREATE INDEX IF NOT EXISTS idx_ec_fulfillment_order  ON ec_fulfillment_tasks(order_id);
+CREATE INDEX IF NOT EXISTS idx_ec_fulfillment_status ON ec_fulfillment_tasks(status);
 
 -- ──────────────────────────────────────────────────────────────
 -- 19. RETURNS
 -- ──────────────────────────────────────────────────────────────
-CREATE TABLE ec_returns (
+CREATE TABLE IF NOT EXISTS ec_returns (
     id                  BIGSERIAL PRIMARY KEY,
     order_id            BIGINT NOT NULL REFERENCES ecommerce_orders(id),
     requested_by        BIGINT NOT NULL REFERENCES users(id),
     reason              VARCHAR(100) NOT NULL,
     reason_detail       VARCHAR(500),
-    evidence_urls       TEXT,                                  -- JSON array
+    evidence_urls       JSON,                                  -- JSON array
     status              VARCHAR(30) NOT NULL DEFAULT 'REQUESTED',
     approved_by         BIGINT,
     rejection_reason    VARCHAR(500),
@@ -418,13 +418,13 @@ CREATE TABLE ec_returns (
     created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at          TIMESTAMP WITH TIME ZONE
 );
-CREATE INDEX idx_ec_returns_order  ON ec_returns(order_id);
-CREATE INDEX idx_ec_returns_status ON ec_returns(status);
+CREATE INDEX IF NOT EXISTS idx_ec_returns_order  ON ec_returns(order_id);
+CREATE INDEX IF NOT EXISTS idx_ec_returns_status ON ec_returns(status);
 
 -- ──────────────────────────────────────────────────────────────
 -- 20. RETURN ITEMS
 -- ──────────────────────────────────────────────────────────────
-CREATE TABLE ec_return_items (
+CREATE TABLE IF NOT EXISTS ec_return_items (
     id              BIGSERIAL PRIMARY KEY,
     return_id       BIGINT NOT NULL REFERENCES ec_returns(id) ON DELETE CASCADE,
     order_item_id   BIGINT NOT NULL REFERENCES ecommerce_order_items(id),
@@ -433,12 +433,12 @@ CREATE TABLE ec_return_items (
     disposition_note VARCHAR(300),
     UNIQUE (return_id, order_item_id)
 );
-CREATE INDEX idx_ec_return_items_return ON ec_return_items(return_id);
+CREATE INDEX IF NOT EXISTS idx_ec_return_items_return ON ec_return_items(return_id);
 
 -- ──────────────────────────────────────────────────────────────
 -- 21. REFUNDS
 -- ──────────────────────────────────────────────────────────────
-CREATE TABLE ec_refunds (
+CREATE TABLE IF NOT EXISTS ec_refunds (
     id                  BIGSERIAL PRIMARY KEY,
     order_id            BIGINT NOT NULL REFERENCES ecommerce_orders(id),
     return_id           BIGINT REFERENCES ec_returns(id),
@@ -454,14 +454,14 @@ CREATE TABLE ec_refunds (
     created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at          TIMESTAMP WITH TIME ZONE
 );
-CREATE INDEX idx_ec_refunds_order   ON ec_refunds(order_id);
-CREATE INDEX idx_ec_refunds_return  ON ec_refunds(return_id);
-CREATE INDEX idx_ec_refunds_status  ON ec_refunds(status);
+CREATE INDEX IF NOT EXISTS idx_ec_refunds_order   ON ec_refunds(order_id);
+CREATE INDEX IF NOT EXISTS idx_ec_refunds_return  ON ec_refunds(return_id);
+CREATE INDEX IF NOT EXISTS idx_ec_refunds_status  ON ec_refunds(status);
 
 -- ──────────────────────────────────────────────────────────────
 -- 22. REVIEWS
 -- ──────────────────────────────────────────────────────────────
-CREATE TABLE ec_reviews (
+CREATE TABLE IF NOT EXISTS ec_reviews (
     id                  BIGSERIAL PRIMARY KEY,
     product_id          BIGINT NOT NULL REFERENCES ecommerce_products(id),
     order_item_id       BIGINT REFERENCES ecommerce_order_items(id),
@@ -469,7 +469,7 @@ CREATE TABLE ec_reviews (
     rating              INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
     title               VARCHAR(200),
     body                TEXT,
-    images              TEXT,                                  -- JSON array
+    images              JSON,                                  -- JSON array
     moderation_status   VARCHAR(20) NOT NULL DEFAULT 'PENDING', -- PENDING, APPROVED, REJECTED, FLAGGED
     moderation_note     VARCHAR(500),
     moderated_by        BIGINT,
@@ -480,26 +480,26 @@ CREATE TABLE ec_reviews (
     updated_at          TIMESTAMP WITH TIME ZONE,
     UNIQUE (product_id, patient_id, order_item_id)
 );
-CREATE INDEX idx_ec_reviews_product    ON ec_reviews(product_id);
-CREATE INDEX idx_ec_reviews_patient    ON ec_reviews(patient_id);
-CREATE INDEX idx_ec_reviews_moderation ON ec_reviews(moderation_status);
+CREATE INDEX IF NOT EXISTS idx_ec_reviews_product    ON ec_reviews(product_id);
+CREATE INDEX IF NOT EXISTS idx_ec_reviews_patient    ON ec_reviews(patient_id);
+CREATE INDEX IF NOT EXISTS idx_ec_reviews_moderation ON ec_reviews(moderation_status);
 
 -- ──────────────────────────────────────────────────────────────
 -- 23. REVIEW RESPONSES
 -- ──────────────────────────────────────────────────────────────
-CREATE TABLE ec_review_responses (
+CREATE TABLE IF NOT EXISTS ec_review_responses (
     id           BIGSERIAL PRIMARY KEY,
     review_id    BIGINT NOT NULL REFERENCES ec_reviews(id) ON DELETE CASCADE,
     responder_id BIGINT NOT NULL,
     body         TEXT NOT NULL,
     created_at   TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-CREATE INDEX idx_ec_review_responses ON ec_review_responses(review_id);
+CREATE INDEX IF NOT EXISTS idx_ec_review_responses ON ec_review_responses(review_id);
 
 -- ──────────────────────────────────────────────────────────────
 -- 24. TAX RULES
 -- ──────────────────────────────────────────────────────────────
-CREATE TABLE ec_tax_rules (
+CREATE TABLE IF NOT EXISTS ec_tax_rules (
     id              BIGSERIAL PRIMARY KEY,
     tax_class       VARCHAR(50) NOT NULL,
     state           VARCHAR(100) NOT NULL DEFAULT 'ALL',
@@ -513,21 +513,21 @@ CREATE TABLE ec_tax_rules (
     UNIQUE (tax_class, state, effective_from)
 );
 -- Seed default GST rates
-INSERT INTO ec_tax_rules (tax_class, state, rate_percent, cgst_percent, sgst_percent, igst_percent, effective_from)
-    VALUES ('MEDICINE_12', 'ALL', 12.00, 6.00, 6.00, 12.00, '2024-01-01');
-INSERT INTO ec_tax_rules (tax_class, state, rate_percent, cgst_percent, sgst_percent, igst_percent, effective_from)
-    VALUES ('DEVICE_18', 'ALL', 18.00, 9.00, 9.00, 18.00, '2024-01-01');
-INSERT INTO ec_tax_rules (tax_class, state, rate_percent, cgst_percent, sgst_percent, igst_percent, effective_from)
-    VALUES ('WELLNESS_18', 'ALL', 18.00, 9.00, 9.00, 18.00, '2024-01-01');
-INSERT INTO ec_tax_rules (tax_class, state, rate_percent, cgst_percent, sgst_percent, igst_percent, effective_from)
-    VALUES ('SUPPLEMENT_5', 'ALL', 5.00, 2.50, 2.50, 5.00, '2024-01-01');
-INSERT INTO ec_tax_rules (tax_class, state, rate_percent, cgst_percent, sgst_percent, igst_percent, effective_from)
-    VALUES ('EXEMPT_0', 'ALL', 0.00, 0.00, 0.00, 0.00, '2024-01-01');
+INSERT INTO ec_tax_rules (tax_class, state, rate_percent, cgst_percent, sgst_percent, igst_percent, effective_from, is_active)
+    VALUES ('MEDICINE_12', 'ALL', 12.00, 6.00, 6.00, 12.00, '2024-01-01', true);
+INSERT INTO ec_tax_rules (tax_class, state, rate_percent, cgst_percent, sgst_percent, igst_percent, effective_from, is_active)
+    VALUES ('DEVICE_18', 'ALL', 18.00, 9.00, 9.00, 18.00, '2024-01-01', true);
+INSERT INTO ec_tax_rules (tax_class, state, rate_percent, cgst_percent, sgst_percent, igst_percent, effective_from, is_active)
+    VALUES ('WELLNESS_18', 'ALL', 18.00, 9.00, 9.00, 18.00, '2024-01-01', true);
+INSERT INTO ec_tax_rules (tax_class, state, rate_percent, cgst_percent, sgst_percent, igst_percent, effective_from, is_active)
+    VALUES ('SUPPLEMENT_5', 'ALL', 5.00, 2.50, 2.50, 5.00, '2024-01-01', true);
+INSERT INTO ec_tax_rules (tax_class, state, rate_percent, cgst_percent, sgst_percent, igst_percent, effective_from, is_active)
+    VALUES ('EXEMPT_0', 'ALL', 0.00, 0.00, 0.00, 0.00, '2024-01-01', true);
 
 -- ──────────────────────────────────────────────────────────────
 -- 25. COUPON APPLICATIONS (eCommerce order scope)
 -- ──────────────────────────────────────────────────────────────
-CREATE TABLE ec_coupon_applications (
+CREATE TABLE IF NOT EXISTS ec_coupon_applications (
     id              BIGSERIAL PRIMARY KEY,
     order_id        BIGINT NOT NULL REFERENCES ecommerce_orders(id),
     coupon_id       BIGINT NOT NULL,
@@ -536,12 +536,12 @@ CREATE TABLE ec_coupon_applications (
     applied_at      TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     reversed_at     TIMESTAMP WITH TIME ZONE
 );
-CREATE INDEX idx_ec_coupon_apps_order ON ec_coupon_applications(order_id);
+CREATE INDEX IF NOT EXISTS idx_ec_coupon_apps_order ON ec_coupon_applications(order_id);
 
 -- ──────────────────────────────────────────────────────────────
 -- 26. PRODUCT RECOMMENDATIONS
 -- ──────────────────────────────────────────────────────────────
-CREATE TABLE ec_product_recommendations (
+CREATE TABLE IF NOT EXISTS ec_product_recommendations (
     id                  BIGSERIAL PRIMARY KEY,
     product_id          BIGINT NOT NULL REFERENCES ecommerce_products(id) ON DELETE CASCADE,
     related_product_id  BIGINT NOT NULL REFERENCES ecommerce_products(id) ON DELETE CASCADE,
@@ -551,7 +551,7 @@ CREATE TABLE ec_product_recommendations (
     created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (product_id, related_product_id, relation_type)
 );
-CREATE INDEX idx_ec_recommendations_product ON ec_product_recommendations(product_id, is_active);
+CREATE INDEX IF NOT EXISTS idx_ec_recommendations_product ON ec_product_recommendations(product_id, is_active);
 
 -- ──────────────────────────────────────────────────────────────
 -- 27. EXTEND ecommerce_order_items TABLE

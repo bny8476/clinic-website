@@ -1,4 +1,4 @@
-CREATE TABLE lab_test_catalog (
+CREATE TABLE IF NOT EXISTS lab_test_catalog (
     id BIGSERIAL PRIMARY KEY,
     test_name VARCHAR(255) NOT NULL,
     test_code VARCHAR(50) UNIQUE NOT NULL,
@@ -7,7 +7,7 @@ CREATE TABLE lab_test_catalog (
     is_active BOOLEAN DEFAULT true
 );
 
-CREATE TABLE lab_test_requests (
+CREATE TABLE IF NOT EXISTS lab_test_requests (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL REFERENCES patient_profiles(id) ON DELETE CASCADE,
     doctor_id BIGINT REFERENCES doctor_profiles(id) ON DELETE SET NULL, -- Ordering doctor
@@ -18,7 +18,7 @@ CREATE TABLE lab_test_requests (
     priority VARCHAR(50) DEFAULT 'ROUTINE' -- ROUTINE, URGENT, STAT
 );
 
-CREATE TABLE lab_results (
+CREATE TABLE IF NOT EXISTS lab_results (
     id BIGSERIAL PRIMARY KEY,
     request_id BIGINT NOT NULL REFERENCES lab_test_requests(id) ON DELETE CASCADE,
     lab_tech_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,

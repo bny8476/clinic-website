@@ -17,6 +17,8 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
+import java.util.Arrays;
 import jakarta.annotation.PostConstruct;
 
 @Slf4j
@@ -27,12 +29,39 @@ public class RefundService {
     private final EcRefundRepository refundRepository;
     private final OrderService orderService;
     private final EcPaymentRepository paymentRepository;
+    private final Environment environment;
 
     @Value("${ecommerce.payment.provider:STRIPE}")
     private String paymentProvider;
 
+    @Value("${ecommerce.payment.allow-mock:false}")
+    private boolean allowMock;
+
+    @Value("${ecommerce.payment.mode:DEVELOPMENT}")
+    private String paymentMode;
+
     @Value("${stripe.secret-key}")
     private String stripeSecretKey;
+
+    private boolean isProductionEnvironment() {
+        if ("PRODUCTION".equalsIgnoreCase(paymentMode)) {
+            return true;
+        }
+        if (environment != null && environment.getActiveProfiles() != null) {
+            return Arrays.stream(environment.getActiveProfiles())
+                    .anyMatch(p -> "prod".equalsIgnoreCase(p) || "production".equalsIgnoreCase(p));
+        }
+        return false;
+    }
+
+    private void validatePaymentProviderMode() {
+        if ("MOCK".equalsIgnoreCase(paymentProvider)) {
+            if (isProductionEnvironment() || !allowMock) {
+                log.error("CRITICAL: Attempted to execute MOCK refund provider in production environment or when allow-mock is false");
+                throw new IllegalStateException("MOCK payment provider is strictly disabled in production profile");
+            }
+        }
+    }
 
     @PostConstruct
     public void init() {
@@ -56,7 +85,8 @@ public class RefundService {
         refund = refundRepository.save(refund);
 
         // Process Refund
-        if ("MOCK".equals(paymentProvider)) {
+        if ("MOCK".equalsIgnoreCase(paymentProvider)) {
+            validatePaymentProviderMode();
             try {
                 log.info("Mock processing refund of {} for order {}", amount, orderId);
                 refund.setStatus("SUCCESSFUL");

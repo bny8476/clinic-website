@@ -1,1 +1,1 @@
-ALTER TABLE lab_test_requests ADD COLUMN scheduled_at TIMESTAMP WITH TIME ZONE;
+ALTER TABLE lab_test_requests ADD COLUMN IF NOT EXISTS scheduled_at TIMESTAMP WITH TIME ZONE;

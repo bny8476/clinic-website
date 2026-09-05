@@ -1,4 +1,4 @@
-CREATE TABLE feature_plans (
+CREATE TABLE IF NOT EXISTS feature_plans (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL UNIQUE,
     plan_code VARCHAR(50) NOT NULL UNIQUE,
@@ -13,7 +13,7 @@ CREATE TABLE feature_plans (
     updated_at TIMESTAMP WITH TIME ZONE
 );
 
-CREATE TABLE subscriptions (
+CREATE TABLE IF NOT EXISTS subscriptions (
     id BIGSERIAL PRIMARY KEY,
     tenant_id BIGINT NOT NULL UNIQUE,
     plan_id BIGINT NOT NULL,
@@ -29,4 +29,4 @@ CREATE TABLE subscriptions (
     CONSTRAINT fk_subscriptions_plan FOREIGN KEY (plan_id) REFERENCES feature_plans(id)
 );
 
-CREATE INDEX idx_subscriptions_status ON subscriptions(status);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_status ON subscriptions(status);

@@ -31,7 +31,7 @@ public class EcReturn {
     @Column(name = "reason_detail", length = 500)
     private String reasonDetail;
 
-    @Column(name = "evidence_urls", columnDefinition = "TEXT")
+    @Column(name = "evidence_urls")
     @JdbcTypeCode(SqlTypes.JSON)
     private String evidenceUrls; // JSON array of evidence image URLs
 

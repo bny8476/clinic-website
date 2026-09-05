@@ -1,4 +1,4 @@
-CREATE TABLE branches (
+CREATE TABLE IF NOT EXISTS branches (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     address TEXT NOT NULL,
@@ -14,7 +14,7 @@ CREATE TABLE branches (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE operating_hours (
+CREATE TABLE IF NOT EXISTS operating_hours (
     id BIGSERIAL PRIMARY KEY,
     branch_id BIGINT NOT NULL REFERENCES branches(id) ON DELETE CASCADE,
     day_of_week INTEGER NOT NULL, -- 1=Monday, 7=Sunday
@@ -23,7 +23,7 @@ CREATE TABLE operating_hours (
     UNIQUE(branch_id, day_of_week)
 );
 
-CREATE TABLE staff_assignments (
+CREATE TABLE IF NOT EXISTS staff_assignments (
     id BIGSERIAL PRIMARY KEY,
     branch_id BIGINT NOT NULL REFERENCES branches(id) ON DELETE CASCADE,
     user_id BIGINT NOT NULL, -- References identity-service.users(id)

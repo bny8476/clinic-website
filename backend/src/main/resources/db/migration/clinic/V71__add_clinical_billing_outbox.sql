@@ -1,6 +1,6 @@
 -- V71__add_clinical_billing_outbox.sql
 
-CREATE TABLE billing_outbox (
+CREATE TABLE IF NOT EXISTS billing_outbox (
     id BIGSERIAL PRIMARY KEY,
     encounter_id BIGINT NOT NULL REFERENCES clinical_encounters(id),
     patient_id BIGINT NOT NULL REFERENCES patient_profiles(id),

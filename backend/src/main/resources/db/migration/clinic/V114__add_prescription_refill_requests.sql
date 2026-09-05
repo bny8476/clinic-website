@@ -1,4 +1,4 @@
-CREATE TABLE prescription_refill_requests (
+CREATE TABLE IF NOT EXISTS prescription_refill_requests (
     id BIGSERIAL PRIMARY KEY,
     prescription_id BIGINT NOT NULL,
     patient_id BIGINT NOT NULL,

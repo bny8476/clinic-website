@@ -112,11 +112,11 @@ public class EcommerceProduct {
     @Builder.Default
     private Boolean returnEligible = true;
 
-    @Column(name = "images", columnDefinition = "TEXT")
+    @Column(name = "images")
     @JdbcTypeCode(SqlTypes.JSON)
     private String images;  // JSON array of image URLs
 
-    @Column(name = "specifications", columnDefinition = "TEXT")
+    @Column(name = "specifications")
     @JdbcTypeCode(SqlTypes.JSON)
     private String specifications;  // JSON key-value pairs
 
@@ -147,4 +147,61 @@ public class EcommerceProduct {
 
     @Column(name = "updated_by")
     private Long updatedBy;
+
+    // ── Medicine Master extensions ───────────────────────────────────────────
+    @Column(name = "brand_name", length = 200)
+    private String brandName;
+
+    @Column(length = 300)
+    private String manufacturer;
+
+    @Column(columnDefinition = "TEXT")
+    private String composition;
+
+    @Column(name = "dosage_form", length = 100)
+    private String dosageForm;
+
+    @Column(length = 100)
+    private String strength;
+
+    @Column(length = 50)
+    private String unit;
+
+    @Column(name = "detailed_description", columnDefinition = "TEXT")
+    private String detailedDescription;
+
+    @Column(columnDefinition = "TEXT")
+    private String indications;
+
+    @Column(name = "usage_instructions", columnDefinition = "TEXT")
+    private String usageInstructions;
+
+    @Column(columnDefinition = "TEXT")
+    private String precautions;
+
+    @Column(name = "side_effects", columnDefinition = "TEXT")
+    private String sideEffects;
+
+    @Column(name = "storage_instructions", columnDefinition = "TEXT")
+    private String storageInstructions;
+
+    @Column(name = "discount_price", precision = 10, scale = 2)
+    private BigDecimal discountPrice;
+
+    @Column(name = "tax_percentage", precision = 5, scale = 2)
+    @Builder.Default
+    private BigDecimal taxPercentage = BigDecimal.ZERO;
+
+    @Column(name = "minimum_stock_level")
+    @Builder.Default
+    private Integer minimumStockLevel = 10;
+
+    @Column(name = "medicine_image", length = 500)
+    private String medicineImage;
+
+    @Column(name = "doctor_id")
+    private Long doctorId;
+
+    @Version
+    private Long version;
 }

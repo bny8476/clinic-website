@@ -10,6 +10,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import com.healthcare.clinic.security.SseTicketService;
+import org.springframework.util.StringUtils;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -17,10 +20,38 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/notifications")
 @RequiredArgsConstructor
-@PreAuthorize("isAuthenticated()")
 public class NotificationController {
 
     private final InAppNotificationService notificationService;
+    private final com.healthcare.clinic.notification.service.SseNotificationService sseNotificationService;
+    private final SseTicketService sseTicketService;
+
+    @PostMapping("/ticket")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Map<String, String>> generateTicket(@AuthenticationPrincipal UserPrincipal user) {
+        if (user == null) {
+            return ResponseEntity.status(401).build();
+        }
+        String ticket = sseTicketService.generateTicket(user);
+        return ResponseEntity.ok(Map.of("ticket", ticket));
+    }
+
+    @GetMapping("/stream")
+    public org.springframework.web.servlet.mvc.method.annotation.SseEmitter streamNotifications(
+            @AuthenticationPrincipal UserPrincipal user,
+            @RequestParam(value = "ticket", required = false) String ticket) {
+        Long userId = user != null ? user.getUserId() : SecurityUtils.getCurrentUserId();
+        if (userId == null && StringUtils.hasText(ticket)) {
+            SseTicketService.TicketDetails details = sseTicketService.consumeTicket(ticket);
+            if (details != null && details.getUserId() != null) {
+                userId = details.getUserId();
+            }
+        }
+        if (userId == null) {
+            throw new org.springframework.security.access.AccessDeniedException("Authentication required for notification streaming");
+        }
+        return sseNotificationService.subscribe(userId);
+    }
 
     @GetMapping
     public ResponseEntity<List<Notification>> getMyNotifications(

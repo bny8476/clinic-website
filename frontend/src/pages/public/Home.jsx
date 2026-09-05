@@ -508,13 +508,62 @@ const Home = () => {
 
           <motion.button 
             variants={fadeUp}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="inline-flex items-center justify-between gap-8 bg-gradient-to-r from-blue-600 to-blue-400 text-white rounded-[100px] p-1.5 pr-1.5 w-fit hover:shadow-xl transition-all h-[56px]"
+            whileHover={{ scale: 1.03, y: -2 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => {
+              const el = document.getElementById('about');
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
+              else navigate('/about');
+            }}
+            className="group relative inline-flex items-center justify-between gap-4 md:gap-8 bg-gradient-to-r from-[#0038FF] via-[#0052FF] to-[#0070FF] text-white rounded-full p-2.5 pl-3 pr-3 md:p-3.5 md:pl-4 md:pr-4 shadow-[0_16px_40px_-6px_rgba(0,85,255,0.45),0_0_20px_rgba(0,90,255,0.35)] hover:shadow-[0_22px_50px_-4px_rgba(0,85,255,0.65)] border border-[#4B84FF]/60 ring-1 ring-white/20 transition-all duration-300 overflow-hidden text-left cursor-pointer mx-auto"
           >
-            <span className="pl-6 font-medium text-[16px] tracking-wide">More about us</span>
-            <div className="w-11 h-11 rounded-full bg-white flex items-center justify-center text-gray-800 shadow-sm shrink-0">
-              <User size={18} strokeWidth={1.5} />
+            {/* Top Gloss Specular Highlight */}
+            <div className="absolute inset-x-0 top-0 h-[45%] bg-gradient-to-b from-white/30 via-white/10 to-transparent rounded-t-full pointer-events-none" />
+
+            {/* Subtle Dot Matrix Pattern Overlay */}
+            <div className="absolute right-16 bottom-0 w-48 h-16 opacity-30 pointer-events-none mix-blend-overlay overflow-hidden rounded-r-full">
+              <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <pattern id="dot-grid-button" width="6" height="6" patternUnits="userSpaceOnUse">
+                    <circle cx="2" cy="2" r="1" fill="#ffffff" />
+                  </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#dot-grid-button)" />
+              </svg>
+            </div>
+
+            {/* Left Glass Circle Hospital Icon */}
+            <div className="w-13 h-13 md:w-15 md:h-15 rounded-full bg-white/20 backdrop-blur-md border border-white/35 shadow-[inset_0_1px_2px_rgba(255,255,255,0.5),0_4px_12px_rgba(0,0,0,0.1)] flex items-center justify-center shrink-0 z-10">
+              <svg className="w-6 h-6 md:w-7 md:h-7 text-white stroke-[1.8]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 6V3" />
+                <path d="M10.5 4.5h3" />
+                <rect x="7" y="6" width="10" height="15" rx="1.5" />
+                <rect x="3" y="10" width="4" height="11" rx="1" />
+                <rect x="17" y="10" width="4" height="11" rx="1" />
+                <path d="M10 10h4" />
+                <path d="M12 8v4" />
+                <rect x="10" y="15" width="4" height="6" />
+              </svg>
+            </div>
+
+            {/* Center Text Block & Arrow */}
+            <div className="flex items-center gap-3 md:gap-6 z-10 pl-1 pr-1">
+              <div>
+                <span className="block text-white font-extrabold text-[20px] md:text-[24px] leading-snug tracking-tight">
+                  More about us
+                </span>
+                <span className="block text-blue-100/90 text-[12px] md:text-[13.5px] font-normal leading-tight mt-0.5">
+                  Learn more about our clinic
+                </span>
+              </div>
+
+              {/* Right Arrow */}
+              <ArrowRight className="w-5 h-5 md:w-6 md:h-6 text-white shrink-0 group-hover:translate-x-2 transition-transform duration-300 stroke-[2.2] ml-1 md:ml-3" />
+            </div>
+
+            {/* Right White Squircle User Container */}
+            <div className="w-13 h-13 md:w-15 md:h-15 rounded-[22px] md:rounded-[26px] bg-white flex items-center justify-center shadow-[0_6px_16px_rgba(0,40,150,0.25)] shrink-0 z-10">
+              <User className="w-7 h-7 md:w-8 md:h-8 text-[#0038FF] stroke-[2.2]" />
             </div>
           </motion.button>
         </motion.div>

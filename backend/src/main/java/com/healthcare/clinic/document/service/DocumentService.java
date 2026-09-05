@@ -2,6 +2,7 @@ package com.healthcare.clinic.document.service;
 
 import com.healthcare.clinic.document.entity.Document;
 import com.healthcare.clinic.document.repository.DocumentRepository;
+import com.healthcare.clinic.document.repository.DocumentShareRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -84,10 +85,90 @@ public class DocumentService {
         return documentRepository.searchDocuments(ownerType, ownerId, documentType, status, branchId, pageable);
     }
 
+    private final DocumentShareRepository shareRepository;
+
     @Transactional(readOnly = true)
     public Document getDocumentById(Long id) {
         return documentRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Document not found"));
+    }
+
+    @Transactional(readOnly = true)
+    public Document getDocumentForUser(Long id, com.healthcare.clinic.security.UserPrincipal user) {
+        Document doc = getDocumentById(id);
+        checkDocumentAccess(doc, user);
+        return doc;
+    }
+
+    public void checkDocumentAccess(Document doc, com.healthcare.clinic.security.UserPrincipal user) {
+        if (user == null) {
+            throw new org.springframework.security.access.AccessDeniedException("Access denied: User unauthenticated");
+        }
+
+        boolean isSuperAdmin = user.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_SUPER_ADMIN") || a.getAuthority().equals("ROLE_ADMIN"));
+        if (isSuperAdmin) {
+            return;
+        }
+
+        boolean isDoctorOrNurse = user.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_DOCTOR") ||
+                               a.getAuthority().equals("ROLE_NURSE") ||
+                               a.getAuthority().equals("ROLE_LAB_TECH"));
+
+        if (isDoctorOrNurse) {
+            // Doctors and nurses have access to medical documents within their branch or patient records
+            if (doc.getBranchId() != null && user.getBranchId() != null && !doc.getBranchId().equals(user.getBranchId())) {
+                // If branch specified and mismatched, check explicit share
+                checkExplicitShare(doc.getId(), user.getUserId());
+            }
+            return;
+        }
+
+        // For PATIENTS (or other end users), check explicit ownership or explicit share
+        if ("PATIENT".equalsIgnoreCase(doc.getOwnerType()) && doc.getOwnerId().equals(user.getUserId())) {
+            return;
+        }
+
+        if (doc.getUploadedByUserId() != null && doc.getUploadedByUserId().equals(user.getUserId())) {
+            return;
+        }
+
+        checkExplicitShare(doc.getId(), user.getUserId());
+    }
+
+    public void checkDocumentOwnership(Document doc, com.healthcare.clinic.security.UserPrincipal user) {
+        if (user == null) {
+            throw new org.springframework.security.access.AccessDeniedException("Access denied: User unauthenticated");
+        }
+
+        boolean isSuperAdmin = user.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_SUPER_ADMIN") || a.getAuthority().equals("ROLE_ADMIN"));
+        if (isSuperAdmin) {
+            return;
+        }
+
+        if (doc.getUploadedByUserId() != null && doc.getUploadedByUserId().equals(user.getUserId())) {
+            return;
+        }
+
+        if ("PATIENT".equalsIgnoreCase(doc.getOwnerType()) && doc.getOwnerId().equals(user.getUserId())) {
+            return;
+        }
+
+        throw new org.springframework.security.access.AccessDeniedException("Access denied: Only document owner or admin can perform this modification.");
+    }
+
+    private void checkExplicitShare(Long documentId, Long userId) {
+        List<com.healthcare.clinic.document.entity.DocumentShare> shares = shareRepository.findByDocumentIdAndSharedWithUserId(documentId, userId);
+        boolean validShare = shares.stream().anyMatch(s ->
+                s.getRevokedAt() == null &&
+                (s.getExpiresAt() == null || s.getExpiresAt().isAfter(ZonedDateTime.now()))
+        );
+
+        if (!validShare) {
+            throw new org.springframework.security.access.AccessDeniedException("Access denied: You do not have permission to access this document.");
+        }
     }
 
     @Transactional(readOnly = true)

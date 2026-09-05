@@ -1,13 +1,13 @@
 -- Add Advanced Prescription fields
-ALTER TABLE prescriptions ADD COLUMN chief_complaint TEXT;
-ALTER TABLE prescriptions ADD COLUMN diagnosis TEXT;
-ALTER TABLE prescriptions ADD COLUMN symptoms TEXT;
-ALTER TABLE prescriptions ADD COLUMN medical_history TEXT;
-ALTER TABLE prescriptions ADD COLUMN follow_up_date TIMESTAMP;
+ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS chief_complaint TEXT;
+ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS diagnosis TEXT;
+ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS symptoms TEXT;
+ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS medical_history TEXT;
+ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS follow_up_date TIMESTAMP;
 
 -- Add Advanced PrescriptionItem fields
-ALTER TABLE prescription_items ADD COLUMN strength VARCHAR(50);
-ALTER TABLE prescription_items ADD COLUMN timing VARCHAR(50);
+ALTER TABLE prescription_items ADD COLUMN IF NOT EXISTS strength VARCHAR(50);
+ALTER TABLE prescription_items ADD COLUMN IF NOT EXISTS timing VARCHAR(50);
 
 -- Also add to pharmacy mirroring table
 

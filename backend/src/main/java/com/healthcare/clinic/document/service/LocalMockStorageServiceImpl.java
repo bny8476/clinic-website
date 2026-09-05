@@ -1,6 +1,7 @@
 package com.healthcare.clinic.document.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -12,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @Slf4j
+@ConditionalOnProperty(name = "storage.provider", havingValue = "local", matchIfMissing = true)
 public class LocalMockStorageServiceImpl implements DocumentStorageService {
 
     // Using an in-memory map to simulate file storage since local disk won't survive Render redeploys.

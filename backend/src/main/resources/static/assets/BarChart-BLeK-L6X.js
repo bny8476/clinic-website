@@ -1,0 +1,1 @@
+import{r}from"./react-vendor-Cl_HtfLO.js";import{H as e}from"./CategoricalChart-CGC-5m1a.js";import{C as o}from"./CartesianChart-CkVd0II6.js";var i=["axis","item"],m=r.forwardRef((a,t)=>r.createElement(o,{chartName:"BarChart",defaultTooltipEventType:"axis",validateTooltipEventTypes:i,tooltipPayloadSearcher:e,categoricalChartProps:a,ref:t}));export{m as B};

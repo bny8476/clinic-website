@@ -4,24 +4,10 @@
 -- ============================================================
 -- appointments: add version column for optimistic locking
 -- ============================================================
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='appointments' AND column_name='version')
-    THEN
-        ALTER TABLE appointments ADD COLUMN version BIGINT NOT NULL DEFAULT 0;
-    END IF;
-END $$;
+ALTER TABLE appointments ADD COLUMN IF NOT EXISTS version BIGINT NOT NULL DEFAULT 0;
 
--- ============================================================
--- wards: add is_active column
--- ============================================================
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='wards' AND column_name='is_active')
-    THEN
-        ALTER TABLE wards ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT TRUE;
-    END IF;
-END $$;
+ALTER TABLE wards ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT TRUE;
+
 
 -- ============================================================
 -- NEW TABLE: bed_assignments

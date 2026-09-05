@@ -11,10 +11,15 @@ vi.mock('../../../store/authStore', () => {
     mfaPending: false,
     error: null,
     isLoading: false,
-    mfaEmail: null
+    mfaEmail: null,
+    roles: [],
+    clearError: vi.fn(),
+    clearStaleToken: vi.fn(),
   };
+  const useAuthStoreMock = () => mockState;
+  useAuthStoreMock.getState = () => mockState;
   return {
-    default: () => mockState,
+    default: useAuthStoreMock,
     isTokenValid: vi.fn().mockReturnValue(false)
   };
 });
@@ -32,9 +37,10 @@ describe('PortalLoginPage', () => {
 
   it('renders login form with portal title', () => {
     isTokenValid.mockReturnValue(false);
+    renderWithProviders(<PortalLoginPage />);
     expect(screen.getByText(/Sign in to continue to your account/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/Enter your email or phone number/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/Enter your password/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/Email Address/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/Password/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Sign In/i })).toBeInTheDocument();
   });
 });

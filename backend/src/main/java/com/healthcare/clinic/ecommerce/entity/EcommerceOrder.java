@@ -62,6 +62,9 @@ public class EcommerceOrder {
     @Column(name = "patient_id")
     private Long patientId;
 
+    @Column(name = "doctor_id")
+    private Long doctorId;
+
     @Column(name = "cart_id")
     private Long cartId;
 

@@ -9,12 +9,10 @@
 ALTER TABLE queue_tokens ADD COLUMN IF NOT EXISTS generated_date DATE;
 UPDATE queue_tokens SET generated_date = CAST(generated_at AS DATE);
 ALTER TABLE queue_tokens ALTER COLUMN generated_date SET NOT NULL;
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'uq_queue_token_branch_day') THEN
-        ALTER TABLE queue_tokens ADD CONSTRAINT uq_queue_token_branch_day UNIQUE (branch_id, token_number, generated_date);
-    END IF;
-END $$;
+ALTER TABLE queue_tokens DROP CONSTRAINT IF EXISTS uq_queue_token_branch_day;
+ALTER TABLE queue_tokens ADD CONSTRAINT uq_queue_token_branch_day UNIQUE (branch_id, token_number, generated_date);
+
+
 
 
 
@@ -142,13 +140,8 @@ CREATE TABLE IF NOT EXISTS patient_consents (
     CONSTRAINT fk_consent_version FOREIGN KEY (consent_version_id) REFERENCES consent_versions(id)
 );
 
--- Seed initial consent versions
-INSERT INTO consent_versions (consent_type, version_id, document_text, is_latest) VALUES
-('TELECONSULTATION', 'v1.0.0', 'I consent to receive healthcare services via telemedicine...', true),
-('DATA_EXPORT', 'v1.0.0', 'I authorize the export of my complete medical history...', true),
-('AI_ASSISTANT', 'v1.0.0', 'I understand this AI is not a doctor and I consent to its use...', true),
-('GENERAL_TREATMENT', 'v1.0.0', 'I consent to general medical treatment by the clinic staff...', true)
-ON CONFLICT (consent_type) DO NOTHING;
+
+
 
 
 
@@ -328,7 +321,7 @@ CREATE INDEX IF NOT EXISTS idx_patient_allergies_patient ON patient_allergies(pa
 -- Enhance prescriptions with encounter link and digital signature fields
 ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS encounter_id BIGINT REFERENCES clinical_encounters(id);
 ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS status VARCHAR(50) NOT NULL DEFAULT 'Draft'; -- Draft, Signed, Void, Cancelled
-ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS signed_at TIMESTAMP WITH TIME ZONE;
+ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS signed_at TIMESTAMP;
 ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS signature_hash VARCHAR(255);
 
 CREATE INDEX IF NOT EXISTS idx_prescriptions_encounter ON prescriptions(encounter_id);
@@ -1325,8 +1318,8 @@ ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS cold_chain_required  BOO
 ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS regulatory_status    VARCHAR(50) NOT NULL DEFAULT 'APPROVED';
 ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS product_status       VARCHAR(30) NOT NULL DEFAULT 'ACTIVE';
 ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS return_eligible      BOOLEAN NOT NULL DEFAULT true;
-ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS images               TEXT;          -- JSON array of image URLs
-ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS specifications       TEXT;          -- JSON key-value pairs
+ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS images               JSON;          -- JSON array of image URLs
+ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS specifications       JSON;          -- JSON key-value pairs
 ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS ingredients          TEXT;
 ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS warnings             TEXT;
 ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS warranty_months      INT;
@@ -1578,7 +1571,7 @@ CREATE TABLE IF NOT EXISTS ec_payments (
     amount              DECIMAL(10,2) NOT NULL,
     currency            VARCHAR(10) NOT NULL DEFAULT 'INR',
     status              VARCHAR(30) NOT NULL DEFAULT 'INITIATED',
-    pg_response         TEXT,                                  -- JSON blob from provider
+    pg_response         JSON,                                  -- JSON blob from provider
     webhook_verified    BOOLEAN NOT NULL DEFAULT false,
     payment_method      VARCHAR(50),                           -- UPI, CARD, WALLET, COD, NETBANKING
     error_code          VARCHAR(100),
@@ -1617,7 +1610,7 @@ CREATE TABLE IF NOT EXISTS ec_shipments (
     proof_of_delivery_url   VARCHAR(500),
     otp_required            BOOLEAN NOT NULL DEFAULT false,
     otp_verified            BOOLEAN NOT NULL DEFAULT false,
-    cold_chain_evidence     TEXT,                              -- JSON
+    cold_chain_evidence     JSON,                              -- JSON
     return_to_origin        BOOLEAN NOT NULL DEFAULT false,
     created_at              TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at              TIMESTAMP WITH TIME ZONE
@@ -1650,7 +1643,7 @@ CREATE TABLE IF NOT EXISTS ec_fulfillment_tasks (
     prescription_verified   BOOLEAN NOT NULL DEFAULT false,
     prescription_verified_by BIGINT,
     prescription_verified_at TIMESTAMP WITH TIME ZONE,
-    items_picked            TEXT,                              -- JSON
+    items_picked            JSON,                              -- JSON
     packing_evidence_url    VARCHAR(500),
     notes                   VARCHAR(500),
     started_at              TIMESTAMP WITH TIME ZONE,
@@ -1670,7 +1663,7 @@ CREATE TABLE IF NOT EXISTS ec_returns (
     requested_by        BIGINT NOT NULL REFERENCES users(id),
     reason              VARCHAR(100) NOT NULL,
     reason_detail       VARCHAR(500),
-    evidence_urls       TEXT,                                  -- JSON array
+    evidence_urls       JSON,                                  -- JSON array
     status              VARCHAR(30) NOT NULL DEFAULT 'REQUESTED',
     approved_by         BIGINT,
     rejection_reason    VARCHAR(500),
@@ -1734,7 +1727,7 @@ CREATE TABLE IF NOT EXISTS ec_reviews (
     rating              INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
     title               VARCHAR(200),
     body                TEXT,
-    images              TEXT,                                  -- JSON array
+    images              JSON,                                  -- JSON array
     moderation_status   VARCHAR(20) NOT NULL DEFAULT 'PENDING', -- PENDING, APPROVED, REJECTED, FLAGGED
     moderation_note     VARCHAR(500),
     moderated_by        BIGINT,
@@ -2554,28 +2547,11 @@ ALTER TABLE staff_assignments ADD COLUMN IF NOT EXISTS role_id BIGINT;
 -- In a real migration we'd map string role to role_id.
 -- Let's drop the string role column after.
 
-DO $$
-BEGIN
-    IF EXISTS (
-        SELECT 1
-        FROM information_schema.columns
-        WHERE table_schema = 'public'
-          AND table_name = 'staff_assignments'
-          AND column_name = 'role'
-    ) THEN
-        ALTER TABLE staff_assignments DROP COLUMN role;
-    END IF;
-END $$;
+ALTER TABLE staff_assignments DROP COLUMN IF EXISTS role;
 
 ALTER TABLE staff_assignments ALTER COLUMN role_id SET NOT NULL;
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_staff_assignments_role') THEN
-        ALTER TABLE staff_assignments ADD CONSTRAINT fk_staff_assignments_role FOREIGN KEY (role_id) REFERENCES roles(id) NOT VALID;
-    END IF;
-END $$;
-
-
+ALTER TABLE staff_assignments DROP CONSTRAINT IF EXISTS fk_staff_assignments_role;
+ALTER TABLE staff_assignments ADD CONSTRAINT fk_staff_assignments_role FOREIGN KEY (role_id) REFERENCES roles(id);
 
 -- ==========================================
 -- Source: V103__core_tenant_branch.sql
@@ -2594,52 +2570,22 @@ ALTER TABLE emergency_patient_records ADD COLUMN IF NOT EXISTS tenant_id BIGINT;
 ALTER TABLE emergency_patient_records ADD COLUMN IF NOT EXISTS branch_id BIGINT;
 
 -- Add foreign keys for tenant and branch
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_appointments_tenant') THEN
-        ALTER TABLE appointments ADD CONSTRAINT fk_appointments_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) NOT VALID;
-    END IF;
-END $$;
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_appointments_branch') THEN
-        ALTER TABLE appointments ADD CONSTRAINT fk_appointments_branch FOREIGN KEY (branch_id) REFERENCES branches(id) NOT VALID;
-    END IF;
-END $$;
+ALTER TABLE appointments DROP CONSTRAINT IF EXISTS fk_appointments_tenant;
+ALTER TABLE appointments ADD CONSTRAINT fk_appointments_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id);
+ALTER TABLE appointments DROP CONSTRAINT IF EXISTS fk_appointments_branch;
+ALTER TABLE appointments ADD CONSTRAINT fk_appointments_branch FOREIGN KEY (branch_id) REFERENCES branches(id);
+ALTER TABLE patient_profiles DROP CONSTRAINT IF EXISTS fk_patient_profiles_tenant;
+ALTER TABLE patient_profiles ADD CONSTRAINT fk_patient_profiles_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id);
+ALTER TABLE patient_profiles DROP CONSTRAINT IF EXISTS fk_patient_profiles_branch;
+ALTER TABLE patient_profiles ADD CONSTRAINT fk_patient_profiles_branch FOREIGN KEY (branch_id) REFERENCES branches(id);
+ALTER TABLE invoices DROP CONSTRAINT IF EXISTS fk_invoices_tenant;
+ALTER TABLE invoices ADD CONSTRAINT fk_invoices_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id);
+ALTER TABLE emergency_patient_records DROP CONSTRAINT IF EXISTS fk_emergency_records_tenant;
+ALTER TABLE emergency_patient_records ADD CONSTRAINT fk_emergency_records_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id);
+ALTER TABLE emergency_patient_records DROP CONSTRAINT IF EXISTS fk_emergency_records_branch;
+ALTER TABLE emergency_patient_records ADD CONSTRAINT fk_emergency_records_branch FOREIGN KEY (branch_id) REFERENCES branches(id);
 
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_patient_profiles_tenant') THEN
-        ALTER TABLE patient_profiles ADD CONSTRAINT fk_patient_profiles_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) NOT VALID;
-    END IF;
-END $$;
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_patient_profiles_branch') THEN
-        ALTER TABLE patient_profiles ADD CONSTRAINT fk_patient_profiles_branch FOREIGN KEY (branch_id) REFERENCES branches(id) NOT VALID;
-    END IF;
-END $$;
 
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_invoices_tenant') THEN
-        ALTER TABLE invoices ADD CONSTRAINT fk_invoices_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) NOT VALID;
-    END IF;
-END $$;
--- fk for invoices to branch already exists from V15
-
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_emergency_records_tenant') THEN
-        ALTER TABLE emergency_patient_records ADD CONSTRAINT fk_emergency_records_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id) NOT VALID;
-    END IF;
-END $$;
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_emergency_records_branch') THEN
-        ALTER TABLE emergency_patient_records ADD CONSTRAINT fk_emergency_records_branch FOREIGN KEY (branch_id) REFERENCES branches(id) NOT VALID;
-    END IF;
-END $$;
 
 
 
@@ -2745,10 +2691,10 @@ CREATE TABLE IF NOT EXISTS waitlist_entries (
     id BIGSERIAL PRIMARY KEY,
     doctor_id BIGINT NOT NULL REFERENCES doctor_profiles(id),
     patient_id BIGINT NOT NULL REFERENCES patient_profiles(id),
-    desired_date_range_start TIMESTAMP WITH TIME ZONE,
-    desired_date_range_end TIMESTAMP WITH TIME ZONE,
+    desired_date_range_start TIMESTAMP,
+    desired_date_range_end TIMESTAMP,
     status VARCHAR(50) DEFAULT 'WAITING',
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 -- Update clinical_encounters
@@ -2764,12 +2710,8 @@ UPDATE clinical_encounters SET closed_at = finalized_at WHERE finalized_at IS NO
 -- Since this is PostgreSQL, we can use an alter table with drop constraint if we know the name, or just alter column type.
 -- Wait, we can just drop the foreign key constraint if we know its name. Usually it's `lab_test_requests_encounter_id_fkey`.
 ALTER TABLE lab_test_requests DROP CONSTRAINT IF EXISTS lab_test_requests_encounter_id_fkey;
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'lab_test_requests_encounter_id_fkey') THEN
-        ALTER TABLE lab_test_requests ADD CONSTRAINT lab_test_requests_encounter_id_fkey FOREIGN KEY (encounter_id) REFERENCES clinical_encounters(id) ON DELETE SET NULL NOT VALID;
-    END IF;
-END $$;
+ALTER TABLE lab_test_requests ADD CONSTRAINT lab_test_requests_encounter_id_fkey FOREIGN KEY (encounter_id) REFERENCES clinical_encounters(id) ON DELETE SET NULL;
+
 
 ALTER TABLE lab_test_requests ADD COLUMN IF NOT EXISTS acknowledged_by BIGINT REFERENCES users(id);
 ALTER TABLE lab_test_requests ADD COLUMN IF NOT EXISTS acknowledged_at TIMESTAMP WITH TIME ZONE;
@@ -2823,14 +2765,8 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS version BIGINT DEFAULT 0;
 -- Source: V110__add_queue_token_unique_constraint.sql
 -- ==========================================
 
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'unique_branch_date_token') THEN
-        ALTER TABLE queue_tokens ADD CONSTRAINT unique_branch_date_token UNIQUE (branch_id, generated_date, token_number);
-    END IF;
-END $$;
-
-
+ALTER TABLE queue_tokens DROP CONSTRAINT IF EXISTS unique_branch_date_token;
+ALTER TABLE queue_tokens ADD CONSTRAINT unique_branch_date_token UNIQUE (branch_id, generated_date, token_number);
 
 -- ==========================================
 -- Source: V111__add_appointment_concurrency_fixes.sql
@@ -2838,24 +2774,9 @@ END $$;
 
 ALTER TABLE appointments ADD COLUMN IF NOT EXISTS idempotency_key VARCHAR(100) UNIQUE;
 
-DO $$ 
-DECLARE 
-    constraint_name text;
-BEGIN
-    SELECT tc.constraint_name INTO constraint_name
-    FROM information_schema.table_constraints tc
-    JOIN information_schema.key_column_usage kcu
-      ON tc.constraint_name = kcu.constraint_name
-    WHERE tc.table_name = 'appointments' 
-      AND kcu.column_name = 'slot_id' 
-      AND tc.constraint_type = 'UNIQUE';
+CREATE INDEX IF NOT EXISTS idx_unique_active_slot ON appointments(slot_id);
 
-    IF constraint_name IS NOT NULL THEN
-        EXECUTE 'ALTER TABLE appointments DROP CONSTRAINT ' || constraint_name;
-    END IF;
-END $$;
 
-CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_active_slot ON appointments(slot_id) WHERE status != 'CANCELLED';
 
 
 

@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { axiosPublic } from '../../api/axios';
 import toast from 'react-hot-toast';
 import Card from '../../components/ui/Card';
 import { useState } from 'react';
@@ -21,7 +21,7 @@ const CheckInKiosk = () => {
 
   const selfCheckIn = useMutation({
     mutationFn: async () => {
-      const res = await axios.post('/api/reception/kiosk/self-checkin', {
+      const res = await axiosPublic.post('/reception/kiosk/self-checkin', {
         branchId: BRANCH_ID,
         patientProfileId: patientProfileId || null,
         appointmentId: appointmentId ? Number(appointmentId) : null,

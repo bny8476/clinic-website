@@ -2,7 +2,6 @@ package com.healthcare.clinic.doctor.controller;
 
 import com.healthcare.clinic.appointment.entity.Appointment;
 import com.healthcare.clinic.appointment.entity.AppointmentSlot;
-import com.healthcare.clinic.appointment.entity.AppointmentSlot;
 import com.healthcare.clinic.appointment.entity.AppointmentStatus;
 import com.healthcare.clinic.appointment.repository.AppointmentRepository;
 import com.healthcare.clinic.doctor.dto.MyPatientResponse;
@@ -82,6 +81,7 @@ public class DoctorPatientControllerTest {
         appointment.setCreatedAt(ZonedDateTime.now());
         // Slot is null
 
+        when(patientProfileRepository.findAll()).thenReturn(Collections.singletonList(patient));
         when(appointmentRepository.findByDoctor_UserId(1L)).thenReturn(Collections.singletonList(appointment));
         when(userRepository.findById(200L)).thenReturn(Optional.empty());
 

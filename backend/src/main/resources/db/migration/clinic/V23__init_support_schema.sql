@@ -1,6 +1,6 @@
 -- V23: Customer Support Schema
 
-CREATE TABLE support_tickets (
+CREATE TABLE IF NOT EXISTS support_tickets (
     id                BIGSERIAL PRIMARY KEY,
     ticket_number     VARCHAR(50) NOT NULL UNIQUE,
     user_id           BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -13,7 +13,7 @@ CREATE TABLE support_tickets (
     updated_at        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE support_messages (
+CREATE TABLE IF NOT EXISTS support_messages (
     id                BIGSERIAL PRIMARY KEY,
     ticket_id         BIGINT NOT NULL REFERENCES support_tickets(id) ON DELETE CASCADE,
     sender_id         BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -22,6 +22,6 @@ CREATE TABLE support_messages (
     created_at        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_support_tickets_user ON support_tickets(user_id);
-CREATE INDEX idx_support_tickets_status ON support_tickets(status);
-CREATE INDEX idx_support_messages_ticket ON support_messages(ticket_id);
+CREATE INDEX IF NOT EXISTS idx_support_tickets_user ON support_tickets(user_id);
+CREATE INDEX IF NOT EXISTS idx_support_tickets_status ON support_tickets(status);
+CREATE INDEX IF NOT EXISTS idx_support_messages_ticket ON support_messages(ticket_id);

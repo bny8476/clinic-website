@@ -1,7 +1,7 @@
 -- V56__emr_schema.sql
 
 -- 1. Problems
-CREATE TABLE problems (
+CREATE TABLE IF NOT EXISTS problems (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL REFERENCES patient_profiles(id),
     icd10_code VARCHAR(20),
@@ -15,7 +15,7 @@ CREATE TABLE problems (
 );
 
 -- 2. Diagnoses
-CREATE TABLE diagnoses (
+CREATE TABLE IF NOT EXISTS diagnoses (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL REFERENCES patient_profiles(id),
     icd10_code VARCHAR(20),
@@ -28,7 +28,7 @@ CREATE TABLE diagnoses (
 );
 
 -- 3. Allergies
-CREATE TABLE allergies (
+CREATE TABLE IF NOT EXISTS allergies (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL REFERENCES patient_profiles(id),
     allergen VARCHAR(255) NOT NULL,
@@ -41,7 +41,7 @@ CREATE TABLE allergies (
 );
 
 -- 4. Immunizations
-CREATE TABLE immunizations (
+CREATE TABLE IF NOT EXISTS immunizations (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL REFERENCES patient_profiles(id),
     vaccine_name VARCHAR(255) NOT NULL,
@@ -53,7 +53,7 @@ CREATE TABLE immunizations (
 );
 
 -- 5. Family History
-CREATE TABLE family_history (
+CREATE TABLE IF NOT EXISTS family_history (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL REFERENCES patient_profiles(id),
     relationship VARCHAR(50) NOT NULL,
@@ -64,7 +64,7 @@ CREATE TABLE family_history (
 );
 
 -- 6. Social History (One per patient generally, but tracking updates)
-CREATE TABLE social_history (
+CREATE TABLE IF NOT EXISTS social_history (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL UNIQUE REFERENCES patient_profiles(id),
     smoking_status VARCHAR(100),
@@ -77,7 +77,7 @@ CREATE TABLE social_history (
 );
 
 -- 7. Surgical History
-CREATE TABLE surgical_history (
+CREATE TABLE IF NOT EXISTS surgical_history (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL REFERENCES patient_profiles(id),
     procedure_name VARCHAR(255) NOT NULL,
@@ -90,7 +90,7 @@ CREATE TABLE surgical_history (
 );
 
 -- 8. External Medications
-CREATE TABLE external_medications (
+CREATE TABLE IF NOT EXISTS external_medications (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL REFERENCES patient_profiles(id),
     medication_name VARCHAR(255) NOT NULL,
@@ -103,7 +103,7 @@ CREATE TABLE external_medications (
 );
 
 -- 9. Clinical Observations
-CREATE TABLE clinical_observations (
+CREATE TABLE IF NOT EXISTS clinical_observations (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL REFERENCES patient_profiles(id),
     observation_code VARCHAR(100),
@@ -116,7 +116,7 @@ CREATE TABLE clinical_observations (
 );
 
 -- 10. Procedure Records
-CREATE TABLE procedure_records (
+CREATE TABLE IF NOT EXISTS procedure_records (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL REFERENCES patient_profiles(id),
     procedure_name VARCHAR(255) NOT NULL,
@@ -130,7 +130,7 @@ CREATE TABLE procedure_records (
 
 -- 11. Clinical Referrals
 DROP TABLE IF EXISTS clinical_referrals CASCADE;
-CREATE TABLE clinical_referrals (
+CREATE TABLE IF NOT EXISTS clinical_referrals (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL REFERENCES patient_profiles(id),
     referring_doctor_id BIGINT NOT NULL,

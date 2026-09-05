@@ -1,4 +1,4 @@
-CREATE TABLE nurse_escalations (
+CREATE TABLE IF NOT EXISTS nurse_escalations (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL REFERENCES patient_profiles(id) ON DELETE CASCADE,
     encounter_id BIGINT,
@@ -13,7 +13,7 @@ CREATE TABLE nurse_escalations (
     resolution_notes TEXT
 );
 
-CREATE TABLE nursing_checklists (
+CREATE TABLE IF NOT EXISTS nursing_checklists (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL REFERENCES patient_profiles(id) ON DELETE CASCADE,
     encounter_id BIGINT,

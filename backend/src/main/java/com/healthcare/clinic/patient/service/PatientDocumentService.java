@@ -41,8 +41,8 @@ public class PatientDocumentService {
             String storageKey = storageService.uploadFile(file);
             document.setFileUrl(storageService.generateDownloadUrl(storageKey));
             document.setStorageKey(storageKey);
-        } else if (document.getFileUrl() == null || document.getFileUrl().isEmpty()) {
-            document.setFileUrl("https://example.com/mock-document-url.pdf");
+        } else if (document.getFileUrl() == null) {
+            document.setFileUrl("");
         }
 
         return documentRepository.save(document);

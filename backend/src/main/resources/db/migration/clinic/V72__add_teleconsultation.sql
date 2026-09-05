@@ -1,4 +1,4 @@
-CREATE TABLE teleconsultation_sessions (
+CREATE TABLE IF NOT EXISTS teleconsultation_sessions (
     id BIGSERIAL PRIMARY KEY,
     encounter_id BIGINT NOT NULL,
     patient_id BIGINT NOT NULL,

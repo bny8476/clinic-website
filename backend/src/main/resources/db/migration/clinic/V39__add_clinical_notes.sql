@@ -1,4 +1,4 @@
-CREATE TABLE clinical_notes (
+CREATE TABLE IF NOT EXISTS clinical_notes (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL,
     doctor_id BIGINT NOT NULL,

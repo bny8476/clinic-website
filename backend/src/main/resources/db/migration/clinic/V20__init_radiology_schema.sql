@@ -1,6 +1,6 @@
 -- V20: Radiology Schema
 
-CREATE TABLE imaging_procedures (
+CREATE TABLE IF NOT EXISTS imaging_procedures (
     id            BIGSERIAL PRIMARY KEY,
     code          VARCHAR(50) NOT NULL UNIQUE,
     name          VARCHAR(200) NOT NULL,
@@ -10,7 +10,7 @@ CREATE TABLE imaging_procedures (
     is_active     BOOLEAN NOT NULL DEFAULT true
 );
 
-CREATE TABLE imaging_requests (
+CREATE TABLE IF NOT EXISTS imaging_requests (
     id            BIGSERIAL PRIMARY KEY,
     patient_id    BIGINT NOT NULL REFERENCES patient_profiles(id) ON DELETE CASCADE,
     doctor_id     BIGINT REFERENCES doctor_profiles(id) ON DELETE SET NULL,
@@ -22,7 +22,7 @@ CREATE TABLE imaging_requests (
     scheduled_at  TIMESTAMP WITH TIME ZONE
 );
 
-CREATE TABLE radiology_reports (
+CREATE TABLE IF NOT EXISTS radiology_reports (
     id             BIGSERIAL PRIMARY KEY,
     request_id     BIGINT NOT NULL UNIQUE REFERENCES imaging_requests(id) ON DELETE CASCADE,
     radiologist_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
@@ -35,5 +35,5 @@ CREATE TABLE radiology_reports (
     finalized_at   TIMESTAMP WITH TIME ZONE
 );
 
-CREATE INDEX idx_imaging_requests_status ON imaging_requests(status);
-CREATE INDEX idx_imaging_requests_patient ON imaging_requests(patient_id);
+CREATE INDEX IF NOT EXISTS idx_imaging_requests_status ON imaging_requests(status);
+CREATE INDEX IF NOT EXISTS idx_imaging_requests_patient ON imaging_requests(patient_id);

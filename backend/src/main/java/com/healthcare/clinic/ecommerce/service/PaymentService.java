@@ -25,6 +25,9 @@ import java.util.Map;
 import java.util.UUID;
 import jakarta.annotation.PostConstruct;
 
+import org.springframework.core.env.Environment;
+import java.util.Arrays;
+
 @Slf4j
 @Service("ecommercePaymentService")
 @RequiredArgsConstructor
@@ -34,9 +37,16 @@ public class PaymentService {
     private final EcommerceOrderRepository orderRepository;
     private final ObjectMapper objectMapper;
     private final InventoryService inventoryService;
+    private final Environment environment;
 
     @Value("${ecommerce.payment.provider:STRIPE}")
     private String paymentProvider;
+
+    @Value("${ecommerce.payment.allow-mock:false}")
+    private boolean allowMock;
+
+    @Value("${ecommerce.payment.mode:DEVELOPMENT}")
+    private String paymentMode;
 
     @Value("${stripe.secret-key}")
     private String stripeSecretKey;
@@ -47,6 +57,26 @@ public class PaymentService {
     @Value("${app.frontend-url:http://localhost:3000}")
     private String frontendUrl;
 
+    private boolean isProductionEnvironment() {
+        if ("PRODUCTION".equalsIgnoreCase(paymentMode)) {
+            return true;
+        }
+        if (environment != null && environment.getActiveProfiles() != null) {
+            return Arrays.stream(environment.getActiveProfiles())
+                    .anyMatch(p -> "prod".equalsIgnoreCase(p) || "production".equalsIgnoreCase(p));
+        }
+        return false;
+    }
+
+    private void validatePaymentProviderMode() {
+        if ("MOCK".equalsIgnoreCase(paymentProvider)) {
+            if (isProductionEnvironment() || !allowMock) {
+                log.error("CRITICAL: Attempted to execute MOCK payment provider in production environment or when allow-mock is false");
+                throw new IllegalStateException("MOCK payment provider is strictly disabled in production profile");
+            }
+        }
+    }
+
     @PostConstruct
     public void init() {
         Stripe.apiKey = stripeSecretKey;
@@ -54,6 +84,8 @@ public class PaymentService {
 
     @Transactional
     public EcPayment initiatePayment(EcommerceOrder order) {
+        validatePaymentProviderMode();
+
         String idempotencyKey = "PAY_" + order.getId() + "_" + UUID.randomUUID().toString();
         
         EcPayment payment = EcPayment.builder()
@@ -65,7 +97,7 @@ public class PaymentService {
                 .status("INITIATED")
                 .build();
 
-        if ("MOCK".equals(paymentProvider)) {
+        if ("MOCK".equalsIgnoreCase(paymentProvider)) {
             payment.setProviderRef("MOCK_TXN_" + UUID.randomUUID().toString().substring(0, 8));
             log.info("Mock payment initiated for order {}, ref {}", order.getId(), payment.getProviderRef());
         } else if ("STRIPE".equalsIgnoreCase(paymentProvider)) {
@@ -113,7 +145,8 @@ public class PaymentService {
 
     @Transactional
     public void handlePaymentWebhook(String payload, String signature) {
-        if ("MOCK".equals(paymentProvider)) {
+        if ("MOCK".equalsIgnoreCase(paymentProvider)) {
+            validatePaymentProviderMode();
             try {
                 Map<String, Object> data = objectMapper.readValue(payload, Map.class);
                 String providerRef = (String) data.get("providerRef");

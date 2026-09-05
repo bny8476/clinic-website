@@ -4,15 +4,8 @@
 ALTER TABLE lab_test_requests
 ADD COLUMN IF NOT EXISTS lab_request_number VARCHAR(50);
 
-DO $$
-BEGIN
-    IF NOT EXISTS (
-        SELECT 1 FROM pg_constraint WHERE conname = 'uk_lab_request_number'
-    ) THEN
-        ALTER TABLE lab_test_requests
-        ADD CONSTRAINT uk_lab_request_number UNIQUE (lab_request_number);
-    END IF;
-END $$;
+ALTER TABLE lab_test_requests
+ADD CONSTRAINT uk_lab_request_number UNIQUE (lab_request_number);
 
 -- 2. Create lab_sample_collections child table
 CREATE TABLE IF NOT EXISTS lab_sample_collections (

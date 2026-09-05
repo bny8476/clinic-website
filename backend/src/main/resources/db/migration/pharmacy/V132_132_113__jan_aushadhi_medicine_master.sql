@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS medicine_price (
     id BIGSERIAL PRIMARY KEY,
     medicine_id BIGINT NOT NULL REFERENCES medicine(id) ON DELETE CASCADE,
     mrp NUMERIC(12,2) NOT NULL CHECK (mrp >= 0),
-    currency CHAR(3) NOT NULL DEFAULT 'INR',
+    currency VARCHAR(3) NOT NULL DEFAULT 'INR',
     effective_from DATE NOT NULL DEFAULT CURRENT_DATE,
     source VARCHAR(50) NOT NULL DEFAULT 'JAN_AUSHADHI',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -35,3 +35,8 @@ CREATE INDEX IF NOT EXISTS idx_medicine_drug_code ON medicine(drug_code);
 CREATE INDEX IF NOT EXISTS idx_medicine_category ON medicine(category_id);
 CREATE INDEX IF NOT EXISTS idx_medicine_generic_name ON medicine(generic_name);
 CREATE INDEX IF NOT EXISTS idx_medicine_price_medicine ON medicine_price(medicine_id);
+
+ALTER TABLE pharmacy_medicines ALTER COLUMN created_at SET DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE pharmacy_medicines ALTER COLUMN updated_at SET DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE pharmacy_medicines ALTER COLUMN is_deleted SET DEFAULT false;
+

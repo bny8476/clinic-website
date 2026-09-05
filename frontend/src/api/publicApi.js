@@ -13,7 +13,7 @@ export const usePublicDoctors = () =>
     queryKey: ['public-doctors'],
     queryFn: async () => {
       const res = await axiosPublic.get('/doctors');
-      return res.data;
+      return Array.isArray(res.data) ? res.data : (res.data?.content || []);
     },
     staleTime: 5 * 60_000,
     retry: 2,
@@ -25,7 +25,7 @@ export const usePublicDepartments = () =>
     queryKey: ['public-departments'],
     queryFn: async () => {
       const res = await axiosPublic.get('/departments');
-      return res.data;
+      return Array.isArray(res.data) ? res.data : (res.data?.content || []);
     },
     staleTime: 10 * 60_000,
     retry: 2,

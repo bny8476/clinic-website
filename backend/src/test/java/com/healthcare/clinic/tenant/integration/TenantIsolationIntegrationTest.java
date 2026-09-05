@@ -1,5 +1,4 @@
 package com.healthcare.clinic.tenant.integration;
-
 import com.healthcare.clinic.billing.entity.Invoice;
 import com.healthcare.clinic.billing.repository.InvoiceRepository;
 import com.healthcare.clinic.billing.entity.InvoiceStatus;
@@ -11,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
 import java.util.List;
 

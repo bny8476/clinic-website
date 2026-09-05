@@ -1,4 +1,4 @@
-CREATE TABLE nurse_patient_assignment (
+CREATE TABLE IF NOT EXISTS nurse_patient_assignment (
     id BIGSERIAL PRIMARY KEY,
     nurse_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     patient_id BIGINT NOT NULL REFERENCES patient_profiles(id) ON DELETE CASCADE,
@@ -7,7 +7,7 @@ CREATE TABLE nurse_patient_assignment (
     UNIQUE(nurse_id, patient_id, status)
 );
 
-CREATE TABLE vital_signs (
+CREATE TABLE IF NOT EXISTS vital_signs (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL REFERENCES patient_profiles(id) ON DELETE CASCADE,
     nurse_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -20,7 +20,7 @@ CREATE TABLE vital_signs (
     notes TEXT
 );
 
-CREATE TABLE nursing_notes (
+CREATE TABLE IF NOT EXISTS nursing_notes (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL REFERENCES patient_profiles(id) ON DELETE CASCADE,
     nurse_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,

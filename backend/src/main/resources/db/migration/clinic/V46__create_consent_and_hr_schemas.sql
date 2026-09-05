@@ -1,4 +1,4 @@
-CREATE TABLE patient_consents (
+CREATE TABLE IF NOT EXISTS patient_consents (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL,
     form_type VARCHAR(255) NOT NULL,
@@ -7,7 +7,7 @@ CREATE TABLE patient_consents (
     CONSTRAINT fk_patient_consent_user FOREIGN KEY (patient_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE hr_attendance (
+CREATE TABLE IF NOT EXISTS hr_attendance (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
     date DATE NOT NULL,

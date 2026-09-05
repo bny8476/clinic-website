@@ -1,7 +1,7 @@
 -- V89: Ambulance Phase 20 Core Schema Updates
 
 -- 1. Ambulance Drivers
-CREATE TABLE ambulance_drivers (
+CREATE TABLE IF NOT EXISTS ambulance_drivers (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     license_number VARCHAR(100) NOT NULL,
@@ -11,7 +11,7 @@ CREATE TABLE ambulance_drivers (
 );
 
 -- 2. Ambulance Paramedics
-CREATE TABLE ambulance_paramedics (
+CREATE TABLE IF NOT EXISTS ambulance_paramedics (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     certification_number VARCHAR(100) NOT NULL,
@@ -22,7 +22,7 @@ CREATE TABLE ambulance_paramedics (
 );
 
 -- 3. Hospital Destinations
-CREATE TABLE hospital_destinations (
+CREATE TABLE IF NOT EXISTS hospital_destinations (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     address TEXT,
@@ -34,22 +34,22 @@ CREATE TABLE hospital_destinations (
 );
 
 -- 4. Update Ambulances Table
-ALTER TABLE ambulances ADD COLUMN driver_id BIGINT REFERENCES ambulance_drivers(id) ON DELETE SET NULL;
-ALTER TABLE ambulances ADD COLUMN branch_id BIGINT REFERENCES branches(id) ON DELETE SET NULL;
-ALTER TABLE ambulances ADD COLUMN type VARCHAR(50) DEFAULT 'BLS';
-ALTER TABLE ambulances ADD COLUMN equipment_level VARCHAR(50);
-ALTER TABLE ambulances ADD COLUMN registration_number VARCHAR(100);
+ALTER TABLE ambulances ADD COLUMN IF NOT EXISTS driver_id BIGINT REFERENCES ambulance_drivers(id) ON DELETE SET NULL;
+ALTER TABLE ambulances ADD COLUMN IF NOT EXISTS branch_id BIGINT REFERENCES branches(id) ON DELETE SET NULL;
+ALTER TABLE ambulances ADD COLUMN IF NOT EXISTS type VARCHAR(50) DEFAULT 'BLS';
+ALTER TABLE ambulances ADD COLUMN IF NOT EXISTS equipment_level VARCHAR(50);
+ALTER TABLE ambulances ADD COLUMN IF NOT EXISTS registration_number VARCHAR(100);
 
 -- 5. Update Emergency Requests Table
-ALTER TABLE emergency_requests ADD COLUMN caller_name VARCHAR(100);
-ALTER TABLE emergency_requests ADD COLUMN caller_phone VARCHAR(30);
-ALTER TABLE emergency_requests ADD COLUMN caller_relation VARCHAR(50);
-ALTER TABLE emergency_requests ADD COLUMN incident_description TEXT;
-ALTER TABLE emergency_requests ADD COLUMN clinical_red_flags TEXT;
-ALTER TABLE emergency_requests ADD COLUMN hospital_destination_id BIGINT REFERENCES hospital_destinations(id) ON DELETE SET NULL;
+ALTER TABLE emergency_requests ADD COLUMN IF NOT EXISTS caller_name VARCHAR(100);
+ALTER TABLE emergency_requests ADD COLUMN IF NOT EXISTS caller_phone VARCHAR(30);
+ALTER TABLE emergency_requests ADD COLUMN IF NOT EXISTS caller_relation VARCHAR(50);
+ALTER TABLE emergency_requests ADD COLUMN IF NOT EXISTS incident_description TEXT;
+ALTER TABLE emergency_requests ADD COLUMN IF NOT EXISTS clinical_red_flags TEXT;
+ALTER TABLE emergency_requests ADD COLUMN IF NOT EXISTS hospital_destination_id BIGINT REFERENCES hospital_destinations(id) ON DELETE SET NULL;
 
 -- 6. Ambulance Assignments (Active Trips)
-CREATE TABLE ambulance_assignments (
+CREATE TABLE IF NOT EXISTS ambulance_assignments (
     id BIGSERIAL PRIMARY KEY,
     request_id BIGINT NOT NULL REFERENCES emergency_requests(id) ON DELETE CASCADE,
     ambulance_id BIGINT NOT NULL REFERENCES ambulances(id) ON DELETE CASCADE,
@@ -63,7 +63,7 @@ CREATE TABLE ambulance_assignments (
 );
 
 -- 7. Trip Histories
-CREATE TABLE ambulance_trip_histories (
+CREATE TABLE IF NOT EXISTS ambulance_trip_histories (
     id BIGSERIAL PRIMARY KEY,
     assignment_id BIGINT NOT NULL REFERENCES ambulance_assignments(id) ON DELETE CASCADE,
     total_distance_km DECIMAL(10, 2),
@@ -77,7 +77,7 @@ CREATE TABLE ambulance_trip_histories (
 );
 
 -- 8. Emergency Patient Records (Pre-Hospital Care)
-CREATE TABLE emergency_patient_records (
+CREATE TABLE IF NOT EXISTS emergency_patient_records (
     id BIGSERIAL PRIMARY KEY,
     request_id BIGINT NOT NULL REFERENCES emergency_requests(id) ON DELETE CASCADE,
     patient_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
@@ -91,7 +91,7 @@ CREATE TABLE emergency_patient_records (
 );
 
 -- 9. Ambulance Trip Billings
-CREATE TABLE ambulance_trip_billings (
+CREATE TABLE IF NOT EXISTS ambulance_trip_billings (
     id BIGSERIAL PRIMARY KEY,
     trip_id BIGINT NOT NULL REFERENCES ambulance_trip_histories(id) ON DELETE CASCADE,
     patient_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
@@ -106,5 +106,5 @@ CREATE TABLE ambulance_trip_billings (
     UNIQUE (trip_id)
 );
 
-CREATE INDEX idx_ambulance_assignments_status ON ambulance_assignments(status);
-CREATE INDEX idx_ambulance_trip_billings_status ON ambulance_trip_billings(status);
+CREATE INDEX IF NOT EXISTS idx_ambulance_assignments_status ON ambulance_assignments(status);
+CREATE INDEX IF NOT EXISTS idx_ambulance_trip_billings_status ON ambulance_trip_billings(status);

@@ -1,12 +1,12 @@
-ALTER TABLE prescriptions ADD COLUMN valid_until TIMESTAMP;
-ALTER TABLE prescriptions ADD COLUMN refills_allowed INT DEFAULT 0;
-ALTER TABLE prescriptions ADD COLUMN refills_remaining INT DEFAULT 0;
-ALTER TABLE prescriptions ADD COLUMN refill_interval_days INT DEFAULT 0;
-ALTER TABLE prescriptions ADD COLUMN doctor_registration_number VARCHAR(255);
+ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS valid_until TIMESTAMP;
+ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS refills_allowed INT DEFAULT 0;
+ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS refills_remaining INT DEFAULT 0;
+ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS refill_interval_days INT DEFAULT 0;
+ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS doctor_registration_number VARCHAR(255);
 
-ALTER TABLE prescription_items ADD COLUMN substitution_allowed BOOLEAN DEFAULT FALSE;
+ALTER TABLE prescription_items ADD COLUMN IF NOT EXISTS substitution_allowed BOOLEAN DEFAULT FALSE;
 
-CREATE TABLE prescription_reconciliation_mismatches (
+CREATE TABLE IF NOT EXISTS prescription_reconciliation_mismatches (
     id BIGSERIAL PRIMARY KEY,
     clinical_prescription_id BIGINT NOT NULL,
     clinic_status VARCHAR(50),

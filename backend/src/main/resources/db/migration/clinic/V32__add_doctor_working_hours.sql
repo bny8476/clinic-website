@@ -1,4 +1,4 @@
-CREATE TABLE doctor_working_hours (
+CREATE TABLE IF NOT EXISTS doctor_working_hours (
     id BIGSERIAL PRIMARY KEY,
     doctor_id BIGINT NOT NULL REFERENCES doctor_profiles(id) ON DELETE CASCADE,
     day_of_week INT NOT NULL,       -- 0=Sunday .. 6=Saturday
@@ -13,9 +13,9 @@ CREATE TABLE doctor_working_hours (
     CONSTRAINT uq_doctor_day UNIQUE (doctor_id, day_of_week)
 );
 
-CREATE INDEX idx_working_hours_doctor ON doctor_working_hours(doctor_id);
+CREATE INDEX IF NOT EXISTS idx_working_hours_doctor ON doctor_working_hours(doctor_id);
 
-CREATE TABLE doctor_schedule_overrides (
+CREATE TABLE IF NOT EXISTS doctor_schedule_overrides (
     id BIGSERIAL PRIMARY KEY,
     doctor_id BIGINT NOT NULL REFERENCES doctor_profiles(id) ON DELETE CASCADE,
     override_date DATE NOT NULL,

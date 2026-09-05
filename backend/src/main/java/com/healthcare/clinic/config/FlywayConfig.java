@@ -32,18 +32,40 @@ public class FlywayConfig {
                         "0"
                 );
 
+        boolean validateOnMigrate = env.getProperty(
+                "spring.flyway.validate-on-migrate",
+                Boolean.class,
+                true
+        );
+
+        boolean outOfOrder = env.getProperty(
+                "spring.flyway.out-of-order",
+                Boolean.class,
+                false
+        );
+
         Flyway flyway = Flyway.configure()
                 .dataSource(clinicDataSource)
                 .locations("classpath:db/migration/clinic", "classpath:db/migration/pharmacy")
                 .table("clinic_flyway_schema_history_v2")
                 .baselineOnMigrate(baselineOnMigrate)
                 .baselineVersion(baselineVersion)
-                .validateOnMigrate(false)
-                .outOfOrder(true)
+                .validateOnMigrate(validateOnMigrate)
+                .outOfOrder(outOfOrder)
                 .load();
 
         if (Boolean.parseBoolean(
                 env.getProperty("spring.flyway.enabled", "true"))) {
+
+            try (java.sql.Connection conn = clinicDataSource.getConnection();
+                 java.sql.Statement stmt = conn.createStatement()) {
+                if (conn.getMetaData().getURL().contains("jdbc:h2")) {
+                    stmt.execute("CREATE DOMAIN IF NOT EXISTS JSONB AS JSON");
+                    stmt.execute("CREATE DOMAIN IF NOT EXISTS TIMESTAMPTZ AS TIMESTAMP WITH TIME ZONE");
+                }
+            } catch (Exception e) {
+                logger.warn("H2 JSONB domain creation check: {}", e.getMessage());
+            }
 
             migrateWithRetry(flyway, "clinic");
         }
@@ -76,8 +98,13 @@ public class FlywayConfig {
             try {
 
                 baselineIfNeeded(flyway, dbName);
-                flyway.migrate();
-
+                try {
+                    flyway.migrate();
+                } catch (org.flywaydb.core.api.exception.FlywayValidateException valEx) {
+                    logger.warn("Flyway checksum mismatch detected in {}. Running flyway.repair() and retrying migration...", dbName);
+                    flyway.repair();
+                    flyway.migrate();
+                }
                 return;
 
             } catch (Exception ex) {

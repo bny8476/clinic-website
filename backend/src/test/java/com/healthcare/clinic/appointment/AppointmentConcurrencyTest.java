@@ -115,13 +115,19 @@ public class AppointmentConcurrencyTest {
                 latch.await();
                 appointmentService.bookAppointment(patient1.getId(), testSlot.getId(), "Reason 1", null, null);
                 successCount.incrementAndGet();
+            } catch (org.springframework.web.server.ResponseStatusException e) {
+                if (e.getStatusCode() == org.springframework.http.HttpStatus.CONFLICT || (e.getReason() != null && e.getReason().contains("booked"))) {
+                    optimisticLockCount.incrementAndGet();
+                } else {
+                    e.printStackTrace();
+                }
             } catch (org.springframework.dao.DataIntegrityViolationException | ObjectOptimisticLockingFailureException e) {
                 optimisticLockCount.incrementAndGet();
             } catch (Exception e) {
-                if (e.getMessage() != null && e.getMessage().contains("already booked")) {
-                     optimisticLockCount.incrementAndGet();
-                } else if (e.getCause() instanceof ObjectOptimisticLockingFailureException || e.getCause() instanceof org.hibernate.exception.ConstraintViolationException) {
-                     optimisticLockCount.incrementAndGet();
+                if (e.getMessage() != null && (e.getMessage().contains("booked") || e.getMessage().contains("CONFLICT"))) {
+                    optimisticLockCount.incrementAndGet();
+                } else {
+                    e.printStackTrace();
                 }
             } finally {
                 doneLatch.countDown();
@@ -133,13 +139,19 @@ public class AppointmentConcurrencyTest {
                 latch.await();
                 appointmentService.bookAppointment(patient2.getId(), testSlot.getId(), "Reason 2", null, null);
                 successCount.incrementAndGet();
+            } catch (org.springframework.web.server.ResponseStatusException e) {
+                if (e.getStatusCode() == org.springframework.http.HttpStatus.CONFLICT || (e.getReason() != null && e.getReason().contains("booked"))) {
+                    optimisticLockCount.incrementAndGet();
+                } else {
+                    e.printStackTrace();
+                }
             } catch (org.springframework.dao.DataIntegrityViolationException | ObjectOptimisticLockingFailureException e) {
                 optimisticLockCount.incrementAndGet();
             } catch (Exception e) {
-                 if (e.getMessage() != null && e.getMessage().contains("already booked")) {
-                     optimisticLockCount.incrementAndGet();
-                } else if (e.getCause() instanceof ObjectOptimisticLockingFailureException || e.getCause() instanceof org.hibernate.exception.ConstraintViolationException) {
-                     optimisticLockCount.incrementAndGet();
+                if (e.getMessage() != null && (e.getMessage().contains("booked") || e.getMessage().contains("CONFLICT"))) {
+                    optimisticLockCount.incrementAndGet();
+                } else {
+                    e.printStackTrace();
                 }
             } finally {
                 doneLatch.countDown();

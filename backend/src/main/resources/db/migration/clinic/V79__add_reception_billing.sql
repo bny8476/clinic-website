@@ -1,7 +1,7 @@
 -- Migration: V79__add_reception_billing.sql
 -- Description: Adds tables for reception billing, payments, and insurance verifications
 
-CREATE TABLE clinic_bills (
+CREATE TABLE IF NOT EXISTS clinic_bills (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT,
     appointment_id BIGINT,
@@ -17,7 +17,7 @@ CREATE TABLE clinic_bills (
     FOREIGN KEY (walk_in_id) REFERENCES walk_in_registrations(id)
 );
 
-CREATE TABLE clinic_bill_items (
+CREATE TABLE IF NOT EXISTS clinic_bill_items (
     id BIGSERIAL PRIMARY KEY,
     bill_id BIGINT NOT NULL,
     description VARCHAR(255) NOT NULL,
@@ -26,7 +26,7 @@ CREATE TABLE clinic_bill_items (
     FOREIGN KEY (bill_id) REFERENCES clinic_bills(id)
 );
 
-CREATE TABLE clinic_payments (
+CREATE TABLE IF NOT EXISTS clinic_payments (
     id BIGSERIAL PRIMARY KEY,
     bill_id BIGINT NOT NULL,
     amount DECIMAL(10,2) NOT NULL,
@@ -37,7 +37,7 @@ CREATE TABLE clinic_payments (
     FOREIGN KEY (bill_id) REFERENCES clinic_bills(id)
 );
 
-CREATE TABLE insurance_verifications (
+CREATE TABLE IF NOT EXISTS insurance_verifications (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL,
     insurance_provider VARCHAR(255) NOT NULL,

@@ -1,4 +1,4 @@
-CREATE TABLE patient_profiles (
+CREATE TABLE IF NOT EXISTS patient_profiles (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT UNIQUE NOT NULL, -- References identity-service.users(id)
     date_of_birth DATE,
@@ -13,7 +13,7 @@ CREATE TABLE patient_profiles (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE doctor_profiles (
+CREATE TABLE IF NOT EXISTS doctor_profiles (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT UNIQUE NOT NULL, -- References identity-service.users(id)
     specialty VARCHAR(100) NOT NULL,
@@ -28,7 +28,7 @@ CREATE TABLE doctor_profiles (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE appointment_slots (
+CREATE TABLE IF NOT EXISTS appointment_slots (
     id BIGSERIAL PRIMARY KEY,
     doctor_id BIGINT NOT NULL REFERENCES doctor_profiles(id),
     start_time TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -39,7 +39,7 @@ CREATE TABLE appointment_slots (
     UNIQUE (doctor_id, start_time) -- Prevent overlapping slots for same doctor
 );
 
-CREATE TABLE appointments (
+CREATE TABLE IF NOT EXISTS appointments (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL REFERENCES patient_profiles(id),
     doctor_id BIGINT NOT NULL REFERENCES doctor_profiles(id),

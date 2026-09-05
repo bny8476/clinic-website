@@ -37,6 +37,16 @@ cors:
   # For multiple origins: https://clinic-website-bny2.vercel.app,http://localhost:5173
   allowed-origins: ${ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000,http://localhost:5174}
 
+storage:
+  provider: ${STORAGE_PROVIDER:local} # In production, set to 's3'
+
+aws:
+  region: ${AWS_REGION:us-east-1}
+  access-key: ${AWS_ACCESS_KEY_ID:}
+  secret-key: ${AWS_SECRET_ACCESS_KEY:}
+  s3:
+    bucket: ${AWS_S3_BUCKET:clinic-documents}
+
 management:
   endpoints:
     web:
@@ -81,3 +91,10 @@ stripe:
   secret-key: ${STRIPE_SECRET_KEY:sk_test_placeholder}
   webhook-secret: ${STRIPE_WEBHOOK_SECRET:whsec_placeholder}
   publishable-key: ${STRIPE_PUBLISHABLE_KEY:pk_test_placeholder}
+
+ecommerce:
+  payment:
+    provider: ${PAYMENT_PROVIDER:STRIPE}
+    mode: ${PAYMENT_MODE:DEVELOPMENT} # TEST, DEVELOPMENT, PRODUCTION
+    allow-mock: ${ALLOW_MOCK_PAYMENTS:false}
+

@@ -1,4 +1,4 @@
-CREATE TABLE wards (
+CREATE TABLE IF NOT EXISTS wards (
     id BIGSERIAL PRIMARY KEY,
     branch_id BIGINT NOT NULL,
     name VARCHAR(100) NOT NULL,
@@ -9,7 +9,7 @@ CREATE TABLE wards (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE beds (
+CREATE TABLE IF NOT EXISTS beds (
     id BIGSERIAL PRIMARY KEY,
     ward_id BIGINT NOT NULL,
     bed_number VARCHAR(20) NOT NULL,
@@ -21,7 +21,7 @@ CREATE TABLE beds (
     CONSTRAINT uk_ward_bed UNIQUE (ward_id, bed_number)
 );
 
-CREATE TABLE bed_assignments (
+CREATE TABLE IF NOT EXISTS bed_assignments (
     id BIGSERIAL PRIMARY KEY,
     bed_id BIGINT NOT NULL,
     patient_id BIGINT NOT NULL,
@@ -34,7 +34,7 @@ CREATE TABLE bed_assignments (
     CONSTRAINT fk_assignment_bed FOREIGN KEY (bed_id) REFERENCES beds(id)
 );
 
-CREATE TABLE ward_transfers (
+CREATE TABLE IF NOT EXISTS ward_transfers (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL,
     encounter_id BIGINT NOT NULL,

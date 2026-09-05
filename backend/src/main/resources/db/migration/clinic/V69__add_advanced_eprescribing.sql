@@ -4,11 +4,11 @@
 -- Enhance prescriptions with encounter link and digital signature fields
 ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS encounter_id BIGINT REFERENCES clinical_encounters(id);
 ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS status VARCHAR(50) NOT NULL DEFAULT 'Draft'; -- Draft, Signed, Void, Cancelled
-ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS signed_at TIMESTAMP WITH TIME ZONE;
+ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS signed_at TIMESTAMP;
 ALTER TABLE prescriptions ADD COLUMN IF NOT EXISTS signature_hash VARCHAR(255);
 
-CREATE INDEX idx_prescriptions_encounter ON prescriptions(encounter_id);
-CREATE INDEX idx_prescriptions_status ON prescriptions(status);
+CREATE INDEX IF NOT EXISTS idx_prescriptions_encounter ON prescriptions(encounter_id);
+CREATE INDEX IF NOT EXISTS idx_prescriptions_status ON prescriptions(status);
 
 -- Create a dedicated table for structured overrides if not fully covered by cds_alerts
 CREATE TABLE IF NOT EXISTS cds_overrides (
@@ -20,5 +20,5 @@ CREATE TABLE IF NOT EXISTS cds_overrides (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_cds_overrides_alert ON cds_overrides(alert_id);
-CREATE INDEX idx_cds_overrides_prescription ON cds_overrides(prescription_id);
+CREATE INDEX IF NOT EXISTS idx_cds_overrides_alert ON cds_overrides(alert_id);
+CREATE INDEX IF NOT EXISTS idx_cds_overrides_prescription ON cds_overrides(prescription_id);

@@ -1,1 +1,1 @@
--- ALTER TABLE doctor_profiles ADD COLUMN registration_number VARCHAR(100);
+-- ALTER TABLE doctor_profiles ADD COLUMN IF NOT EXISTS registration_number VARCHAR(100);

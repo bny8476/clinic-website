@@ -1,4 +1,4 @@
-CREATE TABLE nursing_tasks (
+CREATE TABLE IF NOT EXISTS nursing_tasks (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL REFERENCES patient_profiles(id) ON DELETE CASCADE,
     encounter_id BIGINT,
@@ -14,7 +14,7 @@ CREATE TABLE nursing_tasks (
     version INT DEFAULT 0
 );
 
-CREATE TABLE shift_handovers (
+CREATE TABLE IF NOT EXISTS shift_handovers (
     id BIGSERIAL PRIMARY KEY,
     ward_id BIGINT REFERENCES wards(id) ON DELETE SET NULL,
     outgoing_nurse_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -26,7 +26,7 @@ CREATE TABLE shift_handovers (
     status VARCHAR(20) DEFAULT 'DRAFT' -- DRAFT, COMPLETED
 );
 
-CREATE TABLE medication_incidents (
+CREATE TABLE IF NOT EXISTS medication_incidents (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL REFERENCES patient_profiles(id) ON DELETE CASCADE,
     nurse_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,

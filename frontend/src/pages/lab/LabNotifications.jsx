@@ -39,28 +39,49 @@ const LabNotifications = () => {
     },
   });
 
-  // Setup SSE connection
+  // Setup SSE connection with ticket
   useEffect(() => {
     const token = useAuthStore.getState().token || localStorage.getItem('token');
-    const eventSource = new EventSource(`/api/sse/lab?token=${token}`);
+    if (!token) return;
 
-    const handleSseMessage = (event) => {
-      // Invalidate the query to fetch the new notification persisted by the backend
-      queryClient.invalidateQueries({ queryKey: ['my-notifications'] });
-      toast("New Lab Notification", { icon: "🔔" });
+    let eventSource = null;
+    let isSubscribed = true;
+
+    const connectSse = async () => {
+      try {
+        const res = await axiosPrivate.post('/sse/lab/ticket');
+        const ticket = res.data.ticket;
+        if (!isSubscribed) return;
+
+        eventSource = new EventSource(`/api/sse/lab?ticket=${ticket}`);
+
+        const handleSseMessage = () => {
+          queryClient.invalidateQueries({ queryKey: ['my-notifications'] });
+          toast("New Lab Notification", { icon: "🔔" });
+        };
+
+        eventSource.addEventListener('lab-request-new', handleSseMessage);
+        eventSource.addEventListener('lab-result-critical', handleSseMessage);
+        eventSource.addEventListener('lab-status-changed', handleSseMessage);
+
+        eventSource.onerror = (error) => {
+          console.error('SSE connection error:', error);
+          if (eventSource) {
+            eventSource.close();
+          }
+        };
+      } catch (err) {
+        console.error('Failed to get ticket for lab SSE:', err);
+      }
     };
 
-    eventSource.addEventListener('lab-request-new', handleSseMessage);
-    eventSource.addEventListener('lab-result-critical', handleSseMessage);
-    eventSource.addEventListener('lab-status-changed', handleSseMessage);
-
-    eventSource.onerror = (error) => {
-      console.error('SSE connection error:', error);
-      eventSource.close();
-    };
+    connectSse();
 
     return () => {
-      eventSource.close();
+      isSubscribed = false;
+      if (eventSource) {
+        eventSource.close();
+      }
     };
   }, [queryClient]);
 

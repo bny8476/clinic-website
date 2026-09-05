@@ -22,3 +22,10 @@ twilio:
   account-sid: ACdev0000000000000000000000000000
   auth-token: dev_placeholder_auth_token
   from-number: "+10000000000"
+
+ecommerce:
+  payment:
+    provider: ${PAYMENT_PROVIDER:MOCK}
+    mode: DEVELOPMENT
+    allow-mock: true
+

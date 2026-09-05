@@ -1,6 +1,6 @@
 -- V21: Marketing & CRM Schema
 
-CREATE TABLE campaigns (
+CREATE TABLE IF NOT EXISTS campaigns (
     id              BIGSERIAL PRIMARY KEY,
     title           VARCHAR(200) NOT NULL,
     channel         VARCHAR(30) NOT NULL DEFAULT 'EMAIL', -- EMAIL, SMS, IN_APP
@@ -12,7 +12,7 @@ CREATE TABLE campaigns (
     sent_at         TIMESTAMP WITH TIME ZONE
 );
 
-CREATE TABLE coupons (
+CREATE TABLE IF NOT EXISTS coupons (
     id               BIGSERIAL PRIMARY KEY,
     code             VARCHAR(50) NOT NULL UNIQUE,
     discount_type    VARCHAR(20) NOT NULL DEFAULT 'PERCENTAGE', -- PERCENTAGE, FIXED_AMOUNT
@@ -26,7 +26,7 @@ CREATE TABLE coupons (
     is_active        BOOLEAN NOT NULL DEFAULT true
 );
 
-CREATE TABLE patient_loyalty (
+CREATE TABLE IF NOT EXISTS patient_loyalty (
     id             BIGSERIAL PRIMARY KEY,
     patient_id     BIGINT NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
     points_balance INT NOT NULL DEFAULT 0,
@@ -34,7 +34,7 @@ CREATE TABLE patient_loyalty (
     updated_at     TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE referrals (
+CREATE TABLE IF NOT EXISTS referrals (
     id             BIGSERIAL PRIMARY KEY,
     referrer_id    BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     referee_email  VARCHAR(255) NOT NULL,
@@ -43,5 +43,5 @@ CREATE TABLE referrals (
     created_at     TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_campaigns_status ON campaigns(status);
-CREATE INDEX idx_coupons_code ON coupons(code);
+CREATE INDEX IF NOT EXISTS idx_campaigns_status ON campaigns(status);
+CREATE INDEX IF NOT EXISTS idx_coupons_code ON coupons(code);

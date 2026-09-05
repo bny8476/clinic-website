@@ -11,6 +11,7 @@ import { toast } from 'react-hot-toast';
 import { cn } from '../../utils/pharmacy/cn';
 import { usePageData } from '../../hooks/pharmacy/usePageData';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Badge } from '../../components/ui/Badge';
 import { Activity, AlertTriangle, ArrowDown, ArrowLeftRight, ArrowUp, Barcode, Box, Calendar, Download, Edit, Filter, Info, List, Pill, Plus, Printer, RotateCcw, Save, Scan, Search, Settings, ShieldAlert, ShoppingCart, Upload, X } from 'lucide-react';
 import { ALL_INDIAN_MEDICINES, INDIAN_SUPPLIERS } from '../../data/indianMedicinesData';
 

@@ -14,14 +14,25 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import com.healthcare.clinic.security.SseTicketService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 @RestController
 @RequestMapping("/api/sse/lab")
+@RequiredArgsConstructor
 @Slf4j
 public class LabSseController {
+
+    private final SseTicketService sseTicketService;
 
     public static class ClientConnection {
         final SseEmitter emitter;
@@ -37,18 +48,40 @@ public class LabSseController {
 
     private final List<ClientConnection> connections = new CopyOnWriteArrayList<>();
 
-    @GetMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @PostMapping("/ticket")
     @PreAuthorize("isAuthenticated()")
-    public SseEmitter subscribe(@AuthenticationPrincipal UserPrincipal user) {
+    public ResponseEntity<Map<String, String>> generateTicket(@AuthenticationPrincipal UserPrincipal user) {
+        if (user == null) {
+            return ResponseEntity.status(401).build();
+        }
+        String ticket = sseTicketService.generateTicket(user);
+        return ResponseEntity.ok(Map.of("ticket", ticket));
+    }
+
+    @GetMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter subscribe(
+            @AuthenticationPrincipal UserPrincipal user,
+            @RequestParam(value = "ticket", required = false) String ticket) {
+        UserPrincipal principal = user;
+        if (principal == null && StringUtils.hasText(ticket)) {
+            SseTicketService.TicketDetails details = sseTicketService.consumeTicket(ticket);
+            if (details != null) {
+                principal = details.userPrincipal();
+            }
+        }
+        if (principal == null) {
+            throw new org.springframework.security.access.AccessDeniedException("Authentication required for lab SSE stream");
+        }
+
         SseEmitter emitter = new SseEmitter(60 * 60 * 1000L); // 1 hour timeout
         
-        boolean isPrivileged = user.getAuthorities().stream()
+        boolean isPrivileged = principal.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_LAB_TECH") || 
                                a.getAuthority().equals("ROLE_SUPER_ADMIN") ||
                                a.getAuthority().equals("ROLE_PATHOLOGIST") ||
                                a.getAuthority().equals("ROLE_LAB_SENIOR"));
         
-        ClientConnection connection = new ClientConnection(emitter, user.getUserId(), isPrivileged);
+        ClientConnection connection = new ClientConnection(emitter, principal.getUserId(), isPrivileged);
         connections.add(connection);
 
         emitter.onCompletion(() -> connections.remove(connection));

@@ -1,6 +1,6 @@
 -- V26: Ambulance Emergency Module Schema
 
-CREATE TABLE ambulances (
+CREATE TABLE IF NOT EXISTS ambulances (
     id                BIGSERIAL PRIMARY KEY,
     vehicle_number    VARCHAR(50) NOT NULL UNIQUE,
     model             VARCHAR(100),
@@ -12,7 +12,7 @@ CREATE TABLE ambulances (
     is_active         BOOLEAN NOT NULL DEFAULT true
 );
 
-CREATE TABLE emergency_requests (
+CREATE TABLE IF NOT EXISTS emergency_requests (
     id                    BIGSERIAL PRIMARY KEY,
     request_number        VARCHAR(50) NOT NULL UNIQUE,
     patient_id            BIGINT REFERENCES users(id) ON DELETE SET NULL,
@@ -27,5 +27,5 @@ CREATE TABLE emergency_requests (
     completed_at          TIMESTAMP WITH TIME ZONE
 );
 
-CREATE INDEX idx_emergency_requests_status ON emergency_requests(status);
-CREATE INDEX idx_ambulances_status ON ambulances(status);
+CREATE INDEX IF NOT EXISTS idx_emergency_requests_status ON emergency_requests(status);
+CREATE INDEX IF NOT EXISTS idx_ambulances_status ON ambulances(status);

@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -47,6 +48,7 @@ public class AiChatController {
     }
 
     @GetMapping("/conversations")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<AiConversationDto>> getConversations() {
         Long userId = SecurityUtils.getCurrentUserId();
         if (userId == null) {
@@ -56,6 +58,7 @@ public class AiChatController {
     }
 
     @GetMapping("/conversations/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<AiMessageDto>> getConversationMessages(@PathVariable String id) {
         Long userId = SecurityUtils.getCurrentUserId();
         try {
@@ -67,6 +70,7 @@ public class AiChatController {
     }
 
     @DeleteMapping("/conversations/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> deleteConversation(@PathVariable String id) {
         Long userId = SecurityUtils.getCurrentUserId();
         try {
@@ -81,6 +85,7 @@ public class AiChatController {
     }
 
     @DeleteMapping("/conversations/{id}/messages")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> clearMessages(@PathVariable String id) {
         Long userId = SecurityUtils.getCurrentUserId();
         try {

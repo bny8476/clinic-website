@@ -13,6 +13,8 @@ public class PrescriptionItemResponse {
     private String frequency;
     private String duration;
     private String instructions;
+    private String strength;
+    private String timing;
     private Long medicineId;
     private Integer prescribedQuantity;
     private Integer dispensedQuantity;

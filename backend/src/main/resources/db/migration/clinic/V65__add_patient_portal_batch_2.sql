@@ -1,7 +1,7 @@
 -- V65__add_patient_portal_batch_2.sql
 -- Add tables for Home Visit Booking and Teleconsultation Requests
 
-CREATE TABLE home_visit_requests (
+CREATE TABLE IF NOT EXISTS home_visit_requests (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL REFERENCES patient_profiles(id),
     branch_id BIGINT NOT NULL REFERENCES branches(id),
@@ -19,11 +19,11 @@ CREATE TABLE home_visit_requests (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_home_visit_patient ON home_visit_requests(patient_id);
-CREATE INDEX idx_home_visit_status ON home_visit_requests(status);
-CREATE INDEX idx_home_visit_branch ON home_visit_requests(branch_id);
+CREATE INDEX IF NOT EXISTS idx_home_visit_patient ON home_visit_requests(patient_id);
+CREATE INDEX IF NOT EXISTS idx_home_visit_status ON home_visit_requests(status);
+CREATE INDEX IF NOT EXISTS idx_home_visit_branch ON home_visit_requests(branch_id);
 
-CREATE TABLE teleconsultation_requests (
+CREATE TABLE IF NOT EXISTS teleconsultation_requests (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL REFERENCES patient_profiles(id),
     preferred_dates VARCHAR(255) NOT NULL,
@@ -39,5 +39,5 @@ CREATE TABLE teleconsultation_requests (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_teleconsult_patient ON teleconsultation_requests(patient_id);
-CREATE INDEX idx_teleconsult_status ON teleconsultation_requests(status);
+CREATE INDEX IF NOT EXISTS idx_teleconsult_patient ON teleconsultation_requests(patient_id);
+CREATE INDEX IF NOT EXISTS idx_teleconsult_status ON teleconsultation_requests(status);

@@ -1,7 +1,7 @@
 -- V87: Complete Support CRM and Knowledge Base Schema
 
 -- 1. Agent Profiles and Workload
-CREATE TABLE sp_agent_profiles (
+CREATE TABLE IF NOT EXISTS sp_agent_profiles (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     branch_id BIGINT REFERENCES branches(id),
@@ -13,11 +13,11 @@ CREATE TABLE sp_agent_profiles (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_sp_agent_user ON sp_agent_profiles(user_id);
-CREATE INDEX idx_sp_agent_branch ON sp_agent_profiles(branch_id);
+CREATE INDEX IF NOT EXISTS idx_sp_agent_user ON sp_agent_profiles(user_id);
+CREATE INDEX IF NOT EXISTS idx_sp_agent_branch ON sp_agent_profiles(branch_id);
 
 -- 2. SLA Policies
-CREATE TABLE sp_sla_policies (
+CREATE TABLE IF NOT EXISTS sp_sla_policies (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     priority VARCHAR(20) NOT NULL, -- LOW, MEDIUM, HIGH, URGENT, CRITICAL
@@ -31,7 +31,7 @@ CREATE TABLE sp_sla_policies (
 );
 
 -- 3. Knowledge Base
-CREATE TABLE sp_kb_categories (
+CREATE TABLE IF NOT EXISTS sp_kb_categories (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     description TEXT,
@@ -40,7 +40,7 @@ CREATE TABLE sp_kb_categories (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE sp_kb_articles (
+CREATE TABLE IF NOT EXISTS sp_kb_articles (
     id BIGSERIAL PRIMARY KEY,
     category_id BIGINT REFERENCES sp_kb_categories(id),
     title VARCHAR(255) NOT NULL,
@@ -59,7 +59,7 @@ CREATE TABLE sp_kb_articles (
 );
 
 -- 4. Unified Support Tickets
-CREATE TABLE sp_tickets (
+CREATE TABLE IF NOT EXISTS sp_tickets (
     id BIGSERIAL PRIMARY KEY,
     ticket_number VARCHAR(50) NOT NULL UNIQUE,
     idempotency_key VARCHAR(100) UNIQUE,
@@ -96,13 +96,13 @@ CREATE TABLE sp_tickets (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_sp_ticket_requester ON sp_tickets(requester_id);
-CREATE INDEX idx_sp_ticket_status ON sp_tickets(status);
-CREATE INDEX idx_sp_ticket_agent ON sp_tickets(assigned_agent_id);
-CREATE INDEX idx_sp_ticket_branch ON sp_tickets(branch_id);
+CREATE INDEX IF NOT EXISTS idx_sp_ticket_requester ON sp_tickets(requester_id);
+CREATE INDEX IF NOT EXISTS idx_sp_ticket_status ON sp_tickets(status);
+CREATE INDEX IF NOT EXISTS idx_sp_ticket_agent ON sp_tickets(assigned_agent_id);
+CREATE INDEX IF NOT EXISTS idx_sp_ticket_branch ON sp_tickets(branch_id);
 
 -- 5. Ticket Assignment Audit
-CREATE TABLE sp_ticket_assignments (
+CREATE TABLE IF NOT EXISTS sp_ticket_assignments (
     id BIGSERIAL PRIMARY KEY,
     ticket_id BIGINT NOT NULL REFERENCES sp_tickets(id) ON DELETE CASCADE,
     previous_agent_id BIGINT REFERENCES users(id),
@@ -113,7 +113,7 @@ CREATE TABLE sp_ticket_assignments (
 );
 
 -- 6. Ticket Messages (Unified Chat & Notes)
-CREATE TABLE sp_messages (
+CREATE TABLE IF NOT EXISTS sp_messages (
     id BIGSERIAL PRIMARY KEY,
     ticket_id BIGINT NOT NULL REFERENCES sp_tickets(id) ON DELETE CASCADE,
     sender_id BIGINT REFERENCES users(id),
@@ -125,10 +125,10 @@ CREATE TABLE sp_messages (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_sp_messages_ticket ON sp_messages(ticket_id);
+CREATE INDEX IF NOT EXISTS idx_sp_messages_ticket ON sp_messages(ticket_id);
 
 -- 7. Attachments
-CREATE TABLE sp_attachments (
+CREATE TABLE IF NOT EXISTS sp_attachments (
     id BIGSERIAL PRIMARY KEY,
     ticket_id BIGINT NOT NULL REFERENCES sp_tickets(id) ON DELETE CASCADE,
     message_id BIGINT REFERENCES sp_messages(id) ON DELETE CASCADE,
@@ -142,7 +142,7 @@ CREATE TABLE sp_attachments (
 );
 
 -- 8. Escalations & Complaints
-CREATE TABLE sp_escalations (
+CREATE TABLE IF NOT EXISTS sp_escalations (
     id BIGSERIAL PRIMARY KEY,
     ticket_id BIGINT NOT NULL REFERENCES sp_tickets(id) ON DELETE CASCADE,
     escalated_by_id BIGINT REFERENCES users(id),
@@ -155,7 +155,7 @@ CREATE TABLE sp_escalations (
     resolved_at TIMESTAMP WITH TIME ZONE
 );
 
-CREATE TABLE sp_complaints (
+CREATE TABLE IF NOT EXISTS sp_complaints (
     id BIGSERIAL PRIMARY KEY,
     ticket_id BIGINT NOT NULL REFERENCES sp_tickets(id) ON DELETE CASCADE,
     patient_id BIGINT,
@@ -169,7 +169,7 @@ CREATE TABLE sp_complaints (
 );
 
 -- 9. CSAT Surveys
-CREATE TABLE sp_csat_surveys (
+CREATE TABLE IF NOT EXISTS sp_csat_surveys (
     id BIGSERIAL PRIMARY KEY,
     ticket_id BIGINT NOT NULL REFERENCES sp_tickets(id) ON DELETE CASCADE,
     patient_id BIGINT REFERENCES users(id),

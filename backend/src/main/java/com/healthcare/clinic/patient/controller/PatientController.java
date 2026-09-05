@@ -32,12 +32,14 @@ public class PatientController {
     }
 
     @GetMapping("/{patientId}")
-    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_NURSE') or hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_PATIENT')")
     @AuditableAction(module = "PATIENT", action = "VIEW", resourceType = "PatientProfile", sensitivityLevel = "NORMAL")
     public ResponseEntity<PatientProfile> getPatientById(@PathVariable Long patientId) {
-        return patientRepository.findById(patientId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        Optional<PatientProfile> profile = patientRepository.findById(patientId);
+        if (profile.isEmpty()) {
+            profile = patientRepository.findByUserId(patientId);
+        }
+        return profile.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/{patientId}/360")
@@ -159,32 +161,60 @@ public class PatientController {
     }
 
     @GetMapping("/{patientId}/vitals/latest")
-    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_NURSE') or hasAuthority('ROLE_PATIENT')")
     @AuditableAction(module = "PATIENT", action = "VIEW", resourceType = "Vitals", sensitivityLevel = "HIGH")
     public ResponseEntity<com.healthcare.clinic.patient.entity.Vitals> getLatestVitals(@PathVariable Long patientId) {
-        return vitalsRepository.findTopByPatientIdOrderByRecordedAtDesc(patientId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.noContent().build());
+        Long targetId = patientId;
+        Optional<PatientProfile> profile = patientRepository.findById(patientId);
+        if (profile.isEmpty()) {
+            profile = patientRepository.findByUserId(patientId);
+        }
+        if (profile.isPresent()) {
+            targetId = profile.get().getId();
+        }
+        
+        Optional<com.healthcare.clinic.patient.entity.Vitals> vitals = vitalsRepository.findTopByPatientIdOrderByRecordedAtDesc(targetId);
+        if (vitals.isEmpty() && !targetId.equals(patientId)) {
+            vitals = vitalsRepository.findTopByPatientIdOrderByRecordedAtDesc(patientId);
+        }
+        return vitals.map(ResponseEntity::ok).orElse(ResponseEntity.noContent().build());
     }
 
     @GetMapping("/{patientId}/vitals/history")
-    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_NURSE') or hasAuthority('ROLE_PATIENT')")
     @AuditableAction(module = "PATIENT", action = "VIEW", resourceType = "VitalsHistory", sensitivityLevel = "HIGH")
     public ResponseEntity<java.util.List<com.healthcare.clinic.patient.entity.Vitals>> getAllVitals(@PathVariable Long patientId) {
-        return ResponseEntity.ok(vitalsRepository.findByPatientIdOrderByRecordedAtDesc(patientId));
+        Long targetId = patientId;
+        Optional<PatientProfile> profile = patientRepository.findById(patientId);
+        if (profile.isEmpty()) {
+            profile = patientRepository.findByUserId(patientId);
+        }
+        if (profile.isPresent()) {
+            targetId = profile.get().getId();
+        }
+        
+        java.util.List<com.healthcare.clinic.patient.entity.Vitals> list = vitalsRepository.findByPatientIdOrderByRecordedAtDesc(targetId);
+        if (list.isEmpty() && !targetId.equals(patientId)) {
+            list = vitalsRepository.findByPatientIdOrderByRecordedAtDesc(patientId);
+        }
+        return ResponseEntity.ok(list);
     }
 
     @PostMapping("/{patientId}/vitals/record")
-    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_NURSE')")
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_NURSE') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     @AuditableAction(module = "PATIENT", action = "CREATE", resourceType = "Vitals", sensitivityLevel = "HIGH")
     public ResponseEntity<com.healthcare.clinic.patient.entity.Vitals> recordVitals(
             @PathVariable Long patientId,
             @RequestBody com.healthcare.clinic.patient.entity.Vitals vitals) {
         
-        PatientProfile patient = patientRepository.findById(patientId).orElse(null);
-        if (patient == null) {
+        Optional<PatientProfile> profile = patientRepository.findById(patientId);
+        if (profile.isEmpty()) {
+            profile = patientRepository.findByUserId(patientId);
+        }
+        if (profile.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
+        PatientProfile patient = profile.get();
         
         if (vitals.getHeightCm() != null && (vitals.getHeightCm() <= 0 || vitals.getHeightCm() > 300)) {
             throw new IllegalArgumentException("Height must be between 1 and 300 cm");
@@ -195,11 +225,14 @@ public class PatientController {
         if (vitals.getPulseBpm() != null && (vitals.getPulseBpm() <= 0 || vitals.getPulseBpm() > 300)) {
             throw new IllegalArgumentException("Pulse must be between 1 and 300 bpm");
         }
-        if (vitals.getBloodPressure() != null && !vitals.getBloodPressure().matches("^\\d{2,3}/\\d{2,3}$")) {
+        if (vitals.getBloodPressure() != null && !vitals.getBloodPressure().trim().isEmpty() && !vitals.getBloodPressure().matches("^\\d{2,3}/\\d{2,3}$")) {
             throw new IllegalArgumentException("Blood pressure must be in format SYS/DIA (e.g. 120/80)");
         }
         
         vitals.setPatient(patient);
+        if (vitals.getRecordedAt() == null) {
+            vitals.setRecordedAt(java.time.LocalDateTime.now());
+        }
         vitals.setDoctorId(SecurityUtils.getCurrentUserId());
         
         com.healthcare.clinic.patient.entity.Vitals saved = vitalsRepository.save(vitals);

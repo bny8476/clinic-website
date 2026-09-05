@@ -1,7 +1,7 @@
 -- Migration for Phase 8 Batch 1: Patient Portal
 
 -- Dependent Profiles
-CREATE TABLE dependent_profiles (
+CREATE TABLE IF NOT EXISTS dependent_profiles (
     id BIGSERIAL PRIMARY KEY,
     guardian_patient_id BIGINT NOT NULL,
     first_name VARCHAR(255) NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE dependent_profiles (
 );
 
 -- Emergency Contacts (replaces plain text fields)
-CREATE TABLE emergency_contacts (
+CREATE TABLE IF NOT EXISTS emergency_contacts (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL,
     name VARCHAR(255) NOT NULL,
@@ -32,7 +32,7 @@ CREATE TABLE emergency_contacts (
 );
 
 -- Notification Preferences
-CREATE TABLE patient_notification_preferences (
+CREATE TABLE IF NOT EXISTS patient_notification_preferences (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL,
     category VARCHAR(50) NOT NULL,
@@ -47,7 +47,7 @@ CREATE TABLE patient_notification_preferences (
 );
 
 -- Consent Versions
-CREATE TABLE consent_versions (
+CREATE TABLE IF NOT EXISTS consent_versions (
     id BIGSERIAL PRIMARY KEY,
     consent_type VARCHAR(50) NOT NULL UNIQUE,
     version_id VARCHAR(50) NOT NULL,
@@ -58,7 +58,7 @@ CREATE TABLE consent_versions (
 
 -- Patient Consents
 DROP TABLE IF EXISTS patient_consents;
-CREATE TABLE patient_consents (
+CREATE TABLE IF NOT EXISTS patient_consents (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL,
     consent_version_id BIGINT NOT NULL,

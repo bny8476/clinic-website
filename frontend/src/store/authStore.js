@@ -86,9 +86,6 @@ const useAuthStore = create(
                         mfaPending: false,
                         isLoading: false 
                     });
-                    if (refreshToken) {
-                        localStorage.setItem('refreshToken', refreshToken);
-                    }
                     return true;
                 } catch (err) {
                     set({ error: err.response?.data || 'Login failed', isLoading: false });
@@ -113,9 +110,6 @@ const useAuthStore = create(
                         mfaEmail: null,
                         isLoading: false 
                     });
-                    if (refreshToken) {
-                        localStorage.setItem('refreshToken', refreshToken);
-                    }
                     return true;
                 } catch (err) {
                     set({ error: err.response?.data || 'Invalid OTP', isLoading: false });
@@ -127,22 +121,19 @@ const useAuthStore = create(
                 try {
                     const { axiosPublic } = await import('../api/axios');
                     const state = useAuthStore.getState();
-                    const storedRefreshToken = state.refreshToken || localStorage.getItem('refreshToken');
+                    const inMemoryRefreshToken = state.refreshToken;
 
-                    // Pass refresh token both via JSON body and withCredentials for cookie support
+                    // Pass refresh token via body if available in memory, and withCredentials for HttpOnly cookie support
                     const res = await axiosPublic.post(
                         `/auth/refresh`,
-                        storedRefreshToken ? { refreshToken: storedRefreshToken } : {},
+                        inMemoryRefreshToken ? { refreshToken: inMemoryRefreshToken } : {},
                         { withCredentials: true }
                     );
 
                     const newAccessToken = res.data.accessToken;
-                    const newRefreshToken = res.data.refreshToken || storedRefreshToken;
+                    const newRefreshToken = res.data.refreshToken || inMemoryRefreshToken;
 
-                    set({ token: newAccessToken, refreshToken: newRefreshToken });
-                    if (newRefreshToken) {
-                        localStorage.setItem('refreshToken', newRefreshToken);
-                    }
+                    set({ token: newAccessToken, refreshToken: newRefreshToken || null });
                     return newAccessToken;
                 } catch (_err) {
                     return null;
@@ -177,12 +168,11 @@ const useAuthStore = create(
 
             clearError: () => set({ error: null }),
             logout: async () => {
-                const storedRefreshToken = useAuthStore.getState().refreshToken || localStorage.getItem('refreshToken');
+                const inMemoryRefreshToken = useAuthStore.getState().refreshToken;
                 set({ token: null, refreshToken: null, user: null, roles: [], mfaPending: false, mfaEmail: null, error: null });
-                localStorage.removeItem('refreshToken');
                 try {
                     const { axiosPrivate } = await import('../api/axios');
-                    await axiosPrivate.post('/auth/logout', storedRefreshToken ? { refreshToken: storedRefreshToken } : {}, { withCredentials: true });
+                    await axiosPrivate.post('/auth/logout', inMemoryRefreshToken ? { refreshToken: inMemoryRefreshToken } : {}, { withCredentials: true });
                 } catch (err) {
                     // Ignore errors if backend session is already dead or network fails
                 }
@@ -192,7 +182,6 @@ const useAuthStore = create(
                 const { token } = useAuthStore.getState();
                 if (token && !isTokenValid(token)) {
                     set({ token: null, refreshToken: null, user: null, roles: [] });
-                    localStorage.removeItem('refreshToken');
                 }
             },
             isAuthenticated: () => {
@@ -205,7 +194,6 @@ const useAuthStore = create(
             name: 'auth-storage',
             partialize: (state) => ({
                 token: state.token,
-                refreshToken: state.refreshToken,
                 user: state.user,
                 roles: state.roles,
             }),

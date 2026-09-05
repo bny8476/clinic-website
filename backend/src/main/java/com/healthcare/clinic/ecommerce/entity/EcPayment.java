@@ -20,7 +20,7 @@ public class EcPayment {
 
     @Column(nullable = false, length = 50)
     @Builder.Default
-    private String provider = "MOCK"; // RAZORPAY, STRIPE, MOCK
+    private String provider = "STRIPE"; // RAZORPAY, STRIPE, MOCK
 
     @Column(name = "provider_ref", length = 200)
     private String providerRef;
@@ -39,7 +39,7 @@ public class EcPayment {
     @Builder.Default
     private String status = "INITIATED"; // INITIATED, PENDING, AUTHORIZED, CAPTURED, FAILED, CANCELLED, REFUNDED, RECONCILED
 
-    @Column(name = "pg_response", columnDefinition = "TEXT")
+    @Column(name = "pg_response")
     @JdbcTypeCode(SqlTypes.JSON)
     private String pgResponse;
 

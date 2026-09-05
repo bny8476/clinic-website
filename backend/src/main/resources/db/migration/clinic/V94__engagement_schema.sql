@@ -1,4 +1,4 @@
-CREATE TABLE reviews (
+CREATE TABLE IF NOT EXISTS reviews (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT,
     target_type VARCHAR(50) NOT NULL,
@@ -11,7 +11,7 @@ CREATE TABLE reviews (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE feedbacks (
+CREATE TABLE IF NOT EXISTS feedbacks (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT,
     category VARCHAR(50) NOT NULL,
@@ -20,7 +20,7 @@ CREATE TABLE feedbacks (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE survey_templates (
+CREATE TABLE IF NOT EXISTS survey_templates (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     trigger_context VARCHAR(50) NOT NULL,
@@ -28,7 +28,7 @@ CREATE TABLE survey_templates (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE survey_responses (
+CREATE TABLE IF NOT EXISTS survey_responses (
     id BIGSERIAL PRIMARY KEY,
     template_id BIGINT NOT NULL REFERENCES survey_templates(id),
     patient_id BIGINT NOT NULL,
@@ -37,7 +37,7 @@ CREATE TABLE survey_responses (
     submitted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE preventive_care_rules (
+CREATE TABLE IF NOT EXISTS preventive_care_rules (
     id BIGSERIAL PRIMARY KEY,
     min_age INT,
     max_age INT,
@@ -49,7 +49,7 @@ CREATE TABLE preventive_care_rules (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE wellness_programs (
+CREATE TABLE IF NOT EXISTS wellness_programs (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     description TEXT,
@@ -59,7 +59,7 @@ CREATE TABLE wellness_programs (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE patient_wellness_enrollments (
+CREATE TABLE IF NOT EXISTS patient_wellness_enrollments (
     id BIGSERIAL PRIMARY KEY,
     program_id BIGINT NOT NULL REFERENCES wellness_programs(id),
     patient_id BIGINT NOT NULL,
@@ -69,7 +69,7 @@ CREATE TABLE patient_wellness_enrollments (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE reminders (
+CREATE TABLE IF NOT EXISTS reminders (
     id BIGSERIAL PRIMARY KEY,
     patient_id BIGINT NOT NULL,
     reminder_type VARCHAR(50) NOT NULL,

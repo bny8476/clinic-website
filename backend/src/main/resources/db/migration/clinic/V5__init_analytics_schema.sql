@@ -1,4 +1,4 @@
-CREATE TABLE daily_metrics (
+CREATE TABLE IF NOT EXISTS daily_metrics (
     id BIGSERIAL PRIMARY KEY,
     date DATE NOT NULL UNIQUE,
     total_appointments INTEGER DEFAULT 0,
@@ -9,7 +9,7 @@ CREATE TABLE daily_metrics (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE doctor_performance (
+CREATE TABLE IF NOT EXISTS doctor_performance (
     id BIGSERIAL PRIMARY KEY,
     doctor_id BIGINT NOT NULL, -- References identity-service.users / patient-provider-service.doctor_profiles
     date DATE NOT NULL,

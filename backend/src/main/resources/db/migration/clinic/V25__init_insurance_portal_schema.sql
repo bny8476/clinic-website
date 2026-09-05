@@ -1,6 +1,6 @@
 -- V25: Insurance Portal Schema
 
-CREATE TABLE insurance_pre_authorizations (
+CREATE TABLE IF NOT EXISTS insurance_pre_authorizations (
     id              BIGSERIAL PRIMARY KEY,
     patient_id      BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     provider_name   VARCHAR(200) NOT NULL,
@@ -14,5 +14,5 @@ CREATE TABLE insurance_pre_authorizations (
     adjudicated_at  TIMESTAMP WITH TIME ZONE
 );
 
-CREATE INDEX idx_insurance_preauth_patient ON insurance_pre_authorizations(patient_id);
-CREATE INDEX idx_insurance_preauth_status ON insurance_pre_authorizations(status);
+CREATE INDEX IF NOT EXISTS idx_insurance_preauth_patient ON insurance_pre_authorizations(patient_id);
+CREATE INDEX IF NOT EXISTS idx_insurance_preauth_status ON insurance_pre_authorizations(status);

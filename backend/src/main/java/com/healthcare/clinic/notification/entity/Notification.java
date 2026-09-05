@@ -30,6 +30,9 @@ public class Notification {
     @Column(nullable = false, length = 80)
     private String type; // APPOINTMENT, LAB_RESULT, INVOICE, QUEUE, NURSE_ASSIGNMENT, SYSTEM
 
+    @Column(name = "reference_type", length = 50)
+    private String referenceType;
+
     @Column(name = "reference_id")
     private Long referenceId;
 
