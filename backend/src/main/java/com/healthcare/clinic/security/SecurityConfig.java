@@ -126,7 +126,7 @@ public class SecurityConfig {
         configuration.setAllowedHeaders(Arrays.asList(
             "Authorization", "Content-Type", "Accept", "Origin", 
             "X-Requested-With", "x-auth-token", "Idempotency-Key", 
-            "Cache-Control", "Pragma", "Expires"
+            "Cache-Control", "Pragma", "Expires", "X-Active-Role"
         ));
         configuration.setExposedHeaders(Arrays.asList("x-auth-token", "Authorization", "Idempotency-Key"));
         configuration.setAllowCredentials(true);
