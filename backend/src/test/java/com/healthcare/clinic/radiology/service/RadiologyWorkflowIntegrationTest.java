@@ -95,6 +95,8 @@ public class RadiologyWorkflowIntegrationTest {
         testDoctor = new DoctorProfile();
         testDoctor.setUserId(docUser.getId());
         testDoctor.setSpecialty("General");
+        testDoctor.setConsultationFee(java.math.BigDecimal.valueOf(100.00));
+        testDoctor.setQualifications("MD General");
         doctorProfileRepository.save(testDoctor);
 
         testProcedure = new ImagingProcedure();

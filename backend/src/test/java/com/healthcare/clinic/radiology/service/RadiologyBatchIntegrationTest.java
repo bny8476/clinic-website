@@ -104,6 +104,8 @@ public class RadiologyBatchIntegrationTest {
         DoctorProfile docProfile = new DoctorProfile();
         docProfile.setUserId(doctor.getId());
         docProfile.setSpecialty("Radiology");
+        docProfile.setConsultationFee(java.math.BigDecimal.valueOf(100.00));
+        docProfile.setQualifications("MD Radiology");
         doctorRepository.save(docProfile);
 
         radiologist = new User();

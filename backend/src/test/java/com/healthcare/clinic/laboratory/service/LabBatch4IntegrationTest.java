@@ -74,6 +74,7 @@ public class LabBatch4IntegrationTest {
         catalog = new LabTestCatalog();
         catalog.setTestCode("CBC");
         catalog.setTestName("Complete Blood Count");
+        catalog.setPrice(java.math.BigDecimal.valueOf(50.00));
         catalog.setBranch(branch);
         catalogRepository.save(catalog);
 
