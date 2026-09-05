@@ -2,10 +2,8 @@ package com.healthcare.clinic.security;
 
 import org.springframework.beans.factory.annotation.Value;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -20,8 +18,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableMethodSecurity
@@ -34,6 +32,11 @@ public class SecurityConfig {
 
     @Value("${cors.allowed-origins:}")
     private String allowedOrigins;
+
+    private boolean isProduction(org.springframework.core.env.Environment env) {
+        List<String> profiles = Arrays.asList(env.getActiveProfiles());
+        return profiles.contains("prod") || profiles.contains("production") || profiles.contains("railway") || profiles.contains("render");
+    }
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
@@ -54,7 +57,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, org.springframework.core.env.Environment env, CorsConfigurationSource corsConfigurationSource) throws Exception {
-        boolean isProd = Arrays.asList(env.getActiveProfiles()).contains("prod");
+        boolean isProd = isProduction(env);
 
         http.cors(cors -> cors.configurationSource(corsConfigurationSource))
             .csrf(AbstractHttpConfigurer::disable)
@@ -90,8 +93,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource(org.springframework.core.env.Environment env) {
         CorsConfiguration configuration = new CorsConfiguration();
         java.util.List<String> patterns = new java.util.ArrayList<>();
-        boolean isProd = Arrays.asList(env.getActiveProfiles()).contains("prod") ||
-                         Arrays.asList(env.getActiveProfiles()).contains("production");
+        boolean isProd = isProduction(env);
 
         if (allowedOrigins != null && !allowedOrigins.isBlank()) {
             for (String origin : allowedOrigins.split(",")) {
@@ -122,12 +124,8 @@ public class SecurityConfig {
         configuration.setAllowedOriginPatterns(patterns);
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"));
         configuration.setAllowedHeaders(Arrays.asList(
-            "Authorization", "authorization", 
-            "Content-Type", "content-type", 
-            "Accept", "accept", 
-            "Origin", "origin", 
-            "X-Requested-With", "x-requested-with", 
-            "x-auth-token", "Idempotency-Key", "idempotency-key", 
+            "Authorization", "Content-Type", "Accept", "Origin", 
+            "X-Requested-With", "x-auth-token", "Idempotency-Key", 
             "Cache-Control", "Pragma", "Expires"
         ));
         configuration.setExposedHeaders(Arrays.asList("x-auth-token", "Authorization", "Idempotency-Key"));
@@ -137,12 +135,5 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
-    }
-
-    @Bean
-    public FilterRegistrationBean<CorsFilter> corsFilterRegistrationBean(CorsConfigurationSource corsConfigurationSource) {
-        FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(new CorsFilter(corsConfigurationSource));
-        bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
-        return bean;
     }
 }
