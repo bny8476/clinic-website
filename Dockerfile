@@ -22,4 +22,4 @@ USER appuser
 ENV PORT=8080
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-XX:MaxRAMPercentage=60.0", "-XX:+UseSerialGC", "-jar", "app.jar"]
+ENTRYPOINT ["sh", "-c", "java -XX:MaxRAMPercentage=60.0 -XX:+UseSerialGC -Dserver.port=${PORT:-8080} -jar app.jar"]
