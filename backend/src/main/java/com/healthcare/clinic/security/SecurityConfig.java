@@ -102,7 +102,7 @@ public class SecurityConfig {
         }
 
         if (!isProd) {
-            // Development origins allowed only under non-production profiles
+            // Development origins allowed under non-production profiles
             if (patterns.isEmpty()) {
                 patterns.add("http://localhost:5173");
                 patterns.add("http://localhost:3000");
@@ -110,11 +110,14 @@ public class SecurityConfig {
             }
             patterns.add("http://localhost:*");
             patterns.add("http://127.0.0.1:*");
-        } else {
-            // In Production, strictly enforce explicit trusted origins without broad wildcards
-            if (patterns.isEmpty()) {
-                patterns.add("https://clinic-website-bny2.vercel.app");
-            }
+        }
+
+        // Always ensure production Vercel origins are trusted across environments
+        if (!patterns.contains("https://clinic-website-bny2.vercel.app")) {
+            patterns.add("https://clinic-website-bny2.vercel.app");
+        }
+        if (!patterns.contains("https://*.vercel.app")) {
+            patterns.add("https://*.vercel.app");
         }
 
         configuration.setAllowedOriginPatterns(patterns);

@@ -32,10 +32,9 @@ jwt:
   access-token-expiration-ms: ${JWT_EXPIRATION_MS:900000} # 15 minutes
 
 cors:
-  # In production, override via the ALLOWED_ORIGINS environment variable.
-  # Set it to your frontend URL, e.g.: https://clinic-website-bny2.vercel.app
-  # For multiple origins: https://clinic-website-bny2.vercel.app,http://localhost:5173
-  allowed-origins: ${ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000,http://localhost:5174}
+  # In production, optionally override via the ALLOWED_ORIGINS environment variable.
+  # SecurityConfig defaults to Vercel domains (https://clinic-website-bny2.vercel.app, https://*.vercel.app) in prod.
+  allowed-origins: ${ALLOWED_ORIGINS:}
 
 storage:
   provider: ${STORAGE_PROVIDER:local} # In production, set to 's3'
