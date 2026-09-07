@@ -39,7 +39,12 @@ public class NotificationController {
     @GetMapping(value = "/stream", produces = org.springframework.http.MediaType.TEXT_EVENT_STREAM_VALUE)
     public org.springframework.web.servlet.mvc.method.annotation.SseEmitter streamNotifications(
             @AuthenticationPrincipal UserPrincipal user,
-            @RequestParam(value = "ticket", required = false) String ticket) {
+            @RequestParam(value = "ticket", required = false) String ticket,
+            jakarta.servlet.http.HttpServletResponse response) {
+            
+        response.setHeader("Cache-Control", "no-cache");
+        response.setHeader("X-Accel-Buffering", "no");
+        response.setHeader("Connection", "keep-alive");
         Long userId = user != null ? user.getUserId() : SecurityUtils.getCurrentUserId();
         if (userId == null && StringUtils.hasText(ticket)) {
             SseTicketService.TicketDetails details = sseTicketService.consumeTicket(ticket);
