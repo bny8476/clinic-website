@@ -108,6 +108,9 @@ public class SecurityConfig {
             if (!patterns.contains("https://clinic-website-bny2.vercel.app")) {
                 patterns.add("https://clinic-website-bny2.vercel.app");
             }
+            if (!patterns.contains("https://clinic-website-three-chi.vercel.app")) {
+                patterns.add("https://clinic-website-three-chi.vercel.app");
+            }
         } else {
             if (patterns.isEmpty()) {
                 patterns.add("http://localhost:5173");
@@ -118,6 +121,9 @@ public class SecurityConfig {
             patterns.add("http://127.0.0.1:*");
             if (!patterns.contains("https://clinic-website-bny2.vercel.app")) {
                 patterns.add("https://clinic-website-bny2.vercel.app");
+            }
+            if (!patterns.contains("https://clinic-website-three-chi.vercel.app")) {
+                patterns.add("https://clinic-website-three-chi.vercel.app");
             }
         }
 

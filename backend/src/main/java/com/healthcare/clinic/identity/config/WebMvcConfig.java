@@ -28,6 +28,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
         registry.addMapping("/**")
                 .allowedOriginPatterns(
                         "https://clinic-website-bny2.vercel.app",
+                        "https://clinic-website-three-chi.vercel.app",
                         "http://localhost:5173",
                         "http://localhost:3000",
                         "http://localhost:5174",
