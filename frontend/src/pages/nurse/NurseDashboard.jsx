@@ -64,19 +64,28 @@ const NurseDashboard = () => {
     statusBg: 'bg-amber-50 text-amber-600'
   })).slice(0, 5);
 
-  // Scheduled Timeline Events
-  const scheduleEvents = [
-    { time: '09:00 AM', name: 'Pat lent', reason: 'Fever', slot: '09:00 - 09:20 AM', colorBg: 'bg-blue-50/70 border-l-4 border-blue-500 text-blue-900' },
-    { time: '10:00 AM', name: 'James Smith', reason: 'Follow-up Consultation', slot: '10:00 - 10:20 AM', colorBg: 'bg-emerald-50/70 border-l-4 border-emerald-500 text-emerald-900' },
-    { time: '01:00 PM', name: 'Linda Brown', reason: 'Medication Review', slot: '01:00 - 01:20 PM', colorBg: 'bg-amber-50/70 border-l-4 border-amber-500 text-amber-900' },
-    { time: '03:00 PM', name: 'Robert Johnson', reason: 'Wound Dressing', slot: '03:00 - 03:20 PM', colorBg: 'bg-purple-50/70 border-l-4 border-purple-500 text-purple-900' }
-  ];
+  // Scheduled Timeline Events derived from live backend API data
+  const scheduleEvents = useMemo(() => {
+    if (!livePatients || livePatients.length === 0) return [];
+    const colors = [
+      'bg-blue-50/70 border-l-4 border-blue-500 text-blue-900',
+      'bg-emerald-50/70 border-l-4 border-emerald-500 text-emerald-900',
+      'bg-amber-50/70 border-l-4 border-amber-500 text-amber-900',
+      'bg-purple-50/70 border-l-4 border-purple-500 text-purple-900'
+    ];
+    return livePatients.map((p, i) => ({
+      id: p.patientId,
+      time: p.appointmentTime || 'Today',
+      name: p.patientName || 'Patient',
+      reason: p.reason || 'OP Consultation',
+      slot: p.appointmentTime || 'Scheduled',
+      colorBg: colors[i % colors.length]
+    }));
+  }, [livePatients]);
 
   // Recent Shift Activities
   const recentActivities = [
-    { icon: Clipboard, title: 'Vitals Recorded', count: '3 patients', time: '2 mins ago', iconBg: 'bg-emerald-50 text-emerald-600' },
-    { icon: Pill, title: 'Medication Given', count: '5 patients', time: '15 mins ago', iconBg: 'bg-amber-50 text-amber-600' },
-    { icon: FlaskConical, title: 'Lab Sample Collected', count: '2 patients', time: '30 mins ago', iconBg: 'bg-purple-50 text-purple-600' }
+    { icon: Clipboard, title: 'Vitals Recorded', count: `${livePatients.length} patients`, time: 'Recently', iconBg: 'bg-emerald-50 text-emerald-600' }
   ];
 
   return (
@@ -209,29 +218,33 @@ const NurseDashboard = () => {
               </button>
             </div>
 
-            <div className="flex items-center gap-4">
-              {/* Date Badge Tile */}
-              <div className="w-20 h-20 bg-slate-100/70 rounded-2xl p-3 flex flex-col items-center justify-center shrink-0">
-                <span className="text-[10px] font-bold text-slate-400 uppercase">AUG</span>
-                <span className="text-2xl font-black text-slate-900 leading-none my-0.5">24</span>
-                <span className="text-[10px] font-bold text-slate-400 uppercase">MON</span>
-              </div>
+            {scheduleEvents.length > 0 ? (
+              <>
+                <div className="flex items-center gap-4">
+                  <div className="w-20 h-20 bg-slate-100/70 rounded-2xl p-3 flex flex-col items-center justify-center shrink-0">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase">{new Date().toLocaleDateString('en-IN', { month: 'short' }).toUpperCase()}</span>
+                    <span className="text-2xl font-black text-slate-900 leading-none my-0.5">{new Date().getDate()}</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase">{new Date().toLocaleDateString('en-IN', { weekday: 'short' }).toUpperCase()}</span>
+                  </div>
 
-              {/* Text Details */}
-              <div className="space-y-0.5">
-                <span className="text-xs font-bold text-blue-600 block">09:00 - 09:20</span>
-                <h4 className="text-sm font-black text-slate-900">Pat lent</h4>
-                <p className="text-xs font-medium text-slate-600">Fever</p>
-                <p className="text-[11px] font-medium text-slate-400">ID: 14</p>
-              </div>
-            </div>
+                  <div className="space-y-0.5">
+                    <span className="text-xs font-bold text-blue-600 block">{scheduleEvents[0].slot}</span>
+                    <h4 className="text-sm font-black text-slate-900">{scheduleEvents[0].name}</h4>
+                    <p className="text-xs font-medium text-slate-600">{scheduleEvents[0].reason}</p>
+                    <p className="text-[11px] font-medium text-slate-400">ID: #{scheduleEvents[0].id}</p>
+                  </div>
+                </div>
 
-            <button 
-              onClick={() => navigate('/doctor/patients/14')}
-              className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-2xl shadow-md flex items-center justify-center gap-2 transition"
-            >
-              <CalendarIcon className="w-4 h-4" /> View Details
-            </button>
+                <button 
+                  onClick={() => navigate(`/doctor/patients/${scheduleEvents[0].id}`)}
+                  className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-2xl shadow-md flex items-center justify-center gap-2 transition"
+                >
+                  <CalendarIcon className="w-4 h-4" /> View Details
+                </button>
+              </>
+            ) : (
+              <p className="text-xs font-semibold text-slate-400 py-4 text-center">No upcoming appointments scheduled for today.</p>
+            )}
           </div>
 
         </div>

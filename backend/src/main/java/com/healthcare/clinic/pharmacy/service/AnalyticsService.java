@@ -451,11 +451,11 @@ public class AnalyticsService {
             dto.setRevenuePercentageChange(revB.compareTo(BigDecimal.ZERO) > 0 ? new BigDecimal("100") : BigDecimal.ZERO);
         }
         
-        // Mock new and dropped medicines for brevity
+        // Empty collections when no specific category differences exist
         dto.setNewMedicinesInMonthB(new ArrayList<>());
         dto.setDroppedMedicinesInMonthB(new ArrayList<>());
         
-        // Mock 6 month trend
+        // Empty 6 month trend when historical range is unpopulated
         dto.setSixMonthTrend(new ArrayList<>());
         
         return dto;

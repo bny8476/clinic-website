@@ -72,11 +72,25 @@ export default function MedicineCreditReturns() {
     }
   });
 
+  const [returnQuantities, setReturnQuantities] = useState({});
+
+  const handleQuantityChange = (itemId, qty) => {
+    setReturnQuantities(prev => ({ ...prev, [itemId]: Math.max(1, parseInt(qty, 10) || 1) }));
+  };
+
   const saveReturn = () => {
     if (!selectedBill) { toast.error('Please load a bill first'); return; }
     
-    // Using mock logic for items temporarily as the form isn't fully implemented with item selection state yet
-    const itemsToReturn = selectedBill.items?.map(item => ({ poItemId: item.id, quantity: 1 })) || [];
+    const itemsToReturn = (selectedBill.items || []).map(item => ({
+      poItemId: item.id,
+      quantity: returnQuantities[item.id] || 1
+    }));
+
+    if (itemsToReturn.length === 0) {
+      toast.error('No items found in bill to return');
+      return;
+    }
+    
     saveReturnMutation.mutate({ items: itemsToReturn, reason: 'Credit Return' });
   };
 
@@ -230,7 +244,16 @@ export default function MedicineCreditReturns() {
                        { header: 'Medicine', render: (item) => <span className="font-bold text-slate-700">{item.stock?.medicine?.name}</span> },
                        {
                          header: <div className="text-center w-32">Return Qty</div>,
-                         render: () => <input type="number" defaultValue="1" className="w-full text-center border rounded-lg py-1 outline-none focus:border-red-500 font-bold text-red-600" />
+                         render: (item) => (
+                           <input
+                             type="number"
+                             min="1"
+                             max={item.quantity || 99}
+                             value={returnQuantities[item.id] || 1}
+                             onChange={(e) => handleQuantityChange(item.id, e.target.value)}
+                             className="w-full text-center border rounded-lg py-1 outline-none focus:border-red-500 font-bold text-red-600 bg-white"
+                           />
+                         )
                        },
                        { header: <div className="text-right">Refund</div>, render: (item) => <span className="text-right font-black text-slate-900 block">₹{item.unitPrice.toFixed(2)}</span> }
                      ]}

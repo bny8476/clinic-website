@@ -2,14 +2,15 @@ import { useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { BASE_URL, axiosPrivate } from '../api/axios';
-import useAuthStore from '../store/authStore';
+import useAuthStore, { isTokenValid } from '../store/authStore';
 
 export function useRealtimeNotifications() {
   const queryClient = useQueryClient();
   const token = useAuthStore((state) => state.token);
+  const isInitializingAuth = useAuthStore((state) => state.isInitializingAuth);
 
   useEffect(() => {
-    if (!token) return;
+    if (isInitializingAuth || !token || !isTokenValid(token)) return;
 
     let eventSource = null;
     let isSubscribed = true;
@@ -62,14 +63,15 @@ export function useRealtimeNotifications() {
           }
         });
 
-        eventSource.onerror = (err) => {
-          console.warn("SSE connection interrupted:", err);
+        eventSource.onerror = () => {
           if (eventSource) {
             eventSource.close();
           }
         };
       } catch (err) {
-        console.error("Failed to acquire SSE ticket for notifications:", err);
+        if (err.response?.status !== 401) {
+          console.error("Failed to acquire SSE ticket for notifications:", err);
+        }
       }
     };
 
@@ -81,5 +83,6 @@ export function useRealtimeNotifications() {
         eventSource.close();
       }
     };
-  }, [queryClient, token]);
+  }, [queryClient, token, isInitializingAuth]);
 }
+

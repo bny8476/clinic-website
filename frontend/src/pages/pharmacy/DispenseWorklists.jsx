@@ -14,6 +14,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { Eye, List, Pill, Search } from 'lucide-react';
 import { Badge } from '../../components/ui/Badge';
 
+import PharmacyMedicineOrders from '../../components/pharmacy/PharmacyMedicineOrders';
+
 export default function DispenseWorklists() {
   const queryClient = useQueryClient();
   const { items: filteredPrescriptions = [], isLoading: loading } = usePageData('dispense-worklists', '/pharmacy/prescriptions/pending');
@@ -97,6 +99,9 @@ export default function DispenseWorklists() {
   return (
     
     <div className="space-y-6">
+      {/* ── Doctor Medicine Sales Worklist ── */}
+      <PharmacyMedicineOrders />
+
       <div className="flex flex-col gap-1">
         <h2 className="text-2xl font-bold tracking-tight text-gray-900">Pending Dispense List</h2>
         <p className="text-sm text-gray-500 font-medium">Verify and dispense prescribed medicines to wards</p>

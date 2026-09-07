@@ -74,6 +74,25 @@ public class InventoryService {
         // Find active unexpired, non-quarantined batches
         List<EcStockBatch> availableBatches = batchRepository.findByProductIdAndIsQuarantinedFalseAndIsRecalledFalseAndQuantityAvailableGreaterThanOrderByExpiryDateAsc(productId, 0);
 
+        if (availableBatches.isEmpty()) {
+            EcommerceProduct product = productRepository.findById(productId).orElse(null);
+            if (product != null && product.getStockQuantity() != null && product.getStockQuantity() >= quantity) {
+                EcStockBatch defaultBatch = EcStockBatch.builder()
+                        .productId(productId)
+                        .branchId(product.getBranchId() != null ? product.getBranchId() : 1L)
+                        .batchNumber("BATCH-DEF-" + productId)
+                        .expiryDate(java.time.LocalDate.now().plusYears(2))
+                        .quantityTotal(product.getStockQuantity())
+                        .quantityAvailable(product.getStockQuantity())
+                        .quantityReserved(0)
+                        .isQuarantined(false)
+                        .isRecalled(false)
+                        .build();
+                availableBatches = new java.util.ArrayList<>();
+                availableBatches.add(batchRepository.save(defaultBatch));
+            }
+        }
+
         int remainingToReserve = quantity;
         
         for (EcStockBatch batch : availableBatches) {

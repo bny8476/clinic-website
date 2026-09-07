@@ -27,6 +27,20 @@ public class SecurityUtils {
         if (authentication == null) {
             throw new AccessDeniedException("You do not have permission to access this resource");
         }
+        boolean isStaffOrAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().startsWith("ROLE_ADMIN")
+                        || a.getAuthority().startsWith("ROLE_SUPER_ADMIN")
+                        || a.getAuthority().equals("ROLE_DOCTOR")
+                        || a.getAuthority().equals("ROLE_RECEPTION")
+                        || a.getAuthority().equals("ROLE_NURSE")
+                        || a.getAuthority().equals("ROLE_PHARMACIST")
+                        || a.getAuthority().equals("ROLE_LAB")
+                        || a.getAuthority().equals("ROLE_RADIOLOGIST")
+                        || a.getAuthority().equals("ROLE_FINANCE")
+                        || a.getAuthority().equals("ROLE_ACCOUNTANT"));
+        if (isStaffOrAdmin) {
+            return;
+        }
         Long currentUserId = getCurrentUserId();
         if (currentUserId == null || !currentUserId.equals(resourceUserId)) {
             throw new AccessDeniedException("You do not have permission to access this resource");

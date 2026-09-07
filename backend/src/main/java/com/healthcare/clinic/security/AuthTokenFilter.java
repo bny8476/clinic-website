@@ -38,6 +38,10 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             path = request.getRequestURI();
         }
 
+        if ("/api/auth/me".equals(path)) {
+            return false;
+        }
+
         return path.startsWith("/api/auth/")
                 || path.equals("/api/health")
                 || path.equals("/error")

@@ -3,48 +3,9 @@ import { scaleIn } from '../../ui/motion';
 import { Check, Mail, MessageSquare } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 
-const DUMMY_MESSAGES = [
-  {
-    id: 1,
-    sender: 'Dr. Michael Lee',
-    role: 'Pharmacy Admin',
-    message: 'Can you please check the stock for Amoxicillin 500mg? We need it for the afternoon OPD.',
-    time: '20 mins ago',
-    isRead: false,
-    avatar: 'https://ui-avatars.com/api/?name=Michael+Lee&background=e0e7ff&color=2563eb&rounded=true&bold=true'
-  },
-  {
-    id: 2,
-    sender: 'Nurse Sarah',
-    role: 'ICU Ward',
-    message: 'We are sending down a return for 2 vials of Insulin. Patient was discharged early.',
-    time: '1 hour ago',
-    isRead: false,
-    avatar: 'https://ui-avatars.com/api/?name=Nurse+Sarah&background=fee2e2&color=dc2626&rounded=true&bold=true'
-  },
-  {
-    id: 3,
-    sender: 'Dr. James Smith',
-    role: 'Cardiology',
-    message: 'Please substitute the brand for the latest prescription I sent if the original is unavailable.',
-    time: '3 hours ago',
-    isRead: true,
-    avatar: 'https://ui-avatars.com/api/?name=James+Smith&background=dcfce7&color=16a34a&rounded=true&bold=true'
-  },
-  {
-    id: 4,
-    sender: 'System Admin',
-    role: 'IT Department',
-    message: 'The pharmacy billing module will be down for maintenance tonight at 2 AM.',
-    time: '1 day ago',
-    isRead: true,
-    avatar: 'https://ui-avatars.com/api/?name=System+Admin&background=f3f4f6&color=4b5563&rounded=true&bold=true'
-  }
-];
-
 export default function MessageDropdown() {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState(DUMMY_MESSAGES);
+  const [messages, setMessages] = useState([]);
   const dropdownRef = useRef(null);
 
   const unreadCount = messages.filter(m => !m.isRead).length;

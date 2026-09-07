@@ -1,5 +1,5 @@
 import React from 'react';
-import useAuthStore from '../../store/authStore';
+import useAuthStore, { isTokenValid } from '../../store/authStore';
 import { BASE_URL, axiosPrivate } from '../../api/axios';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -10,6 +10,7 @@ const ConsultationQueue = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const token = useAuthStore(state => state.token);
+  const isInitializingAuth = useAuthStore(state => state.isInitializingAuth);
 
   const { data: queue = [], isLoading, isFetching } = useQuery({
     queryKey: ['doctor-queue'],
@@ -18,7 +19,7 @@ const ConsultationQueue = () => {
   });
 
   React.useEffect(() => {
-    if (!token) return;
+    if (isInitializingAuth || !token || !isTokenValid(token)) return;
     let evtSource;
     let isMounted = true;
     
@@ -33,7 +34,9 @@ const ConsultationQueue = () => {
           queryClient.invalidateQueries(['doctor-queue']);
         };
       } catch (err) {
-        console.error('SSE Error:', err);
+        if (err.response?.status !== 401) {
+          console.error('SSE Error:', err);
+        }
       }
     };
     
@@ -43,7 +46,7 @@ const ConsultationQueue = () => {
       isMounted = false;
       if (evtSource) evtSource.close();
     };
-  }, [token, queryClient]);
+  }, [token, isInitializingAuth, queryClient]);
 
   const callNext = useMutation({
     mutationFn: async (appointmentId) => axiosPrivate.patch(`/appointments/${appointmentId}/status?status=IN_PROGRESS`),

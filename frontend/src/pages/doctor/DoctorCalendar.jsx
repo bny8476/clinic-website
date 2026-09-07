@@ -47,60 +47,6 @@ const DoctorCalendar = ({ onClose }) => {
 
   const appointments = useMemo(() => Array.isArray(rawAppointments) ? rawAppointments : [], [rawAppointments]);
 
-  // Mock appointments matching 1:1 reference screenshot
-  const defaultEvents = [
-    {
-      id: 14,
-      patientName: 'Patient #14',
-      reason: 'Fever',
-      timeRange: '09:00 - 09:20 AM',
-      status: 'BOOKED',
-      statusColor: 'bg-blue-100 text-blue-700',
-      bgColor: 'bg-blue-50/70 border-l-4 border-blue-500',
-      timeSlot: '09:00 AM',
-    },
-    {
-      id: 21,
-      patientName: 'Patient #21',
-      reason: 'Chest Pain',
-      timeRange: '10:30 - 11:00 AM',
-      status: 'CONFIRMED',
-      statusColor: 'bg-emerald-100 text-emerald-700',
-      bgColor: 'bg-emerald-50/70 border-l-4 border-emerald-500',
-      timeSlot: '11:00 AM',
-    },
-    {
-      id: 32,
-      patientName: 'Patient #32',
-      reason: 'Follow-up Consultation',
-      timeRange: '12:00 - 12:30 PM',
-      status: 'PENDING',
-      statusColor: 'bg-amber-100 text-amber-700',
-      bgColor: 'bg-amber-50/70 border-l-4 border-amber-500',
-      timeSlot: '01:00 PM',
-    },
-    {
-      id: 45,
-      patientName: 'Patient #45',
-      reason: 'ECG Review',
-      timeRange: '02:30 - 03:00 PM',
-      status: 'BOOKED',
-      statusColor: 'bg-[#2160FF]/10 text-[#2160FF]',
-      bgColor: 'bg-[#2160FF]/5 border-l-4 border-[#2160FF]',
-      timeSlot: '03:00 PM',
-    },
-    {
-      id: 99,
-      patientName: 'Team Meeting',
-      reason: '',
-      timeRange: '04:00 - 05:00 PM',
-      status: 'BLOCKED',
-      statusColor: 'bg-slate-200 text-slate-700',
-      bgColor: 'bg-slate-100/80 border-l-4 border-slate-400',
-      timeSlot: '05:00 PM',
-    },
-  ];
-
   const formatTimeRange = (startTime) => {
     if (!startTime) return '09:00 AM';
     try {
@@ -136,7 +82,7 @@ const DoctorCalendar = ({ onClose }) => {
         timeSlot: formatTimeSlot(apt.startTime),
       }));
     }
-    return defaultEvents;
+    return [];
   }, [appointments]);
 
   const timeSlots = [

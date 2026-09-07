@@ -112,8 +112,9 @@ public class PrescriptionService {
             throw new ResourceNotFoundException("Patient not found with id: " + request.getPatientId());
         }
 
-        List<String> medNames = request.getItems().stream()
+        List<String> medNames = (request.getItems() != null ? request.getItems() : java.util.Collections.<com.healthcare.clinic.doctor.dto.PrescriptionItemRequest>emptyList()).stream()
                 .map(item -> item != null ? item.getMedicationName() : null)
+                .filter(name -> name != null && !name.isBlank())
                 .collect(Collectors.toList());
 
         // 1. SYNCHRONOUS BLOCKING SAFETY GATE: Drug allergy & contraindication check BEFORE save
@@ -429,19 +430,27 @@ public class PrescriptionService {
     }
 
     private PrescriptionResponse mapToResponse(Prescription prescription) {
-        String patientName = userRepository.findById(prescription.getPatientId())
-                .map(u -> u.getFirstName() + " " + u.getLastName())
-                .orElse("Unknown Patient");
+        if (prescription == null) return null;
 
-        String doctorName = userRepository.findById(prescription.getDoctorId())
-                .map(u -> u.getFirstName() + " " + u.getLastName())
-                .orElse("Unknown Doctor");
+        String patientName = prescription.getPatientId() != null
+                ? userRepository.findById(prescription.getPatientId())
+                        .map(u -> (u.getFirstName() != null ? u.getFirstName() : "") + " " + (u.getLastName() != null ? u.getLastName() : "")).orElse("Unknown Patient").trim()
+                : "Unknown Patient";
 
-        com.healthcare.clinic.patient.entity.PatientProfile patientProfile = patientProfileRepository.findByUserId(prescription.getPatientId()).orElse(null);
+        String doctorName = prescription.getDoctorId() != null
+                ? userRepository.findById(prescription.getDoctorId())
+                        .map(u -> (u.getFirstName() != null ? u.getFirstName() : "") + " " + (u.getLastName() != null ? u.getLastName() : "")).orElse("Unknown Doctor").trim()
+                : "Unknown Doctor";
+
+        com.healthcare.clinic.patient.entity.PatientProfile patientProfile = prescription.getPatientId() != null
+                ? patientProfileRepository.findByUserId(prescription.getPatientId()).orElse(null)
+                : null;
         Integer patientAge = patientProfile != null && patientProfile.getDateOfBirth() != null ? java.time.Period.between(patientProfile.getDateOfBirth(), java.time.LocalDate.now()).getYears() : null;
         String patientGender = patientProfile != null ? patientProfile.getGender() : null;
 
-        com.healthcare.clinic.doctor.entity.DoctorProfile doctorProfile = doctorProfileRepository.findByUserId(prescription.getDoctorId()).orElse(null);
+        com.healthcare.clinic.doctor.entity.DoctorProfile doctorProfile = prescription.getDoctorId() != null
+                ? doctorProfileRepository.findByUserId(prescription.getDoctorId()).orElse(null)
+                : null;
         String doctorSpecialty = doctorProfile != null ? doctorProfile.getSpecialty() : null;
         String doctorQualifications = doctorProfile != null ? doctorProfile.getQualifications() : null;
         String registrationNumber = doctorProfile != null ? doctorProfile.getRegistrationNumber() : null;
@@ -455,7 +464,7 @@ public class PrescriptionService {
         String clinicPhone = branch != null ? branch.getPhoneNumber() : null;
         String clinicEmail = branch != null ? branch.getEmail() : null;
 
-        List<PrescriptionItemResponse> itemResponses = prescription.getItems().stream()
+        List<PrescriptionItemResponse> itemResponses = (prescription.getItems() != null ? prescription.getItems() : java.util.Collections.<com.healthcare.clinic.doctor.entity.PrescriptionItem>emptyList()).stream()
                 .map(item -> PrescriptionItemResponse.builder()
                         .id(item.getId())
                         .medicationName(item.getMedicationName())

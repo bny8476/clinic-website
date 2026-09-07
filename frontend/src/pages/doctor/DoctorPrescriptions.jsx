@@ -182,7 +182,9 @@ const DoctorPrescriptions = () => {
             
             {/* Pagination Footer */}
             <div className="flex items-center justify-between p-4 bg-white border-t border-slate-200">
-              <span className="text-[12px] font-medium text-slate-500">Showing 1 to 8 of 24 prescriptions</span>
+              <span className="text-[12px] font-medium text-slate-500">
+                Showing {filteredPrescriptions.length === 0 ? 0 : 1} to {filteredPrescriptions.length} of {filteredPrescriptions.length} prescriptions
+              </span>
               <div className="flex items-center gap-1">
                 <button className="w-8 h-8 flex items-center justify-center rounded border border-slate-200 text-slate-500 hover:bg-slate-50">&lt;</button>
                 <button className="w-8 h-8 flex items-center justify-center rounded bg-[#5B21B6] text-white font-bold text-[13px]">1</button>

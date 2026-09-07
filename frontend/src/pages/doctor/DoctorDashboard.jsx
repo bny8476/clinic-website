@@ -1,4 +1,4 @@
-import useAuthStore from '../../store/authStore';
+import useAuthStore, { isTokenValid } from '../../store/authStore';
 import './DoctorDashboard.css';
 import ModulePanel from '../../components/dashboard/ModulePanel';
 import ConsultationQueue from './ConsultationQueue';
@@ -22,7 +22,8 @@ import {
   Users, 
   Video,
   Bot,
-  ArrowRight
+  ArrowRight,
+  ShoppingBag
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
@@ -42,7 +43,7 @@ const formatTime = (dateStr) => {
 };
 
 const DoctorDashboard = () => {
-  const { user, token } = useAuthStore();
+  const { user, token, isInitializingAuth } = useAuthStore();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -115,7 +116,7 @@ const DoctorDashboard = () => {
 
   // Subscribe to real-time appointment updates
   useEffect(() => {
-    if (!token) return;
+    if (isInitializingAuth || !token || !isTokenValid(token)) return;
     let evtSource;
     let isMounted = true;
     
@@ -163,7 +164,9 @@ const DoctorDashboard = () => {
           if (evtSource) evtSource.close();
         };
       } catch (err) {
-        console.error('SSE connection failed:', err);
+        if (err.response?.status !== 401) {
+          console.error('SSE connection failed:', err);
+        }
       }
     };
     
@@ -173,7 +176,7 @@ const DoctorDashboard = () => {
       isMounted = false;
       if (evtSource) evtSource.close();
     };
-  }, [user?.id, queryClient, token]);
+  }, [user?.id, queryClient, token, isInitializingAuth]);
 
   const handlePatientClick = (id) => {
     const newParams = new URLSearchParams(searchParams);
@@ -184,25 +187,17 @@ const DoctorDashboard = () => {
 
   // ─── Derived: Nurse OP Patients ───
   const opPatients = useMemo(() => {
-    if (todayAppointments.length > 0) {
-      return todayAppointments.slice(0, 4).map((apt, i) => {
-        const statusInfo = STATUS_MAP[apt.status] || STATUS_MAP.SCHEDULED;
-        return {
-          id: apt.id,
-          token: `${101 + i}`,
-          name: `${apt.patientFirstName || ''} ${apt.patientLastName || ''}`.trim() || 'Unknown',
-          time: formatTime(apt.startTime),
-          status: statusInfo.label,
-          statusStyle: statusInfo.style,
-        };
-      });
-    }
-    // Mock default matching screenshot 1:1
-    return [
-      { id: 1, token: '101', name: 'Pat lent', time: '09:00 AM', status: 'Waiting', statusStyle: 'bg-amber-100 text-amber-700' },
-      { id: 2, token: '102', name: 'James Smith', time: '09:30 AM', status: 'In Queue', statusStyle: 'bg-blue-100 text-blue-700' },
-      { id: 3, token: '103', name: 'Linda Brown', time: '10:00 AM', status: 'Waiting', statusStyle: 'bg-amber-100 text-amber-700' },
-    ];
+    return todayAppointments.slice(0, 4).map((apt, i) => {
+      const statusInfo = STATUS_MAP[apt.status] || STATUS_MAP.SCHEDULED;
+      return {
+        id: apt.id,
+        token: `${101 + i}`,
+        name: `${apt.patientFirstName || ''} ${apt.patientLastName || ''}`.trim() || 'Unknown',
+        time: formatTime(apt.startTime),
+        status: statusInfo.label,
+        statusStyle: statusInfo.style,
+      };
+    });
   }, [todayAppointments]);
 
   // ─── Derived: New Appointments ───
@@ -282,8 +277,8 @@ const DoctorDashboard = () => {
     <div className="doctor-dashboard-root bg-slate-50 min-h-screen p-4 md:p-6 font-sans">
       <div className="max-w-7xl mx-auto space-y-5">
         
-        {/* ─── 1. Quick Action Cards (8 Column Grid) ─── */}
-        <section className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+        {/* ─── 1. Quick Action Cards (9 Column Grid) ─── */}
+        <section className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-3">
           {/* Card 1: New Appointment */}
           <div 
             onClick={() => setSearchParams({ panel: 'new-appointment' })} 
@@ -317,7 +312,18 @@ const DoctorDashboard = () => {
             <span className="text-xs font-bold text-slate-800 leading-tight">New Prescription</span>
           </div>
 
-          {/* Card 4: Lab Request */}
+          {/* Card 4: Medicine Sales */}
+          <div 
+            onClick={() => navigate('/doctor/manage-medicines')} 
+            className="bg-blue-50/60 p-4 rounded-2xl border border-blue-200/80 shadow-sm hover:shadow-md transition cursor-pointer text-center flex flex-col items-center justify-center group"
+          >
+            <div className="w-10 h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform shadow-sm">
+              <ShoppingBag className="w-5 h-5" />
+            </div>
+            <span className="text-xs font-bold text-blue-900 leading-tight">Medicine Sales</span>
+          </div>
+
+          {/* Card 5: Lab Request */}
           <div 
             onClick={() => navigate('/doctor/lab-reports')} 
             className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition cursor-pointer text-center flex flex-col items-center justify-center group"
@@ -328,7 +334,7 @@ const DoctorDashboard = () => {
             <span className="text-xs font-bold text-slate-800 leading-tight">Lab Request</span>
           </div>
 
-          {/* Card 5: Upload Report */}
+          {/* Card 6: Upload Report */}
           <div 
             onClick={() => navigate('/doctor/lab-reports/upload')} 
             className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition cursor-pointer text-center flex flex-col items-center justify-center group"
@@ -339,7 +345,7 @@ const DoctorDashboard = () => {
             <span className="text-xs font-bold text-slate-800 leading-tight">Upload Report</span>
           </div>
 
-          {/* Card 6: Medical Certificate */}
+          {/* Card 7: Medical Certificate */}
           <div 
             onClick={() => navigate('/doctor/medical-certificate')} 
             className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition cursor-pointer text-center flex flex-col items-center justify-center group"
@@ -350,7 +356,7 @@ const DoctorDashboard = () => {
             <span className="text-xs font-bold text-slate-800 leading-tight">Medical Certificate</span>
           </div>
 
-          {/* Card 7: Start Consultation */}
+          {/* Card 8: Start Consultation */}
           <div 
             onClick={() => setSearchParams({ panel: 'queue' })} 
             className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition cursor-pointer text-center flex flex-col items-center justify-center group"
@@ -361,7 +367,7 @@ const DoctorDashboard = () => {
             <span className="text-xs font-bold text-slate-800 leading-tight">Start Consultation</span>
           </div>
 
-          {/* Card 8: View Calendar */}
+          {/* Card 9: View Calendar */}
           <div 
             onClick={() => setSearchParams({ panel: 'calendar' })} 
             className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition cursor-pointer text-center flex flex-col items-center justify-center group"
@@ -398,6 +404,14 @@ const DoctorDashboard = () => {
             }`}
           >
             Lab Reports
+          </button>
+          <button 
+            onClick={() => { setActiveTab('medicine-sales'); navigate('/doctor/manage-medicines'); }} 
+            className={`px-5 py-2 rounded-full font-semibold text-xs transition ${
+              activeTab === 'medicine-sales' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-100'
+            }`}
+          >
+            Medicine Sales
           </button>
         </div>
 

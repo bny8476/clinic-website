@@ -32,7 +32,8 @@ const DoctorMedicineOrders = lazy(() => import('./pages/doctor/DoctorMedicineOrd
 // Public pages
 const Home = lazy(() => import('./pages/public/Home'));
 const DoctorList = lazy(() => import('./pages/public/DoctorList'));
-const PortalLoginPage = lazy(() => import('./pages/auth/PortalLoginPage'));
+const Login = lazy(() => import('./pages/auth/Login'));
+const Unauthorized = lazy(() => import('./pages/common/Unauthorized'));
 const Register = lazy(() => import('./pages/public/Register'));
 
 // Patient pages
@@ -253,10 +254,19 @@ function RealtimeNotificationsListener() {
   return null;
 }
 
+import useAuthStore from './store/authStore';
+
+function AuthInitializer({ children }) {
+  const initAuth = useAuthStore(state => state.initAuth);
+  useEffect(() => {
+    initAuth();
+  }, [initAuth]);
+  return children;
+}
+
 function App() {
   useEffect(() => {
     // Wake up backend (e.g., Render free tier) on app load
-    
     fetch(`${BASE_URL}/health`)
       .then(res => res.json())
       .catch(() => {
@@ -266,64 +276,76 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <RealtimeNotificationsListener />
       <BrowserRouter>
-        <Toaster 
-          position="top-right"
-          toastOptions={{
-            duration: 4000,
-            style: {
-              background: 'var(--color-surface)',
-              color: 'var(--color-text)',
-              border: '1px solid var(--color-border)',
-              borderRadius: '12px',
-              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)',
-              fontSize: '14px',
-              fontWeight: 500,
-            },
-            success: {
-              iconTheme: {
-                primary: 'var(--color-success)',
-                secondary: '#fff',
+        <AuthInitializer>
+          <RealtimeNotificationsListener />
+          <Toaster 
+            position="top-right"
+            toastOptions={{
+              duration: 4000,
+              style: {
+                background: 'var(--color-surface)',
+                color: 'var(--color-text)',
+                border: '1px solid var(--color-border)',
+                borderRadius: '12px',
+                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)',
+                fontSize: '14px',
+                fontWeight: 500,
               },
-            },
-            error: {
-              iconTheme: {
-                primary: 'var(--color-danger)',
-                secondary: '#fff',
+              success: {
+                iconTheme: {
+                  primary: 'var(--color-success)',
+                  secondary: '#fff',
+                },
               },
-            },
-          }}
-        />
-        <MotionConfig reducedMotion="user">
-          <Suspense fallback={<PageLoadingSkeleton />}>
-            <Routes>
-
-          {/* ── Public Routes ───────────────────────────────────────────── */}
-          <Route element={<PublicLayout />}>
-            <Route path="/" element={<Home />} />
-            <Route path="/doctors" element={<DoctorList />} />
-            <Route path="/medicines" element={<MedicineMarketplace />} />
-            <Route path="/medicines/:medicineId" element={<MedicineDetailsPage />} />
-            <Route path="/cart" element={<CartPage />} />
-            <Route path="/checkout" element={<MedicineCheckoutPage />} />
-            <Route path="/my-orders" element={<PatientOrdersPage />} />
-            <Route path="/my-orders/:orderId" element={<PatientOrderDetailPage />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/:portalSlug/register" element={<Register />} />
-          </Route>
-          
-          <Route path="/login" element={<Navigate to="/patient/login" replace />} />
-          <Route path="/:portalSlug/login" element={<PortalLoginPage />} />
-          
-          <Route 
-            path="/teleconsultation/room/:id" 
-            element={
-              <RoleRoute allowedRoles={['ROLE_PATIENT', 'ROLE_DOCTOR', 'ROLE_SUPER_ADMIN']}>
-                <TeleconsultationRoom />
-              </RoleRoute>
-            } 
+              error: {
+                iconTheme: {
+                  primary: 'var(--color-danger)',
+                  secondary: '#fff',
+                },
+              },
+            }}
           />
+          <MotionConfig reducedMotion="user">
+            <Suspense fallback={<PageLoadingSkeleton />}>
+              <Routes>
+
+            {/* ── Public Routes ───────────────────────────────────────────── */}
+            <Route element={<PublicLayout />}>
+              <Route path="/" element={<Home />} />
+              <Route path="/doctors" element={<DoctorList />} />
+              <Route path="/medicines" element={<MedicineMarketplace />} />
+              <Route path="/medicines/:medicineId" element={<MedicineDetailsPage />} />
+              <Route path="/cart" element={<CartPage />} />
+              <Route path="/checkout" element={<MedicineCheckoutPage />} />
+              <Route path="/my-orders" element={<PatientOrdersPage />} />
+              <Route path="/my-orders/:orderId" element={<PatientOrderDetailPage />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/:portalSlug/register" element={<Register />} />
+            </Route>
+            
+            {/* ── Unified Single Login Page ────────────────────────────────── */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/403" element={<Unauthorized />} />
+            <Route path="/unauthorized" element={<Unauthorized />} />
+
+            {/* Legacy Portal Login Redirects */}
+            <Route path="/doctor/login" element={<Navigate to="/login" replace />} />
+            <Route path="/patient/login" element={<Navigate to="/login" replace />} />
+            <Route path="/nurse/login" element={<Navigate to="/login" replace />} />
+            <Route path="/pharmacy/login" element={<Navigate to="/login" replace />} />
+            <Route path="/admin/login" element={<Navigate to="/login" replace />} />
+            <Route path="/lab/login" element={<Navigate to="/login" replace />} />
+            <Route path="/:portalSlug/login" element={<Navigate to="/login" replace />} />
+            
+            <Route 
+              path="/teleconsultation/room/:id" 
+              element={
+                <RoleRoute allowedRoles={['ROLE_PATIENT', 'ROLE_DOCTOR', 'ROLE_SUPER_ADMIN']}>
+                  <TeleconsultationRoom />
+                </RoleRoute>
+              } 
+            />
 
           {/* ── Patient Routes ──────────────────────────────────────────── */}
           <Route
@@ -816,6 +838,7 @@ function App() {
         </Routes>
           </Suspense>
         </MotionConfig>
+        </AuthInitializer>
       </BrowserRouter>
     </QueryClientProvider>
   );

@@ -192,6 +192,7 @@ public class DoctorScheduleService {
         return createdSlots;
     }
 
+    @EventListener(ApplicationReadyEvent.class)
     @Scheduled(cron = "0 0 1 * * *") // Run at 1 AM every day
     public void generateSlotsAutomatically() {
         log.info("Running scheduled slot generation");

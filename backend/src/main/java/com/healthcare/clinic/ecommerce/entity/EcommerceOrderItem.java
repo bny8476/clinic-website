@@ -75,4 +75,7 @@ public class EcommerceOrderItem {
 
     @Column(name = "prescription_id")
     private Long prescriptionId;
+
+    @Column(name = "recommendation_id")
+    private Long recommendationId;
 }

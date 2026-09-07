@@ -16,6 +16,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -31,6 +33,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -49,8 +52,8 @@ public class PortalAuthController {
     private final UserDetailsService userDetailsService;
     private final PatientProfileRepository patientProfileRepository;
 
-    @PostMapping("/{portal}/login")
-    public ResponseEntity<?> authenticateUser(@PathVariable String portal, @Valid @RequestBody LoginRequest loginRequest, HttpServletRequest request) {
+    @PostMapping("/login")
+    public ResponseEntity<?> unifiedLogin(@Valid @RequestBody LoginRequest loginRequest, HttpServletRequest request) {
         User user = userRepository.findByEmail(loginRequest.getEmail()).orElse(null);
 
         if (user != null && user.getLockedUntil() != null && user.getLockedUntil().isAfter(ZonedDateTime.now())) {
@@ -74,16 +77,6 @@ public class PortalAuthController {
         }
 
         User authenticatedUser = (User) authentication.getPrincipal();
-        
-        // Validate portal access
-        boolean hasPortalAccess = authenticatedUser.getRoles().stream()
-                .anyMatch(r -> (r.getLoginPortal() != null && portal.equals(r.getLoginPortal()))
-                            || isPortalMatchingRole(portal, r.getName()));
-                
-        if (!hasPortalAccess) {
-            logLoginHistory(authenticatedUser, request, false);
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied for this portal.");
-        }
 
         // Reset failed attempts
         authenticatedUser.setFailedLoginAttempts(0);
@@ -112,21 +105,19 @@ public class PortalAuthController {
 
         return ResponseEntity.ok()
                 .header(org.springframework.http.HttpHeaders.SET_COOKIE, refreshCookie.toString())
-                .body(new JwtResponse(jwt, refreshToken));
+                .body(buildJwtResponse(jwt, refreshToken, authenticatedUser));
     }
 
-    @PostMapping("/{portal}/login/mfa")
-    public ResponseEntity<?> verifyMfaLogin(@PathVariable String portal, @Valid @RequestBody MfaLoginRequest request, HttpServletRequest httpRequest) {
+    @PostMapping("/{portal}/login")
+    public ResponseEntity<?> authenticateUser(@PathVariable String portal, @Valid @RequestBody LoginRequest loginRequest, HttpServletRequest request) {
+        return unifiedLogin(loginRequest, request);
+    }
+
+    @PostMapping("/login/mfa")
+    public ResponseEntity<?> verifyMfaLoginUnified(@Valid @RequestBody MfaLoginRequest request, HttpServletRequest httpRequest) {
         User user = userRepository.findByEmail(request.getEmail()).orElse(null);
         if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid request");
-        }
-        
-        boolean hasPortalAccess = user.getRoles().stream()
-                .anyMatch(r -> portal.equals(r.getLoginPortal()));
-                
-        if (!hasPortalAccess) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied for this portal.");
         }
 
         boolean isValid = otpService.verifyOtp(request.getOtp(), user);
@@ -151,7 +142,47 @@ public class PortalAuthController {
 
         return ResponseEntity.ok()
                 .header(org.springframework.http.HttpHeaders.SET_COOKIE, refreshCookie.toString())
-                .body(new JwtResponse(jwt, refreshToken));
+                .body(buildJwtResponse(jwt, refreshToken, user));
+    }
+
+    @PostMapping("/{portal}/login/mfa")
+    public ResponseEntity<?> verifyMfaLogin(@PathVariable String portal, @Valid @RequestBody MfaLoginRequest request, HttpServletRequest httpRequest) {
+        return verifyMfaLoginUnified(request, httpRequest);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUserProfile() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not authenticated");
+        }
+        User user = null;
+        if (auth.getPrincipal() instanceof com.healthcare.clinic.security.UserPrincipal) {
+            com.healthcare.clinic.security.UserPrincipal up = (com.healthcare.clinic.security.UserPrincipal) auth.getPrincipal();
+            if (up.getUserId() != null) {
+                user = userRepository.findById(up.getUserId()).orElse(null);
+            }
+            if (user == null && up.getUsername() != null) {
+                user = userRepository.findByEmail(up.getUsername()).orElse(null);
+            }
+        } else if (auth.getPrincipal() instanceof User) {
+            user = (User) auth.getPrincipal();
+        } else if (auth.getPrincipal() instanceof UserDetails) {
+            UserDetails ud = (UserDetails) auth.getPrincipal();
+            user = userRepository.findByEmail(ud.getUsername()).orElse(null);
+        }
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
+        }
+        Set<String> roles = user.getRoles().stream().map(Role::getName).collect(Collectors.toSet());
+        Set<String> permissions = new HashSet<>();
+        user.getRoles().forEach(r -> {
+            if (r.getPermissions() != null) {
+                r.getPermissions().forEach(p -> permissions.add(p.getName()));
+            }
+        });
+        UserDto userDto = new UserDto(user.getId(), user.getFirstName() + " " + user.getLastName(), user.getEmail(), user.getFirstName(), user.getLastName());
+        return ResponseEntity.ok(new UserProfileResponse(userDto, roles, permissions));
     }
 
     @PostMapping("/register")
@@ -169,6 +200,18 @@ public class PortalAuthController {
         }
     }
 
+    private JwtResponse buildJwtResponse(String jwt, String refreshToken, User user) {
+        Set<String> roles = user.getRoles().stream().map(Role::getName).collect(Collectors.toSet());
+        Set<String> permissions = new HashSet<>();
+        user.getRoles().forEach(r -> {
+            if (r.getPermissions() != null) {
+                r.getPermissions().forEach(p -> permissions.add(p.getName()));
+            }
+        });
+        UserDto userDto = new UserDto(user.getId(), user.getFirstName() + " " + user.getLastName(), user.getEmail(), user.getFirstName(), user.getLastName());
+        return new JwtResponse(jwt, refreshToken, 900L, userDto, roles, permissions);
+    }
+
     private void logLoginHistory(User user, HttpServletRequest request, boolean success) {
         String ip = request.getHeader("X-Forwarded-For");
         if (ip == null) ip = request.getRemoteAddr();
@@ -181,38 +224,6 @@ public class PortalAuthController {
         history.setSuccess(success);
         history.setCreatedAt(ZonedDateTime.now());
         loginHistoryRepository.save(history);
-    }
-
-    private boolean isPortalMatchingRole(String portal, String roleName) {
-        if (roleName == null || portal == null) return false;
-        String normalizedRole = roleName.toUpperCase().replace("ROLE_", "");
-        String normalizedPortal = portal.toUpperCase().replace("-", "_");
-
-        if (normalizedRole.equals(normalizedPortal) || "ADMIN".equals(normalizedRole) || "SUPER_ADMIN".equals(normalizedRole)) {
-            return true;
-        }
-
-        if ("PHARMACY".equals(normalizedPortal)) {
-            return normalizedRole.contains("PHARMAC") || normalizedRole.contains("STOREKEEPER");
-        }
-
-        if ("LAB".equals(normalizedPortal) || "LABORATORY".equals(normalizedPortal)) {
-            return normalizedRole.contains("LAB") || "PATHOLOGIST".equals(normalizedRole);
-        }
-
-        if ("RADIOLOGY".equals(normalizedPortal) || "RADIOLOGIST".equals(normalizedPortal)) {
-            return normalizedRole.contains("RADIO");
-        }
-
-        if ("NURSE".equals(normalizedPortal)) {
-            return normalizedRole.contains("NURSE");
-        }
-
-        if ("DOCTOR".equals(normalizedPortal)) {
-            return normalizedRole.contains("DOCTOR") || normalizedRole.contains("PHYSICIAN");
-        }
-
-        return false;
     }
 }
 
@@ -250,14 +261,44 @@ class SignupRequest {
 }
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+class UserDto {
+    private Long id;
+    private String name;
+    private String email;
+    private String firstName;
+    private String lastName;
+}
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+class UserProfileResponse {
+    private UserDto user;
+    private Set<String> roles;
+    private Set<String> permissions;
+}
+
+@Data
 class JwtResponse {
     private String token;
+    private String accessToken;
     private String refreshToken;
     private String type = "Bearer";
+    private Long expiresIn;
+    private UserDto user;
+    private Set<String> roles;
+    private Set<String> permissions;
 
-    public JwtResponse(String accessToken, String refreshToken) {
+    public JwtResponse(String accessToken, String refreshToken, Long expiresIn, UserDto user, Set<String> roles, Set<String> permissions) {
         this.token = accessToken;
+        this.accessToken = accessToken;
         this.refreshToken = refreshToken;
+        this.expiresIn = expiresIn;
+        this.user = user;
+        this.roles = roles;
+        this.permissions = permissions;
     }
 }
 

@@ -1,6 +1,6 @@
 import { BASE_URL, axiosPrivate } from '../api/axios';
 import { useEffect, useRef } from 'react';
-import useAuthStore from '../store/authStore';
+import useAuthStore, { isTokenValid } from '../store/authStore';
 
 /**
  * Custom hook to subscribe to the patient medicines SSE endpoint using single-use tickets.
@@ -8,13 +8,14 @@ import useAuthStore from '../store/authStore';
 export function usePatientMedicineFeed(onUpdate) {
   const onUpdateRef = useRef(onUpdate);
   const token = useAuthStore((state) => state.token);
+  const isInitializingAuth = useAuthStore((state) => state.isInitializingAuth);
   
   useEffect(() => {
     onUpdateRef.current = onUpdate;
   }, [onUpdate]);
 
   useEffect(() => {
-    if (!token) return;
+    if (isInitializingAuth || !token || !isTokenValid(token)) return;
 
     let eventSource = null;
     let isSubscribed = true;
@@ -40,14 +41,15 @@ export function usePatientMedicineFeed(onUpdate) {
 
         eventSource.addEventListener('medicines_updated', handleUpdate);
 
-        eventSource.onerror = (error) => {
-          console.error('SSE error on patient-medicines:', error);
+        eventSource.onerror = () => {
           if (eventSource) {
             eventSource.close();
           }
         };
       } catch (err) {
-        console.error('Failed to acquire SSE ticket for patient medicines:', err);
+        if (err.response?.status !== 401) {
+          console.error('Failed to acquire SSE ticket for patient medicines:', err);
+        }
       }
     };
 

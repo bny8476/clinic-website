@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import useAuthStore from '../../store/authStore';
+import useAuthStore, { isTokenValid } from '../../store/authStore';
 import { BASE_URL, axiosPrivate } from '../../api/axios';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -38,12 +38,12 @@ const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 export default function BookAppointment() {
   const { doctorId } = useParams();
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const rescheduleId = searchParams.get('rescheduleId');
   const patientUserId = searchParams.get('patientId');
   const queryClient = useQueryClient();
-  const { user, token } = useAuthStore();
+  const { user, token, isInitializingAuth } = useAuthStore();
 
   // Step state (default to 3 for immediate visualization or step navigation)
   const [currentStep, setCurrentStep] = useState(1);
@@ -69,124 +69,47 @@ export default function BookAppointment() {
   const [selectedSpecialty, setSelectedSpecialty] = useState('');
 
   // Fetch list of doctors from backend
-  const { data: doctors = [] } = useQuery({
+  const { data: doctors = [], isLoading: isLoadingDoctors } = useQuery({
     queryKey: ['allDoctors'],
     queryFn: async () => {
-      try {
-        const res = await axiosPrivate.get('/doctors');
-        return Array.isArray(res.data) ? res.data : [];
-      } catch {
-        return [];
-      }
+      const res = await axiosPrivate.get('/doctors');
+      return res.data;
     }
   });
 
-  // Sample fallback doctors matching reference UI screenshot
-  const defaultDoctors = [
-    {
-      id: '1',
-      userId: '1',
-      firstName: 'John',
-      lastName: 'Doe',
-      specialty: 'Cardiologist',
-      degree: 'MD, DM (Cardiology)',
-      rating: 4.9,
-      reviewsCount: 128,
-      experienceYears: 10,
-      consultationFee: 800,
-      hospitalName: 'Aurelian Health Hospital',
-      profileImageUrl: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=400'
-    },
-    {
-      id: '2',
-      userId: '2',
-      firstName: 'Sarah',
-      lastName: 'Smith',
-      specialty: 'General Physician',
-      degree: 'MBBS, MD',
-      rating: 4.8,
-      reviewsCount: 96,
-      experienceYears: 8,
-      consultationFee: 600,
-      hospitalName: 'Aurelian Health Hospital',
-      profileImageUrl: 'https://images.unsplash.com/photo-1594824813566-88855ce78961?auto=format&fit=crop&q=80&w=400'
-    },
-    {
-      id: '3',
-      userId: '3',
-      firstName: 'Michael',
-      lastName: 'Brown',
-      specialty: 'Neurologist',
-      degree: 'MBBS, DM (Neurology)',
-      rating: 4.7,
-      reviewsCount: 112,
-      experienceYears: 12,
-      consultationFee: 1000,
-      hospitalName: 'Aurelian Health Hospital',
-      profileImageUrl: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&q=80&w=400'
-    },
-    {
-      id: '4',
-      userId: '4',
-      firstName: 'Emily',
-      lastName: 'Davis',
-      specialty: 'Dermatologist',
-      degree: 'MBBS, MD (Dermatology)',
-      rating: 4.6,
-      reviewsCount: 88,
-      experienceYears: 7,
-      consultationFee: 750,
-      hospitalName: 'Aurelian Health Hospital',
-      profileImageUrl: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=400'
+  // Automatically select doctor if passed via URL param or query param
+  useEffect(() => {
+    const docIdFromParam = doctorId || searchParams.get('doctor');
+    if (docIdFromParam) {
+      setSelectedDoctorId(docIdFromParam);
     }
-  ];
+  }, [doctorId, searchParams]);
 
-  const allDoctors = doctors.length > 0 ? doctors : defaultDoctors;
+  // Selected Doctor Details
+  const selectedDoctor = useMemo(() => {
+    return doctors.find((d) => String(d.id) === String(selectedDoctorId));
+  }, [doctors, selectedDoctorId]);
 
-  const selectedDoctor = useMemo(
-    () => allDoctors.find((d) => String(d.userId) === String(selectedDoctorId) || String(d.id) === String(selectedDoctorId)) || allDoctors[0],
-    [allDoctors, selectedDoctorId]
-  );
-
-  // Fetch slots for the selected date
-  const { data: slots = [] } = useQuery({
-    queryKey: ['availableSlots', selectedDoctorId, selectedDate?.toISOString()],
+  // Fetch Available Slots for selected doctor & date
+  const { data: availableSlots = [], isLoading: isLoadingSlots } = useQuery({
+    queryKey: ['availableSlots', selectedDoctorId, selectedDate ? selectedDate.toISOString() : null],
     queryFn: async () => {
-      if (!selectedDate || !selectedDoctorId) return [];
-      try {
-        const start = new Date(selectedDate);
-        start.setHours(0, 0, 0, 0);
-        const end = new Date(selectedDate);
-        end.setHours(23, 59, 59, 999);
-        const res = await axiosPrivate.get(
-          `/appointments/slots?doctorId=${selectedDoctorId}&start=${start.toISOString()}&end=${end.toISOString()}`
-        );
-        return Array.isArray(res.data?.data) ? res.data.data : (Array.isArray(res.data) ? res.data : []);
-      } catch {
-        return [];
-      }
+      if (!selectedDoctorId || !selectedDate) return [];
+      const formattedDate = format(selectedDate, 'yyyy-MM-dd');
+      const res = await axiosPrivate.get(`/appointments/available-slots`, {
+        params: { doctorId: selectedDoctorId, date: formattedDate }
+      });
+      return res.data;
     },
-    enabled: !!selectedDoctorId && !!selectedDate
+    enabled: Boolean(selectedDoctorId && selectedDate)
   });
-
-  // Default fallback slots for demo
-  const displaySlots = useMemo(() => {
-    return Array.isArray(slots) ? slots : [];
-  }, [slots]);
-
-  // Calendar calculations
-  const monthStart = startOfMonth(currentMonth);
-  const monthEnd = endOfMonth(currentMonth);
-  const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
-  const startDayOfWeek = monthStart.getDay();
-  const emptyDaysBefore = Array.from({ length: startDayOfWeek }).map((_, i) => i);
 
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
 
   // Handle SSE updates safely without 401 console spam
   useEffect(() => {
-    if (!token) return;
+    if (isInitializingAuth || !token || !isTokenValid(token)) return;
     let evtSource;
     let isMounted = true;
     
@@ -211,7 +134,9 @@ export default function BookAppointment() {
           }
         };
       } catch (err) {
-        console.error('SSE Error:', err);
+        if (err.response?.status !== 401) {
+          console.error('SSE Error:', err);
+        }
       }
     };
 
@@ -221,7 +146,7 @@ export default function BookAppointment() {
       isMounted = false;
       if (evtSource) evtSource.close();
     };
-  }, [selectedDoctorId, selectedDate, queryClient, token]);
+  }, [selectedDoctorId, selectedDate, queryClient, token, isInitializingAuth]);
 
   const mutation = useMutation({
     mutationFn: async (data) => {
@@ -281,9 +206,23 @@ export default function BookAppointment() {
     mutation.mutate({ slotId: selectedSlotId, reasonForVisit: fullReason });
   };
 
+  const allDoctors = useMemo(() => {
+    return Array.isArray(doctors) ? doctors : (doctors?.data || []);
+  }, [doctors]);
+
+  const displaySlots = useMemo(() => {
+    return Array.isArray(availableSlots) ? availableSlots : (availableSlots?.data || []);
+  }, [availableSlots]);
+
+  const monthStart = startOfMonth(currentMonth);
+  const monthEnd = endOfMonth(currentMonth);
+  const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
+  const startDayOfWeek = monthStart.getDay();
+  const emptyDaysBefore = Array.from({ length: startDayOfWeek }).map((_, i) => i);
+
   const filteredDoctors = useMemo(() => {
     return allDoctors.filter((doc) => {
-      const fullName = `Dr. ${doc.firstName} ${doc.lastName}`.toLowerCase();
+      const fullName = `Dr. ${doc.firstName || ''} ${doc.lastName || ''}`.toLowerCase();
       const matchesSearch = fullName.includes(searchQuery.toLowerCase()) || (doc.specialty || '').toLowerCase().includes(searchQuery.toLowerCase());
       const matchesSpecialty = selectedSpecialty ? doc.specialty === selectedSpecialty : true;
       return matchesSearch && matchesSpecialty;
@@ -405,7 +344,18 @@ export default function BookAppointment() {
 
               {/* Doctor Cards List */}
               <div className="space-y-2.5">
-                {filteredDoctors.map((doc) => {
+                {isLoadingDoctors ? (
+                  <div className="p-8 text-center text-xs text-slate-500 flex items-center justify-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                    <span>Loading specialists...</span>
+                  </div>
+                ) : filteredDoctors.length === 0 ? (
+                  <div className="p-6 text-center text-xs text-slate-500 bg-slate-50 rounded-xl border border-slate-200/70 space-y-1">
+                    <p className="font-semibold text-slate-700">No doctors available</p>
+                    <p className="text-[11px] text-slate-400">Try adjusting your search query or check back later.</p>
+                  </div>
+                ) : (
+                  filteredDoctors.map((doc) => {
                   const isSelected =
                     String(selectedDoctorId) === String(doc.userId) || String(selectedDoctorId) === String(doc.id);
 
@@ -442,21 +392,20 @@ export default function BookAppointment() {
                         </div>
 
                         <p className="text-[11px] font-semibold text-blue-600 truncate">
-                          {doc.specialty || 'Cardiologist'}
+                          {doc.specialty || 'General Practitioner'}
                         </p>
 
                         <div className="flex items-center gap-1.5 text-[10px] text-slate-400 truncate mt-0.5">
-                          <span>{doc.degree || 'MD, DM'}</span>
+                          <span>{doc.qualifications || 'MD'}</span>
                           <span>•</span>
-                          <span>{doc.experienceYears || 10}+ years exp.</span>
+                          <span>{doc.experienceYears || 5}+ years exp.</span>
                         </div>
                       </div>
 
                       <div className="text-right shrink-0 flex flex-col items-end gap-1.5">
                         <div className="flex items-center text-[10px] font-bold text-slate-800 gap-1">
                           <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                          <span>{doc.rating || '4.9'}</span>
-                          <span className="text-[9px] text-slate-400 font-normal">({doc.reviewsCount || 128})</span>
+                          <span>4.9</span>
                         </div>
 
                         <div
@@ -469,7 +418,8 @@ export default function BookAppointment() {
                       </div>
                     </div>
                   );
-                })}
+                })
+              )}
               </div>
 
               <div className="flex items-center justify-center gap-1.5 pt-2 border-t border-slate-100">
@@ -625,12 +575,18 @@ export default function BookAppointment() {
                   </div>
 
                   <div className="grid grid-cols-3 gap-2">
-                    {displaySlots.length === 0 && (
-                      <div className="col-span-3 p-4 text-center text-sm text-slate-500">
-                        No appointment slots are currently available for this date.
+                    {isLoadingSlots ? (
+                      <div className="col-span-3 p-6 text-center text-xs text-slate-500 flex items-center justify-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                        <span>Loading available slots...</span>
                       </div>
-                    )}
-                    {displaySlots.map((slot) => {
+                    ) : displaySlots.length === 0 ? (
+                      <div className="col-span-3 p-4 text-center text-xs text-slate-500 bg-slate-50 rounded-xl border border-slate-200/70 space-y-1">
+                        <p className="font-semibold text-slate-700">No available time slots</p>
+                        <p className="text-[11px] text-slate-400">Please select another date on the calendar above.</p>
+                      </div>
+                    ) : (
+                      displaySlots.map((slot) => {
                       const isSelected = selectedSlotId === slot.id;
 
                       return (
@@ -654,7 +610,8 @@ export default function BookAppointment() {
                           {slot.label || (slot.startTime ? format(new Date(slot.startTime), 'hh:mm a') : '')}
                         </button>
                       );
-                    })}
+                    })
+                  )}
                   </div>
 
                   <div className="bg-blue-50/60 rounded-xl p-2.5 text-[11px] text-blue-700 flex items-center gap-2 mt-4 font-medium">

@@ -39,12 +39,13 @@ const DashboardLayout = ({ portalSlug, allowedRoles }) => {
         return { count: 0 };
       }
     },
-    enabled: !!user?.id,
+    enabled: !!user?.id && isTokenValid(token),
+    retry: false,
     refetchInterval: 30000 // Poll every 30s
   });
   const unreadCount = unreadCountData?.count || 0;
 
-  if (!isTokenValid(token)) return <Navigate to={`/${portalSlug || 'patient'}/login`} replace />;
+  if (!isTokenValid(token)) return <Navigate to="/login" replace />;
   const userRoles = roles || [];
   const hasPermission = userRoles.includes('ROLE_ADMIN') || 
                         userRoles.includes('ROLE_SUPER_ADMIN') ||
@@ -54,6 +55,11 @@ const DashboardLayout = ({ portalSlug, allowedRoles }) => {
   if (!hasPermission) {
     return <Navigate to="/unauthorized" replace />;
   }
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login', { replace: true });
+  };
 
   const portalConfig = getPortalConfig(portalSlug);
   const { displayName, dashboardTiles = [] } = portalConfig;
@@ -115,59 +121,6 @@ const DashboardLayout = ({ portalSlug, allowedRoles }) => {
 
           {/* Right Actions */}
           <div className="flex items-center gap-6">
-            <div className="relative">
-              <button 
-                onClick={() => setIsQuickActionOpen(!isQuickActionOpen)}
-                className="bg-[#2160FF] hover:bg-blue-700 text-white px-4 py-2 rounded-xl flex items-center gap-2 text-sm font-bold transition shadow-sm cursor-pointer border-none"
-              >
-                <Zap size={16} className="fill-current" />
-                Quick Action
-                <ChevronDown size={14} className={isQuickActionOpen ? "rotate-180 transition-transform" : "transition-transform"} />
-              </button>
-
-              {isQuickActionOpen && (
-                <div 
-                  className="absolute right-0 mt-2 w-56 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl shadow-xl z-50 py-2 text-xs font-medium text-[var(--color-text)]"
-                  onMouseLeave={() => setIsQuickActionOpen(false)}
-                >
-                  <div className="px-3 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 mb-1">
-                    {portalSlug === 'patient' ? 'Patient Actions' : 'Clinical Actions'}
-                  </div>
-                  {portalSlug === 'patient' ? (
-                    <>
-                      <button onClick={() => { setIsQuickActionOpen(false); window.location.pathname = '/patient/book'; }} className="w-full text-left px-3 py-2 hover:bg-slate-50 flex items-center gap-2.5">
-                        <span className="p-1 rounded bg-indigo-50 text-indigo-600"><Stethoscope size={13} /></span> Book Appointment
-                      </button>
-                      <button onClick={() => { setIsQuickActionOpen(false); window.location.pathname = '/patient/order-medicine'; }} className="w-full text-left px-3 py-2 hover:bg-slate-50 flex items-center gap-2.5">
-                        <span className="p-1 rounded bg-orange-50 text-orange-600"><ShieldPlus size={13} /></span> Order Medicine
-                      </button>
-                      <button onClick={() => { setIsQuickActionOpen(false); window.location.pathname = '/patient/lab-reports'; }} className="w-full text-left px-3 py-2 hover:bg-slate-50 flex items-center gap-2.5">
-                        <span className="p-1 rounded bg-blue-50 text-blue-600"><Bell size={13} /></span> View Lab Reports
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <button onClick={() => { setIsQuickActionOpen(false); window.location.hash = '?panel=calendar'; }} className="w-full text-left px-3 py-2 hover:bg-slate-50 flex items-center gap-2.5">
-                        <span className="p-1 rounded bg-indigo-50 text-indigo-600"><Stethoscope size={13} /></span> New Appointment
-                      </button>
-                      <button onClick={() => { setIsQuickActionOpen(false); window.location.hash = '?panel=patients'; }} className="w-full text-left px-3 py-2 hover:bg-slate-50 flex items-center gap-2.5">
-                        <span className="p-1 rounded bg-green-50 text-green-600"><Search size={13} /></span> Add Patient
-                      </button>
-                      <button onClick={() => { setIsQuickActionOpen(false); window.location.pathname = '/doctor/prescription-templates'; }} className="w-full text-left px-3 py-2 hover:bg-slate-50 flex items-center gap-2.5">
-                        <span className="p-1 rounded bg-orange-50 text-orange-600"><ShieldPlus size={13} /></span> New Prescription
-                      </button>
-                      <button onClick={() => { setIsQuickActionOpen(false); window.location.hash = '?panel=patients'; }} className="w-full text-left px-3 py-2 hover:bg-slate-50 flex items-center gap-2.5">
-                        <span className="p-1 rounded bg-blue-50 text-blue-600"><Bell size={13} /></span> Lab Request
-                      </button>
-                      <button onClick={() => { setIsQuickActionOpen(false); window.location.hash = '?panel=queue'; }} className="w-full text-left px-3 py-2 hover:bg-slate-50 flex items-center gap-2.5 border-t border-slate-100 mt-1 pt-2">
-                        <span className="p-1 rounded bg-emerald-50 text-emerald-600"><Stethoscope size={13} /></span> Start Consultation
-                      </button>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-
             <div className="flex items-center gap-4 text-slate-500">
               
               <NotificationBell />
@@ -194,11 +147,8 @@ const DashboardLayout = ({ portalSlug, allowedRoles }) => {
               </div>
               <ChevronDown size={14} className="text-slate-400 hidden sm:block" />
               <button 
-                onClick={() => {
-                  logout();
-                  window.location.href = `/${portalSlug || 'patient'}/login`;
-                }}
-                className="p-1 text-slate-400 hover:text-red-600 transition ml-1"
+                onClick={handleLogout}
+                className="p-1 text-slate-400 hover:text-red-600 transition ml-1 cursor-pointer"
                 title="Logout"
               >
                 <LogOut size={16} />

@@ -11,6 +11,8 @@ import java.util.List;
 public interface AppointmentSlotRepository extends JpaRepository<AppointmentSlot, Long> {
     List<AppointmentSlot> findByDoctorUserIdAndStartTimeBetweenAndIsBookedFalse(Long userId, ZonedDateTime start, ZonedDateTime end);
     List<AppointmentSlot> findByDoctorUserIdAndStartTimeBetween(Long userId, ZonedDateTime start, ZonedDateTime end);
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
     void deleteByDoctorUserIdAndStartTimeBetweenAndIsBookedFalse(Long userId, ZonedDateTime start, ZonedDateTime end);
     
     @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)

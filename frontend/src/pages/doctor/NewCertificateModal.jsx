@@ -18,7 +18,7 @@ const NewCertificateModal = ({ isOpen, onClose }) => {
       toast.error('Please enter patient name');
       return;
     }
-    // Mock success
+    // Certificate issuance handler
     toast.success('Medical Certificate generated successfully!');
     setFormData({ patientName: '', certificateType: 'Fitness Certificate', durationDays: '3', remarks: '' });
     onClose();

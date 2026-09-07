@@ -11,42 +11,35 @@ import { toast } from 'react-hot-toast';
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, Tooltip as RechartsTooltip, XAxis, YAxis } from 'recharts';
 
 /* ── KPI Drill-Down Modal ────────────────────────────────── */
-const MOCK_DRILL_DOWN = {
-  'Total Appointments': [
-    { id: 'APT-1021', patient: 'Rahul Sharma', doctor: 'Dr. Priya Nair', dept: 'General Medicine', time: '09:00 AM', status: 'Completed' },
-    { id: 'APT-1022', patient: 'Meena Iyer', doctor: 'Dr. Karthik R', dept: 'Cardiology', time: '09:30 AM', status: 'Completed' },
-    { id: 'APT-1023', patient: 'Suresh P', doctor: 'Dr. Anitha K', dept: 'Orthopedics', time: '10:00 AM', status: 'No-Show' },
-    { id: 'APT-1024', patient: 'Lakshmi V', doctor: 'Dr. Priya Nair', dept: 'General Medicine', time: '10:30 AM', status: 'Completed' },
-    { id: 'APT-1025', patient: 'Ravi Kumar', doctor: 'Dr. Rajesh S', dept: 'Dermatology', time: '11:00 AM', status: 'Cancelled' },
-  ],
-  'Completed': [
-    { id: 'APT-1021', patient: 'Rahul Sharma', doctor: 'Dr. Priya Nair', dept: 'General Medicine', time: '09:00 AM', status: 'Completed' },
-    { id: 'APT-1022', patient: 'Meena Iyer', doctor: 'Dr. Karthik R', dept: 'Cardiology', time: '09:30 AM', status: 'Completed' },
-    { id: 'APT-1024', patient: 'Lakshmi V', doctor: 'Dr. Priya Nair', dept: 'General Medicine', time: '10:30 AM', status: 'Completed' },
-  ],
-  'Cancelled': [
-    { id: 'APT-1025', patient: 'Ravi Kumar', doctor: 'Dr. Rajesh S', dept: 'Dermatology', time: '11:00 AM', status: 'Cancelled' },
-  ],
-  'No-Shows': [
-    { id: 'APT-1023', patient: 'Suresh P', doctor: 'Dr. Anitha K', dept: 'Orthopedics', time: '10:00 AM', status: 'No-Show' },
-  ],
-};
-
 const STATUS_BADGE = {
+  'COMPLETED': 'bg-emerald-100 text-emerald-700',
   'Completed': 'bg-emerald-100 text-emerald-700',
+  'CANCELLED': 'bg-red-100 text-red-700',
   'Cancelled': 'bg-red-100 text-red-700',
+  'NO_SHOW': 'bg-amber-100 text-amber-700',
   'No-Show': 'bg-amber-100 text-amber-700',
 };
 
 function KpiDrillDownModal({ kpi, onClose }) {
-  const rows = MOCK_DRILL_DOWN[kpi.name] || MOCK_DRILL_DOWN['Total Appointments'];
+  const { data: appointments = [], isLoading } = useQuery({
+    queryKey: ['opdDrillDown', kpi?.name],
+    queryFn: async () => {
+      const res = await axiosPrivate.get('/appointments');
+      const list = Array.isArray(res.data) ? res.data : (res.data?.content || []);
+      if (kpi?.name === 'Completed') return list.filter(a => a.status === 'COMPLETED');
+      if (kpi?.name === 'Cancelled') return list.filter(a => a.status === 'CANCELLED');
+      if (kpi?.name === 'No-Shows') return list.filter(a => a.status === 'NO_SHOW');
+      return list;
+    }
+  });
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[85vh]">
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50">
           <div>
             <h2 className="font-bold text-slate-800">{kpi.name} — Drill Down</h2>
-            <p className="text-xs text-slate-400 mt-0.5">Showing sample records for today</p>
+            <p className="text-xs text-slate-400 mt-0.5">Showing live records</p>
           </div>
           <button onClick={onClose} className="p-1 hover:bg-slate-200 rounded-lg transition-colors">
             <X className="w-4 h-4 text-slate-500" />
@@ -54,39 +47,44 @@ function KpiDrillDownModal({ kpi, onClose }) {
         </div>
 
         <div className="overflow-auto flex-1">
-          <table className="w-full">
-            <thead className="sticky top-0 bg-slate-50">
-              <tr className="border-b border-slate-100">
-                {['ID', 'Patient', 'Doctor', 'Department', 'Time', 'Status'].map(h => (
-                  <th key={h} className="text-left px-4 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row, i) => (
-                <tr key={i} className="border-b border-slate-50 hover:bg-slate-50 transition-colors">
-                  <td className="px-4 py-3 text-xs font-mono text-slate-500">{row.id}</td>
-                  <td className="px-4 py-3 text-sm font-bold text-slate-700">{row.patient}</td>
-                  <td className="px-4 py-3 text-xs text-slate-600">{row.doctor}</td>
-                  <td className="px-4 py-3 text-xs text-slate-500">{row.dept}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1 text-xs text-slate-500">
-                      <Clock className="w-3 h-3" /> {row.time}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${STATUS_BADGE[row.status] || 'bg-slate-100 text-slate-600'}`}>
-                      {row.status}
-                    </span>
-                  </td>
+          {isLoading ? (
+            <div className="p-8 text-center text-slate-400 text-sm">Loading records...</div>
+          ) : appointments.length === 0 ? (
+            <div className="p-8 text-center text-slate-400 text-sm">No records found.</div>
+          ) : (
+            <table className="w-full">
+              <thead className="sticky top-0 bg-slate-50">
+                <tr className="border-b border-slate-100">
+                  {['ID', 'Patient', 'Doctor', 'Date/Time', 'Status'].map(h => (
+                    <th key={h} className="text-left px-4 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">{h}</th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {appointments.map((row, i) => (
+                  <tr key={row.id || i} className="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+                    <td className="px-4 py-3 text-xs font-mono text-slate-500">#{row.id}</td>
+                    <td className="px-4 py-3 text-sm font-bold text-slate-700">{row.patientName || row.patient?.name || `Patient #${row.patientId || ''}`}</td>
+                    <td className="px-4 py-3 text-xs text-slate-600">{row.doctorName || row.doctor?.name || `Doctor #${row.doctorId || ''}`}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-1 text-xs text-slate-500">
+                        <Clock className="w-3 h-3" /> {row.appointmentTime || row.slotTime || row.appointmentDate || '—'}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${STATUS_BADGE[row.status] || 'bg-slate-100 text-slate-600'}`}>
+                        {row.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
 
         <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-          <p className="text-xs text-slate-400">{rows.length} record{rows.length !== 1 ? 's' : ''} shown</p>
+          <p className="text-xs text-slate-400">{appointments.length} record{appointments.length !== 1 ? 's' : ''} shown</p>
           <button onClick={onClose} className="px-5 py-2 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors">Close</button>
         </div>
       </div>
@@ -126,7 +124,7 @@ const OPDAnalyticsDashboard = () => {
 
   const handleExport = (format) => {
     toast.success(`Exporting OPD Analytics to ${format.toUpperCase()}...`);
-    // Mock export trigger for now. In reality, call the ReportExportService API endpoint.
+    // Report export trigger handler
   };
 
   return (

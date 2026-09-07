@@ -118,7 +118,14 @@ const AppointmentHistory = () => {
                     </div>
                     <div>
                       <div className="flex items-center gap-3 mb-1">
-                        <h3 className="text-lg font-black text-slate-900 tracking-tight">{a.doctorName}</h3>
+                        <h3 className="text-lg font-black text-slate-900 tracking-tight">
+                          {a.doctorName || (`Dr. ${a.doctorFirstName || ''} ${a.doctorLastName || ''}`.trim() || 'Doctor')}
+                        </h3>
+                        {a.appointmentNumber && (
+                          <span className="text-xs font-mono font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">
+                            {a.appointmentNumber}
+                          </span>
+                        )}
                         <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black tracking-widest uppercase flex items-center gap-1.5 ${bg} ${color}`}>
                           <span className={`w-1.5 h-1.5 rounded-full ${dot}`}></span>
                           {a.status}

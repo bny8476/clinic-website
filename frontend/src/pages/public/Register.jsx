@@ -193,7 +193,7 @@ const Register = () => {
         phoneNumber: formData.phone,
       });
       setSuccess('Registration successful! Redirecting to login…');
-      setTimeout(() => navigate('/patient/login'), 1500);
+      setTimeout(() => navigate('/login'), 1500);
     } catch (err) {
       let msg = 'Registration failed. Please check details.';
       if (err.response?.data) {
@@ -236,7 +236,7 @@ const Register = () => {
           {/* Bottom link */}
           <p className="text-[12px] text-gray-500 text-center mt-4">
             Already have an account?{' '}
-            <Link to="/patient/login" style={{ color: BLUE }} className="font-semibold hover:underline">
+            <Link to="/login" style={{ color: BLUE }} className="font-semibold hover:underline">
               Sign In
             </Link>
           </p>
@@ -368,7 +368,7 @@ const Register = () => {
             {/* Mobile bottom link */}
             <motion.p variants={listStagger} className="text-center text-[12px] text-gray-500 lg:hidden pt-1">
               Already have an account?{' '}
-              <Link to="/patient/login" style={{ color: BLUE }} className="font-semibold hover:underline">Sign In</Link>
+              <Link to="/login" style={{ color: BLUE }} className="font-semibold hover:underline">Sign In</Link>
             </motion.p>
 
           </motion.form>

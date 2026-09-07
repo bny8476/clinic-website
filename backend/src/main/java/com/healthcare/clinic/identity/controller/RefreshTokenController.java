@@ -56,9 +56,20 @@ public class RefreshTokenController {
                                 .sameSite("None")
                                 .build();
 
+                        java.util.Set<String> roles = user.getRoles().stream()
+                                .map(com.healthcare.clinic.identity.entity.Role::getName)
+                                .collect(java.util.stream.Collectors.toSet());
+                        java.util.Set<String> permissions = new java.util.HashSet<>();
+                        user.getRoles().forEach(r -> {
+                            if (r.getPermissions() != null) {
+                                r.getPermissions().forEach(p -> permissions.add(p.getName()));
+                            }
+                        });
+                        UserDto userDto = new UserDto(user.getId(), user.getFirstName() + " " + user.getLastName(), user.getEmail(), user.getFirstName(), user.getLastName());
+
                         return ResponseEntity.ok()
                                 .header(org.springframework.http.HttpHeaders.SET_COOKIE, refreshCookie.toString())
-                                .body(new TokenRefreshResponse(token, newRefreshToken));
+                                .body(new TokenRefreshResponse(token, newRefreshToken, 900L, userDto, roles, permissions));
                     })
                     .orElseThrow(() -> new RuntimeException("Refresh token is not in database!"));
         } catch (Exception e) {
@@ -103,12 +114,22 @@ class TokenRefreshRequest {
 
 @Data
 class TokenRefreshResponse {
+    private String token;
     private String accessToken;
     private String refreshToken;
     private String tokenType = "Bearer";
+    private Long expiresIn;
+    private UserDto user;
+    private java.util.Set<String> roles;
+    private java.util.Set<String> permissions;
 
-    public TokenRefreshResponse(String accessToken, String refreshToken) {
+    public TokenRefreshResponse(String accessToken, String refreshToken, Long expiresIn, UserDto user, java.util.Set<String> roles, java.util.Set<String> permissions) {
+        this.token = accessToken;
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
+        this.expiresIn = expiresIn;
+        this.user = user;
+        this.roles = roles;
+        this.permissions = permissions;
     }
 }

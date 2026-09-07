@@ -69,6 +69,48 @@ public class Appointment {
     @Column(columnDefinition = "TEXT")
     private String notes;
 
+    @Column(name = "appointment_number", unique = true, length = 50)
+    private String appointmentNumber;
+
+    @Column(name = "department_id")
+    private Long departmentId;
+
+    @Column(name = "service_id")
+    private Long serviceId;
+
+    @Column(name = "appointment_date")
+    private java.time.LocalDate appointmentDate;
+
+    @Column
+    private Integer duration;
+
+    @Column(name = "payment_status", length = 30)
+    private String paymentStatus;
+
+    @Column(name = "payment_id", length = 100)
+    private String paymentId;
+
+    @Column(name = "insurance_id")
+    private Long insuranceId;
+
+    @Column(name = "booking_source", length = 30)
+    private String bookingSource;
+
+    @Column(name = "created_by")
+    private Long createdBy;
+
+    @Column(name = "cancelled_by")
+    private Long cancelledBy;
+
+    @Column(name = "cancelled_at")
+    private ZonedDateTime cancelledAt;
+
+    @Column(name = "cancellation_reason", columnDefinition = "TEXT")
+    private String cancellationReason;
+
+    @Column(name = "rescheduled_from")
+    private Long rescheduledFrom;
+
     @Column(name = "branch_id", insertable = false, updatable = false)
     private Long branchId;
 

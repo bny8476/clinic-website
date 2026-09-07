@@ -73,12 +73,12 @@ public class SecurityConfig {
                 auth.requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll();
                 auth.requestMatchers("/api/auth/**", "/api/health", "/api/pharmacy/config/public", "/error").permitAll();
                 auth.requestMatchers(org.springframework.http.HttpMethod.POST, "/api/ai/chat", "/api/v1/ai/chat").permitAll();
-                auth.requestMatchers(org.springframework.http.HttpMethod.GET, "/api/sse/**", "/api/notifications/stream").permitAll();
+                auth.requestMatchers("/api/sse/**", "/api/notifications/stream").permitAll();
                 auth.requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/finance/payments/webhook/stripe", "/api/reception/kiosk/self-checkin").permitAll();
                 if (!isProd) {
                     auth.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll();
                 }
-                auth.requestMatchers(org.springframework.http.HttpMethod.GET, "/api/doctors", "/api/doctors/**", "/api/departments", "/api/departments/**", "/api/clinic/stats").permitAll();
+                auth.requestMatchers(org.springframework.http.HttpMethod.GET, "/api/doctors", "/api/doctors/**", "/api/departments", "/api/departments/**", "/api/clinic/stats", "/api/appointments/available-slots", "/api/appointments/slots", "/api/medicines", "/api/medicines/**").permitAll();
                 auth.requestMatchers(org.springframework.http.HttpMethod.POST, "/api/appointments/guest").permitAll();
                 auth.anyRequest().authenticated();
             });

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
-import { Search, Filter, ShoppingBag, Star, ShieldAlert, CheckCircle2, ChevronRight, ArrowUpDown, RefreshCw, Plus, ShoppingCart } from 'lucide-react';
+import { Search, ShoppingBag, ShieldAlert, ChevronRight, ArrowUpDown, Plus, ShoppingCart, ChevronLeft } from 'lucide-react';
 import { axiosPublic } from '../../api/axios';
 
 export default function MedicineMarketplace() {
@@ -13,6 +13,9 @@ export default function MedicineMarketplace() {
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const [rxRequiredFilter, setRxRequiredFilter] = useState('ALL');
   const [sortBy, setSortBy] = useState('newest');
+  const [page, setPage] = useState(0);
+  const pageSize = 12;
+
   const [cartItems, setCartItems] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem('cartItems') || '[]');
@@ -23,7 +26,10 @@ export default function MedicineMarketplace() {
 
   // Debounce search input by 300ms
   useEffect(() => {
-    const handler = setTimeout(() => setDebouncedSearch(searchTerm), 300);
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setPage(0);
+    }, 300);
     return () => clearTimeout(handler);
   }, [searchTerm]);
 
@@ -32,21 +38,28 @@ export default function MedicineMarketplace() {
     localStorage.setItem('cartItems', JSON.stringify(cartItems));
   }, [cartItems]);
 
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ['publicMedicines', debouncedSearch, selectedCategory, rxRequiredFilter, sortBy],
+  const { data, isLoading } = useQuery({
+    queryKey: ['publicMedicines', debouncedSearch, selectedCategory, rxRequiredFilter, sortBy, page],
     queryFn: async () => {
       let params = new URLSearchParams();
       if (debouncedSearch) params.append('q', debouncedSearch);
       if (selectedCategory && selectedCategory !== 'ALL') params.append('category', selectedCategory);
       if (rxRequiredFilter !== 'ALL') params.append('rxRequired', rxRequiredFilter === 'RX');
       params.append('sortBy', sortBy);
+      params.append('page', page.toString());
+      params.append('size', pageSize.toString());
 
       const res = await axiosPublic.get(`/medicines?${params.toString()}`);
       return res.data;
     }
   });
 
-  const medicines = data?.content || data || [];
+  const medicines = data?.content || (Array.isArray(data) ? data : []);
+  const totalElements = data?.totalElements != null ? data.totalElements : medicines.length;
+  const totalPages = data?.totalPages != null ? data.totalPages : Math.ceil(totalElements / pageSize);
+
+  const startRecord = totalElements > 0 ? page * pageSize + 1 : 0;
+  const endRecord = Math.min((page + 1) * pageSize, totalElements);
 
   const addToCart = (med) => {
     const existingIndex = cartItems.findIndex(item => item.medicineId === med.id);
@@ -72,11 +85,11 @@ export default function MedicineMarketplace() {
   const totalCartCount = cartItems.reduce((acc, i) => acc + i.quantity, 0);
 
   const categories = [
-    'ALL', 'Pain Relief', 'Antibiotics', 'Cardiology', 'Dermatology', 'Vitamins & Supplements', 'Diabetes Care', 'Cold & Cough'
+    'ALL', 'Tablet', 'Capsule', 'Syrup', 'Injection', 'Ointment', 'Vitamins & Supplements', 'Diabetes Care'
   ];
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] pb-24">
+    <div className="min-h-screen bg-[#F8FAFC] pb-24 font-sans">
       {/* Hero Banner */}
       <div className="bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 text-white py-12 px-4 sm:px-8 shadow-md relative overflow-hidden">
         <div className="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-white/10 blur-3xl pointer-events-none" />
@@ -128,7 +141,7 @@ export default function MedicineMarketplace() {
                 <ArrowUpDown size={16} className="text-gray-500 shrink-0" />
                 <select
                   value={sortBy}
-                  onChange={e => setSortBy(e.target.value)}
+                  onChange={e => { setSortBy(e.target.value); setPage(0); }}
                   className="bg-transparent focus:outline-none text-gray-800 font-bold text-sm cursor-pointer"
                 >
                   <option value="newest">Newest Arrivals</option>
@@ -146,7 +159,7 @@ export default function MedicineMarketplace() {
             {categories.map(cat => (
               <button
                 key={cat}
-                onClick={() => setSelectedCategory(cat)}
+                onClick={() => { setSelectedCategory(cat); setPage(0); }}
                 className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer whitespace-nowrap ${
                   selectedCategory === cat
                     ? 'bg-blue-600 text-white shadow-md shadow-blue-600/25'
@@ -157,6 +170,33 @@ export default function MedicineMarketplace() {
               </button>
             ))}
           </div>
+        </div>
+
+        {/* Dynamic Pagination Metadata Bar */}
+        <div className="flex justify-between items-center mb-4 text-xs font-bold text-slate-500 px-2">
+          <span>
+            {totalElements > 0 ? `Showing ${startRecord} to ${endRecord} of ${totalElements} medicines` : 'No medicines found'}
+          </span>
+
+          {totalPages > 1 && (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPage(prev => Math.max(0, prev - 1))}
+                disabled={page === 0}
+                className="p-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 disabled:opacity-40 transition cursor-pointer"
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <span>Page {page + 1} of {totalPages}</span>
+              <button
+                onClick={() => setPage(prev => Math.min(totalPages - 1, prev + 1))}
+                disabled={page >= totalPages - 1}
+                className="p-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 disabled:opacity-40 transition cursor-pointer"
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Product Grid */}
@@ -177,7 +217,7 @@ export default function MedicineMarketplace() {
             <h3 className="text-xl font-bold text-gray-900">No medicines found</h3>
             <p className="text-gray-500 text-sm mt-1">Try adjusting your search keywords or category filters.</p>
             <button
-              onClick={() => { setSearchTerm(''); setSelectedCategory('ALL'); }}
+              onClick={() => { setSearchTerm(''); setSelectedCategory('ALL'); setPage(0); }}
               className="mt-6 px-6 py-2.5 bg-blue-50 text-blue-600 font-bold rounded-xl text-sm hover:bg-blue-100 transition cursor-pointer"
             >
               Reset Filters
@@ -201,12 +241,19 @@ export default function MedicineMarketplace() {
                   className="bg-white rounded-3xl p-5 border border-gray-100 shadow-md hover:shadow-2xl transition-all duration-300 flex flex-col justify-between group relative overflow-hidden"
                 >
                   {/* Image & Badges */}
-                  <div className="relative mb-4 overflow-hidden rounded-2xl bg-gray-50 h-48 flex items-center justify-center">
-                    <img
-                      src={med.medicineImage || med.imageUrl || 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600'}
-                      alt={med.title || med.medicineName}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
+                  <div className="relative mb-4 overflow-hidden rounded-2xl bg-slate-50 h-48 flex items-center justify-center">
+                    {med.medicineImage || med.imageUrl ? (
+                      <img
+                        src={med.medicineImage || med.imageUrl}
+                        alt={med.title || med.medicineName}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center p-4 text-center">
+                        <ShoppingBag size={36} className="text-slate-300 mb-1" />
+                        <span className="text-xs font-bold text-slate-400">{med.brandName || med.manufacturer || 'Pharmaceutical'}</span>
+                      </div>
+                    )}
                     {discountPercent > 0 && (
                       <span className="absolute top-3 left-3 bg-red-500 text-white text-[11px] font-extrabold px-2.5 py-1 rounded-lg shadow">
                         {discountPercent}% OFF
@@ -214,7 +261,7 @@ export default function MedicineMarketplace() {
                     )}
                     {med.prescriptionRequired && (
                       <span className="absolute top-3 right-3 bg-amber-500 text-white text-[10px] font-bold px-2 py-1 rounded-lg shadow flex items-center gap-1">
-                        <ShieldAlert size={12} /> Rx
+                        <ShieldAlert size={12} /> Rx Required
                       </span>
                     )}
                   </div>
@@ -222,23 +269,19 @@ export default function MedicineMarketplace() {
                   {/* Info */}
                   <div>
                     <span className="text-[11px] font-bold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-md uppercase tracking-wider">
-                      {med.category || 'Pain Relief'}
+                      {med.category || 'Medicine'}
                     </span>
                     <h3 className="font-extrabold text-gray-900 text-lg mt-2 line-clamp-1 group-hover:text-blue-600 transition-colors">
                       {med.title || med.medicineName}
                     </h3>
                     <p className="text-xs text-gray-500 font-medium line-clamp-1 mt-0.5">
-                      {med.genericName || med.brandName || 'Authentic Formulation'}
+                      {med.genericName ? `Generic: ${med.genericName}` : (med.brandName || 'Authentic Formulation')}
                     </p>
 
-                    {/* Rating & Stock */}
+                    {/* Stock Status */}
                     <div className="flex items-center justify-between mt-3 text-xs">
-                      <div className="flex items-center gap-1 text-amber-500 font-bold">
-                        <Star size={14} className="fill-amber-400 text-amber-400" />
-                        <span>4.8</span>
-                      </div>
                       <span className={`font-bold ${med.stockQuantity > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
-                        {med.stockQuantity > 0 ? '● In Stock' : 'Out of Stock'}
+                        {med.stockQuantity > 0 ? `● In Stock (${med.stockQuantity})` : 'Out of Stock'}
                       </span>
                     </div>
 

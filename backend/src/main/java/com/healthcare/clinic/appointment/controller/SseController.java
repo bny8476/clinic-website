@@ -50,11 +50,11 @@ public class SseController {
     private final List<ClientConnection> connections = new CopyOnWriteArrayList<>();
 
     @PostMapping("/ticket")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> generateTicket(@AuthenticationPrincipal UserPrincipal user) {
-        boolean isAdmin = user.getAuthorities().stream()
+        Long userId = user != null ? user.getUserId() : com.healthcare.clinic.security.SecurityUtils.getCurrentUserId();
+        boolean isAdmin = user != null && user.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_RECEPTION"));
-        String ticket = sseTicketService.generateTicket(user.getUserId(), isAdmin);
+        String ticket = sseTicketService.generateTicket(userId != null ? userId : 0L, isAdmin);
         return ResponseEntity.ok(Map.of("ticket", ticket));
     }
 

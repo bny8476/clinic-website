@@ -27,7 +27,7 @@ public class PrescriptionController {
     private final PrescriptionRefillService prescriptionRefillService;
 
     @GetMapping
-    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_PATIENT')")
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_PATIENT') or hasAuthority('ROLE_PHARMACIST') or hasAuthority('ROLE_NURSE') or hasAuthority('ROLE_RECEPTION')")
     public ResponseEntity<List<PrescriptionResponse>> getAllPrescriptions() {
         return ResponseEntity.ok(prescriptionService.getAllPrescriptions());
     }

@@ -48,9 +48,7 @@ public class PatientMedicineService {
                 .collect(Collectors.toList());
 
         if (doctorProfileIds.isEmpty()) {
-            return doctorMedicineRepository.findByIsActiveTrue().stream()
-                    .map(this::mapToDto)
-                    .collect(Collectors.toList());
+            return java.util.Collections.emptyList();
         }
 
         return doctorMedicineRepository.findByDoctorIdInAndIsActiveTrue(doctorProfileIds).stream()

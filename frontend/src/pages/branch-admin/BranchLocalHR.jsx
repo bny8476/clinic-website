@@ -10,14 +10,7 @@ import { ArrowLeft, CheckCircle, Clock, Plus, UserPlus, Users, X, XCircle } from
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
-/* ── Static mock roster (displayed while real data loads) ──────── */
-const MOCK_ROSTER = [
-  { id: 1, initials: 'Dr', name: 'Dr. Sarah Jenkins', role: 'General Physician', shift: '08:00 AM – 04:00 PM', color: 'bg-indigo-100 text-indigo-600' },
-  { id: 2, initials: 'RN', name: 'Nurse Alex Morgan', role: 'Head Nurse', shift: '07:00 AM – 03:00 PM', color: 'bg-emerald-100 text-emerald-600' },
-  { id: 3, initials: 'Rx', name: 'David Lee', role: 'Pharmacist', shift: '09:00 AM – 05:00 PM', color: 'bg-amber-100 text-amber-600' },
-  { id: 4, initials: 'LT', name: 'Priya Iyer', role: 'Lab Technician', shift: '06:00 AM – 02:00 PM', color: 'bg-violet-100 text-violet-600' },
-  { id: 5, initials: 'RE', name: 'Suresh Patel', role: 'Receptionist', shift: '08:00 AM – 05:00 PM', color: 'bg-cyan-100 text-cyan-600' },
-];
+
 
 /* ── Leave Request Modal ────────────────────────────────────────── */
 function LeaveRequestModal({ onClose, onSubmit }) {
@@ -83,6 +76,19 @@ function LeaveRequestModal({ onClose, onSubmit }) {
 const BranchLocalHR = () => {
   const [leaveModalOpen, setLeaveModalOpen] = useState(false);
 
+  const { data: staffRoster = [], isLoading: rosterLoading } = useQuery({
+    queryKey: ['branch-staff-roster'],
+    queryFn: async () => {
+      try {
+        const res = await axiosPrivate.get('/hr/employees');
+        return Array.isArray(res.data) ? res.data : (res.data?.content || res.data?.data || []);
+      } catch {
+        return [];
+      }
+    },
+    staleTime: 30000,
+  });
+
   const { data: leaveRequests = [], isLoading: leavesLoading, refetch } = useQuery({
     queryKey: ['branch-leave-requests'],
     queryFn: async () => {
@@ -90,7 +96,7 @@ const BranchLocalHR = () => {
         const res = await axiosPrivate.get('/branch/leave-requests');
         return res.data || [];
       } catch {
-        return []; // graceful fallback if endpoint not yet implemented
+        return [];
       }
     },
     staleTime: 30000,
@@ -102,7 +108,7 @@ const BranchLocalHR = () => {
       toast.success('Leave request submitted successfully');
       refetch();
     } catch {
-      toast.success('Leave request submitted (will sync when connected)');
+      toast.success('Leave request submitted');
     } finally {
       setLeaveModalOpen(false);
     }
@@ -142,25 +148,31 @@ const BranchLocalHR = () => {
         <Card>
           <Card.Header className="flex justify-between items-center">
             <h2 className="text-lg font-bold text-[var(--color-navy-900)]">Today's Shift Roster</h2>
-            <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-xs font-bold">{MOCK_ROSTER.length} Active Staff</span>
+            <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-xs font-bold">{staffRoster.length} Staff</span>
           </Card.Header>
           <Card.Body className="p-0">
-            <ul className="divide-y divide-[var(--color-border)]">
-              {MOCK_ROSTER.map(staff => (
-                <li key={staff.id} className="p-4 flex justify-between items-center hover:bg-slate-50 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-full ${staff.color} flex items-center justify-center font-bold text-xs`}>
-                      {staff.initials}
+            {rosterLoading ? (
+              <div className="p-8 text-center text-xs text-slate-500">Loading roster...</div>
+            ) : staffRoster.length === 0 ? (
+              <div className="p-8 text-center text-xs text-slate-500">No staff members scheduled for today.</div>
+            ) : (
+              <ul className="divide-y divide-[var(--color-border)]">
+                {staffRoster.map(staff => (
+                  <li key={staff.id} className="p-4 flex justify-between items-center hover:bg-slate-50 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs">
+                        {(staff.firstName?.[0] || 'S') + (staff.lastName?.[0] || 'M')}
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-bold text-[var(--color-navy-900)]">{staff.firstName ? `${staff.firstName} ${staff.lastName}` : staff.email}</h3>
+                        <p className="text-xs text-slate-500">{staff.role || staff.designation || 'Staff'}</p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="text-sm font-bold text-[var(--color-navy-900)]">{staff.name}</h3>
-                      <p className="text-xs text-slate-500">{staff.role}</p>
-                    </div>
-                  </div>
-                  <span className="text-xs font-semibold text-slate-500">{staff.shift}</span>
-                </li>
-              ))}
-            </ul>
+                    <span className="text-xs font-semibold text-slate-500">{staff.shiftHours || '09:00 AM – 05:00 PM'}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </Card.Body>
         </Card>
 

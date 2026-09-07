@@ -1,55 +1,35 @@
 import { useEffect, useRef, useState } from 'react';
 import { AlertTriangle, Bell, Check, CheckCircle2, Info, Package, Receipt } from 'lucide-react';
 
-const DUMMY_NOTIFICATIONS = [
-  {
-    id: 1,
-    title: 'Low Stock Alert',
-    message: 'Paracetamol 500mg is below the minimum reorder level (15 strips remaining).',
-    type: 'warning',
-    time: '10 mins ago',
-    isRead: false
-  },
-  {
-    id: 2,
-    title: 'PO Approved',
-    message: 'Purchase Order #PO-2023-1192 has been approved by Admin.',
-    type: 'success',
-    time: '1 hour ago',
-    isRead: false
-  },
-  {
-    id: 3,
-    title: 'New GRN Generated',
-    message: 'Goods Receipt Note #GRN-8822 generated for MedPlus Suppliers.',
-    type: 'info',
-    time: '2 hours ago',
-    isRead: false
-  },
-  {
-    id: 4,
-    title: 'Expiring Medicines',
-    message: '3 batches are expiring within the next 30 days.',
-    type: 'warning',
-    time: '1 day ago',
-    isRead: true
-  },
-  {
-    id: 5,
-    title: 'Stock Transfer',
-    message: 'Stock transfer request from Branch A has been completed.',
-    type: 'success',
-    time: '2 days ago',
-    isRead: true
-  }
-];
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { axiosPrivate } from '../../../api/axios';
 
 export default function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);
-  const [notifications, setNotifications] = useState(DUMMY_NOTIFICATIONS);
   const dropdownRef = useRef(null);
+  const queryClient = useQueryClient();
 
-  const unreadCount = notifications.filter(n => !n.isRead).length;
+  const { data: notificationsData } = useQuery({
+    queryKey: ['notifications'],
+    queryFn: async () => {
+      const res = await axiosPrivate.get('/notifications');
+      return res.data;
+    },
+    refetchInterval: 15000
+  });
+
+  const markAllMutation = useMutation({
+    mutationFn: async () => axiosPrivate.patch('/notifications/mark-all-read'),
+    onSuccess: () => queryClient.invalidateQueries(['notifications'])
+  });
+
+  const markReadMutation = useMutation({
+    mutationFn: async (id) => axiosPrivate.patch(`/notifications/${id}/read`),
+    onSuccess: () => queryClient.invalidateQueries(['notifications'])
+  });
+
+  const notifications = notificationsData || [];
+  const unreadCount = notifications.filter(n => !n.isRead && !n.read).length;
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -66,7 +46,7 @@ export default function NotificationDropdown() {
   }, [isOpen]);
 
   const markAllAsRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+    markAllMutation.mutate();
   };
 
   const getIcon = (type) => {

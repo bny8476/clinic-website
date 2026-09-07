@@ -9,10 +9,14 @@ import java.time.ZonedDateTime;
 @NoArgsConstructor
 public class AppointmentResponseDto {
     private Long id;
+    private String appointmentNumber;
     private String status;
+    private String appointmentType;
     private String reasonForVisit;
     private String notes;
     private Long branchId;
+    private Integer duration;
+    private String paymentStatus;
     private ZonedDateTime createdAt;
     private Integer tokenNumber;
 
@@ -32,15 +36,19 @@ public class AppointmentResponseDto {
     private String patientLastName;
 
     public AppointmentResponseDto(
-            Long id, com.healthcare.clinic.appointment.entity.AppointmentStatus status, String reasonForVisit, String notes, Long branchId, ZonedDateTime createdAt,
+            Long id, String appointmentNumber, com.healthcare.clinic.appointment.entity.AppointmentStatus status, String appointmentType, String reasonForVisit, String notes, Long branchId, Integer duration, String paymentStatus, ZonedDateTime createdAt,
             Long slotId, ZonedDateTime startTime, ZonedDateTime endTime,
             Long doctorId, String doctorFirstName, String doctorLastName,
             Long patientId, String patientFirstName, String patientLastName) {
         this.id = id;
+        this.appointmentNumber = appointmentNumber;
         this.status = status != null ? status.name() : null;
+        this.appointmentType = appointmentType;
         this.reasonForVisit = reasonForVisit;
         this.notes = notes;
         this.branchId = branchId;
+        this.duration = duration;
+        this.paymentStatus = paymentStatus;
         this.createdAt = createdAt;
         this.slotId = slotId;
         this.startTime = startTime;
@@ -53,3 +61,4 @@ public class AppointmentResponseDto {
         this.patientLastName = patientLastName;
     }
 }
+

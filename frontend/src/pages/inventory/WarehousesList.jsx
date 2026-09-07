@@ -41,11 +41,7 @@ const WarehousesList = () => {
     queryFn: async () => (await axiosPrivate.get('/backoffice/inventory/warehouses')).data,
   });
 
-  const sampleWarehouses = warehouses.length > 0 ? warehouses : [
-    { id: 1, name: 'Main Central Depot', code: 'WH-CENTRAL', location: 'Building A, Basement 1', itemsCount: 1420, manager: 'Suresh Kumar' },
-    { id: 2, name: 'Pharmacy Sub-Store', code: 'WH-PHARM', location: 'Ground Floor, Room 102', itemsCount: 450, manager: 'Amit Verma' },
-    { id: 3, name: 'OT & Surgical Storage', code: 'WH-SURGICAL', location: '2nd Floor, OT Complex', itemsCount: 280, manager: 'Nurse Sunita' },
-  ];
+  const displayWarehouses = warehouses || [];
 
   return (
     
@@ -73,19 +69,27 @@ const WarehousesList = () => {
             </tr>
           </thead>
           <tbody>
-            {sampleWarehouses.map(w => (
-              <tr key={w.id} style={{ borderBottom: '1px solid var(--color-surface-alt)' }}>
-                <td style={{ padding: '12px 16px', fontWeight: 600, fontSize: '0.85rem', color: '#334155' }}>{w.code}</td>
-                <td style={{ padding: '12px 16px' }}>
-                  <span style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--color-text)', display: 'block' }}>{w.name}</span>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>{w.location}</span>
-                </td>
-                <td style={{ padding: '12px 16px', fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>{w.manager}</td>
-                <td style={{ padding: '12px 16px' }}>
-                  <span style={{ background: 'var(--color-success-bg)', color: 'var(--color-success)', padding: '3px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>{w.status}</span>
+            {displayWarehouses.length === 0 ? (
+              <tr>
+                <td colSpan="4" style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>
+                  No warehouses found. Click "Add Warehouse" to register a new storage location.
                 </td>
               </tr>
-            ))}
+            ) : (
+              displayWarehouses.map(w => (
+                <tr key={w.id} style={{ borderBottom: '1px solid var(--color-surface-alt)' }}>
+                  <td style={{ padding: '12px 16px', fontWeight: 600, fontSize: '0.85rem', color: '#334155' }}>{w.code || `WH-${w.id}`}</td>
+                  <td style={{ padding: '12px 16px' }}>
+                    <span style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--color-text)', display: 'block' }}>{w.name}</span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>{w.location || 'Main Storage'}</span>
+                  </td>
+                  <td style={{ padding: '12px 16px', fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>{w.manager || 'Unassigned'}</td>
+                  <td style={{ padding: '12px 16px' }}>
+                    <span style={{ background: 'var(--color-success-bg)', color: 'var(--color-success)', padding: '3px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>{w.status || 'ACTIVE'}</span>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

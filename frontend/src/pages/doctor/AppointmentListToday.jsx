@@ -101,10 +101,10 @@ const DoctorAppointments = () => {
     let noShow = 0;
 
     allAppointments.forEach(apt => {
-      if (new Date(apt.startTime).toDateString() === todayStr) todayCount++;
-      if (apt.status === 'COMPLETED') completed++;
-      if (apt.status === 'CANCELLED') cancelled++;
-      if (apt.status === 'NO_SHOW') noShow++;
+      if (apt && apt.startTime && new Date(apt.startTime).toDateString() === todayStr) todayCount++;
+      if (apt && apt.status === 'COMPLETED') completed++;
+      if (apt && apt.status === 'CANCELLED') cancelled++;
+      if (apt && apt.status === 'NO_SHOW') noShow++;
     });
 
     return { total, todayCount, completed, cancelled, noShow };
@@ -112,32 +112,34 @@ const DoctorAppointments = () => {
 
   // Filter appointments for the table
   const filteredAppointments = useMemo(() => {
-    let filtered = [...allAppointments];
+    let filtered = Array.isArray(allAppointments) ? [...allAppointments].filter(Boolean) : [];
     
     if (activeTab === 'Upcoming') {
-      filtered = filtered.filter(a => new Date(a.startTime) >= now && (a.status === 'SCHEDULED' || a.status === 'BOOKED' || a.status === 'CONFIRMED'));
+      filtered = filtered.filter(a => a && a.startTime && new Date(a.startTime) >= now && (a.status === 'SCHEDULED' || a.status === 'BOOKED' || a.status === 'CONFIRMED'));
     } else if (activeTab === 'Completed') {
-      filtered = filtered.filter(a => a.status === 'COMPLETED');
+      filtered = filtered.filter(a => a && a.status === 'COMPLETED');
     } else if (activeTab === 'Cancelled') {
-      filtered = filtered.filter(a => a.status === 'CANCELLED');
+      filtered = filtered.filter(a => a && a.status === 'CANCELLED');
     } else if (activeTab === 'No Show') {
-      filtered = filtered.filter(a => a.status === 'NO_SHOW');
+      filtered = filtered.filter(a => a && a.status === 'NO_SHOW');
     }
 
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       filtered = filtered.filter(a => {
-        const name = `${a.patientFirstName} ${a.patientLastName}`.toLowerCase();
+        if (!a) return false;
+        const name = `${a.patientFirstName || ''} ${a.patientLastName || ''}`.toLowerCase();
         return name.includes(q) || (a.reasonForVisit && a.reasonForVisit.toLowerCase().includes(q));
       });
     }
 
-    return filtered.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
+    return filtered.sort((a, b) => new Date(b?.startTime || 0) - new Date(a?.startTime || 0));
   }, [allAppointments, activeTab, searchQuery, now]);
 
   // Today's schedule for sidebar
   const todaysSchedule = useMemo(() => {
-    return allAppointments
+    return (Array.isArray(allAppointments) ? allAppointments : [])
+      .filter(a => a && a.startTime && !isNaN(new Date(a.startTime)))
       .filter(a => new Date(a.startTime).toDateString() === todayStr)
       .sort((a, b) => new Date(a.startTime) - new Date(b.startTime))
       .slice(0, 5);
@@ -429,8 +431,10 @@ const DoctorAppointments = () => {
                 // Days
                 for (let d = 1; d <= daysInMonth; d++) {
                   const isToday = d === now.getDate();
-                  const hasAppt = allAppointments.some(a => {
+                  const hasAppt = (Array.isArray(allAppointments) ? allAppointments : []).some(a => {
+                    if (!a || !a.startTime) return false;
                     const ad = new Date(a.startTime);
+                    if (isNaN(ad.getTime())) return false;
                     return ad.getFullYear() === year && ad.getMonth() === month && ad.getDate() === d;
                   });
                   cells.push(

@@ -34,6 +34,7 @@ export const PORTAL_CONFIGS = [
       { label: 'Calendar', path: '/doctor/calendar', icon: 'Calendar', description: 'View calendar' },
       { label: 'Prescriptions', path: '/doctor/prescriptions', icon: 'FileText', description: 'Manage prescriptions' },
       { label: 'Follow-ups', path: '/doctor/follow-ups', icon: 'Heart', description: 'Manage follow-ups' },
+      { label: 'Medicine Sales', path: '/doctor/manage-medicines', icon: 'ShoppingBag', description: 'Medicine Sales & Catalog' },
       { label: 'Lab Reports', path: '/doctor/lab-reports', icon: 'FlaskConical', description: 'View lab reports' },
       { label: 'Certificates', path: '/doctor/medical-certificate', icon: 'FileText', description: 'Medical certificates' },
       { label: 'Settings', path: '/doctor/schedule-settings', icon: 'Settings', description: 'Schedule settings' }

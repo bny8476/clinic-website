@@ -31,6 +31,8 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+import PatientMedicineRecommendations from '../../components/patient/PatientMedicineRecommendations';
+
 const PatientPrescriptions = () => {
   const { user } = useAuthStore();
   const [viewPrescription, setViewPrescription] = useState(null);
@@ -130,6 +132,9 @@ const PatientPrescriptions = () => {
           </div>
         </div>
       </motion.header>
+
+      {/* ── Doctor Recommended Medicine Sales Banner ── */}
+      <PatientMedicineRecommendations />
 
       {/* ── Filter Tabs ── */}
       <div className="flex items-center justify-between flex-wrap gap-4">

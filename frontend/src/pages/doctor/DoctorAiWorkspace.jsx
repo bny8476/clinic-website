@@ -7,14 +7,10 @@ import { Bot, Check, FileText, Save, ShieldAlert, X } from 'lucide-react';
 const DoctorAiWorkspace = ({ encounterId }) => {
     const [summary, setSummary] = useState(null);
     const [isApproved, setIsApproved] = useState(false);
-    
-    // Mock IDs
-    const doctorId = 2;
-    const tenantId = 1;
 
     const generateSummary = useMutation({
         mutationFn: async () => {
-            return (await axiosPrivate.post(`/ai/doctor/summarize-encounter?encounterId=${encounterId}&doctorId=${doctorId}&tenantId=${tenantId}`)).data;
+            return (await axiosPrivate.post(`/ai/doctor/summarize-encounter?encounterId=${encounterId}`)).data;
         },
         onSuccess: (data) => {
             setSummary(data);

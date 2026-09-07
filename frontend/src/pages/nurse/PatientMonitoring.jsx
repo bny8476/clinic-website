@@ -83,7 +83,7 @@ const PatientMonitoring = () => {
           assignments.map(patient => {
             const vitals = latestVitals[patient.patientId];
             
-            // Check for critical thresholds (dummy logic)
+            // Evaluate clinical vitals threshold bounds
             const isCriticalBp = vitals && (vitals.systolicBp > 160 || vitals.systolicBp < 90 || vitals.diastolicBp > 100 || vitals.diastolicBp < 60);
             const isCriticalHr = vitals && (vitals.heartRate > 120 || vitals.heartRate < 50);
             const isCriticalSpo2 = vitals && (vitals.spo2Percentage < 92);

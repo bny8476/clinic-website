@@ -10,4 +10,10 @@ import java.util.List;
 public interface MedicineOrderRepository extends JpaRepository<MedicineOrder, Long> {
     List<MedicineOrder> findAllByPatientIdOrderByCreatedAtDesc(Long patientId);
     List<MedicineOrder> findAllByDoctorIdOrderByCreatedAtDesc(Long doctorId);
+
+    java.util.Optional<MedicineOrder> findByOrderNumber(String orderNumber);
+    List<MedicineOrder> findByPatient_UserIdOrderByCreatedAtDesc(Long userId);
+    List<MedicineOrder> findByDoctor_UserIdOrderByCreatedAtDesc(Long userId);
+    List<MedicineOrder> findByStatusOrderByCreatedAtDesc(com.healthcare.clinic.doctor.medicine.entity.MedicineOrderStatus status);
+    List<MedicineOrder> findAllByOrderByCreatedAtDesc();
 }

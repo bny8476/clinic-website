@@ -5,6 +5,7 @@ import { scaleIn } from './ui/motion';
 import { axiosPrivate } from '../api/axios';
 import { Bell, CheckCheck, List, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
+import useAuthStore, { isTokenValid } from '../store/authStore';
 
 const TYPE_ICONS = {
   APPOINTMENT: '📅',
@@ -23,14 +24,17 @@ const timeAgo = (dateStr) => {
   return `${Math.floor(diff / 86400)}d ago`;
 };
 
+
+
 const NotificationBell = () => {
+  const { user, token } = useAuthStore();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const panelRef = useRef(null);
 
-  // Unread count — polls every 30 seconds
+  // Unread count — polls every 30 seconds when authenticated
   const { data: countData } = useQuery({
-    queryKey: ['notificationCount'],
+    queryKey: ['notificationCount', user?.id],
     queryFn: async () => {
       try {
         const res = await axiosPrivate.get('/notifications/unread-count');
@@ -39,6 +43,8 @@ const NotificationBell = () => {
         return 0; // Fallback to 0 unread on 401/404
       }
     },
+    enabled: !!user?.id && isTokenValid(token),
+    retry: false,
     refetchInterval: 30000,
   });
 

@@ -25,10 +25,7 @@ const LeaveManagement = () => {
     },
   });
 
-  const sampleLeaves = leaves.length > 0 ? leaves : [
-    { id: 1, employeeName: 'Nurse Sunita Sharma', initials: 'NS', leaveType: 'Casual Leave', startDate: '2026-07-30', endDate: '2026-07-31', days: 2, status: 'PENDING', reason: 'Personal family event' },
-    { id: 2, employeeName: 'Anjali Gupta', initials: 'AG', leaveType: 'Sick Leave', startDate: '2026-07-24', endDate: '2026-07-24', days: 1, status: 'APPROVED', reason: 'Fever' },
-  ];
+  const displayLeaves = leaves || [];
 
   return (
     <motion.div initial="hidden" animate="visible" variants={fadeIn} className="w-full max-w-full px-4 sm:px-6 pt-6 sm:pt-8 space-y-6 font-sans">
@@ -100,7 +97,14 @@ const LeaveManagement = () => {
               animate="visible"
               className="divide-y divide-slate-100"
             >
-              {sampleLeaves.map(l => (
+              {displayLeaves.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="px-8 py-8 text-center text-slate-500 font-medium text-sm">
+                    No leave applications found.
+                  </td>
+                </tr>
+              ) : (
+                displayLeaves.map(l => (
                 <motion.tr key={l.id} variants={fadeIn} className="hover:bg-slate-50/70 transition-colors">
                   
                   {/* Employee */}
@@ -174,7 +178,7 @@ const LeaveManagement = () => {
                   </td>
 
                 </motion.tr>
-              ))}
+              )))}
             </motion.tbody>
           </table>
         </div>

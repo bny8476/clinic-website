@@ -9,8 +9,10 @@ import { axiosPrivate } from '../../api/axios';
 import { Activity, AlertCircle, ArrowLeft, Calendar, ChevronRight, ClipboardList, CreditCard, Droplet, FileText, FlaskConical, FolderOpen, HeartPulse, Info, List, Loader2, Mail, MapPin, Phone, Pill, User } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 
+import DoctorMedicineSales from '../../components/doctor/DoctorMedicineSales';
+
 const TABS = [
-  'Overview', 'Timeline', 'Appointments', 'Prescriptions', 'Lab Reports',
+  'Overview', 'Timeline', 'Appointments', 'Prescriptions', 'Medicine Sales', 'Lab Reports',
   'Medical History', 'Care Plans', 'Documents', 'Billing & Payments'
 ];
 
@@ -695,6 +697,14 @@ const PatientDetail = ({ patientIdOverride }) => {
 
               {activeTab === 'Prescriptions' && (
                 <PrescriptionsTab patientUserId={patientUserId} />
+              )}
+
+              {activeTab === 'Medicine Sales' && (
+                <DoctorMedicineSales 
+                  patientId={patientUserId || patientId} 
+                  patientName={patient.fullName} 
+                  onOrderCreated={() => setActiveTab('Prescriptions')}
+                />
               )}
 
               {activeTab === 'Lab Reports' && (

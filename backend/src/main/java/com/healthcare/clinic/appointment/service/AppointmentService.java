@@ -54,8 +54,10 @@ public class AppointmentService {
     private final NoShowRepository noShowRepository;
     private final AppointmentHoldService holdService;
     private final com.healthcare.clinic.appointment.repository.WaitlistEntryRepository waitlistRepository;
+    private final com.healthcare.clinic.appointment.repository.AppointmentAuditLogRepository auditLogRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final com.healthcare.clinic.doctor.service.DoctorScheduleService doctorScheduleService;
 
     @Transactional(readOnly = true)
     public List<AppointmentSlot> getAvailableSlots(Long doctorId, ZonedDateTime start, ZonedDateTime end) {
@@ -66,9 +68,106 @@ public class AppointmentService {
                 .toList();
     }
 
+    @Transactional
+    public List<java.util.Map<String, Object>> getAvailableSlotsForDoctorAndDate(Long doctorId, java.time.LocalDate date) {
+        DoctorProfile doctor = doctorProfileRepository.findById(doctorId)
+                .orElseGet(() -> doctorProfileRepository.findByUserId(doctorId).orElse(null));
+
+        if (doctor == null) {
+            log.warn("getAvailableSlotsForDoctorAndDate: Doctor profile not found for ID {}", doctorId);
+            return java.util.Collections.emptyList();
+        }
+
+        Long userId = doctor.getUserId();
+        java.time.ZoneId zone = java.time.ZoneId.systemDefault();
+        ZonedDateTime startOfDay = date.atStartOfDay(zone);
+        ZonedDateTime endOfDay = startOfDay.plusDays(1).minusNanos(1);
+
+        List<AppointmentSlot> existingSlots = slotRepository.findByDoctorUserIdAndStartTimeBetween(userId, startOfDay, endOfDay);
+
+        if (existingSlots.isEmpty()) {
+            doctorScheduleService.generateSlotsForRange(userId, date, date);
+            existingSlots = slotRepository.findByDoctorUserIdAndStartTimeBetween(userId, startOfDay, endOfDay);
+        }
+
+        if (existingSlots.isEmpty()) {
+            generateFallbackSlotsForDate(doctor, date);
+            existingSlots = slotRepository.findByDoctorUserIdAndStartTimeBetween(userId, startOfDay, endOfDay);
+        }
+
+        ZonedDateTime now = ZonedDateTime.now(zone);
+        java.time.format.DateTimeFormatter timeFormatter = java.time.format.DateTimeFormatter.ofPattern("hh:mm a");
+
+        return existingSlots.stream()
+                .filter(slot -> Boolean.FALSE.equals(slot.getIsBooked()))
+                .filter(slot -> !date.isEqual(java.time.LocalDate.now(zone)) || slot.getEndTime().isAfter(now.minusMinutes(10)))
+                .sorted(java.util.Comparator.comparing(AppointmentSlot::getStartTime))
+                .map(slot -> {
+                    java.util.Map<String, Object> map = new java.util.HashMap<>();
+                    map.put("id", slot.getId());
+                    map.put("startTime", slot.getStartTime().toString());
+                    map.put("endTime", slot.getEndTime().toString());
+                    map.put("label", slot.getStartTime().format(timeFormatter));
+                    map.put("isBooked", slot.getIsBooked());
+                    map.put("isPriority", slot.getIsPriority() != null ? slot.getIsPriority() : false);
+                    return map;
+                })
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    private void generateFallbackSlotsForDate(DoctorProfile doctor, java.time.LocalDate date) {
+        java.time.ZoneId zone = java.time.ZoneId.systemDefault();
+        java.time.LocalTime current = java.time.LocalTime.of(9, 0);
+        java.time.LocalTime end = java.time.LocalTime.of(17, 0);
+        int duration = 20;
+
+        while (current.plusMinutes(duration).isBefore(end) || current.plusMinutes(duration).equals(end)) {
+            ZonedDateTime slotStart = ZonedDateTime.of(date, current, zone);
+            ZonedDateTime slotEnd = slotStart.plusMinutes(duration);
+
+            AppointmentSlot slot = AppointmentSlot.builder()
+                    .doctor(doctor)
+                    .startTime(slotStart)
+                    .endTime(slotEnd)
+                    .isBooked(false)
+                    .branchId(doctor.getBranchId() != null ? doctor.getBranchId() : 1L)
+                    .build();
+            slotRepository.save(slot);
+
+            current = current.plusMinutes(duration);
+        }
+    }
+
     public Appointment getAppointmentById(Long appointmentId) {
         return appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new RuntimeException("Appointment not found"));
+    }
+
+    private String generateAppointmentNumber() {
+        String dateStr = java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String randomSuffix = java.util.UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+        return "APT-" + dateStr + "-" + randomSuffix;
+    }
+
+    private void recordAudit(Appointment appointment, String action, AppointmentStatus oldStatus, AppointmentStatus newStatus, String notes) {
+        try {
+            Long performedBy = com.healthcare.clinic.security.SecurityUtils.getCurrentUserId();
+            if (performedBy == null && appointment.getPatient() != null) {
+                performedBy = appointment.getPatient().getUserId();
+            }
+            com.healthcare.clinic.appointment.entity.AppointmentAuditLog auditLog = com.healthcare.clinic.appointment.entity.AppointmentAuditLog.builder()
+                    .appointmentId(appointment.getId())
+                    .action(action)
+                    .oldStatus(oldStatus != null ? oldStatus.name() : null)
+                    .newStatus(newStatus != null ? newStatus.name() : null)
+                    .performedById(performedBy)
+                    .reason(notes)
+                    .createdAt(java.time.ZonedDateTime.now())
+                    .build();
+            auditLogRepository.save(auditLog);
+        } catch (Exception e) {
+            log.error("Failed to record appointment audit log for appointment {}", appointment.getId(), e);
+        }
     }
 
     public void assertCanAccessAppointment(Long id) {
@@ -180,16 +279,22 @@ public class AppointmentService {
         slotRepository.save(slot);
 
         Appointment appointment = Appointment.builder()
+                .appointmentNumber(generateAppointmentNumber())
                 .patient(patient)
                 .doctor(slot.getDoctor())
                 .slot(slot)
+                .appointmentDate(slot.getStartTime().toLocalDate())
+                .duration((int) java.time.Duration.between(slot.getStartTime(), slot.getEndTime()).toMinutes())
                 .status(AppointmentStatus.BOOKED)
+                .paymentStatus("PENDING")
                 .reasonForVisit(reasonForVisit)
                 .branchId(slot.getBranchId())
                 .idempotencyKey(idempotencyKey)
+                .createdBy(com.healthcare.clinic.security.SecurityUtils.getCurrentUserId() != null ? com.healthcare.clinic.security.SecurityUtils.getCurrentUserId() : patientUserId)
                 .build();
 
         Appointment savedAppointment = appointmentRepository.save(appointment);
+        recordAudit(savedAppointment, "BOOKED", null, AppointmentStatus.BOOKED, "Appointment booked for slot " + slot.getId());
         
         if (holdId != null && !holdId.isEmpty()) {
             holdService.releaseHold(slot.getDoctor().getId(), slot.getStartTime().toInstant().toString(), holdId);
@@ -284,17 +389,23 @@ public class AppointmentService {
                 .build());
 
         Appointment appointment = Appointment.builder()
+                .appointmentNumber(generateAppointmentNumber())
                 .patient(patient)
                 .doctor(doctor)
                 .slot(slot)
+                .appointmentDate(startTime.toLocalDate())
+                .duration((int) java.time.Duration.between(startTime, endTime).toMinutes())
                 .status(AppointmentStatus.BOOKED)
+                .paymentStatus("PENDING")
                 .appointmentType(appointmentType)
                 .reasonForVisit(reasonForVisit)
                 .notes(notes)
                 .branchId(doctor.getBranchId())
+                .createdBy(com.healthcare.clinic.security.SecurityUtils.getCurrentUserId())
                 .build();
 
         Appointment saved = appointmentRepository.save(appointment);
+        recordAudit(saved, "DIRECT_BOOKED", null, AppointmentStatus.BOOKED, "Direct appointment created by staff/doctor");
 
         User doctorUser = userRepository.findById(doctorUserId)
                 .orElseThrow(() -> new RuntimeException("Doctor user not found"));
@@ -368,6 +479,8 @@ public class AppointmentService {
         AppointmentStatus oldStatus = appointment.getStatus();
         appointment.setStatus(newStatus);
         appointmentRepository.save(appointment);
+        
+        recordAudit(appointment, "STATUS_UPDATE", oldStatus, newStatus, "Status changed from " + oldStatus + " to " + newStatus);
         
         eventPublisher.publishEvent(AppointmentStatusChangedEvent.builder()
                 .appointmentId(appointmentId)
@@ -460,10 +573,16 @@ public class AppointmentService {
             throw new IllegalArgumentException("Cannot cancel an appointment that is already " + currentStatus);
         }
         
+        AppointmentStatus oldStatus = appointment.getStatus();
         appointment.setStatus(AppointmentStatus.CANCELLED);
-        appointment.setReasonForVisit(appointment.getReasonForVisit() + " (Cancelled: " + reason + ")");
+        appointment.setCancelledBy(com.healthcare.clinic.security.SecurityUtils.getCurrentUserId());
+        appointment.setCancelledAt(ZonedDateTime.now());
+        appointment.setCancellationReason(reason);
+        appointment.setReasonForVisit(appointment.getReasonForVisit() != null ? appointment.getReasonForVisit() + " (Cancelled: " + reason + ")" : "Cancelled: " + reason);
         appointmentRepository.save(appointment);
         
+        recordAudit(appointment, "CANCELLED", oldStatus, AppointmentStatus.CANCELLED, "Reason: " + reason);
+
         // Release the slot
         AppointmentSlot slot = appointment.getSlot();
         slot.setIsBooked(false);
@@ -517,13 +636,17 @@ public class AppointmentService {
     
     @Transactional
     public Appointment rescheduleAppointment(Long appointmentId, Long newSlotId) {
-        // Cancel the old one
-        cancelAppointment(appointmentId, "Rescheduled to a new slot");
-        
         Appointment oldAppointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new RuntimeException("Appointment not found"));
                 
+        // Cancel the old one
+        cancelAppointment(appointmentId, "Rescheduled to a new slot");
+        
         // Book the new one
-        return bookAppointment(oldAppointment.getPatient().getUserId(), newSlotId, oldAppointment.getReasonForVisit(), null, null);
+        Appointment newAppt = bookAppointment(oldAppointment.getPatient().getUserId(), newSlotId, oldAppointment.getReasonForVisit(), null, null);
+        newAppt.setRescheduledFrom(oldAppointment.getId());
+        appointmentRepository.save(newAppt);
+        recordAudit(newAppt, "RESCHEDULED", null, newAppt.getStatus(), "Rescheduled from appointment #" + oldAppointment.getId());
+        return newAppt;
     }
 }

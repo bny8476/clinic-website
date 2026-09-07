@@ -3,12 +3,20 @@ import Modal from '../../../components/ui/Modal';
 import { useEffect, useState } from 'react';
 import { AlertCircle, Calendar, ShoppingBag, Truck } from 'lucide-react';
 
+import { axiosPrivate } from '../../../api/axios';
+
 export default function QuickOrderModal({ isOpen, onClose, medicine, onSuccess }) {
-  const [vendors, setVendors] = useState([
-    { id: 1, name: 'Apex Pharma Distributors' },
-    { id: 2, name: 'MedLife Wholesale' },
-    { id: 3, name: 'Global Health Supplies' },
-  ]);
+  const [vendors, setVendors] = useState([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      axiosPrivate.get('/pharmacy/suppliers').then(res => {
+        setVendors(Array.isArray(res.data) ? res.data : (res.data?.content || []));
+      }).catch(() => {
+        setVendors([]);
+      });
+    }
+  }, [isOpen]);
   
   const [formData, setFormData] = useState({
     vendorId: '',
@@ -39,9 +47,11 @@ export default function QuickOrderModal({ isOpen, onClose, medicine, onSuccess }
 
     setIsSubmitting(true);
     try {
-      // Mock API call
-      // In a real app: await api.post('/pharmacy/purchase-orders', { ...formData, medicineId: medicine.id })
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await axiosPrivate.post('/pharmacy/purchase-orders', {
+        vendorId: formData.vendorId,
+        items: [{ medicineId: medicine.id, quantity: parseInt(formData.quantity) }],
+        remarks: formData.remarks
+      });
       
       toast.success(`Purchase order raised for ${medicine.name}`);
       onSuccess(medicine.name);

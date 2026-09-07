@@ -230,9 +230,9 @@ const NewAppointmentPanel = ({ onClose }) => {
     let cancelled = 0;
 
     appointments.forEach(apt => {
-      if (new Date(apt.startTime).toDateString() === todayStr) todayCount++;
-      if (apt.status === 'COMPLETED') completed++;
-      if (apt.status === 'CANCELLED') cancelled++;
+      if (apt && apt.startTime && new Date(apt.startTime).toDateString() === todayStr) todayCount++;
+      if (apt && apt.status === 'COMPLETED') completed++;
+      if (apt && apt.status === 'CANCELLED') cancelled++;
     });
 
     return { total, todayCount, completed, cancelled };
@@ -243,24 +243,25 @@ const NewAppointmentPanel = ({ onClose }) => {
     let filtered = [...appointments];
     
     if (activeTab === 'Today') {
-      filtered = filtered.filter(a => new Date(a.startTime).toDateString() === todayStr);
+      filtered = filtered.filter(a => a && a.startTime && new Date(a.startTime).toDateString() === todayStr);
     } else if (activeTab === 'Upcoming') {
-      filtered = filtered.filter(a => new Date(a.startTime) >= now && ['SCHEDULED', 'BOOKED', 'CONFIRMED'].includes(a.status));
+      filtered = filtered.filter(a => a && a.startTime && new Date(a.startTime) >= now && ['SCHEDULED', 'BOOKED', 'CONFIRMED'].includes(a.status));
     } else if (activeTab === 'Completed') {
-      filtered = filtered.filter(a => a.status === 'COMPLETED');
+      filtered = filtered.filter(a => a && a.status === 'COMPLETED');
     } else if (activeTab === 'Cancelled') {
-      filtered = filtered.filter(a => a.status === 'CANCELLED');
+      filtered = filtered.filter(a => a && a.status === 'CANCELLED');
     }
 
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       filtered = filtered.filter(a => {
-        const name = `${a.patientFirstName} ${a.patientLastName}`.toLowerCase();
+        if (!a) return false;
+        const name = `${a.patientFirstName || ''} ${a.patientLastName || ''}`.toLowerCase();
         return name.includes(q) || (a.reasonForVisit && a.reasonForVisit.toLowerCase().includes(q));
       });
     }
 
-    return filtered.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
+    return filtered.sort((a, b) => new Date(b?.startTime || 0) - new Date(a?.startTime || 0));
   }, [appointments, activeTab, searchQuery, now, todayStr]);
 
   return (

@@ -216,16 +216,23 @@ public class PatientController {
         }
         PatientProfile patient = profile.get();
         
-        if (vitals.getHeightCm() != null && (vitals.getHeightCm() <= 0 || vitals.getHeightCm() > 300)) {
+        if (vitals.getHeightCm() != null && vitals.getHeightCm() > 0 && vitals.getHeightCm() > 300) {
             throw new IllegalArgumentException("Height must be between 1 and 300 cm");
         }
-        if (vitals.getWeightKg() != null && (vitals.getWeightKg() <= 0 || vitals.getWeightKg() > 500)) {
+        if (vitals.getWeightKg() != null && vitals.getWeightKg() > 0 && vitals.getWeightKg() > 500) {
             throw new IllegalArgumentException("Weight must be between 1 and 500 kg");
         }
-        if (vitals.getPulseBpm() != null && (vitals.getPulseBpm() <= 0 || vitals.getPulseBpm() > 300)) {
+        if (vitals.getPulseBpm() != null && vitals.getPulseBpm() > 0 && vitals.getPulseBpm() > 300) {
             throw new IllegalArgumentException("Pulse must be between 1 and 300 bpm");
         }
-        if (vitals.getBloodPressure() != null && !vitals.getBloodPressure().trim().isEmpty() && !vitals.getBloodPressure().matches("^\\d{2,3}/\\d{2,3}$")) {
+        if (vitals.getBloodPressure() != null) {
+            String bp = vitals.getBloodPressure().replaceAll("\\s+", "");
+            if (bp.isEmpty() || bp.equals("/")) {
+                bp = null;
+            }
+            vitals.setBloodPressure(bp);
+        }
+        if (vitals.getBloodPressure() != null && !vitals.getBloodPressure().matches("^\\d{2,3}/\\d{2,3}$")) {
             throw new IllegalArgumentException("Blood pressure must be in format SYS/DIA (e.g. 120/80)");
         }
         

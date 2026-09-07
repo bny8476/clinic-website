@@ -9,7 +9,7 @@ import { CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, Filter, Headphone
 import { motion } from 'framer-motion';
 import { Badge } from '../../components/ui/Badge';
 
-// Mock data (kept for fallback)
+// Category filter options
 const categories = [
   "All Medicines", "Pain Relief", "Antibiotics", "Vitamins & Supplements", 
   "Diabetes Care", "Heart Care", "Ayurveda", "More >"

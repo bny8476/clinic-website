@@ -25,6 +25,7 @@ public class PharmacyOutboxEvent {
     @Column(name = "event_type")
     private String eventType;
 
+    @Column(columnDefinition = "TEXT")
     private String payload;
 
     private String status;

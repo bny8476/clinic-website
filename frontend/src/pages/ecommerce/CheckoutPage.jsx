@@ -19,30 +19,19 @@ export default function CheckoutPage() {
 
   const checkoutMutation = useMutation({
     mutationFn: async () => {
-      // Step 1: Create Order
       const orderRes = await axiosPrivate.post('/ecommerce/checkout', {
         addressId,
         paymentMethod,
         notes
       });
-      
-      const order = orderRes.data;
-
-      // Step 2: Simulate Payment
-      await axiosPrivate.post('/ecommerce/payments/mock', {
-        orderId: order.id,
-        amount: order.totalAmount,
-        status: 'SUCCESS'
-      });
-
-      return order;
+      return orderRes.data;
     },
     onSuccess: () => {
       toast.success('Order placed successfully!');
       navigate('/patient/ecommerce/catalog', { replace: true });
     },
-    onError: () => {
-      toast.error('Checkout failed. Please try again.');
+    onError: (err) => {
+      toast.error(err.response?.data?.message || 'Checkout failed. Please try again.');
     }
   });
 

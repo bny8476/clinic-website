@@ -3,11 +3,6 @@ import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Contrast, Download, FileText, Image, Layers, LayoutGrid, Maximize, Pause, Play, RotateCw, Ruler, Scan, Sun, ZoomIn } from 'lucide-react';
-
-// No mock slices allowed in production
-const MOCK_SLICES = [];
-
 const DicomViewer = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -18,47 +13,34 @@ const DicomViewer = () => {
   const [invert, setInvert] = useState(false);
   const [brightness, setBrightness] = useState(100);
   const [contrast, setContrast] = useState(100);
-  const [activeTool, setActiveTool] = useState('pan'); // pan, zoom, windowing, length
+  const [activeTool, setActiveTool] = useState('pan');
   const [sliceIndex, setSliceIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  
-  // Layout state: 1x1, 1x2, 2x2
   const [layout, setLayout] = useState('1x1');
 
-  // We fallback to a mock ID if no requestId provided (for demonstration)
-  const effectiveRequestId = requestId || "1";
-
-  const { data: dicomData, isLoading, error } = useQuery({
-    queryKey: ['dicomMetadata', effectiveRequestId],
+  const { data: dicomData } = useQuery({
+    queryKey: ['dicomMetadata', requestId],
     queryFn: async () => {
-      try {
-        const res = await axiosPrivate.get(`/radiology/dicom/study/request/${effectiveRequestId}`);
-        return res.data;
-      } catch (err) {
-        // Fallback mock data for viewer demonstration if API fails or empty
-        return {
-          studyInstanceUid: "1.2.840.113619.2.55.3.2831178355.202308",
-          modality: "MRI",
-          patientName: "John Doe",
-          seriesCount: 4,
-          instanceCount: 120,
-          wadoRsUrl: "https://pacs.clinic.internal/wado-rs/studies/123"
-        };
-      }
+      if (!requestId) return null;
+      const res = await axiosPrivate.get(`/radiology/dicom/study/request/${requestId}`);
+      return res.data;
     },
+    enabled: !!requestId,
     retry: false
   });
+
+  const slices = dicomData?.slices || [];
 
   // Playback effect for "Cine" tool
   useEffect(() => {
     let interval;
-    if (isPlaying) {
+    if (isPlaying && slices.length > 0) {
       interval = setInterval(() => {
-        setSliceIndex((prev) => (prev + 1) % MOCK_SLICES.length);
+        setSliceIndex((prev) => (prev + 1) % slices.length);
       }, 500);
     }
     return () => clearInterval(interval);
-  }, [isPlaying]);
+  }, [isPlaying, slices.length]);
 
   const resetViewport = () => {
     setZoom(100);
@@ -68,7 +50,7 @@ const DicomViewer = () => {
     setContrast(100);
   };
 
-  const currentImage = null; // No image data in production until integrated
+  const currentImage = slices[sliceIndex]?.imageUrl || null;
 
   return (
     
@@ -101,8 +83,9 @@ const DicomViewer = () => {
             <Download size={14} /> Export DICOM
           </button>
           <button 
-            onClick={() => navigate(`/radiologist/reporting/${effectiveRequestId}`)}
-            className="flex items-center gap-1.5 px-4 py-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold rounded-md transition-colors"
+            onClick={() => requestId && navigate(`/radiologist/reporting/${requestId}`)}
+            disabled={!requestId}
+            className="flex items-center gap-1.5 px-4 py-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold rounded-md transition-colors disabled:opacity-50"
           >
             <FileText size={14} /> Write Report
           </button>
@@ -209,7 +192,7 @@ const DicomViewer = () => {
             <div className="absolute bottom-4 left-4 text-sky-400 font-mono text-[11px] leading-relaxed drop-shadow-md">
               <div>W: 400 L: 40</div>
               <div>Zoom: {zoom}%</div>
-              <div>Img: {sliceIndex + 1} / {MOCK_SLICES.length}</div>
+              <div>Img: {slices.length > 0 ? sliceIndex + 1 : 0} / {slices.length}</div>
             </div>
             <div className="absolute bottom-4 right-4 text-sky-400 font-mono text-[11px] leading-relaxed text-right drop-shadow-md">
               <div>T: 1.5mm</div>

@@ -8,19 +8,24 @@ const CarePlan = ({ patientId }) => {
   const [isAdding, setIsAdding] = useState(false);
   const [formData, setFormData] = useState({ title: '', description: '', status: 'ACTIVE' });
 
-  // For ad-hoc care plan since we made templateId nullable
   const mutation = useMutation({
     mutationFn: async (plan) => {
-      // In a real app we might create a proper pathway, but for this demo, we'll post to patient_care_pathways directly
-      // Since it's CDS module, let's assume an endpoint exists or we'll mock it if not.
-      // Wait, there is no generic endpoint for CarePathway in the new emr controller.
-      // I'll just mock this UI showing no care plans for now to save time, or use a dummy.
-      return { id: 999, ...plan };
+      const res = await axiosPrivate.post('/v1/doctor/encounters', {
+        patientId,
+        chiefComplaint: plan.title,
+        assessment: plan.description,
+        status: plan.status || 'ACTIVE'
+      });
+      return res.data;
     },
     onSuccess: () => {
       toast.success('Care Plan assigned successfully!');
       setIsAdding(false);
       setFormData({ title: '', description: '', status: 'ACTIVE' });
+      queryClient.invalidateQueries(['carePlans', patientId]);
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || 'Failed to assign Care Plan');
     }
   });
 

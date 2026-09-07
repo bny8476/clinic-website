@@ -35,6 +35,14 @@ public class AppointmentController {
         return ResponseEntity.ok(ApiResponse.success(slots));
     }
 
+    @GetMapping("/available-slots")
+    public ResponseEntity<List<java.util.Map<String, Object>>> getAvailableSlotsByDate(
+            @RequestParam Long doctorId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.time.LocalDate date) {
+        List<java.util.Map<String, Object>> slots = appointmentService.getAvailableSlotsForDoctorAndDate(doctorId, date);
+        return ResponseEntity.ok(slots);
+    }
+
     private final com.healthcare.clinic.appointment.service.AppointmentHoldService holdService;
 
     @PostMapping("/book")
@@ -68,10 +76,17 @@ public class AppointmentController {
     }
 
     @GetMapping("/patient/{userId}")
-    @PreAuthorize("hasAuthority('ROLE_PATIENT') or hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_PATIENT') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_NURSE')")
     public ResponseEntity<ApiResponse<List<com.healthcare.clinic.appointment.dto.AppointmentResponseDto>>> getAppointmentsForPatient(@PathVariable Long userId) {
         com.healthcare.clinic.security.SecurityUtils.assertOwnerOrAdmin(userId);
         return ResponseEntity.ok(ApiResponse.success(appointmentService.getPatientAppointments(userId)));
+    }
+
+    @GetMapping("/my")
+    @PreAuthorize("hasAuthority('ROLE_PATIENT') or hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<ApiResponse<List<com.healthcare.clinic.appointment.dto.AppointmentResponseDto>>> getMyAppointments() {
+        Long currentUserId = com.healthcare.clinic.security.SecurityUtils.getCurrentUserId();
+        return ResponseEntity.ok(ApiResponse.success(appointmentService.getPatientAppointments(currentUserId)));
     }
 
     @GetMapping("/doctor/{userId}")
@@ -109,6 +124,27 @@ public class AppointmentController {
         return ResponseEntity.ok(ApiResponse.success(null, "Appointment status updated"));
     }
 
+    @PatchMapping("/{id}/check-in")
+    @PreAuthorize("hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_NURSE')")
+    public ResponseEntity<ApiResponse<Void>> checkInAppointment(@PathVariable Long id) {
+        appointmentService.updateAppointmentStatus(id, AppointmentStatus.CHECKED_IN);
+        return ResponseEntity.ok(ApiResponse.success(null, "Patient checked in successfully"));
+    }
+
+    @PatchMapping("/{id}/start")
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<ApiResponse<Void>> startConsultation(@PathVariable Long id) {
+        appointmentService.updateAppointmentStatus(id, AppointmentStatus.IN_CONSULTATION);
+        return ResponseEntity.ok(ApiResponse.success(null, "Consultation started"));
+    }
+
+    @PatchMapping("/{id}/complete")
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<ApiResponse<Void>> completeConsultation(@PathVariable Long id) {
+        appointmentService.updateAppointmentStatus(id, AppointmentStatus.COMPLETED);
+        return ResponseEntity.ok(ApiResponse.success(null, "Consultation completed"));
+    }
+
     @PatchMapping("/{id}/cancel")
     @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_PATIENT')")
     public ResponseEntity<ApiResponse<Void>> cancelAppointment(@PathVariable Long id, @RequestParam String reason) {
@@ -128,11 +164,6 @@ public class AppointmentController {
     @GetMapping("/queue")
     @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_NURSE')")
     public ResponseEntity<ApiResponse<List<com.healthcare.clinic.appointment.dto.AppointmentResponseDto>>> getAppointmentQueue() {
-        Long currentUserId = com.healthcare.clinic.security.SecurityUtils.getCurrentUserId();
-        // Since we don't have the user's role here trivially without injecting something else, 
-        // we'll just return all today's appointments for the entire branch/clinic, assuming a single branch for now,
-        // or we can fetch by doctor if it's a doctor. For simplicity and as required, returning today's queue.
-        // I will need to add `getAllTodayAppointments()` to `AppointmentService`. Let's add it in the next step.
         return ResponseEntity.ok(ApiResponse.success(appointmentService.getAllTodayAppointments()));
     }
 }

@@ -38,18 +38,22 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor – handle 401/403 globally
+// Response interceptor – delegate 401 to refresh flow without hard clearing session
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      // Ignore 401s from the login endpoint so the UI can display the error
-      if (error.config && !error.config.url.includes('/auth/login')) {
-        // Token expired — clear and redirect to login
-        localStorage.clear();
-        window.dispatchEvent(new Event('auth:expired'));
-        if (window.location.pathname !== '/login') {
-          window.location.href = '/login';
+  async (error) => {
+    const originalRequest = error?.config;
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+      if (!originalRequest.url?.includes('/auth/login') && !originalRequest.url?.includes('/auth/refresh')) {
+        originalRequest._retry = true;
+        try {
+          const newToken = await useAuthStore.getState().refresh();
+          if (newToken) {
+            originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
+            return api(originalRequest);
+          }
+        } catch (_e) {
+          useAuthStore.getState().handleSessionExpired();
         }
       }
     }

@@ -3,52 +3,9 @@ import { Activity, Check, CheckCircle, Clock, LogIn, ShieldAlert } from 'lucide-
 import { scaleIn } from './ui/motion';
 import { AnimatePresence, motion } from 'framer-motion';
 
-const DUMMY_ACTIVITIES = [
-  {
-    id: 1,
-    title: 'System Health Check Passed',
-    description: 'All services are operating normally.',
-    time: '5 mins ago',
-    icon: CheckCircle,
-    color: 'text-emerald-500',
-    bg: 'bg-emerald-50',
-    isUnread: true
-  },
-  {
-    id: 2,
-    title: 'Database Backup Complete',
-    description: 'Automated backup completed successfully.',
-    time: '1 hour ago',
-    icon: Clock,
-    color: 'text-indigo-500',
-    bg: 'bg-indigo-50',
-    isUnread: true
-  },
-  {
-    id: 3,
-    title: 'New Login Detected',
-    description: 'Login from new IP address: 192.168.1.45',
-    time: '3 hours ago',
-    icon: LogIn,
-    color: 'text-amber-500',
-    bg: 'bg-amber-50',
-    isUnread: false
-  },
-  {
-    id: 4,
-    title: 'Server Update Scheduled',
-    description: 'Maintenance scheduled for tonight at 2 AM.',
-    time: '1 day ago',
-    icon: ShieldAlert,
-    color: 'text-rose-500',
-    bg: 'bg-rose-50',
-    isUnread: false
-  }
-];
-
 export default function ActivityDropdown() {
   const [isOpen, setIsOpen] = useState(false);
-  const [activities, setActivities] = useState(DUMMY_ACTIVITIES);
+  const [activities, setActivities] = useState([]);
   const dropdownRef = useRef(null);
 
   const unreadCount = activities.filter(a => a.isUnread).length;

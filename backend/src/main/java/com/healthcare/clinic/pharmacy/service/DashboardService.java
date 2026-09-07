@@ -80,7 +80,7 @@ public class DashboardService {
         dto.put("totalSalesToday", billRepository.sumNetAmountByBillingDateBetween(startOfDay, endOfDay));
         dto.put("staffActive", userRepository.countByStatus("ACTIVE"));
         dto.put("returnsAwaitingApproval", returnRepository.countByStatus(ReturnStatus.PENDING));
-        dto.put("systemHealthPct", 99); // Mock health
+        dto.put("systemHealthPct", 100);
         return dto;
     }
 

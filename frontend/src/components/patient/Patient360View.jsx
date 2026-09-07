@@ -28,6 +28,17 @@ const Patient360View = ({ patientId, onBack, onNavigateToPrescription }) => {
     return `PAT-${String(id).padStart(5, '0')}`;
   };
 
+  const safeFormatDate = (dateStr, fmtStr) => {
+    if (!dateStr) return '—';
+    try {
+      const d = parseISO(dateStr);
+      if (isNaN(d.getTime())) return '—';
+      return format(d, fmtStr);
+    } catch {
+      return '—';
+    }
+  };
+
   const getFullName = () => {
     if (!identity) return 'Unknown Patient';
     return `${identity.firstName || ''} ${identity.lastName || ''}`.trim();
@@ -179,8 +190,8 @@ const Patient360View = ({ patientId, onBack, onNavigateToPrescription }) => {
                     <p className="text-[11px] font-bold text-slate-500 mb-1">Last Appointment</p>
                     {recentAppointments?.length > 0 && recentAppointments[0]?.startTime ? (
                       <>
-                        <p className="text-[14px] font-bold text-slate-800">{format(parseISO(recentAppointments[0].startTime), 'dd MMM yyyy')}</p>
-                        <p className="text-[11px] font-semibold text-slate-500 mt-1">{format(parseISO(recentAppointments[0].startTime), 'hh:mm a')}</p>
+                        <p className="text-[14px] font-bold text-slate-800">{safeFormatDate(recentAppointments[0].startTime, 'dd MMM yyyy')}</p>
+                        <p className="text-[11px] font-semibold text-slate-500 mt-1">{safeFormatDate(recentAppointments[0].startTime, 'hh:mm a')}</p>
                         <p className="text-[11px] font-semibold text-slate-500">with Dr. {recentAppointments[0].doctorLastName || 'Doctor'}</p>
                       </>
                     ) : (
@@ -197,8 +208,8 @@ const Patient360View = ({ patientId, onBack, onNavigateToPrescription }) => {
                     <p className="text-[11px] font-bold text-slate-500 mb-1">Next Appointment</p>
                     {upcomingAppointments?.length > 0 && upcomingAppointments[0]?.startTime ? (
                       <>
-                        <p className="text-[14px] font-bold text-slate-800">{format(parseISO(upcomingAppointments[0].startTime), 'dd MMM yyyy')}</p>
-                        <p className="text-[11px] font-semibold text-slate-500 mt-1">{format(parseISO(upcomingAppointments[0].startTime), 'hh:mm a')}</p>
+                        <p className="text-[14px] font-bold text-slate-800">{safeFormatDate(upcomingAppointments[0].startTime, 'dd MMM yyyy')}</p>
+                        <p className="text-[11px] font-semibold text-slate-500 mt-1">{safeFormatDate(upcomingAppointments[0].startTime, 'hh:mm a')}</p>
                         <p className="text-[11px] font-semibold text-slate-500">with Dr. {upcomingAppointments[0].doctorLastName || 'Doctor'}</p>
                       </>
                     ) : (
@@ -290,10 +301,10 @@ const Patient360View = ({ patientId, onBack, onNavigateToPrescription }) => {
                     
                     {/* Interleave appointments and prescriptions briefly as a mock timeline if they exist */}
                     {recentAppointments?.slice(0,3).map((apt, idx) => (
-                       <div key={`apt-${apt.id}`} className="flex gap-4 relative z-10">
+                       <div key={`apt-${apt.id || idx}`} className="flex gap-4 relative z-10">
                         <div className="w-[45px] pt-0.5 shrink-0 flex flex-col items-center bg-white">
-                          <span className="text-[15px] font-bold text-slate-800 leading-none">{format(parseISO(apt.startTime), 'dd')}</span>
-                          <span className="text-[9px] font-bold text-slate-500 uppercase mt-0.5">{format(parseISO(apt.startTime), 'MMM yyyy')}</span>
+                          <span className="text-[15px] font-bold text-slate-800 leading-none">{safeFormatDate(apt.startTime, 'dd')}</span>
+                          <span className="text-[9px] font-bold text-slate-500 uppercase mt-0.5">{safeFormatDate(apt.startTime, 'MMM yyyy')}</span>
                         </div>
                         <div className="w-2 h-2 rounded-full bg-[#5B21B6] absolute left-[41.5px] top-1.5 ring-4 ring-white"></div>
                         <div className="flex-1 pl-3 pb-1">
@@ -356,7 +367,7 @@ const Patient360View = ({ patientId, onBack, onNavigateToPrescription }) => {
                     {upcomingAppointments?.map(apt => (
                       <div key={apt.id} className="p-4 rounded-xl border border-[#DBEAFE] bg-[#EFF6FF] flex justify-between items-center">
                         <div>
-                          <p className="text-sm font-bold text-[#1E40AF]">{format(parseISO(apt.startTime), 'dd MMM yyyy, hh:mm a')}</p>
+                          <p className="text-sm font-bold text-[#1E40AF]">{safeFormatDate(apt.startTime, 'dd MMM yyyy, hh:mm a')}</p>
                           <p className="text-xs font-semibold text-[#3B82F6]">Dr. {apt.doctorLastName}</p>
                         </div>
                         <span className="px-3 py-1 bg-[#BFDBFE] text-[#1D4ED8] text-[10px] font-bold rounded-md uppercase">Upcoming</span>
@@ -365,7 +376,7 @@ const Patient360View = ({ patientId, onBack, onNavigateToPrescription }) => {
                     {recentAppointments?.map(apt => (
                       <div key={apt.id} className="p-4 rounded-xl border border-slate-200 bg-white flex justify-between items-center">
                         <div>
-                          <p className="text-sm font-bold text-slate-800">{format(parseISO(apt.startTime), 'dd MMM yyyy, hh:mm a')}</p>
+                          <p className="text-sm font-bold text-slate-800">{safeFormatDate(apt.startTime, 'dd MMM yyyy, hh:mm a')}</p>
                           <p className="text-xs font-semibold text-slate-500">Dr. {apt.doctorLastName}</p>
                         </div>
                         <span className="px-3 py-1 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-md uppercase">{apt.status || 'Past'}</span>

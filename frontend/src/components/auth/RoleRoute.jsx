@@ -1,41 +1,44 @@
-import useAuthStore from '../../store/authStore';
-import { Link, Navigate, Outlet, Route, Routes, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import useAuthStore, { isTokenValid } from '../../store/authStore';
+import { Navigate, useLocation } from 'react-router-dom';
 import { getPortalConfig } from '../../config/portalConfig';
+import PageLoadingSkeleton from '../ui/PageLoadingSkeleton';
 
 export default function RoleRoute({ portalSlug, allowedRoles, children }) {
-    const { token, roles = [] } = useAuthStore();
+    const { token, roles = [], isInitializingAuth } = useAuthStore();
     const location = useLocation();
 
-    // Let Axios interceptors handle expired tokens and refresh them.
-    // Only redirect if there is absolutely no token (user intentionally logged out or cleared storage).
-    if (!token) {
-        return <Navigate to={`/${portalSlug || 'patient'}/login`} state={{ from: location }} replace />;
+    // 1. Show skeleton while restoring session on page load
+    if (isInitializingAuth) {
+        return <PageLoadingSkeleton message="Checking your secure session..." />;
     }
 
-    const portalConfig = getPortalConfig(portalSlug);
-    const targetRoles = allowedRoles || (portalConfig.role ? [portalConfig.role, 'ROLE_SUPER_ADMIN'] : []);
+    // 2. Unauthenticated -> redirect to unified /login with returnTo parameter
+    if (!token) {
+        const returnToParam = encodeURIComponent(location.pathname + location.search);
+        return <Navigate to={`/login?returnTo=${returnToParam}`} state={{ from: location }} replace />;
+    }
 
+    const portalConfig = portalSlug ? getPortalConfig(portalSlug) : {};
+    const targetRoles = allowedRoles || (portalConfig.role ? [portalConfig.role, 'ROLE_SUPER_ADMIN'] : []);
     const userRoles = roles || [];
 
-    /**
-     * INTENTIONAL ADMIN BYPASS
-     * ─────────────────────────────────────────────────────────────────────────
-     * ROLE_ADMIN and ROLE_SUPER_ADMIN are granted access to every portal route
-     * regardless of the `allowedRoles` prop passed in. This is by design:
-     * super-users need unrestricted access across all portals for support,
-     * auditing, and emergency overrides without being listed in each route's
-     * allowedRoles array individually.
-     *
-     * If this bypass should ever be restricted (e.g. ROLE_ADMIN should NOT
-     * access the pharmacy or finance portal), remove the first two conditions
-     * below and add ROLE_ADMIN explicitly only to the specific allowedRoles
-     * arrays in App.jsx instead.
-     * ─────────────────────────────────────────────────────────────────────────
-     */
-    const hasPermission = userRoles.includes('ROLE_ADMIN') || userRoles.includes('ROLE_SUPER_ADMIN') || (targetRoles.length === 0) || targetRoles.some(r => userRoles.includes(r));
+    // Normalise role matching (support both ROLE_ADMIN and ADMIN strings)
+    const normalizedUserRoles = userRoles.map(r => typeof r === 'string' ? r.toUpperCase().replace(/^ROLE_/, '') : '');
 
+    const hasPermission =
+        userRoles.includes('ROLE_ADMIN') ||
+        userRoles.includes('ROLE_SUPER_ADMIN') ||
+        normalizedUserRoles.includes('ADMIN') ||
+        normalizedUserRoles.includes('SUPER_ADMIN') ||
+        targetRoles.length === 0 ||
+        targetRoles.some(r => {
+            const normReq = r.toUpperCase().replace(/^ROLE_/, '');
+            return userRoles.includes(r) || normalizedUserRoles.includes(normReq);
+        });
+
+    // 3. Authenticated but unauthorized -> redirect to 403 page without logging out
     if (!hasPermission) {
-        return <Navigate to="/unauthorized" replace />;
+        return <Navigate to="/403" replace />;
     }
 
     return children;

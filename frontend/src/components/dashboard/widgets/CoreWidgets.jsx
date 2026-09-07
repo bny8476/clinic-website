@@ -16,12 +16,12 @@ export const PatientQueueWidget = ({ appointments, navigate }) => (
         </tr>
       </thead>
       <tbody className="text-sm font-medium text-[#101830] dark:text-gray-200">
-        {appointments && appointments.length > 0 ? appointments.slice(0, 5).map((apt, i) => { 
+        {appointments && appointments.length > 0 ? appointments.filter(a => a && a.startTime).slice(0, 5).map((apt, i) => { 
           const row = { 
               token: `T-${apt.id}`, 
-              name: apt.patientFirstName + ' ' + apt.patientLastName, 
-              time: new Date(apt.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}), 
-              status: apt.status, 
+              name: ((apt.patientFirstName || '') + ' ' + (apt.patientLastName || '')).trim() || 'Patient', 
+              time: apt.startTime ? new Date(apt.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '—', 
+              status: apt.status || 'BOOKED', 
               statusColor: apt.status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-600' : 'bg-orange-50 text-orange-600' 
           };
           return (
@@ -135,10 +135,11 @@ export const CalendarTimelineWidget = ({ appointments }) => (
 
         {/* Event blocks from real data */}
         {appointments && appointments.map((apt, index) => {
+          if (!apt || !apt.startTime) return null;
           const d = new Date(apt.startTime);
           const h = d.getHours();
           const m = d.getMinutes();
-          if (h < 8 || h > 17) return null; // Outside calendar bounds
+          if (isNaN(h) || h < 8 || h > 17) return null; // Outside calendar bounds
           
           const topPercent = ((h - 8) * 10) + ((m / 60) * 10);
           const leftPercent = 16 + (index * 15) % 70; // Stagger horizontally a bit
@@ -146,7 +147,7 @@ export const CalendarTimelineWidget = ({ appointments }) => (
           const color = colors[index % colors.length];
 
           return (
-            <div key={apt.id} className={`absolute ${color} border rounded p-2 text-xs w-[20%] z-20`} style={{ top: `${topPercent}%`, left: `${leftPercent}%`, height: '60px' }}>
+            <div key={apt.id || index} className={`absolute ${color} border rounded p-2 text-xs w-[20%] z-20`} style={{ top: `${topPercent}%`, left: `${leftPercent}%`, height: '60px' }}>
               <p className="font-bold text-[#101830] truncate">{apt.patientFirstName} {apt.patientLastName}</p>
               <p className="text-gray-500 truncate">{apt.reasonForVisit || 'Consultation'}</p>
               <p className="text-gray-400 text-[10px]">{d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
@@ -176,12 +177,13 @@ export const NewAppointmentsWidget = ({ appointments, navigate }) => (
       </thead>
       <tbody className="text-sm font-medium text-[#101830] dark:text-gray-200">
         {appointments && appointments.length > 0 ? appointments.slice(0, 5).map((apt, i) => {
+          if (!apt) return null;
           return (
-          <tr key={i} className="border-t border-gray-50 dark:border-[#1A263E]/50">
+          <tr key={apt.id || i} className="border-t border-gray-50 dark:border-[#1A263E]/50">
             <td className="py-2.5 bg-gray-50 text-center rounded-l">{apt.id}</td>
             <td className="py-2.5 pl-2">A-00{i+1}</td>
             <td className="py-2.5 font-bold">{apt.patientFirstName} {apt.patientLastName}</td>
-            <td className="py-2.5 text-gray-500 text-xs">{new Date(apt.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
+            <td className="py-2.5 text-gray-500 text-xs">{apt.startTime ? new Date(apt.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '—'}</td>
             <td className="py-2.5 text-center">
               <span className={`text-xs font-bold ${apt.status === 'SCHEDULED' ? 'text-emerald-500' : 'text-blue-500'}`}>{apt.status}</span>
             </td>

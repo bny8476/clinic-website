@@ -25,6 +25,15 @@ public class MedicineOrder {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "order_number", unique = true, length = 100)
+    private String orderNumber;
+
+    @Column(name = "prescription_id")
+    private Long prescriptionId;
+
+    @Column(name = "branch_id")
+    private Long branchId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "patient_id", nullable = false)
     private PatientProfile patient;
@@ -37,16 +46,43 @@ public class MedicineOrder {
     @Column(nullable = false, length = 50)
     private MedicineOrderStatus status;
 
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(name = "subtotal", precision = 10, scale = 2)
+    @Builder.Default
+    private BigDecimal subtotal = BigDecimal.ZERO;
+
+    @Column(name = "discount", precision = 10, scale = 2)
+    @Builder.Default
+    private BigDecimal discount = BigDecimal.ZERO;
+
+    @Column(name = "tax", precision = 10, scale = 2)
+    @Builder.Default
+    private BigDecimal tax = BigDecimal.ZERO;
+
+    @Column(name = "total", precision = 10, scale = 2)
+    @Builder.Default
+    private BigDecimal total = BigDecimal.ZERO;
+
+    @Column(name = "total_amount", nullable = false, precision = 10, scale = 2)
     private BigDecimal totalAmount;
+
+    @Column(name = "payment_status", nullable = false, length = 50)
+    @Builder.Default
+    private String paymentStatus = "UNPAID";
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "payment_id")
     private Payment payment;
 
     @CreationTimestamp
-    @Column(updatable = false)
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+
+    @org.hibernate.annotations.UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @Version
+    private Long version;
     
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default

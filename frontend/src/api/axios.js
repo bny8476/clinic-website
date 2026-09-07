@@ -75,8 +75,8 @@ axiosPrivate.interceptors.response.use(
         const originalRequest = error?.config;
 
         if (error?.response?.status === 401 && !originalRequest?._retry) {
-            // If this is a login request failing, don't try to refresh — surface the error
-            if (originalRequest?.url?.includes('/auth/') && originalRequest?.url?.includes('/login')) {
+            // If this is a login, refresh, or me request failing, don't try to refresh — surface the error
+            if (originalRequest?.url?.includes('/auth/login') || originalRequest?.url?.includes('/auth/refresh') || originalRequest?.url?.includes('/auth/me')) {
                 return Promise.reject(error);
             }
 
@@ -100,14 +100,12 @@ axiosPrivate.interceptors.response.use(
                     originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
                     return axiosPrivate(originalRequest);
                 } else {
-                    // Refresh failed — clear auth state and let the RoleRoute redirect to login
+                    // Refresh failed — reject promise without forcing auto-logout
                     processQueue(new Error('Session expired'));
-                    useAuthStore.getState().logout();
                     return Promise.reject(error);
                 }
             } catch (refreshError) {
                 processQueue(refreshError);
-                useAuthStore.getState().logout();
                 return Promise.reject(refreshError);
             } finally {
                 isRefreshing = false;
@@ -115,7 +113,7 @@ axiosPrivate.interceptors.response.use(
         }
 
         // Show toast for timeouts or network errors
-        if (error.code === 'ECONNABORTED' || error.message.includes('timeout') || error.code === 'ERR_NETWORK') {
+        if (error.code === 'ECONNABORTED' || error.message?.includes('timeout') || error.code === 'ERR_NETWORK') {
             toast.error('Network Error: The request took too long or the server is unreachable.');
         } else if (error.response?.status === 409) {
             toast.error(error.response?.data?.message || 'State conflict error. Please try again or refresh.');

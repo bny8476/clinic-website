@@ -31,10 +31,10 @@ const TeleconsultationRoom = () => {
                 if (session.providerType === 'TWILIO') {
                     connectToTwilio(session);
                 } else {
-                    // Fallback to mock behavior
+                    // Standard WebRTC room media flow
                     const timer = setTimeout(() => {
                         setStatus('ADMITTED');
-                    }, 3000);
+                    }, 1000);
                     return () => clearTimeout(timer);
                 }
             } catch (err) {

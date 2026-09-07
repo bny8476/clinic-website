@@ -32,7 +32,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     java.util.Optional<Appointment> findByIdempotencyKey(String idempotencyKey);
 
     @Query("SELECT new com.healthcare.clinic.appointment.dto.AppointmentResponseDto(" +
-           "a.id, a.status, a.reasonForVisit, a.notes, a.branchId, a.createdAt, " +
+           "a.id, a.appointmentNumber, a.status, a.appointmentType, a.reasonForVisit, a.notes, a.branchId, a.duration, a.paymentStatus, a.createdAt, " +
            "a.slot.id, a.slot.startTime, a.slot.endTime, " +
            "a.doctor.userId, du.firstName, du.lastName, " +
            "a.patient.userId, pu.firstName, pu.lastName) " +
@@ -44,7 +44,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     List<AppointmentResponseDto> findAppointmentsForPatientWithNames(@Param("userId") Long userId);
 
     @Query("SELECT new com.healthcare.clinic.appointment.dto.AppointmentResponseDto(" +
-           "a.id, a.status, a.reasonForVisit, a.notes, a.branchId, a.createdAt, " +
+           "a.id, a.appointmentNumber, a.status, a.appointmentType, a.reasonForVisit, a.notes, a.branchId, a.duration, a.paymentStatus, a.createdAt, " +
            "a.slot.id, a.slot.startTime, a.slot.endTime, " +
            "a.doctor.userId, du.firstName, du.lastName, " +
            "a.patient.userId, pu.firstName, pu.lastName) " +
@@ -56,7 +56,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     List<AppointmentResponseDto> findAppointmentsForDoctorWithNames(@Param("userId") Long userId);
 
     @Query("SELECT new com.healthcare.clinic.appointment.dto.AppointmentResponseDto(" +
-           "a.id, a.status, a.reasonForVisit, a.notes, a.branchId, a.createdAt, " +
+           "a.id, a.appointmentNumber, a.status, a.appointmentType, a.reasonForVisit, a.notes, a.branchId, a.duration, a.paymentStatus, a.createdAt, " +
            "a.slot.id, a.slot.startTime, a.slot.endTime, " +
            "a.doctor.userId, du.firstName, du.lastName, " +
            "a.patient.userId, pu.firstName, pu.lastName) " +
@@ -72,7 +72,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
            @Param("endOfDay") ZonedDateTime endOfDay);
 
     @Query("SELECT new com.healthcare.clinic.appointment.dto.AppointmentResponseDto(" +
-           "a.id, a.status, a.reasonForVisit, a.notes, a.branchId, a.createdAt, " +
+           "a.id, a.appointmentNumber, a.status, a.appointmentType, a.reasonForVisit, a.notes, a.branchId, a.duration, a.paymentStatus, a.createdAt, " +
            "a.slot.id, a.slot.startTime, a.slot.endTime, " +
            "a.doctor.userId, du.firstName, du.lastName, " +
            "a.patient.userId, pu.firstName, pu.lastName) " +
