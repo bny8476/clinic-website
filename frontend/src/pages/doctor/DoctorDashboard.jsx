@@ -204,8 +204,8 @@ const DoctorDashboard = () => {
   const newAppointmentsList = useMemo(() => {
     const now = new Date();
     const upcoming = allAppointments
-      .filter(apt => apt && apt.status === 'SCHEDULED' && new Date(apt.startTime) > now)
-      .sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
+      .filter(apt => apt && apt.status === 'SCHEDULED' && apt.startTime && new Date(apt.startTime) > now)
+      .sort((a, b) => new Date(a?.startTime || 0) - new Date(b?.startTime || 0));
     return upcoming.slice(0, 5).map((apt, i) => ({
       opNo: `${101 + i}`,
       token: `A-${String(i + 1).padStart(3, '0')}`,
@@ -220,8 +220,8 @@ const DoctorDashboard = () => {
     if (todayAppointments.length > 0) {
       const now = new Date();
       const upcoming = todayAppointments
-        .filter(apt => apt && apt.status !== 'COMPLETED' && apt.status !== 'CANCELLED' && new Date(apt.startTime) > now)
-        .sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
+        .filter(apt => apt && apt.status !== 'COMPLETED' && apt.status !== 'CANCELLED' && apt.startTime && new Date(apt.startTime) > now)
+        .sort((a, b) => new Date(a?.startTime || 0) - new Date(b?.startTime || 0));
       if (upcoming[0]) return upcoming[0];
       if (todayAppointments[0]) return todayAppointments[0];
     }
@@ -262,7 +262,7 @@ const DoctorDashboard = () => {
   ];
 
   // ─── Next appointment date parts ───
-  const nextAptDate = nextAppointment ? new Date(nextAppointment.startTime) : new Date();
+  const nextAptDate = (nextAppointment && nextAppointment.startTime && !isNaN(new Date(nextAppointment.startTime))) ? new Date(nextAppointment.startTime) : new Date();
   const nextAptMonth = nextAptDate.toLocaleDateString([], { month: 'short' }).toUpperCase();
   const nextAptDay = nextAptDate.getDate();
   const nextAptWeekday = nextAptDate.toLocaleDateString([], { weekday: 'short' }).toUpperCase();

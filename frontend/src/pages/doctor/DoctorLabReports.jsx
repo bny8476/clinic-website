@@ -257,7 +257,7 @@ const DoctorLabReports = () => {
             {/* Pagination Footer */}
             <div className="flex items-center justify-between p-4 bg-white border-t border-slate-200">
               <span className="text-[12px] font-medium text-slate-500">
-                Showing {filteredReports.length === 0 ? 0 : 1} to {filteredReports.length} of {filteredReports.length} reports
+                Showing {filteredRequests.length === 0 ? 0 : 1} to {filteredRequests.length} of {filteredRequests.length} reports
               </span>
               <div className="flex items-center gap-1">
                 <button className="w-8 h-8 flex items-center justify-center rounded border border-slate-200 text-slate-500 hover:bg-slate-50">&lt;</button>
