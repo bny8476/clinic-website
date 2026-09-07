@@ -169,6 +169,7 @@ export default function BookAppointment() {
         return res.data;
       }
     },
+    retry: false,
     onSuccess: () => {
       queryClient.invalidateQueries(['patientAppointments']);
       queryClient.invalidateQueries(['doctor-today-appointments']);
@@ -176,14 +177,13 @@ export default function BookAppointment() {
       setCurrentStep(5);
     },
     onError: (err) => {
+      const serverMsg = err.response?.data?.message || err.response?.data?.error || err.message;
       if (err.response?.status === 409) {
-        setError('This appointment slot is no longer available. Please select another available time.');
-        setSelectedSlotId(null);
+        setError(serverMsg || 'This appointment slot is no longer available. Please select another available time.');
         queryClient.invalidateQueries(['availableSlots']);
-        setCurrentStep(2);
         return;
       }
-      setError(err.response?.data?.message || err.message || 'Failed to book appointment. Please try again.');
+      setError(serverMsg || 'Failed to book appointment. Please try again.');
     }
   });
 

@@ -52,6 +52,16 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(ex.getMessage()));
     }
 
+    @ExceptionHandler(com.healthcare.clinic.appointment.exception.AppointmentConflictException.class)
+    public ResponseEntity<Map<String, Object>> handleAppointmentConflict(com.healthcare.clinic.appointment.exception.AppointmentConflictException ex, jakarta.servlet.http.HttpServletRequest request) {
+        Map<String, Object> body = new java.util.LinkedHashMap<>();
+        body.put("code", ex.getCode());
+        body.put("message", ex.getMessage());
+        body.put("timestamp", java.time.Instant.now().toString());
+        body.put("path", request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+    }
+
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<ApiResponse<Void>> handleIllegalState(IllegalStateException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
@@ -59,21 +69,26 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+    public ResponseEntity<Map<String, Object>> handleDataIntegrityViolation(DataIntegrityViolationException ex, jakarta.servlet.http.HttpServletRequest request) {
         log.error("Data integrity violation: ", ex);
         String msg = ex.getMessage() != null ? ex.getMessage().toLowerCase() : "";
+        Map<String, Object> body = new java.util.LinkedHashMap<>();
         if (msg.contains("slot_id") || msg.contains("appointments_slot_id_key")) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(ApiResponse.error("This time slot was just booked by someone else. Please choose another."));
+            body.put("code", "APPOINTMENT_SLOT_UNAVAILABLE");
+            body.put("message", "This appointment slot is no longer available.");
         } else if (msg.contains("email") || msg.contains("users_email_key")) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(ApiResponse.error("A user with this email address already exists."));
+            body.put("code", "DUPLICATE_USER");
+            body.put("message", "A user with this email address already exists.");
         } else if (msg.contains("phone_number") || msg.contains("users_phone_number_key")) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(ApiResponse.error("A user with this phone number already exists."));
+            body.put("code", "DUPLICATE_PHONE");
+            body.put("message", "A user with this phone number already exists.");
+        } else {
+            body.put("code", "DATA_INTEGRITY_VIOLATION");
+            body.put("message", "Database constraint violation or duplicate entry.");
         }
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(ApiResponse.error("Database constraint violation or duplicate entry."));
+        body.put("timestamp", java.time.Instant.now().toString());
+        body.put("path", request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
