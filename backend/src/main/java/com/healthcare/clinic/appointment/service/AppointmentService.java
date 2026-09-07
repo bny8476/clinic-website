@@ -308,49 +308,25 @@ public class AppointmentService {
                 .createdBy(com.healthcare.clinic.security.SecurityUtils.getCurrentUserId() != null ? com.healthcare.clinic.security.SecurityUtils.getCurrentUserId() : patientUserId)
                 .build();
 
-        Appointment savedAppointment;
-        try {
-            savedAppointment = appointmentRepository.save(appointment);
-        } catch (Exception ex) {
-            log.warn("Database constraint or lock error for slot {}: {}. Generating new slot dynamically.", slot.getId(), ex.getMessage());
-            ZonedDateTime nextTime = slot.getStartTime().plusMinutes(30);
-            if (nextTime.getDayOfWeek() == java.time.DayOfWeek.SATURDAY) nextTime = nextTime.plusDays(2);
-            if (nextTime.getDayOfWeek() == java.time.DayOfWeek.SUNDAY) nextTime = nextTime.plusDays(1);
-
-            AppointmentSlot fallbackSlot = slotRepository.save(AppointmentSlot.builder()
-                    .doctor(slot.getDoctor())
-                    .startTime(nextTime)
-                    .endTime(nextTime.plusMinutes(30))
-                    .branchId(slot.getBranchId() != null ? slot.getBranchId() : 1L)
-                    .isBooked(true)
-                    .isPriority(false)
-                    .build());
-
-            appointment.setSlot(fallbackSlot);
-            appointment.setAppointmentDate(fallbackSlot.getStartTime().toLocalDate());
-            savedAppointment = appointmentRepository.save(appointment);
-            slot = fallbackSlot;
-        }
+        Appointment savedAppointment = appointmentRepository.save(appointment);
         recordAudit(savedAppointment, "BOOKED", null, AppointmentStatus.BOOKED, "Appointment booked for slot " + slot.getId());
         
         if (holdId != null && !holdId.isEmpty()) {
             holdService.releaseHold(slot.getDoctor().getId(), slot.getStartTime().toInstant().toString(), holdId);
         }
 
-        User patientUser = userRepository.findById(patient.getUserId())
-                .orElseThrow(() -> new RuntimeException("Patient user not found"));
-        User doctorUser = userRepository.findById(slot.getDoctor().getUserId())
-                .orElseThrow(() -> new RuntimeException("Doctor user not found"));
+        User patientUser = userRepository.findById(patient.getUserId()).orElse(null);
+        User doctorUser = (slot.getDoctor() != null) ? userRepository.findById(slot.getDoctor().getUserId()).orElse(null) : null;
 
         // Publish Event — NotificationEventListener handles in-app + email
         AppointmentBookedEvent event = AppointmentBookedEvent.builder()
                 .appointmentId(savedAppointment.getId())
                 .patientUserId(patient.getUserId())
-                .doctorUserId(slot.getDoctor().getUserId())
+                .doctorUserId(slot.getDoctor() != null ? slot.getDoctor().getUserId() : null)
                 .startTime(slot.getStartTime())
                 .endTime(slot.getEndTime())
-                .doctorName("Dr. " + doctorUser.getFirstName() + " " + doctorUser.getLastName())
-                .patientEmail(patientUser.getEmail())
+                .doctorName(doctorUser != null ? "Dr. " + doctorUser.getFirstName() + " " + doctorUser.getLastName() : "Doctor")
+                .patientEmail(patientUser != null ? patientUser.getEmail() : null)
                 .build();
         eventPublisher.publishEvent(event);
 
