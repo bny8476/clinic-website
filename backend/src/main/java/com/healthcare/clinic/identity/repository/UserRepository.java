@@ -16,6 +16,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmail(String email);
     Optional<User> findByPhoneNumber(String phoneNumber);
 
+    @Query("SELECT DISTINCT u FROM User u WHERE LOWER(TRIM(u.email)) = LOWER(TRIM(:identifier)) OR u.phoneNumber = TRIM(:identifier)")
+    Optional<User> findByIdentifier(@Param("identifier") String identifier);
+
     @Query("SELECT u FROM User u WHERE " +
            "LOWER(u.firstName) LIKE LOWER(CONCAT('%',:q,'%')) OR " +
            "LOWER(u.lastName)  LIKE LOWER(CONCAT('%',:q,'%')) OR " +
@@ -23,7 +26,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
            "u.phoneNumber      LIKE CONCAT('%',:q,'%')")
     Page<User> searchByNameOrEmail(@Param("q") String q, Pageable pageable);
 
-    @Query("SELECT u FROM User u JOIN FETCH u.roles WHERE u.email = :email")
+    @Query("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.roles WHERE LOWER(TRIM(u.email)) = LOWER(TRIM(:email)) OR u.phoneNumber = TRIM(:email)")
     Optional<User> findByEmailWithRoles(@Param("email") String email);
 
     @Query("SELECT u FROM User u JOIN u.roles r WHERE r.name = :roleName AND u.enabled = true")

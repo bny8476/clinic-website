@@ -54,16 +54,19 @@ public class PortalAuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> unifiedLogin(@Valid @RequestBody LoginRequest loginRequest, HttpServletRequest request) {
-        User user = userRepository.findByEmail(loginRequest.getEmail()).orElse(null);
+        String identifier = loginRequest.getEmail() != null ? loginRequest.getEmail().trim() : "";
+        User user = userRepository.findByIdentifier(identifier).orElse(null);
 
         if (user != null && user.getLockedUntil() != null && user.getLockedUntil().isAfter(ZonedDateTime.now())) {
             return ResponseEntity.status(HttpStatus.LOCKED).body("Account is locked. Try again later.");
         }
 
+        String authUsername = user != null ? user.getEmail() : identifier;
+
         Authentication authentication;
         try {
             authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+                    new UsernamePasswordAuthenticationToken(authUsername, loginRequest.getPassword()));
         } catch (BadCredentialsException e) {
             if (user != null) {
                 user.setFailedLoginAttempts(user.getFailedLoginAttempts() + 1);
@@ -73,7 +76,7 @@ public class PortalAuthController {
                 userRepository.save(user);
                 logLoginHistory(user, request, false);
             }
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
         }
 
         User authenticatedUser = (User) authentication.getPrincipal();
@@ -230,7 +233,6 @@ public class PortalAuthController {
 @Data
 class LoginRequest {
     @jakarta.validation.constraints.NotBlank
-    @jakarta.validation.constraints.Email
     private String email;
     @jakarta.validation.constraints.NotBlank
     private String password;
