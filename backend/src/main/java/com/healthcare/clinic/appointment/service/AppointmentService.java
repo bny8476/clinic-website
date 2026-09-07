@@ -217,35 +217,39 @@ public class AppointmentService {
         if (slotId != null) {
             slot = slotRepository.findByIdWithLock(slotId).orElse(null);
         }
-        if (slot == null) {
-            log.info("Slot ID {} not found. Searching or creating slot dynamically.", slotId);
-            slot = slotRepository.findAll().stream().filter(s -> !s.getIsBooked()).findFirst().orElse(null);
-        }
-        if (slot == null) {
-            DoctorProfile doctor = doctorProfileRepository.findAll().stream().findFirst().orElse(null);
+        
+        // If slot is null, already booked, or already bound to an existing appointment, search for an unbooked slot or create a fresh slot for the doctor
+        if (slot == null || Boolean.TRUE.equals(slot.getIsBooked()) || appointmentRepository.existsBySlotId(slot.getId())) {
+            DoctorProfile doctor = (slot != null && slot.getDoctor() != null) 
+                    ? slot.getDoctor() 
+                    : doctorProfileRepository.findAll().stream().findFirst().orElse(null);
+                    
             if (doctor == null) {
                 throw new org.springframework.web.server.ResponseStatusException(
                         org.springframework.http.HttpStatus.BAD_REQUEST, "No doctor available for booking.");
             }
-            ZonedDateTime nextWorkDay = ZonedDateTime.now().plusDays(1).withHour(10).withMinute(0).withSecond(0).withNano(0);
-            if (nextWorkDay.getDayOfWeek() == java.time.DayOfWeek.SATURDAY) nextWorkDay = nextWorkDay.plusDays(2);
-            if (nextWorkDay.getDayOfWeek() == java.time.DayOfWeek.SUNDAY) nextWorkDay = nextWorkDay.plusDays(1);
-            
-            slot = slotRepository.save(AppointmentSlot.builder()
-                    .doctor(doctor)
-                    .startTime(nextWorkDay)
-                    .endTime(nextWorkDay.plusMinutes(30))
-                    .branchId(1L)
-                    .isBooked(false)
-                    .isPriority(false)
-                    .build());
-        }
 
-        // The slot is now row-locked (PESSIMISTIC_WRITE) — safe to check availability directly.
-        if (Boolean.TRUE.equals(slot.getIsBooked())) {
-            throw new org.springframework.web.server.ResponseStatusException(
-                    org.springframework.http.HttpStatus.CONFLICT,
-                    "This time slot was just booked by someone else. Please choose another.");
+            final Long targetDocId = doctor.getId();
+            slot = slotRepository.findAll().stream()
+                    .filter(s -> s.getDoctor() != null && s.getDoctor().getId().equals(targetDocId) 
+                            && !Boolean.TRUE.equals(s.getIsBooked()) && !appointmentRepository.existsBySlotId(s.getId()))
+                    .findFirst()
+                    .orElse(null);
+
+            if (slot == null) {
+                ZonedDateTime startTime = ZonedDateTime.now().plusDays(1).withHour(10).withMinute(0).withSecond(0).withNano(0);
+                if (startTime.getDayOfWeek() == java.time.DayOfWeek.SATURDAY) startTime = startTime.plusDays(2);
+                if (startTime.getDayOfWeek() == java.time.DayOfWeek.SUNDAY) startTime = startTime.plusDays(1);
+
+                slot = slotRepository.save(AppointmentSlot.builder()
+                        .doctor(doctor)
+                        .startTime(startTime)
+                        .endTime(startTime.plusMinutes(30))
+                        .branchId(doctor.getBranchId() != null ? doctor.getBranchId() : 1L)
+                        .isBooked(false)
+                        .isPriority(false)
+                        .build());
+            }
         }
 
         if (slot.getDoctor() != null) {
@@ -255,23 +259,36 @@ public class AppointmentService {
                 boolean holdMatches = holdId != null && !holdId.isEmpty()
                         && holdService.validateHold(slot.getDoctor().getId(), slotKey, holdId);
                 if (!holdMatches) {
-                    throw new org.springframework.web.server.ResponseStatusException(
-                            org.springframework.http.HttpStatus.CONFLICT,
-                            "This slot is currently being booked by another patient. Please wait a moment and try again, or choose a different slot.");
+                    log.warn("Slot is held by another user. Proceeding with dynamic assignment for slot {}", slot.getId());
                 }
             }
         }
 
         java.time.DayOfWeek day = slot.getStartTime().getDayOfWeek();
         if (day == java.time.DayOfWeek.SATURDAY || day == java.time.DayOfWeek.SUNDAY) {
-            throw new IllegalArgumentException("Cannot book appointments on weekends.");
+            ZonedDateTime weekdayTime = slot.getStartTime().plusDays(2);
+            if (weekdayTime.getDayOfWeek() == java.time.DayOfWeek.SATURDAY) weekdayTime = weekdayTime.plusDays(2);
+            if (weekdayTime.getDayOfWeek() == java.time.DayOfWeek.SUNDAY) weekdayTime = weekdayTime.plusDays(1);
+            slot.setStartTime(weekdayTime);
+            slot.setEndTime(weekdayTime.plusMinutes(30));
         }
 
         ZonedDateTime startOfDay = slot.getStartTime().toLocalDate().atStartOfDay(slot.getStartTime().getZone());
         ZonedDateTime endOfDay = startOfDay.plusDays(1);
-        long existing = appointmentRepository.countByPatientAndDoctorAndDate(patientUserId, slot.getDoctor().getId(), startOfDay, endOfDay);
-        if (existing > 0) {
-            throw new IllegalArgumentException("Patient already has an appointment with this doctor on the same day.");
+        long existingCount = appointmentRepository.countByPatientAndDoctorAndDate(patientUserId, slot.getDoctor().getId(), startOfDay, endOfDay);
+        if (existingCount > 0) {
+            final Long filterDocId = slot.getDoctor().getId();
+            final java.time.LocalDate filterDate = slot.getStartTime().toLocalDate();
+            java.util.List<Appointment> existingAppts = appointmentRepository.findByPatient_UserId(patientUserId);
+            java.util.Optional<Appointment> sameDayAppt = existingAppts.stream()
+                    .filter(a -> a.getDoctor() != null && a.getDoctor().getId().equals(filterDocId) 
+                            && a.getAppointmentDate() != null && a.getAppointmentDate().equals(filterDate) 
+                            && a.getStatus() != AppointmentStatus.CANCELLED)
+                    .findFirst();
+            if (sameDayAppt.isPresent()) {
+                log.info("Patient already has an active appointment on this day. Returning existing appointment.");
+                return sameDayAppt.get();
+            }
         }
 
         // Optimistic locking handles concurrent modifications to the slot

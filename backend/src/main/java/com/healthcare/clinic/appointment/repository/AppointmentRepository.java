@@ -29,6 +29,8 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
         @Param("start") ZonedDateTime start, 
         @Param("end") ZonedDateTime end);
         
+    boolean existsBySlotId(Long slotId);
+
     java.util.Optional<Appointment> findByIdempotencyKey(String idempotencyKey);
 
     @Query("SELECT new com.healthcare.clinic.appointment.dto.AppointmentResponseDto(" +
