@@ -104,14 +104,15 @@ public class SecurityConfig {
             }
         }
 
-        if (isProd) {
-            if (!patterns.contains("https://clinic-website-bny2.vercel.app")) {
-                patterns.add("https://clinic-website-bny2.vercel.app");
-            }
-            if (!patterns.contains("https://clinic-website-three-chi.vercel.app")) {
-                patterns.add("https://clinic-website-three-chi.vercel.app");
-            }
-        } else {
+        // Always ensure Vercel frontend production origins are present
+        if (!patterns.contains("https://clinic-website-three-chi.vercel.app")) {
+            patterns.add("https://clinic-website-three-chi.vercel.app");
+        }
+        if (!patterns.contains("https://clinic-website-bny2.vercel.app")) {
+            patterns.add("https://clinic-website-bny2.vercel.app");
+        }
+
+        if (!isProd) {
             if (patterns.isEmpty()) {
                 patterns.add("http://localhost:5173");
                 patterns.add("http://localhost:3000");
@@ -119,21 +120,11 @@ public class SecurityConfig {
             }
             patterns.add("http://localhost:*");
             patterns.add("http://127.0.0.1:*");
-            if (!patterns.contains("https://clinic-website-bny2.vercel.app")) {
-                patterns.add("https://clinic-website-bny2.vercel.app");
-            }
-            if (!patterns.contains("https://clinic-website-three-chi.vercel.app")) {
-                patterns.add("https://clinic-website-three-chi.vercel.app");
-            }
         }
 
         configuration.setAllowedOriginPatterns(patterns);
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"));
-        configuration.setAllowedHeaders(Arrays.asList(
-            "Authorization", "Content-Type", "Accept", "Origin", 
-            "X-Requested-With", "x-auth-token", "Idempotency-Key", 
-            "Cache-Control", "Pragma", "Expires", "X-Active-Role"
-        ));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setExposedHeaders(Arrays.asList("x-auth-token", "Authorization", "Idempotency-Key"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
