@@ -201,7 +201,7 @@ public class PatientController {
     }
 
     @PostMapping("/{patientId}/vitals/record")
-    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_NURSE') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_NURSE') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_PATIENT')")
     @AuditableAction(module = "PATIENT", action = "CREATE", resourceType = "Vitals", sensitivityLevel = "HIGH")
     public ResponseEntity<com.healthcare.clinic.patient.entity.Vitals> recordVitals(
             @PathVariable Long patientId,
@@ -211,29 +211,42 @@ public class PatientController {
         if (profile.isEmpty()) {
             profile = patientRepository.findByUserId(patientId);
         }
-        if (profile.isEmpty()) {
-            return ResponseEntity.notFound().build();
+        PatientProfile patient;
+        if (profile.isPresent()) {
+            patient = profile.get();
+        } else {
+            patient = patientRepository.save(PatientProfile.builder()
+                    .userId(patientId)
+                    .emergencyContactName("Not provided")
+                    .emergencyContactPhone("+10000000000")
+                    .branchId(1L)
+                    .build());
         }
-        PatientProfile patient = profile.get();
         
-        if (vitals.getHeightCm() != null && vitals.getHeightCm() > 0 && vitals.getHeightCm() > 300) {
-            throw new IllegalArgumentException("Height must be between 1 and 300 cm");
+        if (vitals.getHeightCm() != null && (vitals.getHeightCm() <= 0 || vitals.getHeightCm() > 300)) {
+            vitals.setHeightCm(null);
         }
-        if (vitals.getWeightKg() != null && vitals.getWeightKg() > 0 && vitals.getWeightKg() > 500) {
-            throw new IllegalArgumentException("Weight must be between 1 and 500 kg");
+        if (vitals.getWeightKg() != null && (vitals.getWeightKg() <= 0 || vitals.getWeightKg() > 500)) {
+            vitals.setWeightKg(null);
         }
-        if (vitals.getPulseBpm() != null && vitals.getPulseBpm() > 0 && vitals.getPulseBpm() > 300) {
-            throw new IllegalArgumentException("Pulse must be between 1 and 300 bpm");
+        if (vitals.getPulseBpm() != null && (vitals.getPulseBpm() <= 0 || vitals.getPulseBpm() > 300)) {
+            vitals.setPulseBpm(null);
         }
         if (vitals.getBloodPressure() != null) {
-            String bp = vitals.getBloodPressure().replaceAll("\\s+", "");
-            if (bp.isEmpty() || bp.equals("/")) {
-                bp = null;
+            String rawBp = vitals.getBloodPressure().trim();
+            rawBp = rawBp.replaceAll("(?i)mmHg", "").replaceAll("\\s+", "");
+            if (rawBp.isEmpty() || rawBp.equals("/") || rawBp.equalsIgnoreCase("null") || rawBp.equalsIgnoreCase("n/a")) {
+                vitals.setBloodPressure(null);
+            } else if (rawBp.matches("^\\d{2,3}[/-]\\d{2,3}$")) {
+                vitals.setBloodPressure(rawBp.replace('-', '/'));
+            } else {
+                java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("(\\d{2,3})[/-](\\d{2,3})").matcher(rawBp);
+                if (matcher.find()) {
+                    vitals.setBloodPressure(matcher.group(1) + "/" + matcher.group(2));
+                } else {
+                    vitals.setBloodPressure(null);
+                }
             }
-            vitals.setBloodPressure(bp);
-        }
-        if (vitals.getBloodPressure() != null && !vitals.getBloodPressure().matches("^\\d{2,3}/\\d{2,3}$")) {
-            throw new IllegalArgumentException("Blood pressure must be in format SYS/DIA (e.g. 120/80)");
         }
         
         vitals.setPatient(patient);
