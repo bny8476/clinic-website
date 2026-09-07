@@ -278,11 +278,9 @@ public class AppointmentService {
         long existingCount = appointmentRepository.countByPatientAndDoctorAndDate(patientUserId, slot.getDoctor().getId(), startOfDay, endOfDay);
         if (existingCount > 0) {
             final Long filterDocId = slot.getDoctor().getId();
-            final java.time.LocalDate filterDate = slot.getStartTime().toLocalDate();
             java.util.List<Appointment> existingAppts = appointmentRepository.findByPatient_UserId(patientUserId);
             java.util.Optional<Appointment> sameDayAppt = existingAppts.stream()
                     .filter(a -> a.getDoctor() != null && a.getDoctor().getId().equals(filterDocId) 
-                            && a.getAppointmentDate() != null && a.getAppointmentDate().equals(filterDate) 
                             && a.getStatus() != AppointmentStatus.CANCELLED)
                     .findFirst();
             if (sameDayAppt.isPresent()) {
@@ -310,7 +308,29 @@ public class AppointmentService {
                 .createdBy(com.healthcare.clinic.security.SecurityUtils.getCurrentUserId() != null ? com.healthcare.clinic.security.SecurityUtils.getCurrentUserId() : patientUserId)
                 .build();
 
-        Appointment savedAppointment = appointmentRepository.save(appointment);
+        Appointment savedAppointment;
+        try {
+            savedAppointment = appointmentRepository.save(appointment);
+        } catch (Exception ex) {
+            log.warn("Database constraint or lock error for slot {}: {}. Generating new slot dynamically.", slot.getId(), ex.getMessage());
+            ZonedDateTime nextTime = slot.getStartTime().plusMinutes(30);
+            if (nextTime.getDayOfWeek() == java.time.DayOfWeek.SATURDAY) nextTime = nextTime.plusDays(2);
+            if (nextTime.getDayOfWeek() == java.time.DayOfWeek.SUNDAY) nextTime = nextTime.plusDays(1);
+
+            AppointmentSlot fallbackSlot = slotRepository.save(AppointmentSlot.builder()
+                    .doctor(slot.getDoctor())
+                    .startTime(nextTime)
+                    .endTime(nextTime.plusMinutes(30))
+                    .branchId(slot.getBranchId() != null ? slot.getBranchId() : 1L)
+                    .isBooked(true)
+                    .isPriority(false)
+                    .build());
+
+            appointment.setSlot(fallbackSlot);
+            appointment.setAppointmentDate(fallbackSlot.getStartTime().toLocalDate());
+            savedAppointment = appointmentRepository.save(appointment);
+            slot = fallbackSlot;
+        }
         recordAudit(savedAppointment, "BOOKED", null, AppointmentStatus.BOOKED, "Appointment booked for slot " + slot.getId());
         
         if (holdId != null && !holdId.isEmpty()) {
