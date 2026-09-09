@@ -3,6 +3,7 @@ package com.healthcare.clinic.doctor.medicine.service;
 import com.healthcare.clinic.appointment.entity.Appointment;
 import com.healthcare.clinic.appointment.repository.AppointmentRepository;
 import com.healthcare.clinic.doctor.entity.DoctorProfile;
+import com.healthcare.clinic.doctor.repository.DoctorProfileRepository;
 import com.healthcare.clinic.doctor.medicine.dto.DoctorMedicineDto;
 import com.healthcare.clinic.doctor.medicine.dto.MedicineCartItemDto;
 import com.healthcare.clinic.doctor.medicine.dto.MedicineOrderRequest;
@@ -12,6 +13,7 @@ import com.healthcare.clinic.doctor.medicine.entity.MedicineOrderItem;
 import com.healthcare.clinic.doctor.medicine.entity.MedicineOrderStatus;
 import com.healthcare.clinic.doctor.medicine.repository.DoctorMedicineRepository;
 import com.healthcare.clinic.doctor.medicine.repository.MedicineOrderRepository;
+import com.healthcare.clinic.pharmacy.repository.MedicineRepository;
 import com.healthcare.clinic.patient.entity.PatientProfile;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -31,29 +33,49 @@ public class PatientMedicineService {
     private final DoctorMedicineRepository doctorMedicineRepository;
     private final MedicineOrderRepository medicineOrderRepository;
     private final AppointmentRepository appointmentRepository;
+    private final DoctorProfileRepository doctorProfileRepository;
+    private final MedicineRepository centralMedicineRepository;
 
     public List<DoctorMedicineDto> getAvailableMedicines(Long patientUserId) {
-        if (patientUserId == null) {
-            return doctorMedicineRepository.findByIsActiveTrue().stream()
-                    .map(this::mapToDto)
+        List<DoctorMedicineDto> result = new ArrayList<>();
+
+        if (patientUserId != null) {
+            List<Appointment> appointments = appointmentRepository.findByPatient_UserId(patientUserId);
+            List<Long> doctorProfileIds = appointments.stream()
+                    .filter(a -> a.getDoctor() != null)
+                    .map(a -> a.getDoctor().getId())
+                    .distinct()
                     .collect(Collectors.toList());
+
+            if (!doctorProfileIds.isEmpty()) {
+                List<DoctorMedicine> docMeds = doctorMedicineRepository.findByDoctorIdInAndIsActiveTrue(doctorProfileIds);
+                result.addAll(docMeds.stream().map(this::mapToDto).collect(Collectors.toList()));
+            }
         }
 
-        List<Appointment> appointments = appointmentRepository.findByPatient_UserId(patientUserId);
-        
-        List<Long> doctorProfileIds = appointments.stream()
-                .filter(a -> a.getDoctor() != null)
-                .map(a -> a.getDoctor().getId())
-                .distinct()
-                .collect(Collectors.toList());
-
-        if (doctorProfileIds.isEmpty()) {
-            return java.util.Collections.emptyList();
+        if (result.isEmpty()) {
+            List<DoctorMedicine> allActive = doctorMedicineRepository.findByIsActiveTrue();
+            result.addAll(allActive.stream().map(this::mapToDto).collect(Collectors.toList()));
         }
 
-        return doctorMedicineRepository.findByDoctorIdInAndIsActiveTrue(doctorProfileIds).stream()
-                .map(this::mapToDto)
-                .collect(Collectors.toList());
+        if (result.isEmpty()) {
+            List<com.healthcare.clinic.pharmacy.entity.Medicine> centralMeds = centralMedicineRepository.findAll();
+            for (com.healthcare.clinic.pharmacy.entity.Medicine cm : centralMeds) {
+                result.add(DoctorMedicineDto.builder()
+                        .id(cm.getId())
+                        .doctorId(1L)
+                        .name(cm.getName())
+                        .description(cm.getGenericName() != null ? cm.getGenericName() : (cm.getCategory() != null ? cm.getCategory() : "Essential Medicine"))
+                        .imageUrl(null)
+                        .price(cm.getMrp() != null ? cm.getMrp() : new BigDecimal("120.00"))
+                        .unit(cm.getUnit() != null ? cm.getUnit() : "1 Box")
+                        .stockQuantity(100)
+                        .isActive(true)
+                        .build());
+            }
+        }
+
+        return result;
     }
 
     @Transactional

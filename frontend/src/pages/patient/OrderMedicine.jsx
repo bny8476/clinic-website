@@ -17,16 +17,32 @@ const categories = [
 
 export default function OrderMedicine() {
   const [activeCategory, setActiveCategory] = useState("All Medicines");
+  const [searchQuery, setSearchQuery] = useState("");
   const [cart, setCart] = useState([]);
   const queryClient = useQueryClient();
 
   // Fetch medicines
-  const { data: medicines = [], isLoading } = useQuery({
+  const { data: rawMedicinesData = [], isLoading } = useQuery({
     queryKey: ['patientMedicines'],
     queryFn: async () => {
       const response = await axiosPrivate.get('/patient/medicines');
       return response.data;
     }
+  });
+
+  const medicinesList = Array.isArray(rawMedicinesData)
+    ? rawMedicinesData
+    : (rawMedicinesData?.content || rawMedicinesData?.data || []);
+
+  const filteredMedicines = medicinesList.filter(med => {
+    const matchesCategory = activeCategory === "All Medicines" || activeCategory === "More >" ||
+      (med.category && med.category.toLowerCase().includes(activeCategory.toLowerCase())) ||
+      (med.description && med.description.toLowerCase().includes(activeCategory.toLowerCase()));
+    const matchesSearch = !searchQuery.trim() || (
+      med.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      med.description?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    return matchesCategory && matchesSearch;
   });
 
   // Setup real-time updates
@@ -137,24 +153,29 @@ export default function OrderMedicine() {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
           <input 
             type="text" 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search medicines by name, salt or brand..." 
             className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#2864FF] focus:border-transparent text-sm font-medium text-slate-800 placeholder:text-slate-400"
           />
         </div>
         <div className="relative min-w-[160px]">
-          <select className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 bg-white focus:outline-none appearance-none cursor-pointer">
-            <option>All Categories</option>
+          <select 
+            value={activeCategory}
+            onChange={(e) => setActiveCategory(e.target.value)}
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 bg-white focus:outline-none appearance-none cursor-pointer"
+          >
+            {categories.map((cat, i) => (
+              <option key={i} value={cat}>{cat}</option>
+            ))}
           </select>
           <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
         </div>
-        <div className="relative min-w-[160px]">
-          <select className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 bg-white focus:outline-none appearance-none cursor-pointer">
-            <option>All Brands</option>
-          </select>
-          <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
-        </div>
-        <button className="flex items-center gap-2 px-5 py-3 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition cursor-pointer">
-          <Filter size={16} /> Filter
+        <button 
+          onClick={() => { setSearchQuery(''); setActiveCategory('All Medicines'); }}
+          className="flex items-center gap-2 px-5 py-3 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition cursor-pointer"
+        >
+          <Filter size={16} /> Reset
         </button>
       </motion.div>
 
@@ -181,7 +202,7 @@ export default function OrderMedicine() {
         {/* Left Column - Medicine List */}
         <div className="flex-1 w-full">
           <div className="flex justify-between items-center mb-5">
-            <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">Popular Medicines</h2>
+            <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">Available Medicines</h2>
             <div className="flex items-center gap-4">
               <div className="relative">
                 <select className="text-sm border border-slate-200 bg-white rounded-lg px-3 py-2 pr-8 font-semibold text-slate-700 focus:outline-none appearance-none cursor-pointer shadow-sm">
@@ -212,13 +233,13 @@ export default function OrderMedicine() {
               </div>
             )}
             
-            {!isLoading && medicines.length === 0 && (
+            {!isLoading && filteredMedicines.length === 0 && (
               <div className="p-10 text-center text-slate-500 font-medium">
-                No medicines available from your doctors right now.
+                No medicines found matching your selection.
               </div>
             )}
             
-            {medicines.map(med => (
+            {filteredMedicines.map(med => (
               <motion.div 
                 key={med.id} 
                 variants={listStagger}
@@ -236,24 +257,24 @@ export default function OrderMedicine() {
                   <div>
                     <h3 className="font-extrabold text-slate-900 text-[17px] mb-1">{med.name}</h3>
                     <p className="text-sm font-medium text-slate-500 mb-1">{med.description || "No composition info"}</p>
-                    <p className="text-xs font-semibold text-emerald-600 mb-2.5">Stock: {med.stockQuantity}</p>
+                    <p className="text-xs font-semibold text-emerald-600 mb-2.5">Stock: {med.stockQuantity != null ? med.stockQuantity : 50}</p>
                   </div>
                 </div>
                 <div className="flex items-center justify-between sm:justify-end gap-6 sm:w-auto w-full mt-2 sm:mt-0">
                   <div className="text-left sm:text-right min-w-[100px]">
-                    <p className="font-extrabold text-slate-900 text-[19px]">₹{med.price.toFixed(2)}</p>
+                    <p className="font-extrabold text-slate-900 text-[19px]">₹{Number(med.price || 0).toFixed(2)}</p>
                     <p className="text-[13px] font-medium text-slate-500">{med.unit || "1 unit"}</p>
                   </div>
                   <button 
                     onClick={() => addToCart(med)}
-                    disabled={med.stockQuantity <= 0}
+                    disabled={(med.stockQuantity != null ? med.stockQuantity : 50) <= 0}
                     className={`flex items-center gap-2 px-5 py-2.5 border rounded-xl text-sm font-bold shadow-sm shrink-0 transition ${
-                      med.stockQuantity <= 0 
+                      (med.stockQuantity != null ? med.stockQuantity : 50) <= 0 
                         ? 'border-slate-200 text-slate-400 bg-slate-50 cursor-not-allowed'
                         : 'border-blue-200 text-[#2864FF] hover:bg-blue-50 hover:border-blue-300 bg-white'
                     }`}
                   >
-                    <ShoppingBag size={16} /> {med.stockQuantity <= 0 ? 'Out of Stock' : 'Add to Cart'}
+                    <ShoppingBag size={16} /> {(med.stockQuantity != null ? med.stockQuantity : 50) <= 0 ? 'Out of Stock' : 'Add to Cart'}
                   </button>
                 </div>
               </motion.div>
