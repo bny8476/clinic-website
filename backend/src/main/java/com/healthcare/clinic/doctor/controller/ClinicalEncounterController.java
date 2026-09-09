@@ -30,6 +30,13 @@ public class ClinicalEncounterController {
         return ResponseEntity.ok(encounterService.getEncounter(user.getUserId(), id));
     }
 
+    @GetMapping("/by-appointment/{appointmentId}")
+    public ResponseEntity<ClinicalEncounter> getEncounterByAppointment(@AuthenticationPrincipal UserPrincipal user, @PathVariable Long appointmentId) {
+        return encounterService.getEncounterByAppointmentId(appointmentId)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
     @PostMapping
     @AuditableAction(module = "CLINICAL_ENCOUNTER", action = "OPEN", resourceType = "ClinicalEncounter", sensitivityLevel = "HIGH")
     public ResponseEntity<ClinicalEncounter> startEncounter(@AuthenticationPrincipal UserPrincipal user, @RequestBody ClinicalEncounter encounter) {

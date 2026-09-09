@@ -67,6 +67,10 @@ public class User implements UserDetails {
 
     private Long branchId;
 
+    private Long departmentId;
+
+    private ZonedDateTime lastLogin;
+
     @Column(updatable = false)
     private ZonedDateTime createdAt;
 

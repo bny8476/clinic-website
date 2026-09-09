@@ -20,6 +20,8 @@ public class PatientController {
     private final com.healthcare.clinic.patient.repository.VitalsRepository vitalsRepository;
     private final com.healthcare.clinic.identity.repository.UserRepository userRepository;
     private final com.healthcare.clinic.patient.service.Patient360Service patient360Service;
+    private final com.healthcare.clinic.doctor.repository.DoctorProfileRepository doctorProfileRepository;
+    private final com.healthcare.clinic.appointment.repository.AppointmentRepository appointmentRepository;
 
     @GetMapping("/profile/{userId}")
     @PreAuthorize("hasAuthority('ROLE_PATIENT') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
@@ -73,9 +75,57 @@ public class PatientController {
     }
 
     @GetMapping("/my")
-    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
-    public ResponseEntity<java.util.List<PatientProfile>> getMyPatients() {
-        return ResponseEntity.ok(java.util.List.of());
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_NURSE')")
+    public ResponseEntity<java.util.List<java.util.Map<String, Object>>> getMyPatients() {
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        java.util.List<PatientProfile> profiles;
+        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_SUPER_ADMIN") || a.getAuthority().equals("ROLE_RECEPTION"));
+
+        if (isAdmin || currentUserId == null) {
+            profiles = patientRepository.findAll();
+        } else {
+            com.healthcare.clinic.doctor.entity.DoctorProfile doctor = doctorProfileRepository.findByUserId(currentUserId).orElse(null);
+            Long doctorId = doctor != null ? doctor.getId() : currentUserId;
+            java.util.List<Long> patientUserIds = appointmentRepository.findByDoctorId(doctorId).stream()
+                    .map(a -> a.getPatient() != null ? a.getPatient().getUserId() : null)
+                    .filter(java.util.Objects::nonNull)
+                    .distinct()
+                    .toList();
+
+            if (patientUserIds.isEmpty()) {
+                patientUserIds = appointmentRepository.findByDoctorId(currentUserId).stream()
+                        .map(a -> a.getPatient() != null ? a.getPatient().getUserId() : null)
+                        .filter(java.util.Objects::nonNull)
+                        .distinct()
+                        .toList();
+            }
+
+            if (!patientUserIds.isEmpty()) {
+                profiles = patientRepository.findByUserIdIn(patientUserIds);
+            } else {
+                profiles = patientRepository.findAll();
+            }
+        }
+
+        java.util.List<java.util.Map<String, Object>> result = profiles.stream().map(p -> {
+            java.util.Map<String, Object> map = new java.util.HashMap<>();
+            com.healthcare.clinic.identity.entity.User u = p.getUserId() != null ? userRepository.findById(p.getUserId()).orElse(null) : null;
+            map.put("id", p.getId());
+            map.put("patientId", p.getUserId());
+            map.put("firstName", u != null && u.getFirstName() != null ? u.getFirstName() : "");
+            map.put("lastName", u != null && u.getLastName() != null ? u.getLastName() : "");
+            map.put("email", u != null && u.getEmail() != null ? u.getEmail() : "");
+            map.put("phone", u != null && u.getPhoneNumber() != null ? u.getPhoneNumber() : "");
+            map.put("gender", p.getGender());
+            map.put("dateOfBirth", p.getDateOfBirth());
+            map.put("opNumber", p.getOpNumber());
+            map.put("bloodGroup", p.getBloodGroup());
+            return map;
+        }).toList();
+
+        return ResponseEntity.ok(result);
     }
 
     @PutMapping("/{patientId}")

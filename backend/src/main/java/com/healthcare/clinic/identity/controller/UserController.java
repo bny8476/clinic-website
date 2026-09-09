@@ -1,6 +1,8 @@
 package com.healthcare.clinic.identity.controller;
 
+import com.healthcare.clinic.identity.dto.PasswordResetDto;
 import com.healthcare.clinic.identity.dto.UserCreateDto;
+import com.healthcare.clinic.identity.dto.UserStatsDto;
 import com.healthcare.clinic.identity.dto.UserSummaryDto;
 import com.healthcare.clinic.identity.service.UserService;
 import jakarta.validation.Valid;
@@ -25,6 +27,12 @@ public class UserController {
         return ResponseEntity.ok(userService.getAllRoles());
     }
 
+    @GetMapping("/stats")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPER_ADMIN')")
+    public ResponseEntity<UserStatsDto> getUserStats() {
+        return ResponseEntity.ok(userService.getUserStats());
+    }
+
     @PostMapping
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPER_ADMIN')")
     public ResponseEntity<UserSummaryDto> createUser(@Valid @RequestBody UserCreateDto createDto) {
@@ -35,17 +43,33 @@ public class UserController {
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPER_ADMIN')")
     public ResponseEntity<Page<UserSummaryDto>> getUsers(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(userService.getUsers(page, size));
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false) Long branchId,
+            @RequestParam(required = false) Long departmentId,
+            @RequestParam(required = false) Boolean status,
+            @RequestParam(required = false) Boolean enabled) {
+        
+        String searchQuery = (search != null && !search.isBlank()) ? search : q;
+        Boolean isEnabled = status != null ? status : enabled;
+
+        return ResponseEntity.ok(userService.getUsersFiltered(page, size, searchQuery, role, branchId, departmentId, isEnabled));
     }
 
     @GetMapping("/search")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPER_ADMIN', 'ROLE_HR_MANAGER')")
-    public ResponseEntity<List<UserSummaryDto>> searchUsers(
-            @RequestParam(required = false, defaultValue = "") String q,
+    public ResponseEntity<Page<UserSummaryDto>> searchUsers(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false) Long branchId,
+            @RequestParam(required = false) Long departmentId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        return ResponseEntity.ok(userService.searchUsers(q, page, size));
+        String query = (search != null && !search.isBlank()) ? search : q;
+        return ResponseEntity.ok(userService.getUsersFiltered(page, size, query, role, branchId, departmentId, null));
     }
 
     @PutMapping("/{id}")
@@ -61,6 +85,15 @@ public class UserController {
     public ResponseEntity<Void> toggleUserStatus(@PathVariable Long id) {
         userService.toggleUserStatus(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/reset-password")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPER_ADMIN')")
+    public ResponseEntity<Void> resetPassword(
+            @PathVariable Long id,
+            @Valid @RequestBody PasswordResetDto passwordResetDto) {
+        userService.resetPassword(id, passwordResetDto.getNewPassword());
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/{id}")

@@ -158,7 +158,7 @@ const InputField = ({ icon: Icon, rightSlot, ...props }) => (
 /* ═══════════════════════════════════════════════════════════════════════════ */
 const Register = () => {
   const [formData, setFormData] = useState({
-    firstName: '', lastName: '', email: '', phone: '',
+    fullName: '', firstName: '', lastName: '', email: '', phone: '',
     password: '', confirmPassword: '', agreeTerms: false,
   });
   const [showPassword,        setShowPassword]        = useState(false);
@@ -170,37 +170,85 @@ const Register = () => {
 
   const handleChange = (e) => {
     const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
-    setFormData({ ...formData, [e.target.name]: value });
+    setFormData(prev => ({ ...prev, [e.target.name]: value }));
   };
 
   const handleNameChange = (e) => {
-    const parts = e.target.value.split(' ');
-    setFormData({ ...formData, firstName: parts[0] || '', lastName: parts.slice(1).join(' ') || '' });
+    const raw = e.target.value;
+    const parts = raw.trim().split(/\s+/);
+    const first = parts[0] || '';
+    const last = parts.length > 1 ? parts.slice(1).join(' ') : first;
+    setFormData(prev => ({
+      ...prev,
+      fullName: raw,
+      firstName: first,
+      lastName: last
+    }));
+  };
+
+  const validatePassword = (pass) => {
+    if (pass.length < 8) return 'Password must be at least 8 characters long.';
+    if (!/[A-Z]/.test(pass)) return 'Password must contain at least one uppercase letter (A-Z).';
+    if (!/[a-z]/.test(pass)) return 'Password must contain at least one lowercase letter (a-z).';
+    if (!/\d/.test(pass)) return 'Password must contain at least one number (0-9).';
+    if (!/[^A-Za-z0-9]/.test(pass)) return 'Password must contain at least one special character (!@#$%^&* etc.).';
+    return null;
   };
 
   const handleRegister = async (e) => {
     e.preventDefault();
     setError(''); setSuccess('');
-    if (formData.password !== formData.confirmPassword) { setError('Passwords do not match.'); return; }
-    if (!formData.agreeTerms) { setError('You must agree to the Terms of Service and Privacy Policy.'); return; }
+
+    if (!formData.fullName.trim()) {
+      setError('Full Name is required.');
+      return;
+    }
+
+    const passError = validatePassword(formData.password);
+    if (passError) {
+      setError(passError);
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+
+    if (!formData.agreeTerms) {
+      setError('You must agree to the Terms of Service and Privacy Policy.');
+      return;
+    }
+
     setLoading(true);
     try {
+      const first = formData.firstName || formData.fullName.trim();
+      const last = formData.lastName || first;
+
       await axiosPublic.post('/auth/register', {
-        firstName: formData.firstName,
-        lastName: formData.lastName || formData.firstName,
-        email: formData.email,
+        firstName: first,
+        lastName: last,
+        email: formData.email.trim(),
         password: formData.password,
-        phoneNumber: formData.phone,
+        phoneNumber: formData.phone.trim(),
       });
       setSuccess('Registration successful! Redirecting to login…');
       setTimeout(() => navigate('/login'), 1500);
     } catch (err) {
-      let msg = 'Registration failed. Please check details.';
+      let msg = 'Registration failed. Please check your details.';
       if (err.response?.data) {
         const d = err.response.data;
-        if (typeof d === 'string') msg = d;
-        else if (d.data && typeof d.data === 'object') msg = d.message + ': ' + Object.values(d.data).join(', ');
-        else if (d.message) msg = d.message;
+        if (typeof d === 'string') {
+          msg = d;
+        } else if (Array.isArray(d.errors) && d.errors.length > 0) {
+          msg = d.errors.map(e => e.defaultMessage || e.message || e.field).join('; ');
+        } else if (d.fieldErrors && typeof d.fieldErrors === 'object') {
+          msg = Object.values(d.fieldErrors).join('; ');
+        } else if (d.data && typeof d.data === 'object') {
+          msg = Object.values(d.data).join('; ');
+        } else if (d.message && !d.message.startsWith('Validation failed for object')) {
+          msg = d.message;
+        }
       }
       setError(msg);
     } finally { setLoading(false); }
@@ -279,7 +327,7 @@ const Register = () => {
           >
             {/* Full Name */}
             <motion.div variants={listStagger}>
-              <InputField icon={User} type="text" required onChange={handleNameChange} placeholder="Full Name"/>
+              <InputField icon={User} type="text" required value={formData.fullName} onChange={handleNameChange} placeholder="Full Name"/>
             </motion.div>
 
             {/* Email */}
@@ -289,7 +337,7 @@ const Register = () => {
 
             {/* Phone */}
             <motion.div variants={listStagger}>
-              <InputField icon={Phone} type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="Phone Number"/>
+              <InputField icon={Phone} type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="Phone Number (optional)"/>
             </motion.div>
 
             {/* Password */}
@@ -298,7 +346,7 @@ const Register = () => {
                 icon={Lock}
                 type={showPassword ? 'text' : 'password'}
                 required name="password" value={formData.password} onChange={handleChange}
-                placeholder="Password"
+                placeholder="Password (min 8 chars, A-Z, a-z, 0-9, special char)"
                 rightSlot={
                   <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-gray-400 hover:text-gray-600">
                     {showPassword ? <EyeOff size={14}/> : <Eye size={14}/>}

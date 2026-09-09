@@ -201,22 +201,32 @@ const ClinicalWorkspace = () => {
     }
     setShowFollowUpPrompt(false);
     try {
-      await axiosPrivate.post(`/v1/doctor/encounters/${id}/finalize`, {});
       if (followUpDate) {
-         // Create a follow-up record (assuming endpoint exists, or just save it in notes for now)
-         await axiosPrivate.post(`/v1/doctor/encounters/${id}/soap-note`, { ...soapNote, plan: soapNote.plan + `\nFollow-up scheduled for: ${followUpDate}` });
+        await axiosPrivate.post(`/v1/doctor/encounters/${id}/soap-note`, {
+          ...soapNote,
+          plan: (soapNote.plan || '') + `\nFollow-up scheduled for: ${followUpDate}`
+        }).catch(() => {});
       }
-      toast.success('Encounter finalized successfully.');
-      navigate('/doctor/queue');
+      
+      // Close encounter on backend
+      await axiosPrivate.post(`/v1/doctor/encounters/${id}/close`).catch(() => {});
+
+      // Atomically complete appointment & generate invoice
+      if (encounter?.appointmentId) {
+        await axiosPrivate.post(`/appointments/${encounter.appointmentId}/complete`);
+      }
+
+      toast.success('Consultation completed successfully.');
+      navigate('/doctor/appointments/today');
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to finalize encounter.');
+      toast.error(err.response?.data?.message || 'Failed to complete consultation.');
     }
   };
 
   if (loading) return <div className="p-8 text-center text-slate-500 font-medium">Loading Clinical Workspace...</div>;
   if (error) return <div className="p-8 text-center text-red-600 bg-red-50 rounded-xl m-4 border border-red-200">{error}</div>;
 
-  const isFinalized = encounter?.status === 'Finalized' || encounter?.status === 'Signed';
+  const isFinalized = encounter?.status === 'Finalized' || encounter?.status === 'Signed' || encounter?.status === 'CLOSED';
 
   return (
     <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6 bg-slate-50 min-h-screen">

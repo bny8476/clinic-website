@@ -29,4 +29,11 @@ public class UserSummaryDto {
     private String phone;
     private boolean enabled;
     private List<String> roleNames;
+    private Long branchId;
+    private String branchName;
+    private Long departmentId;
+    private String departmentName;
+    private java.time.ZonedDateTime createdAt;
+    private java.time.ZonedDateTime lastLogin;
+    private List<String> permissions;
 }

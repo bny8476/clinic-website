@@ -416,18 +416,42 @@ const AdminDashboard = () => {
   const [exportModalOpen, setExportModalOpen] = useState(false);
   
   // Date Range State & Dropdown Ref
-  const [selectedDateRange, setSelectedDateRange] = useState('May 18 - May 24, 2026');
+  const [selectedDateRange, setSelectedDateRange] = useState('Today (Live Stream)');
   const [isDateDropdownOpen, setIsDateDropdownOpen] = useState(false);
   const dateDropdownRef = useRef(null);
 
+  // Fetch real database metrics from backend
+  const { data: metrics = {}, isLoading: metricsLoading } = useQuery({
+    queryKey: ['admin-dashboard-metrics'],
+    queryFn: async () => {
+      try {
+        const res = await axiosPrivate.get('/admin/analytics/dashboard');
+        return res.data;
+      } catch (err) {
+        return {
+          totalPatients: 0,
+          totalDoctors: 0,
+          totalStaff: 0,
+          todaysAppointments: 0,
+          pendingAppointments: 0,
+          completedConsultations: 0,
+          pendingLabRequests: 0,
+          pendingPharmacyPrescriptions: 0,
+          todaysRevenue: 0
+        };
+      }
+    },
+    refetchInterval: 15000,
+  });
+
   const tabs = [
-    { id: 'branches', label: 'Manage Branches', sub: '12 Branches', icon: Building2 },
+    { id: 'branches', label: 'Manage Branches', sub: 'Multi-Branch Scope', icon: Building2 },
     { id: 'analytics', label: 'Analytics & Reports', sub: 'Real-time Insights', icon: BarChart3 },
-    { id: 'users', label: 'Manage Users', sub: '156 Users', icon: Users },
-    { id: 'patients', label: 'Manage Patients', sub: '12,568 Patients', icon: Users2 },
-    { id: 'doctors', label: 'Manage Doctors', sub: '156 Doctors', icon: Users },
-    { id: 'departments', label: 'Manage Departments', sub: '26 Departments', icon: Building },
-    { id: 'audit', label: 'Audit & Compliance', sub: '98% Compliant', icon: ShieldCheck },
+    { id: 'users', label: 'Manage Users', sub: 'RBAC User Control', icon: Users },
+    { id: 'patients', label: 'Manage Patients', sub: 'Clinical Records', icon: Users2 },
+    { id: 'doctors', label: 'Manage Doctors', sub: 'Practitioners & Schedules', icon: Users },
+    { id: 'departments', label: 'Manage Departments', sub: 'Clinical Units', icon: Building },
+    { id: 'audit', label: 'Audit & Compliance', sub: 'Immutable Event Trail', icon: ShieldCheck },
   ];
 
   useEffect(() => {
@@ -448,33 +472,35 @@ const AdminDashboard = () => {
 
   return (
     <>
-      <div className="flex flex-col h-full overflow-hidden bg-[#F8FAFC] font-sans">
+      <div className="flex-1 flex flex-col min-h-0 w-full max-w-full overflow-x-hidden bg-[#F8FAFC] font-sans">
         
         {/* Top Pill Navigation */}
-        <div className="px-6 py-4 flex items-center gap-4 overflow-x-auto no-scrollbar shrink-0 border-b border-slate-200/60 bg-white">
+        <div className="px-6 py-3 flex items-center flex-wrap gap-2.5 shrink-0 border-b border-slate-200/60 bg-white w-full max-w-full overflow-x-hidden">
           {tabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-3 min-w-max px-4 py-2.5 rounded-xl border transition-all cursor-pointer ${
+              className={`flex items-center gap-3 px-3.5 py-2 rounded-xl border transition-all cursor-pointer ${
                 activeTab === tab.id
                   ? 'bg-[#2160FF] border-[#2160FF] text-white shadow-md shadow-blue-500/20'
-                  : 'bg-white border-slate-200 text-slate-700 hover:border-[#2160FF]/30 hover:bg-blue-50/50'
+                  : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300'
               }`}
             >
-              <div className={`p-1.5 rounded-lg ${activeTab === tab.id ? 'bg-white/20' : 'bg-blue-50 text-[#2160FF]'}`}>
-                <tab.icon className="w-5 h-5" strokeWidth={2} />
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                activeTab === tab.id ? 'bg-white/20 text-white' : 'bg-blue-50 text-[#2160FF]'
+              }`}>
+                <tab.icon className="w-4 h-4" strokeWidth={2.2} />
               </div>
-              <div className="text-left">
-                <p className={`text-[13px] font-bold leading-tight ${activeTab === tab.id ? 'text-white' : 'text-slate-800'}`}>{tab.label}</p>
-                <p className={`text-[11px] ${activeTab === tab.id ? 'text-blue-100' : 'text-slate-500'}`}>{tab.sub}</p>
+              <div className="text-left leading-tight">
+                <p className={`text-[12px] font-bold ${activeTab === tab.id ? 'text-white' : 'text-slate-900'}`}>{tab.label}</p>
+                <p className={`text-[10px] ${activeTab === tab.id ? 'text-blue-100' : 'text-slate-400'}`}>{tab.sub}</p>
               </div>
             </button>
           ))}
         </div>
 
         {/* Scrollable Main Content */}
-        <div className="flex-1 overflow-y-auto p-6 md:p-8">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 md:p-8 w-full max-w-full">
           {activeTab === 'analytics' ? (
             <div className="max-w-[1500px] mx-auto space-y-6">
               
@@ -579,8 +605,10 @@ const AdminDashboard = () => {
                   </div>
                   <div>
                     <p className="text-[12px] font-bold text-slate-500">Total Patients</p>
-                    <h3 className="text-2xl font-black text-slate-800 tracking-tight">12,568</h3>
-                    <p className="text-[11px] font-bold text-emerald-500 mt-0.5">↑ 12.5% <span className="text-slate-400 font-medium">vs last week</span></p>
+                    <h3 className="text-2xl font-black text-slate-800 tracking-tight">
+                      {metricsLoading ? '...' : (metrics?.totalPatients ?? 0).toLocaleString()}
+                    </h3>
+                    <p className="text-[11px] font-bold text-emerald-500 mt-0.5">Live DB Metric <span className="text-slate-400 font-medium">• Active Profiles</span></p>
                   </div>
                 </div>
 
@@ -589,9 +617,13 @@ const AdminDashboard = () => {
                     <CalendarCheck className="w-6 h-6 text-purple-600" strokeWidth={2.5} />
                   </div>
                   <div>
-                    <p className="text-[12px] font-bold text-slate-500">Appointments</p>
-                    <h3 className="text-2xl font-black text-slate-800 tracking-tight">1,245</h3>
-                    <p className="text-[11px] font-bold text-emerald-500 mt-0.5">↑ 8.3% <span className="text-slate-400 font-medium">vs last week</span></p>
+                    <p className="text-[12px] font-bold text-slate-500">Today's Appointments</p>
+                    <h3 className="text-2xl font-black text-slate-800 tracking-tight">
+                      {metricsLoading ? '...' : (metrics?.todaysAppointments ?? 0).toLocaleString()}
+                    </h3>
+                    <p className="text-[11px] font-bold text-purple-500 mt-0.5">
+                      {metrics?.completedConsultations ?? 0} Completed • {metrics?.pendingAppointments ?? 0} Pending
+                    </p>
                   </div>
                 </div>
 
@@ -600,9 +632,11 @@ const AdminDashboard = () => {
                     <Users className="w-6 h-6 text-emerald-600" strokeWidth={2.5} />
                   </div>
                   <div>
-                    <p className="text-[12px] font-bold text-slate-500">Total Doctors</p>
-                    <h3 className="text-2xl font-black text-slate-800 tracking-tight">156</h3>
-                    <p className="text-[11px] font-bold text-emerald-500 mt-0.5">↑ 4.2% <span className="text-slate-400 font-medium">vs last week</span></p>
+                    <p className="text-[12px] font-bold text-slate-500">Active Doctors</p>
+                    <h3 className="text-2xl font-black text-slate-800 tracking-tight">
+                      {metricsLoading ? '...' : (metrics?.totalDoctors ?? 0).toLocaleString()}
+                    </h3>
+                    <p className="text-[11px] font-bold text-emerald-500 mt-0.5">{metrics?.totalStaff ?? 0} Total Staff Members</p>
                   </div>
                 </div>
 
@@ -611,9 +645,11 @@ const AdminDashboard = () => {
                     <DollarSign className="w-6 h-6 text-[#2160FF]" strokeWidth={2.5} />
                   </div>
                   <div>
-                    <p className="text-[12px] font-bold text-slate-500">Revenue (This Week)</p>
-                    <h3 className="text-2xl font-black text-slate-800 tracking-tight">₹ 24,85,000</h3>
-                    <p className="text-[11px] font-bold text-emerald-500 mt-0.5">↑ 15.6% <span className="text-slate-400 font-medium">vs last week</span></p>
+                    <p className="text-[12px] font-bold text-slate-500">Today's Revenue</p>
+                    <h3 className="text-2xl font-black text-slate-800 tracking-tight">
+                      ₹ {metricsLoading ? '...' : Number(metrics?.todaysRevenue ?? 0).toLocaleString('en-IN')}
+                    </h3>
+                    <p className="text-[11px] font-bold text-emerald-500 mt-0.5">Live Financial Collections</p>
                   </div>
                 </div>
               </div>

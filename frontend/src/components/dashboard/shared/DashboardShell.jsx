@@ -8,7 +8,7 @@ export const DashboardShell = ({
   children
 }) => {
   return (
-    <div className="flex flex-col h-full overflow-hidden font-sans text-slate-700">
+    <div className="flex-1 flex flex-col min-h-0 w-full max-w-full overflow-x-hidden font-sans text-slate-700">
       {/* ── Quick Actions Row ── */}
       {quickActions.length > 0 && (
         <div className="flex items-center gap-4 overflow-x-auto pb-4 shrink-0 no-scrollbar">
@@ -32,30 +32,42 @@ export const DashboardShell = ({
 
       {/* ── Main Navigation Tabs ── */}
       {tabs.length > 0 && (
-        <div className="flex items-center gap-3 px-6 py-4 bg-white border-b border-slate-200 overflow-x-auto shrink-0 no-scrollbar">
+        <div className="flex items-center flex-wrap gap-2.5 px-6 py-3 bg-white border-b border-slate-200 shrink-0 w-full max-w-full overflow-x-hidden">
           {tabs.map((tab, i) => {
             const tabId = typeof tab === 'string' ? tab : tab.id;
             const tabLabel = typeof tab === 'string' ? tab : tab.label;
+            const tabSub = typeof tab === 'object' ? tab.sub : null;
+            const TabIcon = typeof tab === 'object' ? tab.icon : null;
             const isActive = activeTab === tabId || (!activeTab && i === 0);
             return (
               <button 
                 key={i}
                 onClick={() => onTabChange && onTabChange(tabId)}
-                className={`whitespace-nowrap flex items-center justify-center px-5 py-2.5 rounded-[12px] border transition-all text-[15px] font-medium ${
+                className={`flex items-center gap-3 px-3.5 py-2 rounded-xl border transition-all cursor-pointer ${
                   isActive 
-                    ? 'border-[#165DFF] bg-[#165DFF] text-white' 
-                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300'
+                    ? 'border-[#2160FF] bg-[#2160FF] text-white shadow-md shadow-blue-500/20' 
+                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300'
                 }`}
               >
-                {tabLabel}
+                {TabIcon && (
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                    isActive ? 'bg-white/20 text-white' : 'bg-blue-50 text-[#2160FF]'
+                  }`}>
+                    <TabIcon className="w-4 h-4" strokeWidth={2.2} />
+                  </div>
+                )}
+                <div className="text-left leading-tight">
+                  <p className={`text-[12px] font-bold ${isActive ? 'text-white' : 'text-slate-900'}`}>{tabLabel}</p>
+                  {tabSub && <p className={`text-[10px] ${isActive ? 'text-blue-100' : 'text-slate-400'}`}>{tabSub}</p>}
+                </div>
               </button>
             );
           })}
         </div>
       )}
 
-      {/* ── Dashboard Content Container (Fills viewport without root scroll) ── */}
-      <div className="flex-1 overflow-hidden flex flex-col gap-3 min-height-0">
+      {/* ── Dashboard Content Container (Fills viewport with scroll) ── */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden flex flex-col gap-4 min-h-0 p-6 w-full max-w-full">
         {children}
       </div>
     </div>
@@ -63,10 +75,10 @@ export const DashboardShell = ({
 };
 
 export const DashboardGrid = ({ left, center, right }) => (
-  <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-3 min-h-0 overflow-hidden">
-    {left && <div className="lg:col-span-3 flex flex-col gap-3 min-h-0 overflow-y-auto pr-0.5">{left}</div>}
-    {center && <div className={(left && right) ? "lg:col-span-6 flex flex-col min-h-0 overflow-hidden" : left ? "lg:col-span-9 flex flex-col min-h-0 overflow-hidden" : right ? "lg:col-span-9 flex flex-col min-h-0 overflow-hidden" : "lg:col-span-12 flex flex-col min-h-0 overflow-hidden"}>{center}</div>}
-    {right && <div className="lg:col-span-3 flex flex-col gap-3 min-h-0 overflow-y-auto pr-0.5">{right}</div>}
+  <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-0">
+    {left && <div className="lg:col-span-3 flex flex-col gap-4 min-h-0 overflow-y-auto pr-0.5">{left}</div>}
+    {center && <div className={(left && right) ? "lg:col-span-6 flex flex-col min-h-0" : left ? "lg:col-span-9 flex flex-col min-h-0" : right ? "lg:col-span-9 flex flex-col min-h-0" : "lg:col-span-12 flex flex-col min-h-0"}>{center}</div>}
+    {right && <div className="lg:col-span-3 flex flex-col gap-4 min-h-0 overflow-y-auto pr-0.5">{right}</div>}
   </div>
 );
 

@@ -26,20 +26,34 @@ public class PatientRegistrationService {
 
     @Transactional
     public User registerPatient(String email, String password, String firstName, String lastName) {
-        if (userRepository.existsByEmail(email)) {
+        return registerPatient(email, password, firstName, lastName, null);
+    }
+
+    @Transactional
+    public User registerPatient(String email, String password, String firstName, String lastName, String phoneNumber) {
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("Error: Email cannot be empty!");
+        }
+        String normalizedEmail = email.trim().toLowerCase();
+        if (userRepository.existsByEmail(normalizedEmail)) {
             throw new IllegalArgumentException("Error: Email is already in use!");
         }
 
+        String safeFirstName = (firstName != null && !firstName.isBlank()) ? firstName.trim() : "User";
+        String safeLastName = (lastName != null && !lastName.isBlank()) ? lastName.trim() : safeFirstName;
+
         User user = User.builder()
-                .email(email)
-                .firstName(firstName)
-                .lastName(lastName)
+                .email(normalizedEmail)
+                .firstName(safeFirstName)
+                .lastName(safeLastName)
+                .phoneNumber(phoneNumber != null && !phoneNumber.isBlank() ? phoneNumber.trim() : null)
                 .passwordHash(passwordEncoder.encode(password))
                 .build();
 
         Set<Role> roles = new HashSet<>();
         Role userRole = roleRepository.findByName("ROLE_PATIENT")
-                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                .orElseGet(() -> roleRepository.findByName("PATIENT")
+                        .orElseGet(() -> roleRepository.save(Role.builder().name("ROLE_PATIENT").description("Patient Role").build())));
         roles.add(userRole);
 
         user.setRoles(roles);
@@ -49,8 +63,8 @@ public class PatientRegistrationService {
                 .userId(savedUser.getId())
                 .gender("Not Specified")
                 .dateOfBirth(java.time.LocalDate.of(2000, 1, 1))
-                .emergencyContactName("Not Provided")
-                .emergencyContactPhone("+10000000000")
+                .emergencyContactName(safeFirstName + " " + safeLastName)
+                .emergencyContactPhone(phoneNumber != null && !phoneNumber.isBlank() ? phoneNumber : "+10000000000")
                 .branchId(1L)
                 .build();
         patientProfileRepository.save(profile);

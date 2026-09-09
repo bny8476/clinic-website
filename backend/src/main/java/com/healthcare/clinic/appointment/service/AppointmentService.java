@@ -58,13 +58,46 @@ public class AppointmentService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final com.healthcare.clinic.doctor.service.DoctorScheduleService doctorScheduleService;
+    private final com.healthcare.clinic.doctor.repository.ClinicalEncounterRepository encounterRepository;
 
-    @Transactional(readOnly = true)
+    @Transactional
     public List<AppointmentSlot> getAvailableSlots(Long doctorId, ZonedDateTime start, ZonedDateTime end) {
+        DoctorProfile doctor = doctorProfileRepository.findById(doctorId)
+                .orElseGet(() -> doctorProfileRepository.findByUserId(doctorId).orElse(null));
+
+        Long userId = doctor != null ? doctor.getUserId() : doctorId;
+
+        java.time.LocalDate startDate = start.toLocalDate();
+        java.time.LocalDate endDate = end.toLocalDate();
+
+        List<AppointmentSlot> existingSlots = new java.util.ArrayList<>(slotRepository.findByDoctorUserIdAndStartTimeBetween(userId, start, end));
+        if (doctor != null && doctor.getId() != null) {
+            List<AppointmentSlot> profileSlots = slotRepository.findByDoctorIdAndStartTimeBetween(doctor.getId(), start, end);
+            for (AppointmentSlot s : profileSlots) {
+                if (existingSlots.stream().noneMatch(x -> x.getId().equals(s.getId()))) {
+                    existingSlots.add(s);
+                }
+            }
+        }
+
+        if (existingSlots.isEmpty() && doctor != null) {
+            doctorScheduleService.generateSlotsForRange(userId, startDate, endDate);
+            existingSlots = new java.util.ArrayList<>(slotRepository.findByDoctorUserIdAndStartTimeBetween(userId, start, end));
+        }
+
+        if (existingSlots.isEmpty() && doctor != null) {
+            for (java.time.LocalDate d = startDate; !d.isAfter(endDate); d = d.plusDays(1)) {
+                generateFallbackSlotsForDate(doctor, d);
+            }
+            existingSlots = new java.util.ArrayList<>(slotRepository.findByDoctorUserIdAndStartTimeBetween(userId, start, end));
+        }
+
         ZonedDateTime now = ZonedDateTime.now();
-        return slotRepository.findByDoctorUserIdAndStartTimeBetweenAndIsBookedFalse(doctorId, start, end).stream()
-                .filter(slot -> slot.getStartTime().isAfter(now))
-                .filter(slot -> !holdService.isHeld(doctorId, slot.getStartTime().toInstant().toString()))
+        return existingSlots.stream()
+                .filter(slot -> Boolean.FALSE.equals(slot.getIsBooked()))
+                .filter(slot -> slot.getStartTime().isAfter(now.minusMinutes(10)))
+                .filter(slot -> !holdService.isHeld(userId, slot.getStartTime().toInstant().toString()))
+                .sorted(java.util.Comparator.comparing(AppointmentSlot::getStartTime))
                 .toList();
     }
 
@@ -191,6 +224,151 @@ public class AppointmentService {
     }
 
     @Transactional
+    public Appointment bookAppointmentFromRequest(com.healthcare.clinic.appointment.dto.BookingRequest request, String idempotencyKey) {
+        Long slotId = request.getParsedSlotId();
+        Long patientUserId = request.getPatientUserId();
+        String reasonForVisit = request.getReasonForVisit();
+        if (reasonForVisit == null || reasonForVisit.isBlank()) {
+            reasonForVisit = request.getNotes();
+        }
+        if (reasonForVisit == null || reasonForVisit.isBlank()) {
+            reasonForVisit = "Routine Consultation & Checkup";
+        }
+
+        if (patientUserId == null && request.getPatientId() != null) {
+            PatientProfile p = patientRepository.findById(request.getPatientId()).orElse(null);
+            if (p != null) {
+                patientUserId = p.getUserId();
+            }
+        }
+
+        // Auto-resolve or create patient profile if not explicitly specified by ID
+        if (patientUserId == null && (request.getPatientEmail() != null || request.getPatientPhone() != null || request.getPatientFirstName() != null)) {
+            User existingUser = null;
+            if (request.getPatientEmail() != null && !request.getPatientEmail().isBlank()) {
+                existingUser = userRepository.findByEmail(request.getPatientEmail().trim()).orElse(null);
+            }
+            if (existingUser == null && request.getPatientPhone() != null && !request.getPatientPhone().isBlank()) {
+                existingUser = userRepository.findByPhoneNumber(request.getPatientPhone().trim()).orElse(null);
+            }
+
+            if (existingUser != null) {
+                patientUserId = existingUser.getId();
+            } else {
+                String email = (request.getPatientEmail() != null && !request.getPatientEmail().isBlank())
+                        ? request.getPatientEmail().trim()
+                        : "patient_" + System.currentTimeMillis() + "@clinic.local";
+                String firstName = (request.getPatientFirstName() != null && !request.getPatientFirstName().isBlank())
+                        ? request.getPatientFirstName().trim()
+                        : "Patient";
+                String lastName = request.getPatientLastName() != null ? request.getPatientLastName().trim() : "";
+
+                User newPatientUser = User.builder()
+                        .email(email)
+                        .firstName(firstName)
+                        .lastName(lastName)
+                        .phoneNumber(request.getPatientPhone())
+                        .passwordHash(passwordEncoder.encode(java.util.UUID.randomUUID().toString()))
+                        .enabled(true)
+                        .build();
+                newPatientUser = userRepository.save(newPatientUser);
+
+                PatientProfile newPatient = PatientProfile.builder()
+                        .userId(newPatientUser.getId())
+                        .emergencyContactName("Not provided")
+                        .emergencyContactPhone(request.getPatientPhone() != null ? request.getPatientPhone() : "+10000000000")
+                        .branchId(1L)
+                        .build();
+                newPatient = patientRepository.save(newPatient);
+                patientUserId = newPatientUser.getId();
+            }
+        }
+
+        if (slotId == null) {
+            Long docId = request.getDoctorId();
+            DoctorProfile doctor = null;
+            if (docId != null) {
+                doctor = doctorProfileRepository.findById(docId)
+                        .orElseGet(() -> doctorProfileRepository.findByUserId(docId).orElse(null));
+            }
+            if (doctor == null) {
+                Long currentUserId = com.healthcare.clinic.security.SecurityUtils.getCurrentUserId();
+                if (currentUserId != null) {
+                    doctor = doctorProfileRepository.findByUserId(currentUserId).orElse(null);
+                }
+            }
+
+            if (doctor != null) {
+                ZonedDateTime startZdt = parseDateTime(request.getStartTime(), request.getAppointmentDate());
+                List<AppointmentSlot> existingSlots = slotRepository.findByDoctorUserIdAndStartTimeBetween(doctor.getUserId(), startZdt.minusMinutes(1), startZdt.plusMinutes(1));
+                if (existingSlots.isEmpty() && doctor.getId() != null) {
+                    existingSlots = slotRepository.findByDoctorIdAndStartTimeBetween(doctor.getId(), startZdt.minusMinutes(1), startZdt.plusMinutes(1));
+                }
+
+                AppointmentSlot unbookedSlot = existingSlots.stream()
+                        .filter(s -> Boolean.FALSE.equals(s.getIsBooked()) && !appointmentRepository.existsBySlotId(s.getId()))
+                        .findFirst()
+                        .orElse(null);
+
+                if (unbookedSlot != null) {
+                    slotId = unbookedSlot.getId();
+                } else {
+                    ZonedDateTime endZdt = request.getEndTime() != null ? parseDateTime(request.getEndTime(), request.getAppointmentDate()) : startZdt.plusMinutes(30);
+                    AppointmentSlot newSlot = AppointmentSlot.builder()
+                            .doctor(doctor)
+                            .startTime(startZdt)
+                            .endTime(endZdt)
+                            .isBooked(false)
+                            .branchId(doctor.getBranchId() != null ? doctor.getBranchId() : 1L)
+                            .build();
+                    newSlot = slotRepository.save(newSlot);
+                    slotId = newSlot.getId();
+                }
+            }
+        }
+
+        return bookAppointment(patientUserId, slotId, reasonForVisit, request.getHoldId(), idempotencyKey);
+    }
+
+    private ZonedDateTime parseDateTime(String timeStr, String dateStr) {
+        if (timeStr == null || timeStr.isBlank()) {
+            if (dateStr != null && !dateStr.isBlank()) {
+                return java.time.LocalDate.parse(dateStr.trim()).atStartOfDay(java.time.ZoneId.systemDefault());
+            }
+            return ZonedDateTime.now().plusHours(1);
+        }
+        timeStr = timeStr.trim();
+        try {
+            return java.time.Instant.parse(timeStr).atZone(java.time.ZoneId.systemDefault());
+        } catch (Exception ignored) {}
+        try {
+            return ZonedDateTime.parse(timeStr);
+        } catch (Exception ignored) {}
+        try {
+            return java.time.OffsetDateTime.parse(timeStr).toZonedDateTime();
+        } catch (Exception ignored) {}
+        try {
+            java.time.LocalTime time = java.time.LocalTime.parse(timeStr);
+            java.time.LocalDate date = (dateStr != null && !dateStr.isBlank()) ? java.time.LocalDate.parse(dateStr.trim()) : java.time.LocalDate.now();
+            return ZonedDateTime.of(date, time, java.time.ZoneId.systemDefault());
+        } catch (Exception ignored) {}
+        try {
+            java.time.format.DateTimeFormatter ampmFormatter = new java.time.format.DateTimeFormatterBuilder()
+                    .parseCaseInsensitive()
+                    .appendPattern("[hh:mm a][h:mm a][hh:mma][h:mma][HH:mm]")
+                    .toFormatter(java.util.Locale.ENGLISH);
+            java.time.LocalTime time = java.time.LocalTime.parse(timeStr.toUpperCase(), ampmFormatter);
+            java.time.LocalDate date = (dateStr != null && !dateStr.isBlank()) ? java.time.LocalDate.parse(dateStr.trim()) : java.time.LocalDate.now();
+            return ZonedDateTime.of(date, time, java.time.ZoneId.systemDefault());
+        } catch (Exception ignored) {}
+        try {
+            java.time.LocalDateTime ldt = java.time.LocalDateTime.parse(timeStr);
+            return ldt.atZone(java.time.ZoneId.systemDefault());
+        } catch (Exception ignored) {}
+        return ZonedDateTime.now().plusHours(1);
+    }
+
+    @Transactional
     public Appointment bookAppointment(Long patientUserId, Long slotId, String reasonForVisit, String holdId, String idempotencyKey) {
         if (idempotencyKey != null && !idempotencyKey.isEmpty()) {
             java.util.Optional<Appointment> existingAppointment = appointmentRepository.findByIdempotencyKey(idempotencyKey);
@@ -200,13 +378,17 @@ public class AppointmentService {
             }
         }
 
-        // Server-Side Patient Authorization: Derive patient identity from SecurityContext for Patient role
+        // Server-Side Patient Authorization: Derive patient identity ONLY if caller is purely a Patient (not staff/doctor/admin)
         Long authUserId = com.healthcare.clinic.security.SecurityUtils.getCurrentUserId();
         org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
         if (authUserId != null && auth != null && auth.getAuthorities() != null) {
-            boolean isPatientRole = auth.getAuthorities().stream()
-                    .anyMatch(a -> a.getAuthority().equals("ROLE_PATIENT"));
-            if (isPatientRole) {
+            boolean isStaffOrDoctor = auth.getAuthorities().stream().anyMatch(a ->
+                    a.getAuthority().equals("ROLE_DOCTOR") ||
+                    a.getAuthority().equals("ROLE_RECEPTION") ||
+                    a.getAuthority().equals("ROLE_ADMIN") ||
+                    a.getAuthority().equals("ROLE_SUPER_ADMIN") ||
+                    a.getAuthority().equals("ROLE_NURSE"));
+            if (!isStaffOrDoctor && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_PATIENT"))) {
                 patientUserId = authUserId;
             }
         }
@@ -648,5 +830,233 @@ public class AppointmentService {
         appointmentRepository.save(newAppt);
         recordAudit(newAppt, "RESCHEDULED", null, newAppt.getStatus(), "Rescheduled from appointment #" + oldAppointment.getId());
         return newAppt;
+    }
+
+    @Transactional
+    public java.util.Map<String, Object> startConsultationProcess(Long appointmentId, Long doctorUserId) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Appointment not found"));
+
+        DoctorProfile doctor = doctorProfileRepository.findByUserId(doctorUserId)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.BAD_REQUEST, "Doctor profile not found for user ID: " + doctorUserId));
+
+        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        boolean isStaffOrAdmin = auth != null && auth.getAuthorities().stream().anyMatch(a -> 
+            a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_SUPER_ADMIN"));
+
+        if (!isStaffOrAdmin && (appointment.getDoctor() == null || !appointment.getDoctor().getId().equals(doctor.getId()))) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.FORBIDDEN, "You are not authorized/assigned to start this appointment.");
+        }
+
+        AppointmentStatus currentStatus = appointment.getStatus();
+
+        // Concurrency / Race Condition check: If ALREADY in consultation
+        if (currentStatus == AppointmentStatus.IN_CONSULTATION) {
+            java.util.Optional<com.healthcare.clinic.doctor.entity.ClinicalEncounter> existingEncounterOpt = encounterRepository.findByAppointmentId(appointmentId);
+            if (existingEncounterOpt.isPresent()) {
+                com.healthcare.clinic.doctor.entity.ClinicalEncounter existingEncounter = existingEncounterOpt.get();
+                if (!existingEncounter.getDoctorId().equals(doctor.getId()) && !isStaffOrAdmin) {
+                    throw new com.healthcare.clinic.appointment.exception.AppointmentConflictException(
+                            "APPOINTMENT_ALREADY_IN_CONSULTATION",
+                            "This appointment is already being handled by another doctor.");
+                }
+                // Return existing encounter for idempotent re-entry
+                java.util.Map<String, Object> result = new java.util.HashMap<>();
+                result.put("appointmentId", appointment.getId());
+                result.put("encounterId", existingEncounter.getId());
+                result.put("status", appointment.getStatus().name());
+                result.put("message", "Consultation resumed.");
+                return result;
+            }
+        }
+
+        if (currentStatus == AppointmentStatus.COMPLETED) {
+            throw new com.healthcare.clinic.appointment.exception.AppointmentConflictException(
+                    "APPOINTMENT_ALREADY_COMPLETED", "This appointment has already been completed.");
+        }
+
+        if (currentStatus == AppointmentStatus.CANCELLED || currentStatus == AppointmentStatus.NO_SHOW) {
+            throw new com.healthcare.clinic.appointment.exception.AppointmentConflictException(
+                    "APPOINTMENT_INVALID_STATE", "Cannot start consultation for a " + currentStatus + " appointment.");
+        }
+
+        AppointmentStatus oldStatus = appointment.getStatus();
+        appointment.setStatus(AppointmentStatus.IN_CONSULTATION);
+        appointmentRepository.save(appointment);
+
+        // Get or Create Clinical Encounter
+        com.healthcare.clinic.doctor.entity.ClinicalEncounter encounter = encounterRepository.findByAppointmentId(appointmentId)
+                .orElseGet(() -> {
+                    com.healthcare.clinic.doctor.entity.ClinicalEncounter newEnc = new com.healthcare.clinic.doctor.entity.ClinicalEncounter();
+                    newEnc.setAppointmentId(appointmentId);
+                    newEnc.setPatientId(appointment.getPatient().getUserId());
+                    newEnc.setDoctorId(doctor.getId());
+                    newEnc.setBranchId(appointment.getBranchId() != null ? appointment.getBranchId() : 1L);
+                    newEnc.setStatus(com.healthcare.clinic.doctor.entity.EncounterStatus.IN_PROGRESS);
+                    newEnc.setOpenedAt(ZonedDateTime.now());
+                    newEnc.setChiefComplaint(appointment.getReasonForVisit());
+                    return encounterRepository.save(newEnc);
+                });
+
+        recordAudit(appointment, "CONSULTATION_STARTED", oldStatus, AppointmentStatus.IN_CONSULTATION,
+                "Consultation started by Dr. User ID " + doctorUserId);
+
+        eventPublisher.publishEvent(AppointmentStatusChangedEvent.builder()
+                .appointmentId(appointmentId)
+                .oldStatus(oldStatus)
+                .newStatus(AppointmentStatus.IN_CONSULTATION)
+                .doctorUserId(appointment.getDoctor() != null ? appointment.getDoctor().getUserId() : doctorUserId)
+                .branchId(appointment.getBranchId())
+                .build());
+
+        java.util.Map<String, Object> result = new java.util.HashMap<>();
+        result.put("appointmentId", appointment.getId());
+        result.put("encounterId", encounter.getId());
+        result.put("status", appointment.getStatus().name());
+        result.put("message", "Consultation started successfully.");
+        return result;
+    }
+
+    @Transactional
+    public java.util.Map<String, Object> completeConsultationProcess(Long appointmentId, Long doctorUserId, String notes) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "Appointment not found"));
+
+        DoctorProfile doctor = doctorProfileRepository.findByUserId(doctorUserId)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.BAD_REQUEST, "Doctor profile not found for user ID: " + doctorUserId));
+
+        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        boolean isStaffOrAdmin = auth != null && auth.getAuthorities().stream().anyMatch(a -> 
+            a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_SUPER_ADMIN"));
+
+        if (!isStaffOrAdmin && (appointment.getDoctor() == null || !appointment.getDoctor().getId().equals(doctor.getId()))) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.FORBIDDEN, "You are not authorized/assigned to complete this appointment.");
+        }
+
+        if (appointment.getStatus() == AppointmentStatus.COMPLETED) {
+            java.util.Optional<com.healthcare.clinic.doctor.entity.ClinicalEncounter> encOpt = encounterRepository.findByAppointmentId(appointmentId);
+            java.util.Map<String, Object> result = new java.util.HashMap<>();
+            result.put("appointmentId", appointment.getId());
+            result.put("encounterId", encOpt.map(com.healthcare.clinic.doctor.entity.ClinicalEncounter::getId).orElse(null));
+            result.put("status", appointment.getStatus().name());
+            result.put("message", "Appointment is already completed.");
+            return result;
+        }
+
+        AppointmentStatus oldStatus = appointment.getStatus();
+        appointment.setStatus(AppointmentStatus.COMPLETED);
+        if (notes != null && !notes.isBlank()) {
+            appointment.setNotes(notes);
+        }
+        appointmentRepository.save(appointment);
+
+        // Finalize clinical encounter
+        java.util.Optional<com.healthcare.clinic.doctor.entity.ClinicalEncounter> encOpt = encounterRepository.findByAppointmentId(appointmentId);
+        Long encounterId = null;
+        if (encOpt.isPresent()) {
+            com.healthcare.clinic.doctor.entity.ClinicalEncounter encounter = encOpt.get();
+            encounter.setStatus(com.healthcare.clinic.doctor.entity.EncounterStatus.CLOSED);
+            encounter.setClosedAt(ZonedDateTime.now());
+            encounter.setFinalizedAt(ZonedDateTime.now());
+            encounterRepository.save(encounter);
+            encounterId = encounter.getId();
+        }
+
+        // Auto-generate invoice
+        generateInvoiceForConsultation(appointment);
+
+        recordAudit(appointment, "CONSULTATION_COMPLETED", oldStatus, AppointmentStatus.COMPLETED,
+                "Consultation completed by Dr. User ID " + doctorUserId);
+
+        eventPublisher.publishEvent(AppointmentStatusChangedEvent.builder()
+                .appointmentId(appointmentId)
+                .oldStatus(oldStatus)
+                .newStatus(AppointmentStatus.COMPLETED)
+                .doctorUserId(appointment.getDoctor() != null ? appointment.getDoctor().getUserId() : doctorUserId)
+                .branchId(appointment.getBranchId())
+                .build());
+
+        eventPublisher.publishEvent(new AppointmentCompletedEvent(this, appointmentId));
+
+        java.util.Map<String, Object> result = new java.util.HashMap<>();
+        result.put("appointmentId", appointment.getId());
+        result.put("encounterId", encounterId);
+        result.put("status", appointment.getStatus().name());
+        result.put("message", "Consultation completed successfully.");
+        return result;
+    }
+
+    @Transactional(readOnly = true)
+    public List<com.healthcare.clinic.appointment.entity.AppointmentAuditLog> getAppointmentTimeline(Long appointmentId) {
+        assertCanAccessAppointment(appointmentId);
+        return auditLogRepository.findByAppointmentIdOrderByCreatedAtDesc(appointmentId);
+    }
+
+    @Transactional(readOnly = true)
+    public java.util.Map<String, Object> getAppointmentDetail(Long appointmentId) {
+        assertCanAccessAppointment(appointmentId);
+        Appointment appointment = getAppointmentById(appointmentId);
+        
+        java.util.Map<String, Object> detail = new java.util.HashMap<>();
+        detail.put("id", appointment.getId());
+        detail.put("appointmentNumber", appointment.getAppointmentNumber());
+        detail.put("status", appointment.getStatus());
+        detail.put("appointmentDate", appointment.getAppointmentDate());
+        detail.put("appointmentType", appointment.getAppointmentType());
+        detail.put("reasonForVisit", appointment.getReasonForVisit());
+        detail.put("notes", appointment.getNotes());
+        detail.put("paymentStatus", appointment.getPaymentStatus());
+        detail.put("createdAt", appointment.getCreatedAt());
+
+        if (appointment.getPatient() != null) {
+            java.util.Map<String, Object> patientMap = new java.util.HashMap<>();
+            patientMap.put("id", appointment.getPatient().getId());
+            patientMap.put("userId", appointment.getPatient().getUserId());
+            userRepository.findById(appointment.getPatient().getUserId()).ifPresent(u -> {
+                patientMap.put("firstName", u.getFirstName());
+                patientMap.put("lastName", u.getLastName());
+                patientMap.put("email", u.getEmail());
+                patientMap.put("phone", u.getPhoneNumber());
+            });
+            detail.put("patient", patientMap);
+        }
+
+        if (appointment.getDoctor() != null) {
+            java.util.Map<String, Object> doctorMap = new java.util.HashMap<>();
+            doctorMap.put("id", appointment.getDoctor().getId());
+            doctorMap.put("specialty", appointment.getDoctor().getSpecialty());
+            userRepository.findById(appointment.getDoctor().getUserId()).ifPresent(u -> {
+                doctorMap.put("doctorName", "Dr. " + u.getFirstName() + " " + u.getLastName());
+            });
+            detail.put("doctor", doctorMap);
+        }
+
+        if (appointment.getSlot() != null) {
+            detail.put("startTime", appointment.getSlot().getStartTime());
+            detail.put("endTime", appointment.getSlot().getEndTime());
+        }
+
+        // Include Queue Token
+        queueTokenRepository.findByAppointmentId(appointmentId).stream().findFirst().ifPresent(t -> {
+            detail.put("tokenNumber", t.getTokenNumber());
+            detail.put("tokenStatus", t.getStatus());
+        });
+
+        // Include Clinical Encounter ID if available
+        encounterRepository.findByAppointmentId(appointmentId).ifPresent(enc -> {
+            detail.put("encounterId", enc.getId());
+            detail.put("encounterStatus", enc.getStatus());
+        });
+
+        // Include Timeline / Audit Events
+        detail.put("timeline", auditLogRepository.findByAppointmentIdOrderByCreatedAtDesc(appointmentId));
+
+        return detail;
     }
 }

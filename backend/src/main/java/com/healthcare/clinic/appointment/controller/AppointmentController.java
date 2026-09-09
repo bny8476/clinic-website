@@ -25,6 +25,35 @@ public class AppointmentController {
 
     private final AppointmentService appointmentService;
 
+    @GetMapping
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_PATIENT')")
+    public ResponseEntity<ApiResponse<List<com.healthcare.clinic.appointment.dto.AppointmentResponseDto>>> getAllAppointments(
+            @RequestParam(required = false) Long patientUserId,
+            @RequestParam(required = false) Long doctorId) {
+        if (patientUserId != null) {
+            return ResponseEntity.ok(ApiResponse.success(appointmentService.getPatientAppointments(patientUserId)));
+        } else if (doctorId != null) {
+            return ResponseEntity.ok(ApiResponse.success(appointmentService.getDoctorAppointments(doctorId)));
+        }
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        if (currentUserId != null) {
+            try {
+                return ResponseEntity.ok(ApiResponse.success(appointmentService.getDoctorAppointments(currentUserId)));
+            } catch (Exception e) {
+                return ResponseEntity.ok(ApiResponse.success(appointmentService.getPatientAppointments(currentUserId)));
+            }
+        }
+        return ResponseEntity.ok(ApiResponse.success(appointmentService.getAllTodayAppointments()));
+    }
+
+    @PostMapping
+    @PreAuthorize("hasAuthority('ROLE_PATIENT') or hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_DOCTOR')")
+    public ResponseEntity<ApiResponse<Appointment>> createAppointmentAlias(
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
+            @RequestBody com.healthcare.clinic.appointment.dto.BookingRequest request) {
+        return bookAppointment(idempotencyKey, request);
+    }
+
     @GetMapping("/slots")
     public ResponseEntity<ApiResponse<List<AppointmentSlot>>> getAvailableSlots(
             @RequestParam Long doctorId,
@@ -46,13 +75,10 @@ public class AppointmentController {
     private final com.healthcare.clinic.appointment.service.AppointmentHoldService holdService;
 
     @PostMapping("/book")
-    @PreAuthorize("hasAuthority('ROLE_PATIENT') or hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_PATIENT') or hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_DOCTOR')")
     public ResponseEntity<ApiResponse<Appointment>> bookAppointment(
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
-            @jakarta.validation.Valid @RequestBody BookingRequest request) {
-        
-        Long currentUserId = com.healthcare.clinic.security.SecurityUtils.getCurrentUserId();
-        Long targetPatientUserId = request.getPatientUserId() != null ? request.getPatientUserId() : currentUserId;
+            @jakarta.validation.Valid @RequestBody com.healthcare.clinic.appointment.dto.BookingRequest request) {
 
         if (holdService.isIdempotencyKeyProcessed(idempotencyKey)) {
             Long existingId = holdService.getAppointmentIdForIdempotencyKey(idempotencyKey);
@@ -61,12 +87,7 @@ public class AppointmentController {
             }
         }
 
-        Appointment appointment = appointmentService.bookAppointment(
-                targetPatientUserId, 
-                request.getParsedSlotId(), 
-                request.getReasonForVisit(),
-                request.getHoldId(),
-                idempotencyKey);
+        Appointment appointment = appointmentService.bookAppointmentFromRequest(request, idempotencyKey);
                 
         if (idempotencyKey != null) {
             holdService.saveIdempotencyKey(idempotencyKey, appointment.getId());
@@ -131,18 +152,32 @@ public class AppointmentController {
         return ResponseEntity.ok(ApiResponse.success(null, "Patient checked in successfully"));
     }
 
-    @PatchMapping("/{id}/start")
-    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<ApiResponse<Void>> startConsultation(@PathVariable Long id) {
-        appointmentService.updateAppointmentStatus(id, AppointmentStatus.IN_CONSULTATION);
-        return ResponseEntity.ok(ApiResponse.success(null, "Consultation started"));
+    @RequestMapping(value = "/{id}/start", method = {RequestMethod.POST, RequestMethod.PATCH})
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
+    public ResponseEntity<ApiResponse<java.util.Map<String, Object>>> startConsultation(@PathVariable Long id) {
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        java.util.Map<String, Object> result = appointmentService.startConsultationProcess(id, currentUserId);
+        return ResponseEntity.ok(ApiResponse.success(result, "Consultation started"));
     }
 
-    @PatchMapping("/{id}/complete")
-    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<ApiResponse<Void>> completeConsultation(@PathVariable Long id) {
-        appointmentService.updateAppointmentStatus(id, AppointmentStatus.COMPLETED);
-        return ResponseEntity.ok(ApiResponse.success(null, "Consultation completed"));
+    @RequestMapping(value = "/{id}/complete", method = {RequestMethod.POST, RequestMethod.PATCH})
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
+    public ResponseEntity<ApiResponse<java.util.Map<String, Object>>> completeConsultation(@PathVariable Long id, @RequestParam(required = false) String notes) {
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        java.util.Map<String, Object> result = appointmentService.completeConsultationProcess(id, currentUserId, notes);
+        return ResponseEntity.ok(ApiResponse.success(result, "Consultation completed"));
+    }
+
+    @GetMapping("/{id}/timeline")
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_PATIENT') or hasAuthority('ROLE_NURSE') or hasAuthority('ROLE_SUPER_ADMIN')")
+    public ResponseEntity<ApiResponse<List<com.healthcare.clinic.appointment.entity.AppointmentAuditLog>>> getAppointmentTimeline(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.success(appointmentService.getAppointmentTimeline(id)));
+    }
+
+    @GetMapping("/{id}/detail")
+    @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_PATIENT') or hasAuthority('ROLE_NURSE') or hasAuthority('ROLE_SUPER_ADMIN')")
+    public ResponseEntity<ApiResponse<java.util.Map<String, Object>>> getAppointmentDetail(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.success(appointmentService.getAppointmentDetail(id)));
     }
 
     @PatchMapping("/{id}/cancel")
@@ -165,29 +200,5 @@ public class AppointmentController {
     @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_NURSE')")
     public ResponseEntity<ApiResponse<List<com.healthcare.clinic.appointment.dto.AppointmentResponseDto>>> getAppointmentQueue() {
         return ResponseEntity.ok(ApiResponse.success(appointmentService.getAllTodayAppointments()));
-    }
-}
-
-@Data
-class BookingRequest {
-    
-    private Object slotId;
-    
-    @jakarta.validation.constraints.NotBlank
-    @jakarta.validation.constraints.Size(max = 500)
-    private String reasonForVisit;
-
-    private String holdId;
-    
-    private Long patientUserId;
-
-    public Long getParsedSlotId() {
-        if (slotId == null) return null;
-        if (slotId instanceof Number) return ((Number) slotId).longValue();
-        try {
-            return Long.parseLong(slotId.toString());
-        } catch (Exception e) {
-            return null;
-        }
     }
 }

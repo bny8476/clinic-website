@@ -121,8 +121,16 @@ const DashboardLayout = ({ portalSlug, allowedRoles }) => {
 
           {/* Right Actions */}
           <div className="flex items-center gap-6">
+            <button 
+              onClick={() => setIsQuickActionOpen(!isQuickActionOpen)}
+              className="bg-[#2160FF] hover:bg-blue-600 text-white font-bold text-xs px-4 py-2 rounded-xl flex items-center gap-2 shadow-xs cursor-pointer border-0 transition-all"
+            >
+              <Zap size={14} fill="white" />
+              <span>Quick Action</span>
+              <ChevronDown size={14} />
+            </button>
+
             <div className="flex items-center gap-4 text-slate-500">
-              
               <NotificationBell />
 
               <MessageDropdown />

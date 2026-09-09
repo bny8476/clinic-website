@@ -78,12 +78,11 @@ const ConsultationQueue = () => {
           <button
             onClick={async () => {
               try {
-                const res = await axiosPrivate.post('/v1/doctor/encounters', {
-                  patientId: inProgress.patientId,
-                  appointmentId: inProgress.id,
-                  branchId: inProgress.branchId || 1
-                });
-                navigate(`/doctor/consultation/${res.data.id}`);
+                const res = await axiosPrivate.post(`/appointments/${inProgress.id}/start`);
+                const encounterId = res.data?.data?.encounterId || res.data?.encounterId;
+                if (encounterId) {
+                  navigate(`/doctor/consultation/${encounterId}`);
+                }
               } catch (err) {
                 console.error(err);
               }

@@ -30,6 +30,14 @@ public class SuperAdminPortalController {
         return ResponseEntity.ok(featureFlagService.save(flag));
     }
     
+    @PatchMapping("/feature-flags/{id}/toggle")
+    public ResponseEntity<FeatureFlag> toggleFeatureFlag(@PathVariable Long id) {
+        return featureFlagService.findById(id).map(flag -> {
+            flag.setIsEnabled(!Boolean.TRUE.equals(flag.getIsEnabled()));
+            return ResponseEntity.ok(featureFlagService.save(flag));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
     @GetMapping("/sessions")
     public ResponseEntity<?> getSessions() {
         return ResponseEntity.ok(sessionManagementService.getActiveSessions());

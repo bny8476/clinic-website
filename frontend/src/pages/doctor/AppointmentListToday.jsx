@@ -6,27 +6,38 @@ import { axiosPrivate } from '../../api/axios';
 import { toast } from 'react-hot-toast';
 import { Calendar, CalendarDays, CalendarIcon, CheckCircle2, ChevronRight, Eye, FileText, Filter, LayoutGrid, Loader2, Search, Stethoscope, Sun, Users, XCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
+import AppointmentDetailModal from './AppointmentDetailModal';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 const formatTime = (iso) => {
   if (!iso) return '—';
-  return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  try {
+    return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  } catch (e) {
+    return '—';
+  }
 };
 
 const formatDate = (iso) => {
   if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  try {
+    return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  } catch (e) {
+    return '—';
+  }
 };
 
 const STATUS_META = {
-  BOOKED:      { label: 'Confirmed',   bg: 'bg-emerald-50 text-emerald-600', dot: 'bg-emerald-500' },
-  CONFIRMED:   { label: 'Confirmed',   bg: 'bg-emerald-50 text-emerald-600', dot: 'bg-emerald-500' },
-  CHECKED_IN:  { label: 'In Progress', bg: 'bg-amber-50 text-amber-600', dot: 'bg-amber-500' },
-  IN_PROGRESS: { label: 'In Progress', bg: 'bg-amber-50 text-amber-600', dot: 'bg-amber-500' },
-  COMPLETED:   { label: 'Completed',   bg: 'bg-blue-50 text-blue-600', dot: 'bg-blue-500' },
-  CANCELLED:   { label: 'Cancelled',   bg: 'bg-red-50 text-red-600', dot: 'bg-red-500' },
-  NO_SHOW:     { label: 'No Show',     bg: 'bg-orange-50 text-orange-600', dot: 'bg-orange-500' },
-  SCHEDULED:   { label: 'Confirmed',   bg: 'bg-emerald-50 text-emerald-600', dot: 'bg-emerald-500' }
+  BOOKED:          { label: 'Booked',          bg: 'bg-blue-50 text-blue-600 border-blue-200', dot: 'bg-blue-500' },
+  CONFIRMED:       { label: 'Confirmed',       bg: 'bg-indigo-50 text-indigo-600 border-indigo-200', dot: 'bg-indigo-500' },
+  CHECKED_IN:      { label: 'Checked In',      bg: 'bg-amber-50 text-amber-600 border-amber-200', dot: 'bg-amber-500' },
+  WAITING:         { label: 'Waiting',         bg: 'bg-purple-50 text-purple-600 border-purple-200', dot: 'bg-purple-500' },
+  IN_CONSULTATION: { label: 'In Consultation', bg: 'bg-emerald-50 text-emerald-600 border-emerald-200', dot: 'bg-emerald-500' },
+  IN_PROGRESS:     { label: 'In Consultation', bg: 'bg-emerald-50 text-emerald-600 border-emerald-200', dot: 'bg-emerald-500' },
+  COMPLETED:       { label: 'Completed',       bg: 'bg-slate-100 text-slate-700 border-slate-300', dot: 'bg-slate-500' },
+  CANCELLED:       { label: 'Cancelled',       bg: 'bg-red-50 text-red-600 border-red-200', dot: 'bg-red-500' },
+  NO_SHOW:         { label: 'No Show',         bg: 'bg-orange-50 text-orange-600 border-orange-200', dot: 'bg-orange-500' },
+  SCHEDULED:       { label: 'Confirmed',       bg: 'bg-indigo-50 text-indigo-600 border-indigo-200', dot: 'bg-indigo-500' }
 };
 
 const TYPE_META = {
@@ -38,7 +49,7 @@ const TYPE_META = {
 const StatusBadge = ({ status }) => {
   const meta = STATUS_META[status] || { label: status, bg: 'bg-slate-100 text-slate-600 border-slate-200', dot: 'bg-slate-500' };
   return (
-    <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wide border shadow-sm ${meta.bg} ${meta.bg.replace('bg-', 'border-').split(' ')[0]}`}>
+    <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wide border shadow-xs ${meta.bg}`}>
       {meta.label}
     </span>
   );
@@ -51,43 +62,44 @@ const DoctorAppointments = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('All Appointments');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedAppointmentId, setSelectedAppointmentId] = useState(null);
 
   // Fetch all appointments for the doctor
   const { data: allAppointments = [], isLoading, error } = useQuery({
     queryKey: ['doctorAllAppointments', user?.id],
     queryFn: async () => {
       const res = await axiosPrivate.get('/appointments/doctor/me');
-      return res.data;
+      return res.data?.data || res.data || [];
     },
     enabled: !!user?.id,
-    refetchInterval: 30000,
+    refetchInterval: 15000,
   });
 
-  // Mutation: update status + navigate to clinical workspace encounter
+  // Mutation: atomic consultation start with concurrency 409 handling
   const startConsultationMutation = useMutation({
     mutationFn: async (appointment) => {
-      // 1. Update status to IN_PROGRESS (check-in)
-      await axiosPrivate.patch(`/appointments/${appointment.id}/status?status=IN_PROGRESS`);
-      // 2. Create or fetch the encounter for this appointment
-      const res = await axiosPrivate.post(`/v1/doctor/encounters`, {
-        appointmentId: appointment.id,
-        patientId: appointment.patientId,
-      }).catch(async () => {
-        // If encounter already exists, fetch it
-        return axiosPrivate.get(`/v1/doctor/encounters/by-appointment/${appointment.id}`);
-      });
+      const res = await axiosPrivate.post(`/appointments/${appointment.id}/start`);
       return res.data;
     },
-    onSuccess: (encounter) => {
+    retry: false, // Prevents automatic retrying of 409 Conflict requests
+    onSuccess: (resData) => {
       queryClient.invalidateQueries(['doctorAllAppointments']);
-      navigate(`/doctor/consultation/${encounter.id}`);
+      const encounterId = resData?.data?.encounterId || resData?.encounterId;
+      if (encounterId) {
+        navigate(`/doctor/consultation/${encounterId}`);
+      } else {
+        toast.success('Consultation started successfully.');
+      }
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || 'Failed to start consultation. Please try again.');
+      queryClient.invalidateQueries(['doctorAllAppointments']);
+      const message = err.response?.data?.message || 'Unable to start consultation. Please try again.';
+      toast.error(message);
     }
   });
 
-  const canStartConsultation = (status) => ['BOOKED', 'CONFIRMED', 'SCHEDULED', 'CHECKED_IN'].includes(status);
+  const canStartConsultation = (status) => ['BOOKED', 'CONFIRMED', 'SCHEDULED', 'CHECKED_IN', 'WAITING'].includes(status);
+  const isInConsultation = (status) => ['IN_CONSULTATION', 'IN_PROGRESS'].includes(status);
 
   // Calculate Stats
   const now = new Date();
@@ -373,20 +385,50 @@ const DoctorAppointments = () => {
                               <button
                                 onClick={() => navigate(`/doctor/patients/${a.patientId}`)}
                                 title="View Patient"
-                                className="p-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 hover:shadow-sm rounded-lg transition-all border border-indigo-100"
+                                className="p-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 hover:shadow-xs rounded-lg transition-all border border-indigo-100 flex items-center gap-1 text-xs font-semibold"
                               >
-                                <Eye size={16} />
+                                <Eye size={14} /> View
                               </button>
+
                               {canStartConsultation(a.status) && (
                                 <button
                                   onClick={() => startConsultationMutation.mutate(a)}
                                   disabled={startConsultationMutation.isPending}
                                   title="Start Consultation"
-                                  className="p-2 text-white bg-emerald-600 hover:bg-emerald-700 hover:shadow-md rounded-lg transition-all disabled:opacity-50"
+                                  className="px-3 py-1.5 text-white bg-emerald-600 hover:bg-emerald-700 hover:shadow-xs rounded-lg transition-all text-xs font-bold flex items-center gap-1.5 disabled:opacity-50"
                                 >
-                                  {startConsultationMutation.isPending
-                                    ? <Loader2 size={16} className="animate-spin" />
-                                    : <Stethoscope size={16} />}
+                                  {startConsultationMutation.isPending ? (
+                                    <Loader2 size={14} className="animate-spin" />
+                                  ) : (
+                                    <Stethoscope size={14} />
+                                  )}
+                                  Start
+                                </button>
+                              )}
+
+                              {isInConsultation(a.status) && (
+                                <button
+                                  onClick={() => startConsultationMutation.mutate(a)}
+                                  disabled={startConsultationMutation.isPending}
+                                  title="Continue Consultation"
+                                  className="px-3 py-1.5 text-white bg-indigo-600 hover:bg-indigo-700 hover:shadow-xs rounded-lg transition-all text-xs font-bold flex items-center gap-1.5 disabled:opacity-50"
+                                >
+                                  {startConsultationMutation.isPending ? (
+                                    <Loader2 size={14} className="animate-spin" />
+                                  ) : (
+                                    <Stethoscope size={14} />
+                                  )}
+                                  Continue
+                                </button>
+                              )}
+
+                              {a.status === 'COMPLETED' && (
+                                <button
+                                  onClick={() => setSelectedAppointmentId(a.id)}
+                                  title="View Summary"
+                                  className="px-3 py-1.5 text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all text-xs font-bold flex items-center gap-1 border border-slate-200"
+                                >
+                                  <FileText size={14} /> Summary
                                 </button>
                               )}
                             </div>
@@ -524,6 +566,11 @@ const DoctorAppointments = () => {
           </div>
         </div>
       </div>
+
+      <AppointmentDetailModal 
+        appointmentId={selectedAppointmentId} 
+        onClose={() => setSelectedAppointmentId(null)} 
+      />
     </div>
   );
 };

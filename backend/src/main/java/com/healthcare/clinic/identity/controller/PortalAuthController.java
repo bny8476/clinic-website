@@ -191,15 +191,24 @@ public class PortalAuthController {
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
         try {
+            String firstName = signUpRequest.getFirstName() != null ? signUpRequest.getFirstName().trim() : "";
+            String lastName = signUpRequest.getLastName() != null && !signUpRequest.getLastName().isBlank()
+                    ? signUpRequest.getLastName().trim()
+                    : firstName;
+
             patientRegistrationService.registerPatient(
-                    signUpRequest.getEmail(),
+                    signUpRequest.getEmail() != null ? signUpRequest.getEmail().trim().toLowerCase() : "",
                     signUpRequest.getPassword(),
-                    signUpRequest.getFirstName(),
-                    signUpRequest.getLastName()
+                    firstName,
+                    lastName,
+                    signUpRequest.getPhoneNumber()
             );
             return ResponseEntity.ok("User registered successfully!");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(e.getMessage() != null ? e.getMessage() : "Registration failed.");
         }
     }
 
@@ -248,18 +257,38 @@ class MfaLoginRequest {
 }
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 class SignupRequest {
-    @jakarta.validation.constraints.NotBlank
-    @jakarta.validation.constraints.Email
+    @jakarta.validation.constraints.NotBlank(message = "Email is required")
+    @jakarta.validation.constraints.Email(message = "Invalid email format")
     private String email;
-    @jakarta.validation.constraints.NotBlank
-    @jakarta.validation.constraints.Size(min = 8)
-    @jakarta.validation.constraints.Pattern(regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$", message = "must contain at least one uppercase, one lowercase, one number and one special character")
+
+    @jakarta.validation.constraints.NotBlank(message = "Password is required")
+    @jakarta.validation.constraints.Size(min = 8, message = "Password must be at least 8 characters long")
+    @jakarta.validation.constraints.Pattern(
+        regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[^A-Za-z0-9]).{8,}$",
+        message = "Password must contain at least 8 characters, 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character"
+    )
     private String password;
-    @jakarta.validation.constraints.NotBlank
+
+    @jakarta.validation.constraints.NotBlank(message = "First name is required")
     private String firstName;
-    @jakarta.validation.constraints.NotBlank
+
     private String lastName;
+
+    private String phoneNumber;
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+    public String getFirstName() { return firstName; }
+    public void setFirstName(String firstName) { this.firstName = firstName; }
+    public String getLastName() { return lastName; }
+    public void setLastName(String lastName) { this.lastName = lastName; }
+    public String getPhoneNumber() { return phoneNumber; }
+    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
 }
 
 @Data

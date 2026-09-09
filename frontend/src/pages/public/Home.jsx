@@ -3,7 +3,7 @@ import Card from '../../components/ui/Card';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion, useInView, useReducedMotion, useScroll, useTransform } from 'framer-motion';
-import { Activity, ArrowLeft, ArrowRight, BadgeCheck, Bell, Bone, Box, Brain, Calendar, CheckCircle2, ChevronDown, ChevronRight, Circle, Clock, FlaskConical, Headphones, Heart, HeartPulse, HomeIcon, Image, Info, Mail, MapPin, Menu, MessageCircle, MessageSquare, Monitor, Phone, PhoneCall, Pill, Play, Plus, Printer, Quote, ShieldCheck, Star, Stethoscope, Target, ThumbsUp, User, UserCheck, Users, Video } from 'lucide-react';
+import { Activity, ArrowLeft, ArrowRight, BadgeCheck, Bell, Bone, Box, Brain, Calendar, CalendarCheck, CheckCircle2, ChevronDown, ChevronRight, Circle, Clock, FlaskConical, Headphones, Heart, HeartPulse, HomeIcon, Image, Info, Mail, MapPin, Menu, MessageCircle, MessageSquare, Monitor, Phone, PhoneCall, Pill, Play, Plus, Printer, Quote, ShieldCheck, Star, Stethoscope, Target, TestTube, ThumbsUp, User, UserCheck, Users, Video } from 'lucide-react';
 import { usePublicDepartments, usePublicDoctors } from '../../api/publicApi';
 
 /* ════════════════════════════════════════════════════════════════════════════
@@ -26,10 +26,17 @@ const LinkedinIcon = ({ size=16, className="" }) => (
 
 
 const SERVICES = [
-  { num: '01', icon: HeartPulse, title: 'Cardiology', desc: 'Comprehensive heart care with advanced diagnostic tools.' },
-  { num: '02', icon: Activity, title: 'Pulmonary', desc: 'Lung and respiratory disease management.' },
-  { num: '03', icon: Brain, title: 'Neurology', desc: 'Brain and nervous system disorder treatment.' },
-  { num: '04', icon: Bone, title: 'Orthopedics', desc: 'Bone, joint, and muscle care, minimally invasive surgery.' },
+  { num: '01', icon: Stethoscope, title: 'General Consultation',
+  desc: 'Medical consultation, diagnosis, treatment, and follow-up care.' },
+
+{ num: '02', icon: CalendarCheck, title: 'Appointments',
+  desc: 'Easy online appointment booking and flexible scheduling with doctors.' },
+
+{ num: '03', icon: Pill, title: 'Pharmacy',
+  desc: 'Convenient access to prescribed medicines and essential healthcare products.' },
+
+{ num: '04', icon: TestTube, title: 'Health Checkups',
+  desc: 'Routine health screenings and essential laboratory tests for preventive care.' },
   { num: '05', icon: FlaskConical, title: 'Laboratory', desc: 'Diagnostic laboratory services.' },
 ];
 
@@ -1331,7 +1338,7 @@ const Home = () => {
                         <select className="bg-transparent border-none outline-none w-full text-[15px] text-gray-400 font-medium appearance-none cursor-pointer">
                            <option value="">Service needed</option>
                            <option value="consultation">General Consultation</option>
-                           <option value="cardiology">Cardiology</option>
+                           <option value="Doctor Consultation">Doctor Consultation</option>
                            <option value="neurology">Neurology</option>
                         </select>
                         <ChevronDown size={18} className="text-blue-400 shrink-0 ml-auto pointer-events-none" />

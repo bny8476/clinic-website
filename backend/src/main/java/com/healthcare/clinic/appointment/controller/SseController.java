@@ -77,6 +77,19 @@ public class SseController {
         return emitter;
     }
 
+    @org.springframework.scheduling.annotation.Scheduled(fixedRate = 15000)
+    public void sendHeartbeats() {
+        List<ClientConnection> deadConnections = new CopyOnWriteArrayList<>();
+        for (ClientConnection conn : connections) {
+            try {
+                conn.emitter.send(SseEmitter.event().comment("ping"));
+            } catch (Exception e) {
+                deadConnections.add(conn);
+            }
+        }
+        connections.removeAll(deadConnections);
+    }
+
     @EventListener
     public void onAppointmentBooked(AppointmentBookedEvent event) {
         broadcastEvent("appointment-booked", event, event.getPatientUserId(), event.getDoctorUserId());

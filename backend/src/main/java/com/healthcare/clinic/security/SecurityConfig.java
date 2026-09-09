@@ -78,7 +78,7 @@ public class SecurityConfig {
                 if (!isProd) {
                     auth.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll();
                 }
-                auth.requestMatchers(org.springframework.http.HttpMethod.GET, "/api/doctors", "/api/doctors/**", "/api/departments", "/api/departments/**", "/api/clinic/stats", "/api/appointments/available-slots", "/api/appointments/slots", "/api/medicines", "/api/medicines/**").permitAll();
+                auth.requestMatchers(org.springframework.http.HttpMethod.GET, "/api/doctors", "/api/doctors/**", "/api/departments", "/api/departments/**", "/api/clinic/stats", "/api/appointments/available-slots", "/api/appointments/slots", "/api/medicines", "/api/medicines/**", "/api/notifications/unread-count").permitAll();
                 auth.requestMatchers(org.springframework.http.HttpMethod.POST, "/api/appointments/guest").permitAll();
                 auth.anyRequest().authenticated();
             });

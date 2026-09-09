@@ -24,6 +24,15 @@ public class UserCreateDto {
     private String lastName;
 
     private String phone;
-    private boolean enabled;
+    private boolean enabled = true;
     private List<String> roleNames;
+    private Long branchId;
+    private Long departmentId;
+
+    // Optional doctor profile fields
+    private String specialty;
+    private String qualifications;
+    private java.math.BigDecimal consultationFee;
+    private String registrationNumber;
+    private Integer experienceYears;
 }

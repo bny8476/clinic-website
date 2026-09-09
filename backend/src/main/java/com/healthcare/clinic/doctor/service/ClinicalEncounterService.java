@@ -47,6 +47,10 @@ public class ClinicalEncounterService {
         return encounter;
     }
 
+    public java.util.Optional<ClinicalEncounter> getEncounterByAppointmentId(Long appointmentId) {
+        return encounterRepository.findByAppointmentId(appointmentId);
+    }
+
     @Transactional
     public ClinicalEncounter startEncounter(Long userId, ClinicalEncounter encounter) {
         if (encounter.getAppointmentId() != null) {
@@ -54,9 +58,26 @@ public class ClinicalEncounterService {
              if (existing.isPresent()) {
                  return existing.get();
              }
+             try {
+                 var appt = appointmentService.getAppointmentById(encounter.getAppointmentId());
+                 if (appt != null) {
+                     if (encounter.getPatientId() == null && appt.getPatient() != null) {
+                         encounter.setPatientId(appt.getPatient().getUserId());
+                     }
+                     if (encounter.getBranchId() == null) {
+                         encounter.setBranchId(appt.getBranchId());
+                     }
+                 }
+             } catch (Exception ignored) {}
         }
         DoctorProfile doctor = getDoctorProfile(userId);
         encounter.setDoctorId(doctor.getId());
+        if (encounter.getBranchId() == null) {
+            encounter.setBranchId(doctor.getBranchId() != null ? doctor.getBranchId() : 1L);
+        }
+        if (encounter.getPatientId() == null) {
+            throw new IllegalArgumentException("Patient ID is required to start clinical encounter.");
+        }
         encounter.setStatus(com.healthcare.clinic.doctor.entity.EncounterStatus.IN_PROGRESS);
         return encounterRepository.save(encounter);
     }
