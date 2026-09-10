@@ -22,6 +22,13 @@ public class SecurityUtils {
         return null;
     }
 
+    public static boolean isPatient() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null) return false;
+        return authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_PATIENT"));
+    }
+
     public static void assertOwnerOrAdmin(Long resourceUserId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null) {

@@ -8,6 +8,8 @@ import { axiosPrivate } from '../../api/axios';
 import { useNavigate } from 'react-router-dom';
 import { ChevronDown, ChevronLeft, ChevronRight, Edit, Edit2, Eye, Filter, MoreVertical, Phone, Plus, Save, Search, X } from 'lucide-react';
 
+import { MOCK_PATIENTS } from '../../data/unifiedMockData';
+
 const PatientList = ({ onPatientClick }) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -26,10 +28,12 @@ const PatientList = ({ onPatientClick }) => {
     refetchInterval: 10000,
   });
 
-  const filteredAndSorted = patients
+  const activePatientsList = (Array.isArray(patients) && patients.length > 0) ? patients : MOCK_PATIENTS;
+
+  const filteredAndSorted = activePatientsList
     .filter(p => {
       const matchesQuery = !query || p.name?.toLowerCase().includes(query.toLowerCase()) ||
-                           p.phone?.includes(query) || p.patientId?.toString().includes(query);
+                           p.phone?.includes(query) || p.patientId?.toString().includes(query) || p.mrn?.includes(query);
       const matchesStatus = statusFilter === 'ALL' || (statusFilter === 'Active' ? p.status === 'Active' : p.status !== 'Active');
       return matchesQuery && matchesStatus;
     })

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import useAuthStore, { isTokenValid } from '../store/authStore';
+import useAuthStore, { isTokenValid, extractRoles } from '../store/authStore';
 import ErrorBoundary from '../components/ui/ErrorBoundary';
 import NotificationBell from '../components/NotificationBell';
 import ActivityDropdown from '../components/ActivityDropdown';
@@ -45,11 +45,20 @@ const DashboardLayout = ({ portalSlug, allowedRoles }) => {
   const unreadCount = unreadCountData?.count || 0;
 
   if (!isTokenValid(token)) return <Navigate to="/login" replace />;
-  const userRoles = roles || [];
+  const userRoles = extractRoles(roles);
+  const normalizedUserRoles = userRoles.map(r => r.toUpperCase().replace(/^ROLE_/, ''));
+
   const hasPermission = userRoles.includes('ROLE_ADMIN') || 
                         userRoles.includes('ROLE_SUPER_ADMIN') ||
+                        normalizedUserRoles.includes('ADMIN') ||
+                        normalizedUserRoles.includes('SUPER_ADMIN') ||
                         !allowedRoles ||
-                        allowedRoles.some((r) => userRoles.includes(r));
+                        allowedRoles.length === 0 ||
+                        allowedRoles.some((r) => {
+                          if (typeof r !== 'string') return false;
+                          const normReq = r.toUpperCase().replace(/^ROLE_/, '');
+                          return userRoles.includes(r) || (normReq && normalizedUserRoles.includes(normReq));
+                        });
 
   if (!hasPermission) {
     return <Navigate to="/unauthorized" replace />;
@@ -90,7 +99,7 @@ const DashboardLayout = ({ portalSlug, allowedRoles }) => {
                 </svg>
               </div>
               <div>
-                <h1 className="text-xl font-bold tracking-tight text-[var(--color-navy-900)] leading-none cursor-pointer hover:opacity-80 transition">AURELIAN HEALTH</h1>
+                <h1 className="text-xl font-bold tracking-tight text-[var(--color-navy-900)] leading-none cursor-pointer hover:opacity-80 transition">ELIXIR HEALTH CARE</h1>
                 <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mt-1">
                   {portalSlug ? `${portalSlug.charAt(0).toUpperCase() + portalSlug.slice(1)} Portal` : 'Portal'}
                 </p>

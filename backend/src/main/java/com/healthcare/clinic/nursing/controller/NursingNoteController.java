@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/patients/{patientId}/nursing-notes")
@@ -35,19 +36,39 @@ public class NursingNoteController {
     @PreAuthorize("@nursingSecurity.isAssigned(authentication, #patientId)")
     public ResponseEntity<?> addNursingNote(
             @PathVariable Long patientId,
-            @RequestBody NursingNote note,
+            @RequestBody Map<String, Object> payload,
             @AuthenticationPrincipal UserPrincipal nursePrincipal) {
+
         PatientProfile patient = patientProfileRepository.findById(patientId).orElse(null);
         if (patient == null) return ResponseEntity.notFound().build();
+
+        // Accept 'content' or 'note' field from the request body
+        String noteText = payload.containsKey("content")
+                ? String.valueOf(payload.get("content"))
+                : payload.containsKey("note")
+                    ? String.valueOf(payload.get("note"))
+                    : null;
+
+        if (noteText == null || noteText.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Note content cannot be empty"));
+        }
 
         User nurse = nursePrincipal != null && nursePrincipal.getUserId() != null
                 ? userRepository.findById(nursePrincipal.getUserId()).orElse(null)
                 : null;
 
-        note.setPatient(patient);
-        note.setNurse(nurse);
-        note.setRecordedAt(ZonedDateTime.now());
-        
+        String noteType = payload.containsKey("noteType")
+                ? String.valueOf(payload.get("noteType"))
+                : "GENERAL";
+
+        NursingNote note = NursingNote.builder()
+                .patient(patient)
+                .nurse(nurse)
+                .note(noteText)
+                .noteType(noteType)
+                .recordedAt(ZonedDateTime.now())
+                .build();
+
         return ResponseEntity.ok(nursingNoteRepository.save(note));
     }
 }

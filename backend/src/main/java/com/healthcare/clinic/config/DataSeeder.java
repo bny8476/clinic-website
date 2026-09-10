@@ -36,6 +36,7 @@ public class DataSeeder implements CommandLineRunner {
     private final DoctorWorkingHoursRepository doctorWorkingHoursRepository;
     private final TenantRepository tenantRepository;
     private final BranchRepository branchRepository;
+    private final PatientProfileRepository patientProfileRepository;
 
     @Value("${SEED_ADMIN_PASSWORD:Clinic@2026#Admin}")
     private String seedAdminPassword;
@@ -99,11 +100,12 @@ public class DataSeeder implements CommandLineRunner {
         if (doctorProfileRepository.findByUserId(doctor.getId()).isEmpty()) {
             DoctorProfile profile = DoctorProfile.builder()
                     .userId(doctor.getId())
-                    .specialty("General Medicine")
-                    .qualifications("MBBS, MD")
-                    .experienceYears(5)
-                    .consultationFee(new java.math.BigDecimal("500.00"))
-                    .bio("Experienced general practitioner with a focus on preventive care.")
+                    .specialty("Cardiology")
+                    .qualifications("MBBS, MD (Cardiology)")
+                    .experienceYears(10)
+                    .consultationFee(new java.math.BigDecimal("50.00"))
+                    .bio("Experienced cardiologist specializing in cardiovascular wellness and preventive care.")
+                    .registrationNumber("DOC-CARD-2026-88")
                     .isActive(true)
                     .branchId(1L)
                     .build();
@@ -139,7 +141,63 @@ public class DataSeeder implements CommandLineRunner {
         seedUser("accountant@clinic.com", "Clinic@2026#Account", "Acc", "Ountant", Set.of("ROLE_ACCOUNTANT"));
         seedUser("hrmanager@clinic.com", "Clinic@2026#HR", "HR", "Manager", Set.of("ROLE_HR"));
         seedUser("staff@clinic.com", "Clinic@2026#Staff", "Staff", "User", Set.of("ROLE_SUPPORT"));
-        seedUser("patient@clinic.com", "Clinic@2026#Patient", "Pat", "Ient", Set.of("ROLE_PATIENT"));
+
+        // Seed Primary Patient (John Smith)
+        User patientUser = seedUser("patient@clinic.com", "Clinic@2026#Patient", "John", "Smith", Set.of("ROLE_PATIENT"));
+        if (patientProfileRepository.findByUserId(patientUser.getId()).isEmpty()) {
+            PatientProfile patientProfile = PatientProfile.builder()
+                    .userId(patientUser.getId())
+                    .dateOfBirth(java.time.LocalDate.of(1985, 6, 15))
+                    .gender("Male")
+                    .bloodGroup("O+")
+                    .emergencyContactName("Mary Smith")
+                    .emergencyContactPhone("+1-555-0198")
+                    .address("742 Evergreen Terrace, Springfield")
+                    .medicalHistorySummary("Primary Hypertension - Well Controlled, Routine Health Assessment")
+                    .allergies("[\"Penicillin\"]")
+                    .chronicConditions("[\"Hypertension\"]")
+                    .currentMedications("[\"Lipitor 10mg\", \"Amoxicillin 500mg\", \"Paracetamol 500mg\"]")
+                    .opNumber("MRN-2026-001")
+                    .branchId(1L)
+                    .tenantId(1L)
+                    .build();
+            patientProfileRepository.save(patientProfile);
+            log.info("DataSeeder: created default PatientProfile for John Smith (patient@clinic.com).");
+        }
+
+        // Seed Secondary Patient 1 (Sarah Jenkins)
+        User sarahUser = seedUser("sarah.jenkins@clinic.com", "Clinic@2026#Patient", "Sarah", "Jenkins", Set.of("ROLE_PATIENT"));
+        if (patientProfileRepository.findByUserId(sarahUser.getId()).isEmpty()) {
+            PatientProfile sarahProfile = PatientProfile.builder()
+                    .userId(sarahUser.getId())
+                    .dateOfBirth(java.time.LocalDate.of(1992, 4, 12))
+                    .gender("Female")
+                    .bloodGroup("A+")
+                    .address("104 Elm Street, Springfield")
+                    .medicalHistorySummary("Annual Pediatric & General Wellness Assessment")
+                    .opNumber("MRN-2026-002")
+                    .branchId(1L)
+                    .tenantId(1L)
+                    .build();
+            patientProfileRepository.save(sarahProfile);
+        }
+
+        // Seed Secondary Patient 2 (Michael Chang)
+        User michaelUser = seedUser("michael.chang@clinic.com", "Clinic@2026#Patient", "Michael", "Chang", Set.of("ROLE_PATIENT"));
+        if (patientProfileRepository.findByUserId(michaelUser.getId()).isEmpty()) {
+            PatientProfile michaelProfile = PatientProfile.builder()
+                    .userId(michaelUser.getId())
+                    .dateOfBirth(java.time.LocalDate.of(1978, 11, 20))
+                    .gender("Male")
+                    .bloodGroup("B+")
+                    .address("58 Maple Ave, Springfield")
+                    .medicalHistorySummary("Scheduled for Laparoscopic Cholecystectomy")
+                    .opNumber("MRN-2026-003")
+                    .branchId(1L)
+                    .tenantId(1L)
+                    .build();
+            patientProfileRepository.save(michaelProfile);
+        }
     }
 
     private User seedUser(String email, String password, String firstName, String lastName, Set<String> roleNames) {

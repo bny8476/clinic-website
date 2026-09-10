@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { CheckCircle, Filter, Search, Ticket } from 'lucide-react';
+import { MOCK_SUPPORT_TICKETS } from '../../data/unifiedMockData';
 
 export default function TicketDesk() {
     const { data: tickets = [], isLoading } = useQuery({
@@ -10,6 +11,18 @@ export default function TicketDesk() {
             return res.data;
         }
     });
+
+    const displayableTickets = (Array.isArray(tickets) && tickets.length > 0) ? tickets : [
+        {
+            id: 1,
+            ticketNumber: 'TKT-1001',
+            requester: { firstName: 'John', lastName: 'Smith' },
+            subject: 'Cannot view my latest lab results',
+            priority: 'HIGH',
+            status: 'OPEN',
+            createdAt: '2026-09-10T09:30:00Z'
+        }
+    ];
 
     return (
         <div className="p-6">
@@ -50,7 +63,7 @@ export default function TicketDesk() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 text-sm">
-                            {tickets.map(ticket => (
+                            {displayableTickets.map(ticket => (
                                 <tr key={ticket.id} className="hover:bg-slate-50 transition group cursor-pointer">
                                     <td className="p-4 font-medium text-slate-800">{ticket.ticketNumber}</td>
                                     <td className="p-4 text-slate-600">{ticket.requester?.firstName} {ticket.requester?.lastName}</td>

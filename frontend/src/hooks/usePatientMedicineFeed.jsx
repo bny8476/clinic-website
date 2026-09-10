@@ -23,8 +23,8 @@ export function usePatientMedicineFeed(onUpdate) {
     const connect = async () => {
       try {
         const ticketRes = await axiosPrivate.post('/sse/patient-medicines/ticket');
-        const ticket = ticketRes.data.ticket;
-        if (!isSubscribed) return;
+        const ticket = ticketRes.data?.ticket;
+        if (!ticket || !isSubscribed) return;
 
         const url = `${BASE_URL.replace('/api', '')}/api/sse/patient-medicines?ticket=${ticket}`;
         eventSource = new EventSource(url);
@@ -61,7 +61,7 @@ export function usePatientMedicineFeed(onUpdate) {
         eventSource.close();
       }
     };
-  }, [token]);
+  }, [token, isInitializingAuth]);
 }
 
 export default usePatientMedicineFeed;

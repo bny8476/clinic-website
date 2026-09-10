@@ -44,9 +44,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
         return path.startsWith("/api/auth/")
                 || path.equals("/api/health")
-                || path.equals("/error")
-                || path.startsWith("/api/sse/")
-                || path.startsWith("/api/notifications/stream");
+                || path.equals("/error");
     }
 
     @Override

@@ -119,7 +119,7 @@ export default function MedicineDetailsPage() {
               </div>
 
               <h1 className="text-3xl sm:text-4xl font-black text-gray-900 mt-3 tracking-tight">{med.title || med.medicineName}</h1>
-              <p className="text-base font-semibold text-gray-500 mt-1">Generic: {med.genericName || 'Paracetamol'} | Brand: {med.brandName || 'Aurelian Care'}</p>
+              <p className="text-base font-semibold text-gray-500 mt-1">Generic: {med.genericName || 'Paracetamol'} | Brand: {med.brandName || 'Elixir Health Care'}</p>
               <p className="text-xs text-gray-400 mt-0.5">Manufacturer: {med.manufacturer || 'Approved Pharma Ltd'}</p>
 
               {/* Price Row */}

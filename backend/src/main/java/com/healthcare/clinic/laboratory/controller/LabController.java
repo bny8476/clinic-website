@@ -14,7 +14,6 @@ import com.healthcare.clinic.notification.event.LabResultReleasedEvent;
 import com.healthcare.clinic.patient.repository.PatientProfileRepository;
 import com.healthcare.clinic.security.SecurityUtils;
 import com.healthcare.clinic.security.UserPrincipal;
-import com.healthcare.clinic.laboratory.service.LabPdfService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
@@ -48,7 +47,6 @@ public class LabController {
     private final com.healthcare.clinic.laboratory.service.LabResultService resultService;
     private final com.healthcare.clinic.laboratory.service.LabReportVerificationService verificationService;
     private final com.healthcare.clinic.laboratory.service.LabReportPdfGenerator pdfGenerator;
-    private final LabPdfService labPdfService;
     private final LabWorklistService worklistService;
     private final LabBarcodeService barcodeService;
 
@@ -212,7 +210,7 @@ public class LabController {
     }
 
     @PutMapping("/requests/{requestId}/status")
-    @PreAuthorize("hasRole('LAB_TECH') or hasRole('SUPER_ADMIN')")
+    @PreAuthorize("hasRole('LAB_TECH') or hasRole('SUPER_ADMIN') or hasRole('NURSE')")
     @AuditableAction(module = "LABORATORY", action = "EDIT_STATUS", resourceType = "LabTestRequest", sensitivityLevel = "HIGH")
     public ResponseEntity<LabTestRequest> updateRequestStatus(@PathVariable Long requestId, @RequestParam String status) {
         LabTestRequest request = requestRepository.findById(requestId).orElseThrow();
@@ -310,7 +308,7 @@ public class LabController {
     }
 
     @PostMapping("/requests/{requestId}/verify")
-    @PreAuthorize("hasRole('PATHOLOGIST') or hasRole('SUPER_ADMIN')")
+    @PreAuthorize("hasRole('LAB_TECH') or hasRole('LAB_TECHNICIAN') or hasRole('LAB') or hasRole('PATHOLOGIST') or hasRole('SUPER_ADMIN') or hasRole('ADMIN') or hasRole('NURSE')")
     public ResponseEntity<LabResult> verifyReport(
             @PathVariable Long requestId,
             @RequestBody java.util.Map<String, String> payload,
@@ -322,7 +320,7 @@ public class LabController {
     }
 
     @GetMapping("/requests/{requestId}/report/pdf")
-    @PreAuthorize("hasRole('PATIENT') or hasRole('DOCTOR') or hasRole('LAB_TECH') or hasRole('PATHOLOGIST') or hasRole('SUPER_ADMIN')")
+    @PreAuthorize("hasRole('PATIENT') or hasRole('DOCTOR') or hasRole('LAB_TECH') or hasRole('LAB_TECHNICIAN') or hasRole('LAB') or hasRole('PATHOLOGIST') or hasRole('SUPER_ADMIN') or hasRole('ADMIN')")
     public ResponseEntity<byte[]> downloadLabReportPdf(
             @PathVariable Long requestId,
             @AuthenticationPrincipal UserPrincipal user) {
@@ -354,7 +352,7 @@ public class LabController {
     }
 
     @PutMapping("/requests/{requestId}/verify")
-    @PreAuthorize("hasRole('LAB_TECH') or hasRole('SUPER_ADMIN')")
+    @PreAuthorize("hasRole('LAB_TECH') or hasRole('LAB_TECHNICIAN') or hasRole('LAB') or hasRole('PATHOLOGIST') or hasRole('SUPER_ADMIN') or hasRole('ADMIN') or hasRole('NURSE')")
     @AuditableAction(module = "LABORATORY", action = "VERIFY_RESULT", resourceType = "LabResult", sensitivityLevel = "HIGH")
     public ResponseEntity<LabResult> verifyResult(@PathVariable Long requestId, @AuthenticationPrincipal UserPrincipal verifierPrincipal) {
         LabTestRequest request = requestRepository.findById(requestId).orElseThrow();
@@ -378,7 +376,10 @@ public class LabController {
     @GetMapping("/results/{resultId}/pdf")
     @AuditableAction(module = "LABORATORY", action = "DOWNLOAD_PDF", resourceType = "LabResult", sensitivityLevel = "HIGH")
     public ResponseEntity<byte[]> downloadLabResultPdf(@PathVariable Long resultId) {
-        byte[] pdf = labPdfService.generateLabResultPdf(resultId);
+        LabResult result = resultRepository.findById(resultId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Result not found"));
+        LabTestRequest request = result.getRequest();
+        byte[] pdf = pdfGenerator.generateLabReport(request, result);
         org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
         headers.setContentType(org.springframework.http.MediaType.APPLICATION_PDF);
         headers.setContentDispositionFormData("attachment", "lab_result_" + resultId + ".pdf");

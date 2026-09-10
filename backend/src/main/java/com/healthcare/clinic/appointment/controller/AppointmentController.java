@@ -24,6 +24,7 @@ import java.util.List;
 public class AppointmentController {
 
     private final AppointmentService appointmentService;
+    private final com.healthcare.clinic.identity.repository.UserRepository userRepository;
 
     @GetMapping
     @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_PATIENT')")
@@ -74,11 +75,52 @@ public class AppointmentController {
 
     private final com.healthcare.clinic.appointment.service.AppointmentHoldService holdService;
 
+    @PostMapping("/guest")
+    public ResponseEntity<ApiResponse<Appointment>> bookGuestAppointment(
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
+            @jakarta.validation.Valid @RequestBody com.healthcare.clinic.appointment.dto.BookingRequest request) {
+
+        if (request.getPatientEmail() != null && !request.getPatientEmail().isBlank()) {
+            com.healthcare.clinic.identity.entity.User existingUser = userRepository.findByEmail(request.getPatientEmail().trim()).orElse(null);
+            if (existingUser != null && existingUser.getPasswordHash() != null && !existingUser.getPasswordHash().isBlank()) {
+                return ResponseEntity.status(org.springframework.http.HttpStatus.CONFLICT)
+                        .body(ApiResponse.<Appointment>error("An account already exists with these details. Please log in to continue booking."));
+            }
+        }
+        if (request.getPatientPhone() != null && !request.getPatientPhone().isBlank()) {
+            com.healthcare.clinic.identity.entity.User existingUser = userRepository.findByPhoneNumber(request.getPatientPhone().trim()).orElse(null);
+            if (existingUser != null && existingUser.getPasswordHash() != null && !existingUser.getPasswordHash().isBlank()) {
+                return ResponseEntity.status(org.springframework.http.HttpStatus.CONFLICT)
+                        .body(ApiResponse.<Appointment>error("An account already exists with these details. Please log in to continue booking."));
+            }
+        }
+
+        if (holdService.isIdempotencyKeyProcessed(idempotencyKey)) {
+            Long existingId = holdService.getAppointmentIdForIdempotencyKey(idempotencyKey);
+            if (existingId != null) {
+                return ResponseEntity.ok(ApiResponse.success(appointmentService.getAppointmentById(existingId), "Appointment retrieved from idempotency key"));
+            }
+        }
+
+        Appointment appointment = appointmentService.bookAppointmentFromRequest(request, idempotencyKey);
+
+        if (idempotencyKey != null) {
+            holdService.saveIdempotencyKey(idempotencyKey, appointment.getId());
+        }
+
+        return ResponseEntity.ok(ApiResponse.success(appointment, "Guest appointment booked successfully"));
+    }
+
     @PostMapping("/book")
     @PreAuthorize("hasAuthority('ROLE_PATIENT') or hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_DOCTOR')")
     public ResponseEntity<ApiResponse<Appointment>> bookAppointment(
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
             @jakarta.validation.Valid @RequestBody com.healthcare.clinic.appointment.dto.BookingRequest request) {
+
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        if (currentUserId != null && SecurityUtils.isPatient()) {
+            request.setPatientUserId(currentUserId);
+        }
 
         if (holdService.isIdempotencyKeyProcessed(idempotencyKey)) {
             Long existingId = holdService.getAppointmentIdForIdempotencyKey(idempotencyKey);

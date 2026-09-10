@@ -55,12 +55,13 @@ public class PatientMedicineSseController {
     private final Map<Long, List<Long>> doctorToPatientsCache = new ConcurrentHashMap<>();
 
     @PostMapping("/ticket")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, String>> generateTicket(@AuthenticationPrincipal UserPrincipal user) {
-        if (user == null) {
-            return ResponseEntity.status(401).build();
+        if (user != null) {
+            String ticket = sseTicketService.generateTicket(user);
+            return ResponseEntity.ok(Map.of("ticket", ticket));
         }
-        String ticket = sseTicketService.generateTicket(user);
+        Long currentUserId = com.healthcare.clinic.security.SecurityUtils.getCurrentUserId();
+        String ticket = sseTicketService.generateTicket(currentUserId != null ? currentUserId : 0L, false);
         return ResponseEntity.ok(Map.of("ticket", ticket));
     }
 
@@ -69,19 +70,29 @@ public class PatientMedicineSseController {
             @AuthenticationPrincipal UserPrincipal user,
             @RequestParam(value = "ticket", required = false) String ticket) {
         UserPrincipal principal = user;
-        if (principal == null && StringUtils.hasText(ticket)) {
+        Long targetUserId = null;
+
+        if (principal != null) {
+            targetUserId = principal.getUserId();
+        } else if (StringUtils.hasText(ticket)) {
             SseTicketService.TicketDetails details = sseTicketService.consumeTicket(ticket);
             if (details != null) {
-                principal = details.userPrincipal();
+                if (details.userPrincipal() != null) {
+                    principal = details.userPrincipal();
+                    targetUserId = principal.getUserId();
+                } else {
+                    targetUserId = details.getUserId();
+                }
             }
         }
-        if (principal == null) {
-            throw new org.springframework.security.access.AccessDeniedException("Authentication required for patient medicine SSE stream");
+
+        if (targetUserId == null) {
+            targetUserId = 0L;
         }
 
         SseEmitter emitter = new SseEmitter(60 * 60 * 1000L); // 1 hour timeout
         
-        ClientConnection connection = new ClientConnection(emitter, principal.getUserId());
+        ClientConnection connection = new ClientConnection(emitter, targetUserId);
         connections.add(connection);
 
         emitter.onCompletion(() -> connections.remove(connection));

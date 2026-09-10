@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion, useInView, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { Activity, ArrowLeft, ArrowRight, BadgeCheck, Bell, Bone, Box, Brain, Calendar, CalendarCheck, CheckCircle2, ChevronDown, ChevronRight, Circle, Clock, FlaskConical, Headphones, Heart, HeartPulse, HomeIcon, Image, Info, Mail, MapPin, Menu, MessageCircle, MessageSquare, Monitor, Phone, PhoneCall, Pill, Play, Plus, Printer, Quote, ShieldCheck, Star, Stethoscope, Target, TestTube, ThumbsUp, User, UserCheck, Users, Video } from 'lucide-react';
 import { usePublicDepartments, usePublicDoctors } from '../../api/publicApi';
+import useAuthStore, { getDefaultDashboardRoute, isTokenValid } from '../../store/authStore';
+import QuickBookingModal from '../../components/public/QuickBookingModal';
 
 /* ════════════════════════════════════════════════════════════════════════════
    STATIC DATA & TOKENS
@@ -229,6 +231,38 @@ const Home = () => {
   };
 
   const navigate = useNavigate();
+  const { token, roles } = useAuthStore();
+
+  const [isQuickBookingOpen, setIsQuickBookingOpen] = useState(false);
+  const [selectedDoctorForBooking, setSelectedDoctorForBooking] = useState(null);
+
+  const handleUserIconClick = () => {
+    if (isTokenValid(token)) {
+      const dashboardRoute = getDefaultDashboardRoute(roles);
+      navigate(dashboardRoute);
+    } else {
+      navigate('/login');
+    }
+  };
+
+  const handleFindDoctors = () => {
+    navigate('/doctors');
+  };
+
+  const handleBookAppointment = (doctorId = null) => {
+    if (isTokenValid(token)) {
+      if (roles?.includes('ROLE_PATIENT')) {
+        navigate(doctorId ? `/patient/book/${doctorId}` : '/patient/book');
+      } else if (roles?.includes('ROLE_RECEPTION')) {
+        navigate(doctorId ? `/reception/book/${doctorId}` : '/reception/appointments');
+      } else {
+        navigate(doctorId ? `/patient/book/${doctorId}` : '/patient/book');
+      }
+    } else {
+      setSelectedDoctorForBooking(doctorId);
+      setIsQuickBookingOpen(true);
+    }
+  };
 
   const { data: doctors, isLoading: loadingDoctors } = usePublicDoctors();
   const { data: departments } = usePublicDepartments();
@@ -244,9 +278,11 @@ const Home = () => {
   }, []);
 
   const getBookLink = (docId) => {
-    const token = window.__CLINIC_TOKEN__;
-    if (!token) return '/register';
-    return `/patient/book/${docId}`;
+    if (!isTokenValid(token)) return '/doctors';
+    if (roles?.includes('ROLE_RECEPTION')) {
+      return docId ? `/reception/book/${docId}` : '/reception/appointments';
+    }
+    return docId ? `/patient/book/${docId}` : '/patient/book';
   };
 
   const displayedDoctors = (doctors || []).slice(0, 4);
@@ -276,7 +312,7 @@ const Home = () => {
               <div className="w-12 h-12 rounded-[16px] bg-blue-600 flex items-center justify-center text-white shadow-md">
                 <HeartPulse size={24} strokeWidth={2.5} />
               </div>
-              <span className="font-bold text-gray-900 text-[18px] tracking-tight">Aurelian Health</span>
+              <span className="font-bold text-gray-900 text-[18px] tracking-tight">Elixir Health Care</span>
             </motion.div>
             
             {/* Hamburger */}
@@ -320,14 +356,31 @@ const Home = () => {
               
               {/* Bell Button */}
               <div className="relative">
-                 <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-12 h-12 rounded-[16px] bg-blue-50 text-blue-600 flex items-center justify-center shadow-sm border border-white hover:bg-blue-100 transition-colors">
+                 <motion.button 
+                   whileHover={{ scale: 1.05 }} 
+                   whileTap={{ scale: 0.95 }} 
+                   onClick={() => {
+                     if (isTokenValid(token)) {
+                       navigate('/notifications');
+                     } else {
+                       navigate('/login');
+                     }
+                   }}
+                   className="w-12 h-12 rounded-[16px] bg-blue-50 text-blue-600 flex items-center justify-center shadow-sm border border-white hover:bg-blue-100 transition-colors"
+                 >
                    <Bell size={18} strokeWidth={2} />
                  </motion.button>
                  <div className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-blue-600 border-2 border-white rounded-full"></div>
               </div>
               
               {/* User Button */}
-              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => navigate('/login')} className="w-12 h-12 rounded-[16px] bg-blue-600 text-white flex items-center justify-center shadow-md hover:bg-blue-700 transition-colors">
+              <motion.button 
+                whileHover={{ scale: 1.05 }} 
+                whileTap={{ scale: 0.95 }} 
+                onClick={handleUserIconClick} 
+                className="w-12 h-12 rounded-[16px] bg-blue-600 text-white flex items-center justify-center shadow-md hover:bg-blue-700 transition-colors"
+                title={isTokenValid(token) ? "Go to Dashboard" : "Sign In"}
+              >
                 <User size={18} strokeWidth={2} />
               </motion.button>
             </div>
@@ -367,7 +420,7 @@ const Home = () => {
               <motion.button 
                 whileHover={{ scale: 1.02, y: -2 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => navigate('/login')} 
+                onClick={handleFindDoctors} 
                 className="bg-[#2B4AFE] text-white px-8 py-4 rounded-full font-medium text-[15px] hover:bg-blue-700 transition-colors flex items-center gap-2 group shadow-[0_10px_30px_rgba(43,74,254,0.3)] hover:shadow-[0_15px_40px_rgba(43,74,254,0.4)]"
               >
                 Find Doctor
@@ -497,7 +550,7 @@ const Home = () => {
         >
           <motion.div variants={fadeUp} className="text-gray-400 text-[11px] font-bold tracking-[0.2em] uppercase mb-12 flex items-center justify-center gap-6">
             <span className="w-16 h-px bg-gray-200"></span>
-            Aurelian Health
+            Elixir Health Care
             <span className="w-16 h-px bg-gray-200"></span>
           </motion.div>
 
@@ -655,10 +708,10 @@ const Home = () => {
                      </div>
 
                      <div className="mt-auto flex justify-between items-end relative z-10">
-                        <button onClick={() => navigate('/login')} className="text-[14px] text-blue-600 font-bold hover:underline decoration-2 underline-offset-4">
+                        <button onClick={() => handleBookAppointment()} className="text-[14px] text-blue-600 font-bold hover:underline decoration-2 underline-offset-4">
                            Make an appointment
                         </button>
-                        <button className="text-[14px] font-bold text-gray-900 border-b-2 border-gray-900 hover:border-blue-600 hover:text-blue-600 transition-colors leading-tight pb-0.5">
+                        <button onClick={handleFindDoctors} className="text-[14px] font-bold text-gray-900 border-b-2 border-gray-900 hover:border-blue-600 hover:text-blue-600 transition-colors leading-tight pb-0.5">
                            Price
                         </button>
                      </div>
@@ -709,6 +762,7 @@ const Home = () => {
                  <motion.button 
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
+                    onClick={() => scrollTo('contact')}
                     className="bg-[#2B4AFE] text-white rounded-[100px] px-5 py-2.5 font-bold text-[13px] flex items-center gap-2 hover:bg-blue-700 transition-colors w-fit"
                  >
                     Contact Us <ArrowRight size={14} />
@@ -903,9 +957,9 @@ const Home = () => {
                   but true healing <span className="text-blue-600 font-bold">begins with</span> trust
                </h2>
                <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-10">
-                  <span className="text-gray-400 font-bold text-[13px] tracking-widest uppercase">Aurelian Health</span>
+                  <span className="text-gray-400 font-bold text-[13px] tracking-widest uppercase">Elixir Health Care</span>
                   <div className="hidden sm:block h-[1px] w-16 bg-gray-200"></div>
-                  <button onClick={() => navigate('/login')} className="bg-blue-600 text-white rounded-full pl-8 pr-2 py-2 flex items-center gap-6 hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20">
+                  <button onClick={() => handleBookAppointment()} className="bg-blue-600 text-white rounded-full pl-8 pr-2 py-2 flex items-center gap-6 hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20">
                      <span className="font-bold text-[15px]">Make an Appointment</span>
                      <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-blue-600 shrink-0">
                         <User size={18} strokeWidth={2.5} />
@@ -948,7 +1002,7 @@ const Home = () => {
                   Our team brings together expertise, empathy, and a deep passion for helping others.
                </motion.p>
                
-               <motion.button initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp} onClick={() => navigate('/login')} className="bg-blue-600 text-white rounded-xl px-8 py-4 text-[15px] font-bold flex items-center justify-center gap-3 hover:bg-blue-700 transition-colors w-fit mb-16 shadow-lg shadow-blue-600/20">
+               <motion.button initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp} onClick={handleFindDoctors} className="bg-blue-600 text-white rounded-xl px-8 py-4 text-[15px] font-bold flex items-center justify-center gap-3 hover:bg-blue-700 transition-colors w-fit mb-16 shadow-lg shadow-blue-600/20">
                   View All Doctors <ArrowRight size={18} />
                </motion.button>
                
@@ -998,7 +1052,7 @@ const Home = () => {
                      <p className="text-sm font-bold text-blue-600 mb-3">Cardiologist</p>
                      <div className="flex items-end justify-between">
                         <p className="text-xs text-gray-500 font-medium leading-relaxed max-w-[70%]">Personalized treatment and diagnostics</p>
-                        <button className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 hover:bg-blue-100 transition-colors">
+                        <button onClick={() => handleBookAppointment()} className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 hover:bg-blue-100 transition-colors">
                            <Play size={16} className="ml-1" fill="currentColor" />
                         </button>
                      </div>
@@ -1021,7 +1075,7 @@ const Home = () => {
                      <p className="text-sm font-bold text-blue-600 mb-3">Neurologist</p>
                      <div className="flex items-end justify-between">
                         <p className="text-xs text-gray-500 font-medium leading-relaxed max-w-[70%]">Brain and nervous system health specialist</p>
-                        <button className="w-10 h-10 rounded-full bg-[#F4F6FF] flex items-center justify-center text-blue-600 hover:bg-blue-100 transition-colors shrink-0">
+                        <button onClick={() => handleBookAppointment()} className="w-10 h-10 rounded-full bg-[#F4F6FF] flex items-center justify-center text-blue-600 hover:bg-blue-100 transition-colors shrink-0">
                            <ArrowRight size={18} />
                         </button>
                      </div>
@@ -1044,7 +1098,7 @@ const Home = () => {
                      <p className="text-sm font-bold text-blue-600 mb-3">Orthopedic Surgeon</p>
                      <div className="flex items-end justify-between">
                         <p className="text-xs text-gray-500 font-medium leading-relaxed max-w-[70%]">Joint, bone and muscle care expert</p>
-                        <button className="w-10 h-10 rounded-full bg-[#F4F6FF] flex items-center justify-center text-blue-600 hover:bg-blue-100 transition-colors shrink-0">
+                        <button onClick={() => handleBookAppointment()} className="w-10 h-10 rounded-full bg-[#F4F6FF] flex items-center justify-center text-blue-600 hover:bg-blue-100 transition-colors shrink-0">
                            <ArrowRight size={18} />
                         </button>
                      </div>
@@ -1112,7 +1166,7 @@ const Home = () => {
             <div className="absolute top-10 left-0 w-full flex justify-center z-20">
                <div className="flex items-center gap-2">
                   <div className="text-blue-600 border-[2.5px] border-blue-600 rounded p-0.5"><Plus size={16} strokeWidth={3} /></div>
-                  <span className="text-blue-600 font-bold text-[13px] tracking-widest uppercase">Aurelian Health</span>
+                  <span className="text-blue-600 font-bold text-[13px] tracking-widest uppercase">Elixir Health Care</span>
                </div>
             </div>
 
@@ -1212,7 +1266,7 @@ const Home = () => {
                   What our<br/><span className="text-blue-600">patients</span> say
                </h2>
                <p className="text-[17px] text-gray-500 font-medium leading-relaxed mb-12 max-w-md">
-                  Real stories from real patients who trust Aurelian Health.
+                  Real stories from real patients who trust Elixir Health Care.
                </p>
                
                <div className="flex items-center gap-6">
@@ -1275,7 +1329,7 @@ const Home = () => {
                      
                      {/* Card Footer */}
                      <div className="flex items-center justify-between border-t border-gray-100 pt-8 mt-2">
-                        <span className="text-gray-400 font-bold text-[13px] tracking-widest uppercase">Aurelian Health</span>
+                        <span className="text-gray-400 font-bold text-[13px] tracking-widest uppercase">Elixir Health Care</span>
                         <div className="flex-1 h-[1px] bg-gray-100 mx-8"></div>
                         <div className="flex items-center gap-3">
                            <span className="text-gray-500 text-[15px] font-medium">Verified Patient</span>
@@ -1305,7 +1359,7 @@ const Home = () => {
                      <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shrink-0">
                         <HeartPulse size={18} strokeWidth={2.5} />
                      </div>
-                     <span className="font-bold text-gray-900 text-[17px] tracking-tight">Aurelian Health</span>
+                     <span className="font-bold text-gray-900 text-[17px] tracking-tight">Elixir Health Care</span>
                   </div>
                   
                   <div className="w-10 h-1 bg-blue-600 mb-6 rounded-full"></div>
@@ -1346,7 +1400,7 @@ const Home = () => {
                   </div>
                   
                   <div className="flex flex-col sm:flex-row items-center gap-6">
-                     <motion.button onClick={() => navigate('/login')} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white rounded-2xl px-8 py-4 font-bold text-[15px] flex items-center justify-center gap-3 transition-colors shadow-[0_8px_20px_rgba(37,99,235,0.25)]">
+                     <motion.button onClick={() => handleBookAppointment()} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white rounded-2xl px-8 py-4 font-bold text-[15px] flex items-center justify-center gap-3 transition-colors shadow-[0_8px_20px_rgba(37,99,235,0.25)]">
                         Book an appointment
                         <ArrowRight size={18} strokeWidth={2.5} />
                      </motion.button>
@@ -1437,7 +1491,7 @@ const Home = () => {
                   <p className="text-gray-500 text-[15px] leading-relaxed mb-8 max-w-sm">
                      Find answers to common questions about your visit and our services.
                   </p>
-                  <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="border-2 border-gray-200 hover:border-blue-600 text-gray-700 hover:text-blue-600 rounded-2xl px-6 py-3 font-bold text-[14px] flex items-center justify-center gap-3 transition-colors w-fit shadow-sm">
+                  <motion.button onClick={() => scrollTo('contact')} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="border-2 border-gray-200 hover:border-blue-600 text-gray-700 hover:text-blue-600 rounded-2xl px-6 py-3 font-bold text-[14px] flex items-center justify-center gap-3 transition-colors w-fit shadow-sm">
                      <Headphones size={18} />
                      Contact us
                   </motion.button>
@@ -1560,7 +1614,7 @@ const Home = () => {
                         <HeartPulse size={36} strokeWidth={2.5} />
                      </div>
                      <div>
-                        <h3 className="text-xl font-bold tracking-tight leading-none text-white">Aurelian Health</h3>
+                        <h3 className="text-xl font-bold tracking-tight leading-none text-white">Elixir Health Care</h3>
                         <p className="text-[10px] tracking-[0.2em] text-gray-300 mt-1.5 uppercase">Care That Connects</p>
                      </div>
                   </div>
@@ -1622,7 +1676,7 @@ const Home = () => {
             <div className="flex flex-col lg:flex-row justify-between items-center gap-8 lg:gap-4 text-xs font-medium text-gray-300 pt-2">
                
                <div className="flex flex-col gap-3 text-center lg:text-left">
-                  <p>© {new Date().getFullYear()} <span className="text-blue-400">Aurelian Health</span>. All rights reserved.</p>
+                  <p>© {new Date().getFullYear()} <span className="text-blue-400">Elixir Health Care</span>. All rights reserved.</p>
                   <div className="flex items-center gap-4 justify-center lg:justify-start">
                      <a href="#" className="hover:text-white transition-colors">Terms of Use</a>
                      <span className="text-gray-600">|</span>
@@ -1664,6 +1718,11 @@ const Home = () => {
          </div>
       </footer>
 
+      <QuickBookingModal
+        isOpen={isQuickBookingOpen}
+        onClose={() => setIsQuickBookingOpen(false)}
+        initialDoctorId={selectedDoctorForBooking}
+      />
     </div>
   );
 };

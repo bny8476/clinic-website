@@ -44,12 +44,19 @@ export const ROLE_DASHBOARDS = {
   PHARMACIST: '/pharmacy/dashboard',
   ROLE_PHARMACY_STAFF: '/pharmacy/dashboard',
   ROLE_STOREKEEPER: '/pharmacy/dashboard',
+  ROLE_LAB_TECH: '/lab/dashboard',
   ROLE_LAB_TECHNICIAN: '/lab/dashboard',
   ROLE_LAB: '/lab/dashboard',
+  ROLE_PATHOLOGIST: '/lab/dashboard',
   LAB_TECH: '/lab/dashboard',
-  ROLE_RADIOLOGIST: '/radiology/dashboard',
-  RADIOLOGY: '/radiology/dashboard',
+  LAB_TECHNICIAN: '/lab/dashboard',
+  LAB: '/lab/dashboard',
+  PATHOLOGIST: '/lab/dashboard',
+  ROLE_RADIOLOGIST: '/radiologist/dashboard',
+  RADIOLOGIST: '/radiologist/dashboard',
+  RADIOLOGY: '/radiologist/dashboard',
   ROLE_RECEPTIONIST: '/reception/dashboard',
+  ROLE_RECEPTION: '/reception/dashboard',
   RECEPTION: '/reception/dashboard',
   ROLE_FINANCE: '/finance/dashboard',
   ACCOUNTANT: '/finance/dashboard',
@@ -64,23 +71,60 @@ const ROLE_PRIORITY_ORDER = [
   'ROLE_DOCTOR', 'DOCTOR',
   'ROLE_NURSE', 'NURSE',
   'ROLE_PHARMACIST', 'PHARMACIST', 'ROLE_PHARMACY_STAFF', 'ROLE_STOREKEEPER',
-  'ROLE_LAB_TECHNICIAN', 'ROLE_LAB', 'LAB_TECH',
-  'ROLE_RADIOLOGIST', 'RADIOLOGY',
-  'ROLE_RECEPTIONIST', 'RECEPTION',
+  'ROLE_LAB_TECH', 'ROLE_LAB_TECHNICIAN', 'ROLE_LAB', 'ROLE_PATHOLOGIST', 'LAB_TECH', 'LAB_TECHNICIAN', 'LAB', 'PATHOLOGIST',
+  'ROLE_RADIOLOGIST', 'RADIOLOGIST', 'RADIOLOGY',
+  'ROLE_RECEPTIONIST', 'ROLE_RECEPTION', 'RECEPTION',
   'ROLE_FINANCE', 'ACCOUNTANT',
   'MANAGER',
   'ROLE_PATIENT', 'PATIENT',
 ];
 
-export function getDefaultDashboardRoute(roles = []) {
+export function extractRoles(roles) {
+  if (!roles) return [];
+  let roleList = [];
+  if (Array.isArray(roles)) {
+    roleList = roles;
+  } else if (typeof roles === 'string') {
+    roleList = roles.split(',').map(s => s.trim());
+  } else if (typeof roles === 'object') {
+    roleList = [roles];
+  }
+
+  const result = [];
+  for (const item of roleList) {
+    if (!item) continue;
+    if (typeof item === 'string') {
+      result.push(item);
+    } else if (typeof item === 'object') {
+      const val = item.authority || item.name || item.role || item.code || item.value;
+      if (typeof val === 'string') {
+        result.push(val);
+      }
+    }
+  }
+  return result;
+}
+
+export function getDefaultDashboardRoute(rawRoles = []) {
+  const roles = extractRoles(rawRoles);
   if (!roles || !Array.isArray(roles) || roles.length === 0) {
     return '/patient/dashboard';
   }
+
   for (const pRole of ROLE_PRIORITY_ORDER) {
     if (roles.includes(pRole)) {
       return ROLE_DASHBOARDS[pRole] || '/patient/dashboard';
     }
   }
+
+  const normalizedUserRoles = roles.map(r => r.toUpperCase().replace(/^ROLE_/, ''));
+  for (const pRole of ROLE_PRIORITY_ORDER) {
+    const normPRole = pRole.toUpperCase().replace(/^ROLE_/, '');
+    if (normalizedUserRoles.includes(normPRole)) {
+      return ROLE_DASHBOARDS[pRole] || '/patient/dashboard';
+    }
+  }
+
   return ROLE_DASHBOARDS[roles[0]] || '/patient/dashboard';
 }
 
@@ -274,7 +318,13 @@ const useAuthStore = create(
           });
 
           return newAccessToken;
-        } catch (_err) {
+        } catch (err) {
+          // If refresh fails with 401/403, the refresh token is expired or invalid
+          // Automatically log the user out and redirect to login
+          const status = err?.response?.status;
+          if (status === 401 || status === 403) {
+            get().handleSessionExpired('Your session has expired. Please sign in again.');
+          }
           return null;
         }
       },

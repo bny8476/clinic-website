@@ -1,4 +1,4 @@
-import useAuthStore, { isTokenValid } from '../../store/authStore';
+import useAuthStore, { isTokenValid, extractRoles } from '../../store/authStore';
 import { Navigate, useLocation } from 'react-router-dom';
 import { getPortalConfig } from '../../config/portalConfig';
 import PageLoadingSkeleton from '../ui/PageLoadingSkeleton';
@@ -20,10 +20,10 @@ export default function RoleRoute({ portalSlug, allowedRoles, children }) {
 
     const portalConfig = portalSlug ? getPortalConfig(portalSlug) : {};
     const targetRoles = allowedRoles || (portalConfig.role ? [portalConfig.role, 'ROLE_SUPER_ADMIN'] : []);
-    const userRoles = roles || [];
+    const userRoles = extractRoles(roles);
 
     // Normalise role matching (support both ROLE_ADMIN and ADMIN strings)
-    const normalizedUserRoles = userRoles.map(r => typeof r === 'string' ? r.toUpperCase().replace(/^ROLE_/, '') : '');
+    const normalizedUserRoles = userRoles.map(r => r.toUpperCase().replace(/^ROLE_/, ''));
 
     const hasPermission =
         userRoles.includes('ROLE_ADMIN') ||
@@ -32,6 +32,7 @@ export default function RoleRoute({ portalSlug, allowedRoles, children }) {
         normalizedUserRoles.includes('SUPER_ADMIN') ||
         targetRoles.length === 0 ||
         targetRoles.some(r => {
+            if (typeof r !== 'string') return false;
             const normReq = r.toUpperCase().replace(/^ROLE_/, '');
             return userRoles.includes(r) || normalizedUserRoles.includes(normReq);
         });

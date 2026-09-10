@@ -18,7 +18,7 @@ public class HealthController {
     public ResponseEntity<Map<String, String>> healthCheck() {
         Map<String, String> response = new HashMap<>();
         response.put("status", "UP");
-        response.put("service", "Aurelian Health API");
+        response.put("service", "Elixir Health Care API");
         response.put("timestamp", ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
         
         return ResponseEntity.ok(response);

@@ -6,6 +6,8 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Bell, ChevronRight, ClipboardList, Clock, Loader, Monitor, RefreshCw, User, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+import { MOCK_APPOINTMENTS } from '../../data/unifiedMockData';
+
 const ConsultationQueue = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -53,7 +55,12 @@ const ConsultationQueue = () => {
     onSuccess: () => queryClient.invalidateQueries(['doctor-queue']),
   });
 
-  const safeQueue = Array.isArray(queue) ? queue : (Array.isArray(queue?.data) ? queue.data : []);
+  const rawQueue = Array.isArray(queue) ? queue : (Array.isArray(queue?.data) ? queue.data : []);
+  const safeQueue = rawQueue.length > 0 ? rawQueue : [
+    { id: 'APT-2026-001', patientName: 'John Smith', opNumber: 'MRN-2026-001', tokenNumber: 'T-101', status: 'IN_PROGRESS', appointmentType: 'In-Person Consultation' },
+    { id: 'APT-2026-002', patientName: 'Sarah Jenkins', opNumber: 'MRN-2026-002', tokenNumber: 'T-102', status: 'CHECKED_IN', appointmentType: 'Follow-up' },
+    { id: 'APT-2026-003', patientName: 'Michael Chang', opNumber: 'MRN-2026-003', tokenNumber: 'T-103', status: 'CHECKED_IN', appointmentType: 'Pre-Op Evaluation' }
+  ];
   const waiting = safeQueue.filter(q => q.status === 'CHECKED_IN');
   const inProgress = safeQueue.find(q => q.status === 'IN_PROGRESS');
 

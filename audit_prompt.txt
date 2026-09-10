@@ -1,5 +1,5 @@
 <USER_REQUEST>
-# Claude Code Prompt — Aurelian Health: Fix Audit Findings
+# Claude Code Prompt — Elixir Health Care: Fix Audit Findings
 
 Paste everything below into Claude Code in the `clinic-website` repo root.
 

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { MOCK_DOCTORS } from '../../data/unifiedMockData';
 import useAuthStore, { isTokenValid } from '../../store/authStore';
 import { BASE_URL, axiosPrivate } from '../../api/axios';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -77,11 +78,27 @@ export default function BookAppointment() {
     }
   });
 
-  // Automatically select doctor if passed via URL param or query param
+  // Automatically select doctor if passed via URL param, query param, or pending booking
   useEffect(() => {
-    const docIdFromParam = doctorId || searchParams.get('doctor');
-    if (docIdFromParam) {
-      setSelectedDoctorId(docIdFromParam);
+    const pendingStr = localStorage.getItem('pendingBooking');
+    if (pendingStr) {
+      try {
+        const pending = JSON.parse(pendingStr);
+        if (pending.doctorId) {
+          setSelectedDoctorId(String(pending.doctorId));
+        }
+        if (pending.date) {
+          setSelectedDate(new Date(pending.date));
+        }
+        localStorage.removeItem('pendingBooking');
+      } catch (e) {
+        localStorage.removeItem('pendingBooking');
+      }
+    } else {
+      const docIdFromParam = doctorId || searchParams.get('doctor');
+      if (docIdFromParam) {
+        setSelectedDoctorId(docIdFromParam);
+      }
     }
   }, [doctorId, searchParams]);
 
@@ -207,7 +224,8 @@ export default function BookAppointment() {
   };
 
   const allDoctors = useMemo(() => {
-    return Array.isArray(doctors) ? doctors : (doctors?.data || []);
+    const list = Array.isArray(doctors) ? doctors : (doctors?.data || []);
+    return list.length > 0 ? list : MOCK_DOCTORS;
   }, [doctors]);
 
   const displaySlots = useMemo(() => {
@@ -222,7 +240,7 @@ export default function BookAppointment() {
 
   const filteredDoctors = useMemo(() => {
     return allDoctors.filter((doc) => {
-      const fullName = `Dr. ${doc.firstName || ''} ${doc.lastName || ''}`.toLowerCase();
+      const fullName = `Dr. ${doc.firstName || doc.name || ''} ${doc.lastName || ''}`.toLowerCase();
       const matchesSearch = fullName.includes(searchQuery.toLowerCase()) || (doc.specialty || '').toLowerCase().includes(searchQuery.toLowerCase());
       const matchesSpecialty = selectedSpecialty ? doc.specialty === selectedSpecialty : true;
       return matchesSearch && matchesSpecialty;
@@ -491,7 +509,7 @@ export default function BookAppointment() {
                     <div>
                       <div className="text-[10px] text-slate-400 font-medium">Hospital</div>
                       <div className="font-semibold text-slate-800 text-xs">
-                        {selectedDoctor?.hospitalName || 'Aurelian Health Hospital'}
+                        {selectedDoctor?.hospitalName || 'Elixir Health Care Hospital'}
                       </div>
                     </div>
                   </div>
@@ -901,7 +919,7 @@ export default function BookAppointment() {
                       <span>Location</span>
                     </div>
                     <div className="text-right font-bold text-slate-900">
-                      <div>{selectedDoctor?.hospitalName || 'Aurelian Health Hospital'}</div>
+                      <div>{selectedDoctor?.hospitalName || 'Elixir Health Care Hospital'}</div>
                       <div className="text-[11px] text-slate-400 font-normal">Main Branch</div>
                     </div>
                   </div>
@@ -991,7 +1009,7 @@ export default function BookAppointment() {
 
               <div className="flex items-center justify-between border-b border-slate-200/60 pb-3">
                 <span className="text-xs font-semibold text-slate-500">Location</span>
-                <span className="text-xs font-bold text-slate-900">{selectedDoctor?.hospitalName || 'Aurelian Health Hospital'}</span>
+                <span className="text-xs font-bold text-slate-900">{selectedDoctor?.hospitalName || 'Elixir Health Care Hospital'}</span>
               </div>
 
               <div className="flex items-center justify-between border-b border-slate-200/60 pb-3">
@@ -1136,7 +1154,7 @@ export default function BookAppointment() {
                   <div className="min-w-0">
                     <span className="block text-[10px] text-slate-400 font-medium">Location</span>
                     <span className="block text-xs font-bold text-slate-900 truncate">
-                      {selectedDoctor?.hospitalName || 'Aurelian Health Hospital'}
+                      {selectedDoctor?.hospitalName || 'Elixir Health Care Hospital'}
                     </span>
                     <span className="block text-[11px] text-slate-500 font-medium">Main Branch</span>
                   </div>

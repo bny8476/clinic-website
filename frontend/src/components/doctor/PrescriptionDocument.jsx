@@ -48,7 +48,7 @@ const PrescriptionDocument = ({ data }) => {
 
           <div>
             <h1 className="text-2xl font-black tracking-tight text-white print-text-black">
-              {data.clinicName || 'AURELIAN HEALTHCARE CLINIC'}
+              {data.clinicName || 'ELIXIR HEALTH CARE CLINIC'}
             </h1>
             <p className="text-xs text-blue-200 print-text-black mt-0.5 font-medium">
               {data.clinicAddress || '123 Medical Center Drive, Healthcare City, Suite 400'}

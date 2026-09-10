@@ -57,7 +57,7 @@ export const PORTAL_CONFIGS = [
       allowRegister: true,
       registerTitle: 'Begin your journey towards precision medical care.',
       registerQuote: 'The art of medicine consists of amusing the patient while nature cures the disease. We provide the clarity nature requires.',
-      registerQuoteAuthor: 'THE AURELIAN STANDARD',
+      registerQuoteAuthor: 'THE ELIXIR STANDARD',
     },
     dashboardTiles: [
       { label: 'Dashboard', path: '/patient/dashboard',      icon: 'LayoutDashboard', description: 'View dashboard metrics' },
@@ -533,6 +533,7 @@ export const PORTAL_CONFIGS = [
     },
     dashboardTiles: [
       { label: 'Dashboard', path: '/super-admin/dashboard', icon: 'LayoutDashboard', description: 'System Root' },
+      { label: 'User & Role Management', path: '/super-admin/users', icon: 'Users', description: 'Manage system users & RBAC' },
     ],
   },
   {
@@ -593,7 +594,8 @@ export const PORTAL_CONFIGS = [
 
 /** Look up a portal config by URL slug */
 export const getPortalConfig = (slug) => {
-  const config = PORTAL_CONFIGS.find((p) => p.slug === slug);
+  const normSlug = (slug === 'lab-tech' || slug === 'labtech') ? 'lab' : slug;
+  const config = PORTAL_CONFIGS.find((p) => p.slug === normSlug || p.slug === slug);
   if (config) return config;
 
   return {

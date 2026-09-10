@@ -1,5 +1,5 @@
 /**
- * logger.js — Centralised logging utility for Aurelian Health frontend.
+ * logger.js — Centralised logging utility for Elixir Health Care frontend.
  *
  * WHY THIS EXISTS:
  * Raw console.* calls are scattered across ~33 files. Routing them through

@@ -17,6 +17,7 @@ import DataTable from '../../components/ui/DataTable';
 import { Badge } from '../../components/ui/Badge';
 import Modal from '../../components/ui/Modal';
 import AuditDashboard from '../admin/AuditDashboard';
+import UserManagement from '../admin/UserManagement';
 
 // Service Status Badge helper
 const ServiceStatusCard = ({ name, icon: Icon, colorToken, status = 'Operational', latency = '24ms' }) => (
@@ -110,10 +111,10 @@ const SuperAdminConsole = ({ defaultTab = 'health' }) => {
         return res.data;
       } catch (err) {
         return [
-          { id: 'sess-901', userId: 'usr-admin-01', userEmail: 'superadmin@aurelianhealth.com', role: 'ROLE_SUPER_ADMIN', device: 'Chrome 125 (macOS Sonoma)', ipAddress: '192.168.1.104', loginTime: new Date(Date.now() - 3600000).toISOString(), revoked: false },
-          { id: 'sess-902', userId: 'usr-doc-44', userEmail: 'dr.smith@aurelianhealth.com', role: 'ROLE_DOCTOR', device: 'Safari 17.4 (iPadOS)', ipAddress: '10.0.4.12', loginTime: new Date(Date.now() - 7200000).toISOString(), revoked: false },
-          { id: 'sess-903', userId: 'usr-rec-12', userEmail: 'reception.main@aurelianhealth.com', role: 'ROLE_RECEPTION', device: 'Firefox 126 (Windows 11)', ipAddress: '10.0.4.88', loginTime: new Date(Date.now() - 14400000).toISOString(), revoked: false },
-          { id: 'sess-904', userId: 'usr-pharm-05', userEmail: 'pharmacy.lead@aurelianhealth.com', role: 'ROLE_PHARMACIST', device: 'Edge 125 (Windows 11)', ipAddress: '10.0.4.99', loginTime: new Date(Date.now() - 28800000).toISOString(), revoked: true },
+          { id: 'sess-901', userId: 'usr-admin-01', userEmail: 'superadmin@elixirhealthcare.com', role: 'ROLE_SUPER_ADMIN', device: 'Chrome 125 (macOS Sonoma)', ipAddress: '192.168.1.104', loginTime: new Date(Date.now() - 3600000).toISOString(), revoked: false },
+          { id: 'sess-902', userId: 'usr-doc-44', userEmail: 'dr.smith@elixirhealthcare.com', role: 'ROLE_DOCTOR', device: 'Safari 17.4 (iPadOS)', ipAddress: '10.0.4.12', loginTime: new Date(Date.now() - 7200000).toISOString(), revoked: false },
+          { id: 'sess-903', userId: 'usr-rec-12', userEmail: 'reception.main@elixirhealthcare.com', role: 'ROLE_RECEPTION', device: 'Firefox 126 (Windows 11)', ipAddress: '10.0.4.88', loginTime: new Date(Date.now() - 14400000).toISOString(), revoked: false },
+          { id: 'sess-904', userId: 'usr-pharm-05', userEmail: 'pharmacy.lead@elixirhealthcare.com', role: 'ROLE_PHARMACIST', device: 'Edge 125 (Windows 11)', ipAddress: '10.0.4.99', loginTime: new Date(Date.now() - 28800000).toISOString(), revoked: true },
         ];
       }
     },
@@ -164,6 +165,7 @@ const SuperAdminConsole = ({ defaultTab = 'health' }) => {
 
   const tabs = [
     { id: 'health', label: 'System Health', sub: 'Microservices & DB', icon: Activity },
+    { id: 'users', label: 'User Management', sub: 'RBAC Directory & Roles', icon: Users },
     { id: 'flags', label: 'Feature Flags', sub: 'Global Toggles', icon: Sliders },
     { id: 'plans', label: 'Subscription Plans', sub: 'SaaS Tiers & MRR', icon: Layers },
     { id: 'audit', label: 'Audit Logs', sub: 'Compliance Trail', icon: ShieldAlert },
@@ -299,6 +301,13 @@ const SuperAdminConsole = ({ defaultTab = 'health' }) => {
                 <p className="text-[11px] text-slate-400 mt-2">Encrypted EBS volumes for clinical database and files.</p>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* ── TAB: User Management ── */}
+        {activeTab === 'users' && (
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xs">
+            <UserManagement />
           </div>
         )}
 

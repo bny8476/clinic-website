@@ -8,6 +8,8 @@ import { motion } from 'framer-motion';
 import { fadeIn, staggerChildren } from '../../components/ui/motion';
 import { Link } from 'react-router-dom';
 
+import { MOCK_QUEUE_TOKENS } from '../../data/unifiedMockData';
+
 const QueueManagement = () => {
   const queryClient = useQueryClient();
   const user = useAuthStore(state => state.user);
@@ -36,7 +38,9 @@ const QueueManagement = () => {
     }
   });
 
-  const waitingQueue = queueList.filter(q => q.status === 'WAITING' || q.status === 'IN_PROGRESS');
+  const displayTokens = (Array.isArray(queueList) && queueList.length > 0) ? queueList : MOCK_QUEUE_TOKENS;
+
+  const waitingQueue = displayTokens.filter(q => q.status === 'WAITING' || q.status === 'IN_PROGRESS' || q.status === 'IN_CONSULTATION');
 
   return (
     <div className="min-h-full bg-[#F8FAFF] p-6 lg:p-10 w-full font-sans">

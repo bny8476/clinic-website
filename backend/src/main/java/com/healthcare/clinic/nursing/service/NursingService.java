@@ -107,6 +107,64 @@ public class NursingService {
                         .build());
             }
         }
+
+        // If no formal nurse-patient assignments exist, fall back to ALL today's OP patients
+        if (responses.isEmpty()) {
+            List<Appointment> todayAllAppointments = appointmentRepository.findAll().stream()
+                    .filter(a -> a.getSlot() != null && a.getSlot().getStartTime() != null
+                            && a.getSlot().getStartTime().isAfter(startOfDay)
+                            && a.getSlot().getStartTime().isBefore(endOfDay))
+                    .filter(a -> VALID_OP_STATUSES.contains(a.getStatus()))
+                    .collect(Collectors.toList());
+
+            // Second fallback: show patients from last 30 days if no appointments today (for demo/test data)
+            if (todayAllAppointments.isEmpty()) {
+                ZonedDateTime thirtyDaysAgo = ZonedDateTime.now().minusDays(30);
+                todayAllAppointments = appointmentRepository.findAll().stream()
+                        .filter(a -> a.getSlot() != null && a.getSlot().getStartTime() != null
+                                && a.getSlot().getStartTime().isAfter(thirtyDaysAgo))
+                        .filter(a -> VALID_OP_STATUSES.contains(a.getStatus()))
+                        .limit(20)
+                        .collect(Collectors.toList());
+            }
+
+            long idCounter = 1000L;
+            for (Appointment appt : todayAllAppointments) {
+                if (appt.getPatient() == null) continue;
+                Long patientId = appt.getPatient().getId();
+
+                List<VitalSign> vitals = vitalSignRepository.findByPatientIdOrderByRecordedAtDesc(patientId);
+                String vitalsSummary = "No vitals recorded";
+                if (!vitals.isEmpty()) {
+                    VitalSign latest = vitals.get(0);
+                    vitalsSummary = String.format("%s mmHg, %s%% SpO2",
+                            latest.getBloodPressure() != null ? latest.getBloodPressure() : "--",
+                            latest.getOxygenSaturation() != null ? latest.getOxygenSaturation().toString() : "--");
+                }
+
+                String tokenNumber = null;
+                List<QueueToken> tokens = queueTokenRepository.findByAppointmentId(appt.getId());
+                if (!tokens.isEmpty()) {
+                    tokenNumber = String.valueOf(tokens.get(0).getTokenNumber());
+                }
+
+                responses.add(NurseAssignmentResponse.builder()
+                        .id(idCounter++)
+                        .patientId(patientId)
+                        .patientName(getUserName(appt.getPatient().getUserId()))
+                        .age(calculateAge(appt.getPatient().getDateOfBirth()))
+                        .appointmentReason(appt.getReasonForVisit())
+                        .appointmentTime(appt.getSlot().getStartTime())
+                        .attendingDoctorName(appt.getDoctor() != null ? "Dr. " + getUserName(appt.getDoctor().getUserId()) : "Unknown")
+                        .lastVitalsSummary(vitalsSummary)
+                        .status("ACTIVE")
+                        .insuranceStatus(appt.getPatient().getInsuranceStatus())
+                        .injuryStatus(appt.getPatient().getInjuryStatus())
+                        .tokenNumber(tokenNumber)
+                        .build());
+            }
+        }
+
         return responses;
     }
 

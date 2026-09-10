@@ -61,7 +61,7 @@ const AuthLayout = ({ allowedRoles }) => {
             <aside className={`portal-sidebar ${sidebarOpen ? 'is-open' : ''}`}>
                 <div className="portal-brand">
                     <div className="portal-brand-dot"></div>
-                    <h2 className="portal-brand-text">Aurelian Health</h2>
+                    <h2 className="portal-brand-text">Elixir Health Care</h2>
                 </div>
                 
                 <nav className="portal-nav">
@@ -108,7 +108,7 @@ const AuthLayout = ({ allowedRoles }) => {
                     </button>
                     <div className="portal-page-titles">
                         <h1 className="portal-page-title">{pageTitle}</h1>
-                        <p className="portal-page-subtitle">Aurelian Health / {roleLabel}</p>
+                        <p className="portal-page-subtitle">Elixir Health Care / {roleLabel}</p>
                     </div>
                     <div style={{ marginLeft: 'auto' }}>
                         <NotificationBell />

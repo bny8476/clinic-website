@@ -58,7 +58,7 @@ public class AiChatService {
             log.warn("Prompt injection attempt detected from user {} IP {}", userId, clientIp);
             return AiChatResponse.ok(
                     request.getConversationId(),
-                    "I am the official Aurelian Clinic Assistant. I am programmed to assist only with clinic appointments, services, medical department guidance, and healthcare general information."
+                    "I am the official Elixir Health Care Assistant. I am programmed to assist only with clinic appointments, services, medical department guidance, and healthcare general information."
             );
         }
 
@@ -119,7 +119,7 @@ public class AiChatService {
 
     private String buildSystemPrompt(String clinicContext) {
         return """
-                You are the official AI assistant for Aurelian Healthcare Clinic Management System.
+                You are the official AI assistant for Elixir Health Care Clinic Management System.
 
                 You can help users with:
                 - Appointment booking guidance

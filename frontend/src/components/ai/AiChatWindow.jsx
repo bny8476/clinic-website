@@ -58,7 +58,7 @@ export const AiChatWindow = ({
           </div>
           <div>
             <h3 className="text-sm font-semibold tracking-tight text-white flex items-center gap-1.5">
-              Aurelian AI Assistant
+              Elixir Health Care AI Assistant
               <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse" />
             </h3>
             <p className="text-[11px] text-slate-400 font-medium">Powered by Groq • Clinic Assistant</p>
@@ -150,7 +150,7 @@ export const AiChatWindow = ({
         {isSending && (
           <div className="flex items-center gap-2 text-slate-400 text-xs py-2 px-3 bg-slate-100/80 border border-slate-200/60 rounded-2xl w-fit">
             <Bot className="w-3.5 h-3.5 text-sky-600 animate-bounce" />
-            <span className="font-medium text-slate-600">Aurelian AI is thinking...</span>
+            <span className="font-medium text-slate-600">Elixir AI is thinking...</span>
             <div className="flex gap-1 items-center ml-1">
               <div className="w-1.5 h-1.5 bg-sky-500 rounded-full animate-ping" />
             </div>

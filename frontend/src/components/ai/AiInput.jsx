@@ -37,7 +37,7 @@ export const AiInput = ({ onSend, isSending, disabled }) => {
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Ask Aurelian AI assistant... (Enter to send, Shift+Enter for new line)"
+          placeholder="Ask Elixir Health Care AI assistant... (Enter to send, Shift+Enter for new line)"
           disabled={disabled || isSending}
           maxLength={2000}
           className="w-full bg-transparent resize-none outline-none text-xs sm:text-sm text-slate-800 placeholder-slate-400 py-1.5 pr-10 min-h-[38px] max-h-[120px]"

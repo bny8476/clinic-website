@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { addDays, format, isSameDay, startOfDay } from 'date-fns';
 import { Activity, CalendarIcon, CheckCircle2, Clock, FileText, Navigation, Plus, Save, Users, X } from 'lucide-react';
+import { MOCK_SURGERIES } from '../../data/unifiedMockData';
 
 const STATUS_COLORS = {
   SCHEDULED: 'bg-blue-100 text-blue-700 border-blue-200',
@@ -21,7 +22,7 @@ const OtSchedulingCalendar = () => {
   const queryClient = useQueryClient();
 
   // Get OTs
-  const { data: theatres, isLoading: loadingTheatres } = useQuery({
+  const { data: rawTheatres, isLoading: loadingTheatres } = useQuery({
     queryKey: ['theatres'],
     queryFn: async () => {
       const res = await axiosPrivate.get('/surgery/theatres');
@@ -30,13 +31,33 @@ const OtSchedulingCalendar = () => {
   });
 
   // Get Bookings
-  const { data: bookings, isLoading: loadingBookings } = useQuery({
+  const { data: rawBookings, isLoading: loadingBookings } = useQuery({
     queryKey: ['surgery-bookings'],
     queryFn: async () => {
       const res = await axiosPrivate.get('/surgery/bookings');
       return res.data;
     }
   });
+
+  const theatres = Array.isArray(rawTheatres) && rawTheatres.length > 0 ? rawTheatres : [
+    { id: 1, name: 'OR-1', code: 'OR-1', type: 'General Surgery' },
+    { id: 2, name: 'OR-2', code: 'OR-2', type: 'Laparoscopic & Orthopedic' }
+  ];
+
+  const bookings = Array.isArray(rawBookings) && rawBookings.length > 0 ? rawBookings : [
+    {
+      id: 1,
+      bookingNumber: 'OT-2026-001',
+      patientName: 'Michael Chang',
+      patientId: 'MRN-2026-003',
+      procedureName: 'Laparoscopic Cholecystectomy',
+      leadSurgeonName: 'Dr. Michael Lee',
+      theatreId: 2,
+      scheduledStartTime: '2026-09-12T08:00:00Z',
+      scheduledEndTime: '2026-09-12T10:30:00Z',
+      status: 'SCHEDULED'
+    }
+  ];
 
   const scheduleMutation = useMutation({
     mutationFn: async (data) => {

@@ -33,7 +33,7 @@ export default function Sidebar({ items = [], isOpen, setIsOpen }) {
               </div>
               <div className="flex flex-col justify-center">
                 <span className="text-[14px] font-bold text-indigo-900 leading-tight tracking-tight whitespace-nowrap">
-                  AURELIAN HEALTH
+                  ELIXIR HEALTH CARE
                 </span>
                 <span className="text-[10px] font-semibold text-slate-400 leading-tight uppercase tracking-widest whitespace-nowrap">
                   Pharmacy

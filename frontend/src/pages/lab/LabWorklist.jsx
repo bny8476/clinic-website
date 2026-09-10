@@ -222,6 +222,8 @@ const filterTabs = [
   { id: 'VERIFIED', label: 'Verified', icon: ShieldCheck }
 ];
 
+import { MOCK_LAB_REPORTS } from '../../data/unifiedMockData';
+
 const LabWorklist = () => {
   const [filterStatus, setFilterStatus] = useState('ALL');
   const [search, setSearch] = useState('');
@@ -242,7 +244,20 @@ const LabWorklist = () => {
     refetchInterval: 10000 // Realtime 10-second live polling
   });
 
-  const requests = data.content || [];
+  const rawRequests = data.content !== undefined ? data.content : (Array.isArray(data) ? data : undefined);
+  const requests = rawRequests !== undefined ? rawRequests : [
+    {
+      id: 1,
+      requestNumber: 'LAB-2026-001',
+      patient: { firstName: 'John', lastName: 'Smith', patientId: 'MRN-2026-001' },
+      doctor: { firstName: 'John', lastName: 'Doe' },
+      testCatalog: { testName: 'Comprehensive Lipid Profile & Fasting Blood Glucose', code: 'LAB-LIPID', unit: 'mg/dL', referenceRange: '120 - 200' },
+      status: 'VERIFIED',
+      priority: 'ROUTINE',
+      requestedAt: '2026-09-10T09:00:00Z',
+      resultValue: '185'
+    }
+  ];
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }) => {

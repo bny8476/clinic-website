@@ -512,8 +512,8 @@ function App() {
           <Route
             path="/lab"
             element={
-              <RoleRoute allowedRoles={['ROLE_LAB_TECH', 'ROLE_PATHOLOGIST', 'ROLE_SUPER_ADMIN']} portalSlug="lab">
-                <DashboardLayout portalSlug="lab" allowedRoles={['ROLE_LAB_TECH', 'ROLE_PATHOLOGIST', 'ROLE_SUPER_ADMIN']} />
+              <RoleRoute allowedRoles={['ROLE_LAB_TECH', 'ROLE_LAB_TECHNICIAN', 'ROLE_LAB', 'ROLE_PATHOLOGIST', 'ROLE_SUPER_ADMIN', 'ROLE_ADMIN', 'LAB_TECH', 'LAB_TECHNICIAN', 'LAB', 'PATHOLOGIST']} portalSlug="lab">
+                <DashboardLayout portalSlug="lab" allowedRoles={['ROLE_LAB_TECH', 'ROLE_LAB_TECHNICIAN', 'ROLE_LAB', 'ROLE_PATHOLOGIST', 'ROLE_SUPER_ADMIN', 'ROLE_ADMIN', 'LAB_TECH', 'LAB_TECHNICIAN', 'LAB', 'PATHOLOGIST']} />
               </RoleRoute>
             }
           >
@@ -762,9 +762,13 @@ function App() {
             }
           >
             <Route index element={<Navigate to="/admin/dashboard" replace />} />
-            <Route path="dashboard" element={<AdminDashboard />} />
-            <Route path="branches" element={<BranchManagement />} />
-            <Route path="users" element={<UserManagement />} />
+            <Route path="dashboard" element={<AdminDashboard defaultTab="analytics" />} />
+            <Route path="branches" element={<AdminDashboard defaultTab="branches" />} />
+            <Route path="users" element={<AdminDashboard defaultTab="users" />} />
+            <Route path="patients" element={<AdminDashboard defaultTab="patients" />} />
+            <Route path="doctors" element={<AdminDashboard defaultTab="doctors" />} />
+            <Route path="departments" element={<AdminDashboard defaultTab="departments" />} />
+            <Route path="audit" element={<AdminDashboard defaultTab="audit" />} />
           </Route>
 
           {/* ── Fallbacks ───────────────────────────────────────────────── */}
@@ -778,7 +782,8 @@ function App() {
             }
           >
             <Route index element={<Navigate to="/super-admin/dashboard" replace />} />
-            <Route path="dashboard" element={<SuperAdminConsole />} />
+            <Route path="dashboard" element={<SuperAdminConsole defaultTab="health" />} />
+            <Route path="users" element={<SuperAdminConsole defaultTab="users" />} />
           </Route>
 
           {/* ── Ambulance ──────────────────────────────────────────────── */}

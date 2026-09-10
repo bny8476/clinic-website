@@ -22,7 +22,7 @@ public class RefreshTokenService {
         RefreshToken refreshToken = new RefreshToken();
 
         refreshToken.setUser(userRepository.findById(userId).orElseThrow());
-        refreshToken.setExpiryDate(ZonedDateTime.now().plusDays(7));
+        refreshToken.setExpiryDate(ZonedDateTime.now().plusDays(30));
         refreshToken.setToken(UUID.randomUUID().toString());
 
         return refreshTokenRepository.save(refreshToken);

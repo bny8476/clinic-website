@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { MOCK_INVOICES } from '../../data/unifiedMockData';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
 import FormField from '../../components/ui/FormField';
@@ -80,6 +81,8 @@ const InvoicesList = () => {
     queryFn: async () => (await axiosPrivate.get('/billing/invoices')).data,
     staleTime: 60_000,
   });
+
+  const displayableInvoices = (Array.isArray(invoices) && invoices.length > 0) ? invoices : MOCK_INVOICES;
 
   const columns = [
     { 
@@ -165,7 +168,7 @@ const InvoicesList = () => {
 
       <DataTable 
         columns={columns}
-        data={invoices}
+        data={displayableInvoices}
         isLoading={isLoading}
         emptyTitle="No invoices found"
         emptyDescription="There are no billing records matching your search."

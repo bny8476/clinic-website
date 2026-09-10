@@ -29,7 +29,7 @@ const PublicLayout = () => {
         <header className="public-header">
           <div className="public-brand">
             <div className="public-brand-dot"></div>
-            <h1 className="public-brand-text">Aurelian Health</h1>
+            <h1 className="public-brand-text">Elixir Health Care</h1>
           </div>
         </header>
       )}
@@ -41,7 +41,7 @@ const PublicLayout = () => {
       </main>
       {location.pathname !== '/' && (
         <footer className="public-footer">
-          <p>&copy; 2026 Aurelian Health</p>
+          <p>&copy; 2026 Elixir Health Care</p>
         </footer>
       )}
     </div>

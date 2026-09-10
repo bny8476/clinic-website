@@ -610,10 +610,10 @@ const NewPrescription = () => {
   // --- Full Page Print Preview ---
   if (isPreview) {
     const documentData = {
-      clinicName: doctorDetails?.clinicName || 'AURELIAN CLINIC',
+      clinicName: doctorDetails?.clinicName || 'ELIXIR HEALTH CARE CLINIC',
       clinicAddress: doctorDetails?.clinicAddress || 'Medical Heights, Tower 4, Healthcare City',
       clinicPhone: doctorDetails?.clinicPhone || '+91 98765 43210',
-      clinicEmail: doctorDetails?.clinicEmail || 'clinic@aurelianhealth.com',
+      clinicEmail: doctorDetails?.clinicEmail || 'clinic@elixirhealthcare.com',
       doctorName: doctorDetails?.doctorName ? 'Dr. ' + doctorDetails.doctorName : (user?.firstName ? `Dr. ${user.firstName} ${user.lastName}` : 'Dr. Practitioner'),
       doctorSpecialty: doctorDetails?.specialty || 'General Physician',
       doctorQualifications: doctorDetails?.qualifications || 'MBBS, MD',

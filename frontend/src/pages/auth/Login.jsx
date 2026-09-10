@@ -83,7 +83,19 @@ export default function Login() {
 
   // Validate internal returnTo parameter to prevent open redirects
   const getReturnTo = () => {
-    const returnTo = searchParams.get('returnTo') || location.state?.from?.pathname;
+    const pendingStr = localStorage.getItem('pendingBooking');
+    if (pendingStr) {
+      try {
+        const pending = JSON.parse(pendingStr);
+        if (pending.doctorId) {
+          return `/patient/book/${pending.doctorId}?date=${pending.date || ''}`;
+        }
+      } catch (e) {
+        // ignore
+      }
+      return '/patient/book';
+    }
+    const returnTo = searchParams.get('redirect') || searchParams.get('returnTo') || location.state?.from?.pathname;
     if (returnTo && returnTo.startsWith('/') && !returnTo.startsWith('//')) {
       return returnTo;
     }
@@ -427,14 +439,14 @@ export default function Login() {
               <div>
                 <h2 className="text-2xl font-black text-slate-900 tracking-tight">Sign In</h2>
                 <p className="text-xs text-slate-500 font-medium mt-1">
-                  Enter your credentials to access your account dashboard.
+                  Sign in to continue to your account dashboard.
                 </p>
               </div>
 
               {/* Email / Username / Phone */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                  Email, Username, or Phone Number
+                  Email Address, Username, or Phone Number
                 </label>
                 <div className="relative">
                   <User className="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -443,7 +455,7 @@ export default function Login() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="e.g. doctor@clinic.com or +1234567890"
+                    placeholder="Email Address, Username, or Phone Number"
                     className="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-white border border-slate-200 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition shadow-sm"
                   />
                 </div>
@@ -471,7 +483,7 @@ export default function Login() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
+                    placeholder="Password"
                     className="w-full pl-12 pr-12 py-3.5 rounded-2xl bg-white border border-slate-200 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition shadow-sm"
                   />
                   <button

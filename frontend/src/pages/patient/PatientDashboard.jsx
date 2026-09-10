@@ -258,7 +258,7 @@ export default function PatientDashboard() {
                 <h4 className="text-xs font-bold text-slate-900 truncate">Dr. John Doe</h4>
                 <p className="text-[11px] text-slate-500">Cardiologist</p>
                 <p className="text-[11px] font-semibold text-slate-700 pt-0.5">09:00 AM - 09:30 AM</p>
-                <p className="text-[10px] text-slate-400">Aurelian Health Hospital</p>
+                <p className="text-[10px] text-slate-400">Elixir Health Care Hospital</p>
               </div>
             </div>
 

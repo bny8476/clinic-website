@@ -149,7 +149,7 @@ const floatAnim = {
 /* ════════════════════════════════════════════════════════════════════════════
    SVG LOGO MARK
 ════════════════════════════════════════════════════════════════════════════ */
-const AurelianLogo = ({ size = 40 }) => (
+const ElixirLogo = ({ size = 40 }) => (
   <div className="flex items-center gap-2.5 select-none cursor-pointer">
     <div
       className="rounded-xl flex items-center justify-center shadow-md flex-shrink-0"
@@ -158,7 +158,7 @@ const AurelianLogo = ({ size = 40 }) => (
       <HeartPulse className="text-white" style={{ width: size * 0.5, height: size * 0.5 }} strokeWidth={2.5}/>
     </div>
     <div>
-      <p className="font-black text-[17px] leading-none tracking-tight" style={{ color: DARK }}>Aurelian Health</p>
+      <p className="font-black text-[17px] leading-none tracking-tight" style={{ color: DARK }}>Elixir Health Care</p>
       <p className="text-[10px] font-medium leading-tight" style={{ color: MUTED }}>Medical Center</p>
     </div>
   </div>
@@ -449,7 +449,7 @@ const Home = () => {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-16 h-[80px] flex items-center justify-between">
           <div onClick={() => scrollTo('hero')}>
-            <AurelianLogo size={44} />
+            <ElixirLogo size={44} />
           </div>
 
           <nav className="hidden lg:flex items-center gap-8">
@@ -561,7 +561,7 @@ const Home = () => {
             </motion.h1>
 
             <motion.p variants={fadeUp} className="text-[16px] lg:text-[18px] text-gray-600 leading-relaxed mb-10 max-w-[500px]">
-              Aurelian Health combines cutting-edge medical technology with compassionate specialists to provide world-class healthcare for you and your family.
+              Elixir Health Care combines cutting-edge medical technology with compassionate specialists to provide world-class healthcare for you and your family.
             </motion.p>
 
             <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4">
@@ -654,12 +654,12 @@ const Home = () => {
             viewport={{ once: true, margin: "-100px" }}
             variants={staggerContainer}
           >
-            <motion.p variants={fadeUp} className="text-[13px] font-black uppercase tracking-widest mb-4" style={{ color: BLUE }}>Welcome to Aurelian Health</p>
+            <motion.p variants={fadeUp} className="text-[13px] font-black uppercase tracking-widest mb-4" style={{ color: BLUE }}>Welcome to Elixir Health Care</p>
             <motion.h2 variants={fadeUp} className="text-[clamp(32px,4vw,48px)] font-black leading-tight mb-6">
               Complete Medical Solutions in One Place
             </motion.h2>
             <motion.p variants={fadeUp} className="text-[16px] leading-relaxed text-gray-600 mb-10">
-              For over two decades, Aurelian Health has been at the forefront of medical excellence. We combine state-of-the-art technology with compassionate, patient-centered care.
+              For over two decades, Elixir Health Care has been at the forefront of medical excellence. We combine state-of-the-art technology with compassionate, patient-centered care.
             </motion.p>
 
             <motion.div variants={fadeUp} className="grid grid-cols-2 gap-6">
@@ -797,7 +797,7 @@ const Home = () => {
                     Your Health Cannot Wait. <br/> Get The Best Care Today.
                 </h2>
                 <p className="text-lg text-gray-300 mb-10 max-w-2xl mx-auto relative z-10">
-                    Join thousands of patients who trust Aurelian Health for their medical needs. Schedule your appointment online in seconds.
+                    Join thousands of patients who trust Elixir Health Care for their medical needs. Schedule your appointment online in seconds.
                 </p>
                 <div className="flex flex-col sm:flex-row justify-center gap-4 relative z-10">
                     <button className="px-10 py-5 rounded-full bg-white text-gray-900 font-black text-[16px] hover:scale-105 transition-transform" onClick={() => scrollTo('about')}>
@@ -818,7 +818,7 @@ const Home = () => {
         <div className="max-w-7xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
                 <div>
-                    <div className="mb-6"><AurelianLogo size={40} /></div>
+                    <div className="mb-6"><ElixirLogo size={40} /></div>
                     <p className="text-gray-500 text-[14px] leading-relaxed mb-6">Providing world-class medical excellence with a compassionate touch. Your health is our priority.</p>
                     <div className="flex gap-3">
                         {[1,2,3,4].map(i => <div key={i} className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center cursor-pointer hover:bg-blue-600 hover:text-white transition-colors" />)}
@@ -845,12 +845,12 @@ const Home = () => {
                     <ul className="space-y-4 text-gray-500 text-[14px] font-semibold">
                         <li className="flex items-center gap-3"><MapPin className="w-5 h-5 text-blue-600" /> 121 Clinic Ave, New York</li>
                         <li className="flex items-center gap-3"><PhoneCall className="w-5 h-5 text-blue-600" /> +1 (234) 567-890</li>
-                        <li className="flex items-center gap-3"><Mail className="w-5 h-5 text-blue-600" /> support@aurelian.health</li>
+                        <li className="flex items-center gap-3"><Mail className="w-5 h-5 text-blue-600" /> support@elixirhealthcare.com</li>
                     </ul>
                 </div>
             </div>
             <div className="pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4 text-gray-400 text-[14px] font-medium">
-                <p>© {new Date().getFullYear()} Aurelian Health. All rights reserved.</p>
+                <p>© {new Date().getFullYear()} Elixir Health Care. All rights reserved.</p>
                 <div className="flex gap-6">
                     <span className="cursor-pointer hover:text-blue-600">Privacy Policy</span>
                     <span className="cursor-pointer hover:text-blue-600">Terms of Service</span>

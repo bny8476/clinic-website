@@ -50,7 +50,7 @@ export default {
           text: '#1E293B', // Slate 800
           white: '#FFFFFF',
         },
-        // MD3 tokens for Aurelian Health Redesign
+        // MD3 tokens for Elixir Health Care Redesign
         "tertiary": "#34476c",
         "error": "#ba1a1a",
         "secondary-container": "#dce3eb",

@@ -19,9 +19,9 @@ public class ClinicContextRetriever {
     public String buildSanitizedContext(Long userId, String userRole) {
         StringBuilder sb = new StringBuilder();
         sb.append("\n[REAL-TIME CLINIC INFORMATION]\n");
-        sb.append("- Clinic Name: Aurelian Healthcare Center\n");
+        sb.append("- Clinic Name: Elixir Health Care Center\n");
         sb.append("- Operating Hours: Monday to Saturday, 08:00 AM - 08:00 PM. Emergency Services: 24/7.\n");
-        sb.append("- Contact Support: +1 (800) 555-CLINIC / support@aurelianhealth.com\n");
+        sb.append("- Contact Support: +1 (800) 555-CLINIC / support@elixirhealthcare.com\n");
         sb.append("- Location: 100 Healthcare Boulevard, Suite 400, Medical City\n");
 
         // Departments
