@@ -14,7 +14,7 @@ ALTER TABLE appointments ADD COLUMN IF NOT EXISTS cancellation_reason TEXT;
 ALTER TABLE appointments ADD COLUMN IF NOT EXISTS rescheduled_from BIGINT;
 ALTER TABLE appointments ADD COLUMN IF NOT EXISTS booking_source VARCHAR(30) DEFAULT 'PATIENT_PORTAL';
 
-CREATE UNIQUE INDEX IF NOT EXISTS idx_appointments_number ON appointments(appointment_number) WHERE appointment_number IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_appointments_number ON appointments(appointment_number);
 
 CREATE TABLE IF NOT EXISTS appointment_audit_logs (
     id BIGSERIAL PRIMARY KEY,

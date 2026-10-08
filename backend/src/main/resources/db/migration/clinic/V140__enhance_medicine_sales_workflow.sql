@@ -58,7 +58,7 @@ ALTER TABLE medicine_order_items ADD COLUMN IF NOT EXISTS duration VARCHAR(100);
 ALTER TABLE medicine_order_items ADD COLUMN IF NOT EXISTS instructions TEXT;
 
 -- Foreign key & Unique constraints
-CREATE UNIQUE INDEX IF NOT EXISTS uq_medicine_orders_order_number ON medicine_orders(order_number) WHERE order_number IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS uq_medicine_orders_order_number ON medicine_orders(order_number);
 CREATE INDEX IF NOT EXISTS idx_medicine_orders_patient_id ON medicine_orders(patient_id);
 CREATE INDEX IF NOT EXISTS idx_medicine_orders_doctor_id ON medicine_orders(doctor_id);
 CREATE INDEX IF NOT EXISTS idx_medicine_orders_prescription_id ON medicine_orders(prescription_id);
