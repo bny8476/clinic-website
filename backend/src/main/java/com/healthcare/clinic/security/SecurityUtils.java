@@ -22,6 +22,14 @@ public class SecurityUtils {
         return null;
     }
 
+    public static Long getCurrentUserBranchId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof UserPrincipal) {
+            return ((UserPrincipal) authentication.getPrincipal()).getBranchId();
+        }
+        return null;
+    }
+
     public static boolean isPatient() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null) return false;

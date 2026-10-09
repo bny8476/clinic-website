@@ -21,6 +21,9 @@ import com.healthcare.clinic.doctor.entity.DoctorProfile;
 import com.healthcare.clinic.reception.repository.NoShowRepository;
 import com.healthcare.clinic.identity.repository.RoleRepository;
 import com.healthcare.clinic.identity.entity.Role;
+import com.healthcare.clinic.tenant.entity.Tenant;
+import com.healthcare.clinic.tenant.context.TenantContextHolder;
+import com.healthcare.clinic.security.SecurityUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -158,6 +161,12 @@ public class AppointmentService {
         java.time.LocalTime end = java.time.LocalTime.of(17, 0);
         int duration = 20;
 
+        if (doctor.getBranchId() == null) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.BAD_REQUEST,
+                    "Doctor profile does not have an assigned branch ID.");
+        }
+
         while (current.plusMinutes(duration).isBefore(end) || current.plusMinutes(duration).equals(end)) {
             ZonedDateTime slotStart = ZonedDateTime.of(date, current, zone);
             ZonedDateTime slotEnd = slotStart.plusMinutes(duration);
@@ -167,7 +176,7 @@ public class AppointmentService {
                     .startTime(slotStart)
                     .endTime(slotEnd)
                     .isBooked(false)
-                    .branchId(doctor.getBranchId() != null ? doctor.getBranchId() : 1L)
+                    .branchId(doctor.getBranchId())
                     .build();
             slotRepository.save(slot);
 
@@ -281,8 +290,11 @@ public class AppointmentService {
                         .userId(newPatientUser.getId())
                         .emergencyContactName("Not provided")
                         .emergencyContactPhone(request.getPatientPhone() != null ? request.getPatientPhone() : "+10000000000")
-                        .branchId(1L)
+                        .branchId(request.getBranchId() != null ? request.getBranchId() : (request.getDoctorId() != null ? doctorProfileRepository.findById(request.getDoctorId()).map(DoctorProfile::getBranchId).orElse(null) : null))
                         .build();
+                if (newPatient.getBranchId() == null) {
+                    newPatient.setBranchId(TenantContextHolder.getBranchId() != null ? TenantContextHolder.getBranchId() : SecurityUtils.getCurrentUserBranchId());
+                }
                 newPatient = patientRepository.save(newPatient);
                 patientUserId = newPatientUser.getId();
             }
@@ -317,13 +329,27 @@ public class AppointmentService {
                 if (unbookedSlot != null) {
                     slotId = unbookedSlot.getId();
                 } else {
+                    Long slotBranchId = doctor.getBranchId();
+                    if (request.getBranchId() != null) {
+                        if (slotBranchId != null && !slotBranchId.equals(request.getBranchId())) {
+                            throw new org.springframework.web.server.ResponseStatusException(
+                                    org.springframework.http.HttpStatus.BAD_REQUEST,
+                                    "Requested branch (" + request.getBranchId() + ") does not match doctor branch (" + slotBranchId + ").");
+                        }
+                        slotBranchId = request.getBranchId();
+                    }
+                    if (slotBranchId == null) {
+                        throw new org.springframework.web.server.ResponseStatusException(
+                                org.springframework.http.HttpStatus.BAD_REQUEST,
+                                "Branch context is required to create a new appointment slot for this doctor.");
+                    }
                     ZonedDateTime endZdt = request.getEndTime() != null ? parseDateTime(request.getEndTime(), request.getAppointmentDate()) : startZdt.plusMinutes(30);
                     AppointmentSlot newSlot = AppointmentSlot.builder()
                             .doctor(doctor)
                             .startTime(startZdt)
                             .endTime(endZdt)
                             .isBooked(false)
-                            .branchId(doctor.getBranchId() != null ? doctor.getBranchId() : 1L)
+                            .branchId(slotBranchId)
                             .build();
                     newSlot = slotRepository.save(newSlot);
                     slotId = newSlot.getId();
@@ -331,7 +357,7 @@ public class AppointmentService {
             }
         }
 
-        return bookAppointment(patientUserId, slotId, reasonForVisit, request.getHoldId(), idempotencyKey);
+        return bookAppointment(patientUserId, slotId, reasonForVisit, request.getHoldId(), idempotencyKey, request.getBranchId());
     }
 
     private ZonedDateTime parseDateTime(String timeStr, String dateStr) {
@@ -374,6 +400,11 @@ public class AppointmentService {
 
     @Transactional
     public Appointment bookAppointment(Long patientUserId, Long slotId, String reasonForVisit, String holdId, String idempotencyKey) {
+        return bookAppointment(patientUserId, slotId, reasonForVisit, holdId, idempotencyKey, null);
+    }
+
+    @Transactional
+    public Appointment bookAppointment(Long patientUserId, Long slotId, String reasonForVisit, String holdId, String idempotencyKey, Long requestedBranchId) {
         if (idempotencyKey != null && !idempotencyKey.isEmpty()) {
             java.util.Optional<Appointment> existingAppointment = appointmentRepository.findByIdempotencyKey(idempotencyKey);
             if (existingAppointment.isPresent()) {
@@ -404,19 +435,6 @@ public class AppointmentService {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.UNAUTHORIZED, "User authentication required to book appointments.");
         }
-
-        final Long finalPatientUserId = patientUserId;
-        PatientProfile patient = patientRepository.findByUserId(finalPatientUserId)
-                .orElseGet(() -> {
-                    log.info("No PatientProfile found for user ID: {}. Auto-creating profile.", finalPatientUserId);
-                    PatientProfile newProfile = PatientProfile.builder()
-                            .userId(finalPatientUserId)
-                            .emergencyContactName("Not provided")
-                            .emergencyContactPhone("+10000000000")
-                            .branchId(1L)
-                            .build();
-                    return patientRepository.save(newProfile);
-                });
 
         if (slotId == null) {
             throw new com.healthcare.clinic.appointment.exception.AppointmentConflictException(
@@ -461,6 +479,7 @@ public class AppointmentService {
             }
         }
 
+        final Long finalPatientUserId = patientUserId;
         ZonedDateTime startOfDay = slot.getStartTime().toLocalDate().atStartOfDay(slot.getStartTime().getZone());
         ZonedDateTime endOfDay = startOfDay.plusDays(1);
         long existingCount = appointmentRepository.countByPatientAndDoctorAndDate(finalPatientUserId, slot.getDoctor().getId(), startOfDay, endOfDay);
@@ -469,16 +488,104 @@ public class AppointmentService {
                     "DUPLICATE_APPOINTMENT", "You already have an active appointment with this doctor on the selected date.");
         }
 
+        // --- Authoritative Branch Resolution and Validation ---
+        Long resolvedBranchId = slot.getBranchId();
+        if (resolvedBranchId == null && slot.getDoctor() != null) {
+            resolvedBranchId = slot.getDoctor().getBranchId();
+        }
+
+        // Verify compatibility between doctor and slot branches
+        if (slot.getBranchId() != null && slot.getDoctor() != null && slot.getDoctor().getBranchId() != null) {
+            if (!slot.getBranchId().equals(slot.getDoctor().getBranchId())) {
+                throw new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.BAD_REQUEST,
+                        "Incompatible clinic context: slot branch (" + slot.getBranchId()
+                                + ") does not match doctor branch (" + slot.getDoctor().getBranchId() + ").");
+            }
+        }
+
+        // Validate client requested branch if present
+        if (requestedBranchId != null) {
+            if (resolvedBranchId != null && !resolvedBranchId.equals(requestedBranchId)) {
+                throw new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.BAD_REQUEST,
+                        "Requested branch ID (" + requestedBranchId + ") does not match slot branch (" + resolvedBranchId + ").");
+            }
+            if (resolvedBranchId == null) {
+                resolvedBranchId = requestedBranchId;
+            }
+        }
+
+        // Contextual fallback: TenantContextHolder / UserPrincipal branch
+        if (resolvedBranchId == null) {
+            resolvedBranchId = com.healthcare.clinic.tenant.context.TenantContextHolder.getBranchId();
+        }
+        if (resolvedBranchId == null) {
+            resolvedBranchId = com.healthcare.clinic.security.SecurityUtils.getCurrentUserBranchId();
+        }
+
+        if (resolvedBranchId == null) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.BAD_REQUEST,
+                    "Branch context could not be resolved for appointment booking.");
+        }
+
+        // Verify user branch authorization for branch-restricted staff
+        Long userPrincipalBranchId = com.healthcare.clinic.security.SecurityUtils.getCurrentUserBranchId();
+        if (userPrincipalBranchId != null && auth != null && auth.getAuthorities() != null) {
+            boolean isSuperOrGlobalAdmin = auth.getAuthorities().stream().anyMatch(a ->
+                    a.getAuthority().equals("ROLE_SUPER_ADMIN") || a.getAuthority().equals("ROLE_ADMIN"));
+            if (!isSuperOrGlobalAdmin && !userPrincipalBranchId.equals(resolvedBranchId)) {
+                throw new org.springframework.security.access.AccessDeniedException(
+                        "User is not authorized to create appointments for branch ID: " + resolvedBranchId);
+            }
+        }
+
+        final Long finalBranchId = resolvedBranchId;
+        Branch branch = branchRepository.findById(finalBranchId)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.BAD_REQUEST,
+                        "Clinic branch not found with ID: " + finalBranchId));
+
+        if (!Boolean.TRUE.equals(branch.getIsActive())) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.BAD_REQUEST,
+                    "The selected clinic branch is inactive: " + branch.getName());
+        }
+
+        // Tenant Resolution and Validation
+        Tenant tenant = branch.getTenant();
+        Long contextTenantId = com.healthcare.clinic.tenant.context.TenantContextHolder.getTenantId();
+        if (contextTenantId != null && tenant != null && !contextTenantId.equals(tenant.getId())) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.BAD_REQUEST,
+                    "Branch tenant (" + tenant.getId() + ") does not match requested tenant context (" + contextTenantId + ").");
+        }
+
+        // Auto-create or fetch PatientProfile with resolved branch context
+        final Branch finalBranch = branch;
+        PatientProfile patient = patientRepository.findByUserId(finalPatientUserId)
+                .orElseGet(() -> {
+                    log.info("No PatientProfile found for user ID: {}. Auto-creating profile for branch: {}", finalPatientUserId, finalBranch.getId());
+                    PatientProfile newProfile = PatientProfile.builder()
+                            .userId(finalPatientUserId)
+                            .emergencyContactName("Not provided")
+                            .emergencyContactPhone("+10000000000")
+                            .branchId(finalBranch.getId())
+                            .tenantId(finalBranch.getTenant() != null ? finalBranch.getTenant().getId() : null)
+                            .build();
+                    return patientRepository.save(newProfile);
+                });
+
+        if (patient.getTenantId() != null && tenant != null && !patient.getTenantId().equals(tenant.getId())) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.BAD_REQUEST,
+                    "Patient tenant context (" + patient.getTenantId() + ") does not match clinic tenant (" + tenant.getId() + ").");
+        }
+
         // Reserve slot transactionally
         slot.setIsBooked(true);
         slotRepository.save(slot);
-
-        Long resolvedBranchId = slot.getBranchId() != null ? slot.getBranchId() : 1L;
-        Branch branch = branchRepository.findById(resolvedBranchId).orElseGet(() ->
-                branchRepository.findAll().stream().findFirst().orElse(null));
-        if (branch != null) {
-            resolvedBranchId = branch.getId();
-        }
 
         Appointment appointment = Appointment.builder()
                 .appointmentNumber(generateAppointmentNumber())
@@ -491,7 +598,9 @@ public class AppointmentService {
                 .paymentStatus("PENDING")
                 .reasonForVisit(reasonForVisit)
                 .branch(branch)
-                .branchId(resolvedBranchId)
+                .branchId(branch.getId())
+                .tenant(tenant)
+                .tenantId(tenant != null ? tenant.getId() : null)
                 .idempotencyKey(idempotencyKey)
                 .createdBy(com.healthcare.clinic.security.SecurityUtils.getCurrentUserId() != null ? com.healthcare.clinic.security.SecurityUtils.getCurrentUserId() : finalPatientUserId)
                 .build();
@@ -589,12 +698,28 @@ public class AppointmentService {
                 .isPriority(false)
                 .build());
 
-        Long dirBranchId = doctor.getBranchId() != null ? doctor.getBranchId() : 1L;
-        Branch branch = branchRepository.findById(dirBranchId).orElseGet(() ->
-                branchRepository.findAll().stream().findFirst().orElse(null));
-        if (branch != null) {
-            dirBranchId = branch.getId();
+        Long dirBranchId = doctor.getBranchId();
+        if (dirBranchId == null) {
+            dirBranchId = com.healthcare.clinic.tenant.context.TenantContextHolder.getBranchId();
         }
+        if (dirBranchId == null) {
+            dirBranchId = com.healthcare.clinic.security.SecurityUtils.getCurrentUserBranchId();
+        }
+        if (dirBranchId == null) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.BAD_REQUEST, "Branch context could not be resolved for direct appointment booking.");
+        }
+
+        final Long finalDirBranchId = dirBranchId;
+        Branch branch = branchRepository.findById(finalDirBranchId)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.BAD_REQUEST, "Branch not found with ID: " + finalDirBranchId));
+        if (!Boolean.TRUE.equals(branch.getIsActive())) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.BAD_REQUEST, "The selected branch is inactive: " + branch.getName());
+        }
+
+        Tenant tenant = branch.getTenant();
 
         Appointment appointment = Appointment.builder()
                 .appointmentNumber(generateAppointmentNumber())
@@ -609,7 +734,9 @@ public class AppointmentService {
                 .reasonForVisit(reasonForVisit)
                 .notes(notes)
                 .branch(branch)
-                .branchId(dirBranchId)
+                .branchId(branch.getId())
+                .tenant(tenant)
+                .tenantId(tenant != null ? tenant.getId() : null)
                 .createdBy(com.healthcare.clinic.security.SecurityUtils.getCurrentUserId())
                 .build();
 

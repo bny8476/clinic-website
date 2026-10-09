@@ -118,6 +118,9 @@ public class AppointmentE2ETest {
         assertThat(appointment).isNotNull();
         assertThat(appointment.getPatient()).isNotNull();
         assertThat(appointment.getPatient().getUserId()).isEqualTo(patientUser.getId());
+        assertThat(appointment.getBranch()).isNotNull();
+        assertThat(appointment.getBranch().getId()).isEqualTo(branch.getId());
+        assertThat(appointment.getBranchId()).isEqualTo(branch.getId());
         
         // Ensure double booking same day is prevented
         AppointmentSlot nextSlot = slotRepository.save(AppointmentSlot.builder()

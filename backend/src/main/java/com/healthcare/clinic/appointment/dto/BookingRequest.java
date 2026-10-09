@@ -19,6 +19,7 @@ public class BookingRequest {
     private String holdId;
 
     private Long patientUserId;
+    private Long branchId;
 
     // Additional fields for direct panel scheduling
     private Long patientId;

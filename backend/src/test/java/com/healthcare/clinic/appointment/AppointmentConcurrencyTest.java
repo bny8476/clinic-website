@@ -45,12 +45,28 @@ public class AppointmentConcurrencyTest {
     @Autowired
     private DoctorProfileRepository doctorRepository;
 
+    @Autowired
+    private com.healthcare.clinic.branch.repository.BranchRepository branchRepository;
+
     private User patient1;
     private User patient2;
     private AppointmentSlot testSlot;
+    private com.healthcare.clinic.branch.entity.Branch testBranch;
 
     @BeforeEach
     void setUp() {
+        testBranch = branchRepository.findById(1L).orElseGet(() ->
+                branchRepository.save(com.healthcare.clinic.branch.entity.Branch.builder()
+                        .name("Concurrency Test Branch")
+                        .address("100 Test Ave")
+                        .city("TestCity")
+                        .state("TestState")
+                        .country("TestCountry")
+                        .postalCode("12345")
+                        .timezone("Asia/Kolkata")
+                        .isActive(true)
+                        .build()));
+
         // Assume seed data exists or create necessary entities
         // Creating minimal patient users
         patient1 = userRepository.save(User.builder()
@@ -79,7 +95,7 @@ public class AppointmentConcurrencyTest {
                 .specialty("Test")
                 .qualifications("MD")
                 .consultationFee(new java.math.BigDecimal("100.00"))
-                .branchId(1L)
+                .branchId(testBranch.getId())
                 .build());
 
         ZonedDateTime testStart = ZonedDateTime.now().with(TemporalAdjusters.next(java.time.DayOfWeek.WEDNESDAY));
@@ -88,7 +104,7 @@ public class AppointmentConcurrencyTest {
                 .startTime(testStart)
                 .endTime(testStart.plusMinutes(20))
                 .isBooked(false)
-                .branchId(1L)
+                .branchId(testBranch.getId())
                 .build());
     }
 

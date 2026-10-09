@@ -75,26 +75,38 @@ public class GlobalExceptionHandler {
         String rootMsg = (root != null && root.getMessage() != null ? root.getMessage() : (ex.getMessage() != null ? ex.getMessage() : "")).toLowerCase();
         Map<String, Object> body = new java.util.LinkedHashMap<>();
         
-        if (rootMsg.contains("appointments_slot_id") || rootMsg.contains("idx_unique_active_slot")
+        if (rootMsg.contains("appointments_slot_id_key") || rootMsg.contains("idx_unique_active_slot")
                 || (rootMsg.contains("slot_id") && (rootMsg.contains("unique") || rootMsg.contains("duplicate") || rootMsg.contains("already exists")))) {
             body.put("code", "APPOINTMENT_SLOT_UNAVAILABLE");
-            body.put("message", "This appointment slot is no longer available.");
+            body.put("message", "This appointment slot is no longer available. Please choose another time.");
+            body.put("timestamp", java.time.Instant.now().toString());
+            body.put("path", request.getRequestURI());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
         } else if (rootMsg.contains("email") || rootMsg.contains("users_email_key")) {
             body.put("code", "DUPLICATE_USER");
             body.put("message", "A user with this email address already exists.");
+            body.put("timestamp", java.time.Instant.now().toString());
+            body.put("path", request.getRequestURI());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
         } else if (rootMsg.contains("phone_number") || rootMsg.contains("users_phone_number_key")) {
             body.put("code", "DUPLICATE_PHONE");
             body.put("message", "A user with this phone number already exists.");
-        } else if (rootMsg.contains("branch_id") && rootMsg.contains("null")) {
+            body.put("timestamp", java.time.Instant.now().toString());
+            body.put("path", request.getRequestURI());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+        } else if (rootMsg.contains("branch_id") && (rootMsg.contains("null") || rootMsg.contains("not-null") || rootMsg.contains("violates"))) {
             body.put("code", "BRANCH_REQUIRED");
             body.put("message", "A valid clinic branch is required to complete this booking.");
+            body.put("timestamp", java.time.Instant.now().toString());
+            body.put("path", request.getRequestURI());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
         } else {
             body.put("code", "DATA_INTEGRITY_VIOLATION");
-            body.put("message", (root != null && root.getMessage() != null) ? root.getMessage() : "Database constraint violation or duplicate entry.");
+            body.put("message", "A database integrity error occurred while processing your request.");
+            body.put("timestamp", java.time.Instant.now().toString());
+            body.put("path", request.getRequestURI());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
         }
-        body.put("timestamp", java.time.Instant.now().toString());
-        body.put("path", request.getRequestURI());
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)

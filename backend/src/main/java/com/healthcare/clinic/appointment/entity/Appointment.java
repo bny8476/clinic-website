@@ -36,8 +36,11 @@ public class Appointment {
     @com.fasterxml.jackson.annotation.JsonIgnore
     private Tenant tenant;
 
+    @Column(name = "tenant_id", insertable = false, updatable = false)
+    private Long tenantId;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "branch_id", insertable = false, updatable = false)
+    @JoinColumn(name = "branch_id", nullable = false)
     @com.fasterxml.jackson.annotation.JsonIgnore
     private Branch branch;
 
@@ -111,16 +114,45 @@ public class Appointment {
     @Column(name = "rescheduled_from")
     private Long rescheduledFrom;
 
-    @Column(name = "branch_id")
+    @Column(name = "branch_id", insertable = false, updatable = false)
     private Long branchId;
+
+    public Long getBranchId() {
+        if (this.branchId != null) {
+            return this.branchId;
+        }
+        return this.branch != null ? this.branch.getId() : null;
+    }
+
+    public void setBranch(Branch branch) {
+        this.branch = branch;
+        if (branch != null) {
+            this.branchId = branch.getId();
+        }
+    }
+
+    public Long getTenantId() {
+        if (this.tenantId != null) {
+            return this.tenantId;
+        }
+        return this.tenant != null ? this.tenant.getId() : null;
+    }
+
+    public void setTenant(Tenant tenant) {
+        this.tenant = tenant;
+        if (tenant != null) {
+            this.tenantId = tenant.getId();
+        }
+    }
 
     @PrePersist
     @PreUpdate
-    public void syncBranch() {
-        if (this.branchId == null && this.branch != null) {
+    public void syncRelationships() {
+        if (this.branch != null && this.branchId == null) {
             this.branchId = this.branch.getId();
-        } else if (this.branchId == null) {
-            this.branchId = 1L;
+        }
+        if (this.tenant != null && this.tenantId == null) {
+            this.tenantId = this.tenant.getId();
         }
     }
 
