@@ -177,6 +177,13 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error("Endpoint not found: " + ex.getResourcePath()));
     }
 
+    @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
+    public ResponseEntity<ApiResponse<Void>> handleResponseStatusException(org.springframework.web.server.ResponseStatusException ex) {
+        log.warn("Response status exception: status={}, reason={}", ex.getStatusCode(), ex.getReason());
+        String reason = ex.getReason() != null ? ex.getReason() : (ex.getMessage() != null ? ex.getMessage() : "Request processing error");
+        return ResponseEntity.status(ex.getStatusCode()).body(ApiResponse.error(reason));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGlobalException(Exception ex) {
         log.error("Unhandled exception: {}", ex.getMessage(), ex);
