@@ -526,6 +526,37 @@ export default function Login() {
                 )}
               </button>
 
+              {/* Quick Demo Accounts */}
+              <div className="pt-3 border-t border-slate-200/80">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                    Quick Fill Demo Roles
+                  </span>
+                  <span className="text-[10px] text-slate-400">1-click test credentials</span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { label: 'Patient', email: 'patient@clinic.com', pass: 'Clinic@2026#Patient', color: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' },
+                    { label: 'Doctor', email: 'doctor@clinic.com', pass: 'Clinic@2026#Doctor', color: 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100' },
+                    { label: 'Admin', email: 'admin@clinic.com', pass: 'Clinic@2026#Admin', color: 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100' },
+                  ].map((demo) => (
+                    <button
+                      key={demo.label}
+                      type="button"
+                      onClick={() => {
+                        setEmail(demo.email);
+                        setPassword(demo.pass);
+                        clearError();
+                      }}
+                      className={`py-2 px-2.5 rounded-xl text-xs font-bold border transition text-center cursor-pointer shadow-xs ${demo.color}`}
+                    >
+                      {demo.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div className="text-center pt-2 lg:hidden">
                 <p className="text-xs text-slate-500">
                   Don't have an account?{' '}

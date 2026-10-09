@@ -149,6 +149,10 @@ public class AppointmentService {
     }
 
     private void generateFallbackSlotsForDate(DoctorProfile doctor, java.time.LocalDate date) {
+        java.time.DayOfWeek day = date.getDayOfWeek();
+        if (day == java.time.DayOfWeek.SATURDAY || day == java.time.DayOfWeek.SUNDAY) {
+            return;
+        }
         java.time.ZoneId zone = java.time.ZoneId.systemDefault();
         java.time.LocalTime current = java.time.LocalTime.of(9, 0);
         java.time.LocalTime end = java.time.LocalTime.of(17, 0);
@@ -435,8 +439,15 @@ public class AppointmentService {
 
         java.time.DayOfWeek day = slot.getStartTime().getDayOfWeek();
         if (day == java.time.DayOfWeek.SATURDAY || day == java.time.DayOfWeek.SUNDAY) {
-            throw new com.healthcare.clinic.appointment.exception.AppointmentConflictException(
-                    "DOCTOR_UNAVAILABLE", "Appointments cannot be booked on weekends.");
+            boolean hasActiveWeekendHours = false;
+            try {
+                hasActiveWeekendHours = doctorScheduleService.getWorkingHours(slot.getDoctor().getUserId()).stream()
+                        .anyMatch(wh -> wh.getDayOfWeek() == (day.getValue() % 7) && Boolean.TRUE.equals(wh.getIsActive()));
+            } catch (Exception ignored) {}
+            if (!hasActiveWeekendHours) {
+                throw new com.healthcare.clinic.appointment.exception.AppointmentConflictException(
+                        "DOCTOR_UNAVAILABLE", "Appointments cannot be booked on weekends for this doctor.");
+            }
         }
 
         String slotKey = slot.getStartTime().toInstant().toString();
@@ -462,6 +473,13 @@ public class AppointmentService {
         slot.setIsBooked(true);
         slotRepository.save(slot);
 
+        Long resolvedBranchId = slot.getBranchId() != null ? slot.getBranchId() : 1L;
+        Branch branch = branchRepository.findById(resolvedBranchId).orElseGet(() ->
+                branchRepository.findAll().stream().findFirst().orElse(null));
+        if (branch != null) {
+            resolvedBranchId = branch.getId();
+        }
+
         Appointment appointment = Appointment.builder()
                 .appointmentNumber(generateAppointmentNumber())
                 .patient(patient)
@@ -472,7 +490,8 @@ public class AppointmentService {
                 .status(AppointmentStatus.BOOKED)
                 .paymentStatus("PENDING")
                 .reasonForVisit(reasonForVisit)
-                .branchId(slot.getBranchId() != null ? slot.getBranchId() : 1L)
+                .branch(branch)
+                .branchId(resolvedBranchId)
                 .idempotencyKey(idempotencyKey)
                 .createdBy(com.healthcare.clinic.security.SecurityUtils.getCurrentUserId() != null ? com.healthcare.clinic.security.SecurityUtils.getCurrentUserId() : finalPatientUserId)
                 .build();
@@ -570,6 +589,13 @@ public class AppointmentService {
                 .isPriority(false)
                 .build());
 
+        Long dirBranchId = doctor.getBranchId() != null ? doctor.getBranchId() : 1L;
+        Branch branch = branchRepository.findById(dirBranchId).orElseGet(() ->
+                branchRepository.findAll().stream().findFirst().orElse(null));
+        if (branch != null) {
+            dirBranchId = branch.getId();
+        }
+
         Appointment appointment = Appointment.builder()
                 .appointmentNumber(generateAppointmentNumber())
                 .patient(patient)
@@ -582,7 +608,8 @@ public class AppointmentService {
                 .appointmentType(appointmentType)
                 .reasonForVisit(reasonForVisit)
                 .notes(notes)
-                .branchId(doctor.getBranchId())
+                .branch(branch)
+                .branchId(dirBranchId)
                 .createdBy(com.healthcare.clinic.security.SecurityUtils.getCurrentUserId())
                 .build();
 

@@ -121,7 +121,7 @@ public class AppointmentConcurrencyTest {
                 } else {
                     e.printStackTrace();
                 }
-            } catch (org.springframework.dao.DataIntegrityViolationException | ObjectOptimisticLockingFailureException e) {
+            } catch (org.springframework.dao.DataIntegrityViolationException | ObjectOptimisticLockingFailureException | com.healthcare.clinic.appointment.exception.AppointmentConflictException e) {
                 optimisticLockCount.incrementAndGet();
             } catch (Exception e) {
                 if (e.getMessage() != null && (e.getMessage().contains("booked") || e.getMessage().contains("CONFLICT"))) {
@@ -145,7 +145,7 @@ public class AppointmentConcurrencyTest {
                 } else {
                     e.printStackTrace();
                 }
-            } catch (org.springframework.dao.DataIntegrityViolationException | ObjectOptimisticLockingFailureException e) {
+            } catch (org.springframework.dao.DataIntegrityViolationException | ObjectOptimisticLockingFailureException | com.healthcare.clinic.appointment.exception.AppointmentConflictException e) {
                 optimisticLockCount.incrementAndGet();
             } catch (Exception e) {
                 if (e.getMessage() != null && (e.getMessage().contains("booked") || e.getMessage().contains("CONFLICT"))) {

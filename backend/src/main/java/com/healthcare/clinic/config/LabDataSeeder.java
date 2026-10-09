@@ -52,7 +52,18 @@ public class LabDataSeeder implements CommandLineRunner {
     }
 
     private void seedLabData() {
-        Branch branch = branchRepository.findById(1L).orElse(null);
+        Branch branch = branchRepository.findById(1L)
+                .orElseGet(() -> branchRepository.findAll().stream().findFirst()
+                        .orElseGet(() -> branchRepository.save(Branch.builder()
+                                .name("Main Clinic Branch")
+                                .address("123 Health Ave")
+                                .city("City")
+                                .state("State")
+                                .country("Country")
+                                .postalCode("12345")
+                                .timezone("UTC")
+                                .isActive(true)
+                                .build())));
         User labTech = userRepository.findByEmail("labtech@clinic.com").orElse(null);
         User admin = userRepository.findByEmail("admin@clinic.com").orElse(null);
 

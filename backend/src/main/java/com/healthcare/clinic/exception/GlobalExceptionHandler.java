@@ -70,21 +70,27 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Map<String, Object>> handleDataIntegrityViolation(DataIntegrityViolationException ex, jakarta.servlet.http.HttpServletRequest request) {
-        log.error("Data integrity violation: ", ex);
-        String msg = ex.getMessage() != null ? ex.getMessage().toLowerCase() : "";
+        log.error("Data integrity violation at {}: ", request.getRequestURI(), ex);
+        Throwable root = org.springframework.core.NestedExceptionUtils.getMostSpecificCause(ex);
+        String rootMsg = (root != null && root.getMessage() != null ? root.getMessage() : (ex.getMessage() != null ? ex.getMessage() : "")).toLowerCase();
         Map<String, Object> body = new java.util.LinkedHashMap<>();
-        if (msg.contains("slot_id") || msg.contains("appointments_slot_id_key")) {
+        
+        if (rootMsg.contains("appointments_slot_id") || rootMsg.contains("idx_unique_active_slot")
+                || (rootMsg.contains("slot_id") && (rootMsg.contains("unique") || rootMsg.contains("duplicate") || rootMsg.contains("already exists")))) {
             body.put("code", "APPOINTMENT_SLOT_UNAVAILABLE");
             body.put("message", "This appointment slot is no longer available.");
-        } else if (msg.contains("email") || msg.contains("users_email_key")) {
+        } else if (rootMsg.contains("email") || rootMsg.contains("users_email_key")) {
             body.put("code", "DUPLICATE_USER");
             body.put("message", "A user with this email address already exists.");
-        } else if (msg.contains("phone_number") || msg.contains("users_phone_number_key")) {
+        } else if (rootMsg.contains("phone_number") || rootMsg.contains("users_phone_number_key")) {
             body.put("code", "DUPLICATE_PHONE");
             body.put("message", "A user with this phone number already exists.");
+        } else if (rootMsg.contains("branch_id") && rootMsg.contains("null")) {
+            body.put("code", "BRANCH_REQUIRED");
+            body.put("message", "A valid clinic branch is required to complete this booking.");
         } else {
             body.put("code", "DATA_INTEGRITY_VIOLATION");
-            body.put("message", "Database constraint violation or duplicate entry.");
+            body.put("message", (root != null && root.getMessage() != null) ? root.getMessage() : "Database constraint violation or duplicate entry.");
         }
         body.put("timestamp", java.time.Instant.now().toString());
         body.put("path", request.getRequestURI());

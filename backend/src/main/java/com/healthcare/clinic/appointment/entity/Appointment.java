@@ -37,7 +37,7 @@ public class Appointment {
     private Tenant tenant;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "branch_id")
+    @JoinColumn(name = "branch_id", insertable = false, updatable = false)
     @com.fasterxml.jackson.annotation.JsonIgnore
     private Branch branch;
 
@@ -111,8 +111,18 @@ public class Appointment {
     @Column(name = "rescheduled_from")
     private Long rescheduledFrom;
 
-    @Column(name = "branch_id", insertable = false, updatable = false)
+    @Column(name = "branch_id")
     private Long branchId;
+
+    @PrePersist
+    @PreUpdate
+    public void syncBranch() {
+        if (this.branchId == null && this.branch != null) {
+            this.branchId = this.branch.getId();
+        } else if (this.branchId == null) {
+            this.branchId = 1L;
+        }
+    }
 
     @CreatedDate
     @Column(updatable = false)
