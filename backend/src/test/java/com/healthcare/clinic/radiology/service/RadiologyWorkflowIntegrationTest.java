@@ -27,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @Transactional
+@org.springframework.test.context.ActiveProfiles("test")
 public class RadiologyWorkflowIntegrationTest {
 
     @Autowired
@@ -61,52 +62,64 @@ public class RadiologyWorkflowIntegrationTest {
 
     @BeforeEach
     public void setup() {
-        testBranch = new Branch();
-        testBranch.setName("Workflow Branch");
-        testBranch.setAddress("123 Main St");
-        testBranch.setCity("Test City");
-        testBranch.setState("TS");
-        testBranch.setCountry("USA");
-        testBranch.setPostalCode("12345");
-        testBranch.setPhoneNumber("+11234567890");
-        testBranch.setEmail("workflow@test.com");
-        testBranch.setTimezone("UTC");
-        branchRepository.save(testBranch);
+        testBranch = branchRepository.findAll().stream().findFirst().orElseGet(() -> {
+            Branch b = new Branch();
+            b.setName("Workflow Branch");
+            b.setAddress("123 Main St");
+            b.setCity("Test City");
+            b.setState("TS");
+            b.setCountry("USA");
+            b.setPostalCode("12345");
+            b.setPhoneNumber("+11234567890");
+            b.setEmail("workflow@test.com");
+            b.setTimezone("UTC");
+            return branchRepository.save(b);
+        });
 
-        User patientUser = new User();
-        patientUser.setEmail("wfpatient@test.com");
-        patientUser.setPasswordHash("pass");
-        patientUser.setFirstName("Work");
-        patientUser.setLastName("Flow");
-        userRepository.save(patientUser);
+        User patientUser = userRepository.findByEmail("wfpatient@test.com").orElseGet(() -> {
+            User u = new User();
+            u.setEmail("wfpatient@test.com");
+            u.setPasswordHash("pass");
+            u.setFirstName("Work");
+            u.setLastName("Flow");
+            return userRepository.save(u);
+        });
 
-        testPatient = new PatientProfile();
-        testPatient.setUserId(patientUser.getId());
-        testPatient.setBranchId(testBranch.getId());
-        patientProfileRepository.save(testPatient);
+        testPatient = patientProfileRepository.findByUserId(patientUser.getId()).orElseGet(() -> {
+            PatientProfile p = new PatientProfile();
+            p.setUserId(patientUser.getId());
+            p.setBranchId(testBranch.getId());
+            return patientProfileRepository.save(p);
+        });
 
-        User docUser = new User();
-        docUser.setEmail("wfdoc@test.com");
-        docUser.setPasswordHash("pass");
-        docUser.setFirstName("Dr");
-        docUser.setLastName("WF");
-        userRepository.save(docUser);
+        User docUser = userRepository.findByEmail("wfdoc@test.com").orElseGet(() -> {
+            User u = new User();
+            u.setEmail("wfdoc@test.com");
+            u.setPasswordHash("pass");
+            u.setFirstName("Dr");
+            u.setLastName("WF");
+            return userRepository.save(u);
+        });
 
-        testDoctor = new DoctorProfile();
-        testDoctor.setUserId(docUser.getId());
-        testDoctor.setSpecialty("General");
-        testDoctor.setConsultationFee(java.math.BigDecimal.valueOf(100.00));
-        testDoctor.setQualifications("MD General");
-        testDoctor.setBranchId(testBranch.getId());
-        doctorProfileRepository.save(testDoctor);
+        testDoctor = doctorProfileRepository.findByUserId(docUser.getId()).orElseGet(() -> {
+            DoctorProfile d = new DoctorProfile();
+            d.setUserId(docUser.getId());
+            d.setSpecialty("General");
+            d.setConsultationFee(java.math.BigDecimal.valueOf(100.00));
+            d.setQualifications("MD General");
+            d.setBranchId(testBranch.getId());
+            return doctorProfileRepository.save(d);
+        });
 
-        testProcedure = new ImagingProcedure();
-        testProcedure.setCode("XR-CHEST");
-        testProcedure.setName("Chest X-Ray PA View");
-        testProcedure.setModality("XRAY");
-        testProcedure.setBodyPart("Chest");
-        testProcedure.setPrice(new BigDecimal("50.00"));
-        procedureRepository.save(testProcedure);
+        testProcedure = procedureRepository.findByCode("XR-CHEST").orElseGet(() -> {
+            ImagingProcedure proc = new ImagingProcedure();
+            proc.setCode("XR-CHEST");
+            proc.setName("Chest X-Ray PA View");
+            proc.setModality("XRAY");
+            proc.setBodyPart("Chest");
+            proc.setPrice(new BigDecimal("50.00"));
+            return procedureRepository.save(proc);
+        });
     }
 
     @Test
@@ -116,6 +129,7 @@ public class RadiologyWorkflowIntegrationTest {
         newRequest.setPatient(testPatient);
         newRequest.setDoctor(testDoctor);
         newRequest.setProcedure(testProcedure);
+        newRequest.setBranch(testBranch);
         newRequest.setPriority("ROUTINE");
         newRequest.setClinicalNotes("Cough for 3 weeks");
 

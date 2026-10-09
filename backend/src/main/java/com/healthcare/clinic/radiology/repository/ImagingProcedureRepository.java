@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface ImagingProcedureRepository extends JpaRepository<ImagingProcedure, Long> {
     List<ImagingProcedure> findByIsActiveTrue();
+    java.util.Optional<ImagingProcedure> findByCode(String code);
 }

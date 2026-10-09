@@ -33,6 +33,9 @@ public class HomeVisitService {
         if (request.getBranch() == null) {
             branchRepository.findAll().stream().findFirst().ifPresent(request::setBranch);
         }
+        if (request.getPreferredTime() == null || request.getPreferredTime().isBlank()) {
+            request.setPreferredTime("10:00 AM");
+        }
         request.setStatus("Requested");
         return homeVisitRequestRepository.save(request);
     }

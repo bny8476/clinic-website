@@ -32,6 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @Transactional
+@org.springframework.test.context.ActiveProfiles("test")
 public class RadiologyBatchIntegrationTest {
 
     @Autowired
@@ -82,51 +83,63 @@ public class RadiologyBatchIntegrationTest {
 
     @BeforeEach
     public void setup() {
-        branch = new Branch();
-        branch.setName("Radiology Test Branch");
-        branch.setAddress("123 Main St");
-        branch.setCity("Test City");
-        branch.setState("TS");
-        branch.setCountry("USA");
-        branch.setPostalCode("12345");
-        branch.setPhoneNumber("+11234567890");
-        branch.setEmail("radbranch@test.com");
-        branch.setTimezone("UTC");
-        branchRepository.save(branch);
+        branch = branchRepository.findAll().stream().findFirst().orElseGet(() -> {
+            Branch b = new Branch();
+            b.setName("Radiology Test Branch");
+            b.setAddress("123 Main St");
+            b.setCity("Test City");
+            b.setState("TS");
+            b.setCountry("USA");
+            b.setPostalCode("12345");
+            b.setPhoneNumber("+11234567890");
+            b.setEmail("radbranch@test.com");
+            b.setTimezone("UTC");
+            return branchRepository.save(b);
+        });
 
-        doctor = new User();
-        doctor.setEmail("doc.rad@test.com");
-        doctor.setPasswordHash("pass");
-        doctor.setFirstName("Dr");
-        doctor.setLastName("XRay");
-        userRepository.save(doctor);
+        doctor = userRepository.findByEmail("doc.rad@test.com").orElseGet(() -> {
+            User u = new User();
+            u.setEmail("doc.rad@test.com");
+            u.setPasswordHash("pass");
+            u.setFirstName("Dr");
+            u.setLastName("XRay");
+            return userRepository.save(u);
+        });
 
-        DoctorProfile docProfile = new DoctorProfile();
-        docProfile.setUserId(doctor.getId());
-        docProfile.setSpecialty("Radiology");
-        docProfile.setConsultationFee(java.math.BigDecimal.valueOf(100.00));
-        docProfile.setQualifications("MD Radiology");
-        docProfile.setBranchId(branch.getId());
-        doctorRepository.save(docProfile);
+        DoctorProfile docProfile = doctorRepository.findByUserId(doctor.getId()).orElseGet(() -> {
+            DoctorProfile dp = new DoctorProfile();
+            dp.setUserId(doctor.getId());
+            dp.setSpecialty("Radiology");
+            dp.setConsultationFee(java.math.BigDecimal.valueOf(100.00));
+            dp.setQualifications("MD Radiology");
+            dp.setBranchId(branch.getId());
+            return doctorRepository.save(dp);
+        });
 
-        radiologist = new User();
-        radiologist.setEmail("radiologist@test.com");
-        radiologist.setPasswordHash("pass");
-        radiologist.setFirstName("Rad");
-        radiologist.setLastName("Tech");
-        userRepository.save(radiologist);
+        radiologist = userRepository.findByEmail("radiologist@test.com").orElseGet(() -> {
+            User u = new User();
+            u.setEmail("radiologist@test.com");
+            u.setPasswordHash("pass");
+            u.setFirstName("Rad");
+            u.setLastName("Tech");
+            return userRepository.save(u);
+        });
 
-        User patientUser = new User();
-        patientUser.setEmail("patient.rad@test.com");
-        patientUser.setPasswordHash("pass");
-        patientUser.setFirstName("John");
-        patientUser.setLastName("Doe");
-        userRepository.save(patientUser);
+        User patientUser = userRepository.findByEmail("patient.rad@test.com").orElseGet(() -> {
+            User u = new User();
+            u.setEmail("patient.rad@test.com");
+            u.setPasswordHash("pass");
+            u.setFirstName("John");
+            u.setLastName("Doe");
+            return userRepository.save(u);
+        });
 
-        patient = new PatientProfile();
-        patient.setUserId(patientUser.getId());
-        patient.setBranchId(branch.getId());
-        patientRepository.save(patient);
+        patient = patientRepository.findByUserId(patientUser.getId()).orElseGet(() -> {
+            PatientProfile p = new PatientProfile();
+            p.setUserId(patientUser.getId());
+            p.setBranchId(branch.getId());
+            return patientRepository.save(p);
+        });
 
         procedure = new ImagingProcedure();
         procedure.setCode("CT-HEAD");

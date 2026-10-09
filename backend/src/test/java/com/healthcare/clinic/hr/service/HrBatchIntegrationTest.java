@@ -15,6 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @Transactional
+@org.springframework.test.context.ActiveProfiles("test")
 public class HrBatchIntegrationTest {
 
     @Autowired
@@ -32,10 +33,22 @@ public class HrBatchIntegrationTest {
     @Autowired
     private EmployeeRepository employeeRepository;
 
+    @Autowired
+    private com.healthcare.clinic.identity.repository.UserRepository userRepository;
+
     @Test
     public void testPayrollRunEndToEnd() {
+        com.healthcare.clinic.identity.entity.User hrUser = userRepository.findByEmail("hr.employee@test.com").orElseGet(() -> {
+            com.healthcare.clinic.identity.entity.User u = new com.healthcare.clinic.identity.entity.User();
+            u.setEmail("hr.employee@test.com");
+            u.setPasswordHash("pass");
+            u.setFirstName("HR");
+            u.setLastName("User");
+            return userRepository.save(u);
+        });
+
         Employee employee = new Employee();
-        employee.setUserId(999L);
+        employee.setUserId(hrUser.getId());
         employee.setDepartment("Cardiology");
         employee.setDesignation("Senior Doctor");
         employee.setDateOfJoining(LocalDate.of(2020, 1, 1));

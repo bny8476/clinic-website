@@ -135,7 +135,7 @@ public class BillingService {
                         .build();
 
                 TransactionTemplate tt = new TransactionTemplate(transactionManager);
-                tt.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+                tt.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
                 saved = tt.execute(status -> invoiceRepository.save(invoice));
                 break;
             } catch (org.springframework.dao.DataIntegrityViolationException e) {

@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @Transactional
+@org.springframework.test.context.ActiveProfiles("test")
 public class PatientPortalBatch2IntegrationTest {
 
     @Autowired
@@ -73,6 +74,7 @@ public class PatientPortalBatch2IntegrationTest {
         HomeVisitRequest request = new HomeVisitRequest();
         request.setAddress("123 Test St");
         request.setPreferredDate(LocalDateTime.now().plusDays(1).toLocalDate());
+        request.setPreferredTime("10:00 AM");
         request.setReasonForVisit("Nursing Care");
         
         // Create Request
@@ -95,6 +97,7 @@ public class PatientPortalBatch2IntegrationTest {
         HomeVisitRequest request = new HomeVisitRequest();
         request.setAddress("123 Test St");
         request.setPreferredDate(LocalDateTime.now().plusDays(1).toLocalDate());
+        request.setPreferredTime("10:00 AM");
         request.setReasonForVisit("Nursing Care");
         
         HomeVisitRequest saved = homeVisitService.requestHomeVisit(toPrincipal(testPatient), request);

@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
+@org.springframework.test.context.ActiveProfiles("test")
 public class QueueConcurrencyTest {
 
     @Autowired
@@ -28,17 +29,19 @@ public class QueueConcurrencyTest {
     @Test
     public void testConcurrentTokenGeneration() throws InterruptedException {
         // Setup
-        Branch branch = new Branch();
-        branch.setName("Concurrent Test Branch");
-        branch.setCity("Test City");
-        branch.setCountry("Test Country");
-        branch.setTimezone("UTC");
-        branch.setAddress("Test Address");
-        branch.setEmail("test@branch.com");
-        branch.setPhoneNumber("1234567890");
-        branch.setPostalCode("12345");
-        branch.setState("Test State");
-        branch = branchRepository.save(branch);
+        Branch branch = branchRepository.findAll().stream().findFirst().orElseGet(() -> {
+            Branch b = new Branch();
+            b.setName("Concurrent Test Branch");
+            b.setCity("Test City");
+            b.setCountry("Test Country");
+            b.setTimezone("UTC");
+            b.setAddress("Test Address");
+            b.setEmail("test@branch.com");
+            b.setPhoneNumber("1234567890");
+            b.setPostalCode("12345");
+            b.setState("Test State");
+            return branchRepository.save(b);
+        });
 
         int numberOfThreads = 10;
         ExecutorService executorService = Executors.newFixedThreadPool(numberOfThreads);

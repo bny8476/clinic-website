@@ -15,6 +15,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
+@org.springframework.transaction.annotation.Transactional
+@org.springframework.test.context.ActiveProfiles("test")
 public class PharmacyOutboxSyncWorkerTest {
 
     @Autowired
@@ -26,13 +28,25 @@ public class PharmacyOutboxSyncWorkerTest {
     @Autowired
     private PrescriptionRepository prescriptionRepository;
 
+    @Autowired
+    private com.healthcare.clinic.identity.repository.UserRepository userRepository;
+
     @Test
     public void testSyncStatusUpdatesClinicPrescription() {
         // Setup
+        com.healthcare.clinic.identity.entity.User patientUser = userRepository.findByEmail("syncworker.patient@test.com").orElseGet(() -> {
+            com.healthcare.clinic.identity.entity.User u = new com.healthcare.clinic.identity.entity.User();
+            u.setEmail("syncworker.patient@test.com");
+            u.setPasswordHash("pass");
+            u.setFirstName("Pat");
+            u.setLastName("Ient");
+            return userRepository.save(u);
+        });
+
         Prescription p = new Prescription();
         p.setPharmacyStatus("PENDING");
-        p.setDoctorId(1L);
-        p.setPatientId(1L);
+        p.setDoctorId(patientUser.getId());
+        p.setPatientId(patientUser.getId());
         // Other fields might be required depending on constraints
         p = prescriptionRepository.save(p);
 

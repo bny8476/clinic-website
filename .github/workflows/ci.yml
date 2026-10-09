@@ -21,7 +21,7 @@ jobs:
         cache: maven
         
     - name: Build and Test Backend
-      run: mvn -B test
+      run: mvn -B test -Dspring.profiles.active=test
       working-directory: ./backend
 
   frontend-test:
