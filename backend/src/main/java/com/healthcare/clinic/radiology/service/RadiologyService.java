@@ -212,12 +212,12 @@ public class RadiologyService {
         if (currentStatus.equals(newStatus)) return true;
         return switch (currentStatus) {
             case "DRAFT" -> List.of("ORDERED", "SCHEDULED", "CANCELLED").contains(newStatus);
-            case "ORDERED" -> List.of("SCHEDULED", "IMAGE_ACQUIRED", "REPORTING", "VERIFIED", "RELEASED", "CANCELLED").contains(newStatus);
-            case "SCHEDULED" -> List.of("IMAGE_ACQUIRED", "REPORTING", "VERIFIED", "RELEASED", "CANCELLED").contains(newStatus);
-            case "IMAGE_ACQUIRED" -> List.of("REPORTING", "VERIFIED", "RELEASED").contains(newStatus);
-            case "REPORTING" -> List.of("VERIFIED", "RELEASED").contains(newStatus);
+            case "ORDERED" -> List.of("SCHEDULED", "IMAGE_ACQUIRED", "CANCELLED").contains(newStatus);
+            case "SCHEDULED" -> List.of("IMAGE_ACQUIRED", "CANCELLED").contains(newStatus);
+            case "IMAGE_ACQUIRED" -> List.of("REPORTING", "CANCELLED").contains(newStatus);
+            case "REPORTING" -> List.of("VERIFIED", "CANCELLED").contains(newStatus);
             case "VERIFIED" -> List.of("RELEASED").contains(newStatus);
-            default -> true;
+            default -> false;
         };
     }
 

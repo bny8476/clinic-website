@@ -46,7 +46,7 @@ public class DicomService {
                 
         study = dicomStudyRepository.save(study);
         
-        request.setStatus("IMAGE_ACQUIRED");
+        request.setStatus("REPORTING");
         imagingRequestRepository.save(request);
         
         return study;

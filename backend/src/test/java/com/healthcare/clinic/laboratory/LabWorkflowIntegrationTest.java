@@ -59,19 +59,20 @@ public class LabWorkflowIntegrationTest {
         catalogRepository.deleteAll();
         patientProfileRepository.deleteAll();
         userRepository.deleteAll();
-        branchRepository.deleteAll();
 
-        testBranch = Branch.builder()
-                .name("Test Branch")
-                .address("123 Test St")
-                .city("Test City")
-                .state("Test State")
-                .country("India")
-                .postalCode("000000")
-                .timezone("Asia/Kolkata")
-                .isActive(true)
-                .build();
-        testBranch = branchRepository.save(testBranch);
+        testBranch = branchRepository.findAll().stream().findFirst().orElseGet(() -> {
+            Branch b = Branch.builder()
+                    .name("Test Branch")
+                    .address("123 Test St")
+                    .city("Test City")
+                    .state("Test State")
+                    .country("India")
+                    .postalCode("000000")
+                    .timezone("Asia/Kolkata")
+                    .isActive(true)
+                    .build();
+            return branchRepository.save(b);
+        });
 
         testPatientUser = new User();
         testPatientUser.setEmail("lab-patient@test.com");
@@ -107,7 +108,6 @@ public class LabWorkflowIntegrationTest {
         catalogRepository.deleteAll();
         patientProfileRepository.deleteAll();
         userRepository.deleteAll();
-        branchRepository.deleteAll();
     }
 
     // ─── Helper ────────────────────────────────────────────────────────────────

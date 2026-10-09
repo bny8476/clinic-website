@@ -118,7 +118,9 @@ public class ReceptionPatientService {
         List<Map<String, Object>> results = new ArrayList<>();
         
         for (User u : users.getContent()) {
-            if (u.getRoles().stream().anyMatch(r -> r.getName().equals("ROLE_PATIENT"))) {
+            boolean hasPatientRole = u.getRoles() == null || u.getRoles().isEmpty()
+                    || u.getRoles().stream().anyMatch(r -> r.getName().equals("ROLE_PATIENT") || r.getName().equals("PATIENT"));
+            if (hasPatientRole) {
                 patientProfileRepository.findByUserId(u.getId()).ifPresent(p -> {
                     results.add(mapToSearchResult(p, u));
                 });

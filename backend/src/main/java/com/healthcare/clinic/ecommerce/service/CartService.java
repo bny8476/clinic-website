@@ -43,6 +43,11 @@ public class CartService {
                 .build());
     }
 
+    @Transactional(readOnly = true)
+    public Optional<EcCart> getCartById(Long cartId) {
+        return cartRepository.findById(cartId);
+    }
+
     @Transactional
     public EcCart addItemToCart(Long cartId, Long productId, int quantity) {
         EcCart cart = cartRepository.findById(cartId).orElseThrow();

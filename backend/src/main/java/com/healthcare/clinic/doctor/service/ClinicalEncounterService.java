@@ -135,13 +135,21 @@ public class ClinicalEncounterService {
 
         // Create billing outbox entry for consultation
         try {
+            BigDecimal fee = new BigDecimal("150.00");
+            if (encounter.getDoctorId() != null) {
+                DoctorProfile doc = doctorProfileRepository.findById(encounter.getDoctorId())
+                        .orElseGet(() -> doctorProfileRepository.findByUserId(encounter.getDoctorId()).orElse(null));
+                if (doc != null && doc.getConsultationFee() != null && doc.getConsultationFee().compareTo(BigDecimal.ZERO) > 0) {
+                    fee = doc.getConsultationFee();
+                }
+            }
             billingService.createBillingEvent(
                     encounter.getId(),
                     encounter.getPatientId() != null ? encounter.getPatientId() : 1L,
                     encounter.getDoctorId() != null ? encounter.getDoctorId() : 1L,
                     "Consultation",
                     "CONS-01",
-                    java.math.BigDecimal.ZERO
+                    fee
             );
         } catch (Exception e) {
             System.err.println("Note: billing event creation on encounter close: " + e.getMessage());

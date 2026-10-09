@@ -227,12 +227,18 @@ public class CheckoutService {
     @Transactional
     public EcommerceOrder processCheckout(Long patientId, Long cartId, Long addressId) {
         log.info("Legacy processCheckout invoked for patientId: {}, cartId: {}", patientId, cartId);
+        com.healthcare.clinic.ecommerce.entity.EcCart cart = cartService.getCartById(cartId)
+                .orElseThrow(() -> new IllegalArgumentException("Cart not found with ID: " + cartId));
+        if (cart.getPatientId() != null && !cart.getPatientId().equals(patientId)) {
+            throw new IllegalArgumentException("Unauthorized: cart does not belong to patient");
+        }
+        cartService.clearCart(cartId);
         EcommerceOrder order = EcommerceOrder.builder()
                 .userId(patientId)
                 .patientId(patientId)
                 .orderNumber("MED-" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + "-" + String.format("%06d", RANDOM.nextInt(1000000)))
                 .status("PENDING")
-                .paymentStatus("PAID")
+                .paymentStatus("PENDING")
                 .shippingAddress("Default Address")
                 .shippingCity("City")
                 .postalCode("100001")

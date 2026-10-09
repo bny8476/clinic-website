@@ -16,6 +16,9 @@ public class ClinicalReferralService {
 
     @Transactional
     public ClinicalReferral createReferral(ClinicalReferral referral) {
+        if (referral.getStatus() == null || referral.getStatus().isBlank()) {
+            referral.setStatus("Draft");
+        }
         return referralRepository.save(referral);
     }
 

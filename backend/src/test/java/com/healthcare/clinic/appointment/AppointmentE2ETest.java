@@ -107,9 +107,6 @@ public class AppointmentE2ETest {
         doctorRepository.deleteAll();
         patientProfileRepository.deleteAll();
         try {
-            branchRepository.deleteAll();
-        } catch (Exception ignored) {}
-        try {
             userRepository.deleteAll();
         } catch (Exception ignored) {}
     }

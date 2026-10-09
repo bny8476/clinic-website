@@ -1,4 +1,4 @@
--- V143__doctor_medicine_recommendations_and_canonical_ecommerce.sql
+-- V144__doctor_medicine_recommendations_and_canonical_ecommerce.sql
 -- Create doctor_medicine_recommendations table and add recommendation_id to ecommerce_order_items
 
 CREATE TABLE IF NOT EXISTS doctor_medicine_recommendations (
@@ -32,14 +32,5 @@ CREATE INDEX IF NOT EXISTS idx_rec_status ON doctor_medicine_recommendations(sta
 -- Add recommendation_id to ecommerce_order_items
 ALTER TABLE ecommerce_order_items ADD COLUMN IF NOT EXISTS recommendation_id BIGINT;
 
-DO $$ 
-BEGIN
-    IF NOT EXISTS (
-        SELECT 1 FROM information_schema.table_constraints 
-        WHERE constraint_name = 'fk_ecom_item_recommendation'
-    ) THEN
-        ALTER TABLE ecommerce_order_items 
-        ADD CONSTRAINT fk_ecom_item_recommendation 
-        FOREIGN KEY (recommendation_id) REFERENCES doctor_medicine_recommendations(id);
-    END IF;
-END $$;
+ALTER TABLE ecommerce_order_items DROP CONSTRAINT IF EXISTS fk_ecom_item_recommendation;
+ALTER TABLE ecommerce_order_items ADD CONSTRAINT fk_ecom_item_recommendation FOREIGN KEY (recommendation_id) REFERENCES doctor_medicine_recommendations(id);

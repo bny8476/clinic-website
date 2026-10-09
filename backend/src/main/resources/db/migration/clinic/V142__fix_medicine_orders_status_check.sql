@@ -1,4 +1,4 @@
--- V141__fix_medicine_orders_status_check.sql
+-- V142__fix_medicine_orders_status_check.sql
 -- Remove legacy restrictive check constraint on medicine_orders.status column
 
 ALTER TABLE medicine_orders DROP CONSTRAINT IF EXISTS medicine_orders_status_check;

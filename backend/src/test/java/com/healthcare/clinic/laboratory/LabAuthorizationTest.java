@@ -69,19 +69,20 @@ public class LabAuthorizationTest {
         catalogRepository.deleteAll();
         patientProfileRepository.deleteAll();
         userRepository.deleteAll();
-        branchRepository.deleteAll();
 
-        testBranch = Branch.builder()
-                .name("Auth Test Branch")
-                .address("456 Auth St")
-                .city("Auth City")
-                .state("Auth State")
-                .country("India")
-                .postalCode("111111")
-                .timezone("Asia/Kolkata")
-                .isActive(true)
-                .build();
-        testBranch = branchRepository.save(testBranch);
+        testBranch = branchRepository.findAll().stream().findFirst().orElseGet(() -> {
+            Branch b = Branch.builder()
+                    .name("Auth Test Branch")
+                    .address("456 Auth St")
+                    .city("Auth City")
+                    .state("Auth State")
+                    .country("India")
+                    .postalCode("111111")
+                    .timezone("Asia/Kolkata")
+                    .isActive(true)
+                    .build();
+            return branchRepository.save(b);
+        });
 
         patientUser = buildUser("patient@lab-auth.com", "ROLE_PATIENT");
         labTechUser = buildUser("labtech@lab-auth.com", "ROLE_LAB_TECH");
@@ -118,7 +119,6 @@ public class LabAuthorizationTest {
         catalogRepository.deleteAll();
         patientProfileRepository.deleteAll();
         userRepository.deleteAll();
-        branchRepository.deleteAll();
     }
 
     private User buildUser(String email, String role) {

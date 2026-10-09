@@ -97,7 +97,7 @@ public class Batch4AdvancedIntegrationTest {
         // 3. Finalize Encounter
         ClinicalEncounter closed = encounterService.closeEncounter(doctorUser.getId(), encounterId);
         
-        assertThat(closed.getStatus()).isEqualTo("CLOSED");
+        assertThat(closed.getStatus()).isEqualTo(com.healthcare.clinic.doctor.entity.EncounterStatus.CLOSED);
         assertThat(closed.getFinalizedAt()).isNotNull();
 
         // 4. Verify BillingOutbox

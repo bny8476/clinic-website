@@ -24,7 +24,7 @@ public class ActivityLogController {
     }
 
     @GetMapping
-    @org.springframework.security.access.prepost.PreAuthorize("isAuthenticated()")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_SUPER_ADMIN','ROLE_PHARMACIST')")
     public ResponseEntity<ApiResponse<Page<ActivityLog>>> getLogsByUserId(
             @RequestParam Long userId,
             @RequestParam(required = false) String date,

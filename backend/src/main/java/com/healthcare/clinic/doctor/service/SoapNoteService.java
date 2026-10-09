@@ -3,7 +3,6 @@ package com.healthcare.clinic.doctor.service;
 import com.healthcare.clinic.doctor.entity.ClinicalEncounter;
 import com.healthcare.clinic.doctor.entity.SoapNote;
 import com.healthcare.clinic.doctor.repository.SoapNoteRepository;
-import com.healthcare.clinic.identity.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +26,11 @@ public class SoapNoteService {
     public SoapNote saveSoapNote(Long userId, Long encounterId, SoapNote soapNote) {
         ClinicalEncounter encounter = encounterService.getEncounter(userId, encounterId);
         
-        if ("CLOSED".equals(encounter.getStatus()) || "Completed".equals(encounter.getStatus())) {
+        if (encounter.getStatus() == com.healthcare.clinic.doctor.entity.EncounterStatus.CLOSED
+                || encounter.getStatus() == com.healthcare.clinic.doctor.entity.EncounterStatus.FINALIZED
+                || "CLOSED".equalsIgnoreCase(String.valueOf(encounter.getStatus()))
+                || "FINALIZED".equalsIgnoreCase(String.valueOf(encounter.getStatus()))
+                || "COMPLETED".equalsIgnoreCase(String.valueOf(encounter.getStatus()))) {
             throw new RuntimeException("Cannot edit SOAP note for a closed encounter");
         }
         
