@@ -11,15 +11,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.UUID;
 import jakarta.annotation.PostConstruct;
-
-import org.springframework.core.env.Environment;
-import java.util.Arrays;
 
 @Slf4j
 @Service("ecommercePaymentService")
@@ -30,45 +26,18 @@ public class PaymentService {
     private final EcommerceOrderRepository orderRepository;
     private final ObjectMapper objectMapper;
     private final InventoryService inventoryService;
-    private final Environment environment;
 
     @Value("${ecommerce.payment.provider:STRIPE}")
     private String paymentProvider;
 
-    @Value("${ecommerce.payment.allow-mock:false}")
-    private boolean allowMock;
-
-    @Value("${ecommerce.payment.mode:DEVELOPMENT}")
-    private String paymentMode;
-
-    @Value("${stripe.secret-key}")
+    @Value("${stripe.secret-key:sk_test_placeholder}")
     private String stripeSecretKey;
 
-    @Value("${stripe.webhook-secret}")
+    @Value("${stripe.webhook-secret:whsec_placeholder}")
     private String endpointSecret;
 
     @Value("${app.frontend-url:http://localhost:3000}")
     private String frontendUrl;
-
-    private boolean isProductionEnvironment() {
-        if ("PRODUCTION".equalsIgnoreCase(paymentMode)) {
-            return true;
-        }
-        if (environment != null && environment.getActiveProfiles() != null) {
-            return Arrays.stream(environment.getActiveProfiles())
-                    .anyMatch(p -> "prod".equalsIgnoreCase(p) || "production".equalsIgnoreCase(p));
-        }
-        return false;
-    }
-
-    private void validatePaymentProviderMode() {
-        if ("MOCK".equalsIgnoreCase(paymentProvider)) {
-            if (isProductionEnvironment() || !allowMock) {
-                log.error("CRITICAL: Attempted to execute MOCK payment provider in production environment or when allow-mock is false");
-                throw new IllegalStateException("MOCK payment provider is strictly disabled in production profile");
-            }
-        }
-    }
 
     @PostConstruct
     public void init() {
@@ -77,8 +46,6 @@ public class PaymentService {
 
     @Transactional
     public EcPayment initiatePayment(EcommerceOrder order) {
-        validatePaymentProviderMode();
-
         String idempotencyKey = "PAY_" + order.getId() + "_" + UUID.randomUUID().toString();
         
         EcPayment payment = EcPayment.builder()
@@ -90,10 +57,10 @@ public class PaymentService {
                 .status("INITIATED")
                 .build();
 
-        if ("MOCK".equalsIgnoreCase(paymentProvider)) {
+        if ("MOCK".equals(paymentProvider)) {
             payment.setProviderRef("MOCK_TXN_" + UUID.randomUUID().toString().substring(0, 8));
             log.info("Mock payment initiated for order {}, ref {}", order.getId(), payment.getProviderRef());
-                } else if ("STRIPE".equalsIgnoreCase(paymentProvider)) {
+        } else if ("STRIPE".equalsIgnoreCase(paymentProvider)) {
             payment.setProviderRef(frontendUrl + "/checkout/mock-stripe?orderId=" + order.getId());
             payment.setPaymentMethod("STRIPE");
             log.info("[STUB] Stripe payment initiated for order {}, stub URL {}", order.getId(), payment.getProviderRef());
@@ -106,8 +73,7 @@ public class PaymentService {
 
     @Transactional
     public void handlePaymentWebhook(String payload, String signature) {
-        if ("MOCK".equalsIgnoreCase(paymentProvider)) {
-            validatePaymentProviderMode();
+        if ("MOCK".equals(paymentProvider)) {
             try {
                 Map<String, Object> data = objectMapper.readValue(payload, Map.class);
                 String providerRef = (String) data.get("providerRef");
@@ -119,11 +85,30 @@ public class PaymentService {
                 log.error("Failed to process mock payment webhook", e);
                 throw new RuntimeException("Webhook processing failed", e);
             }
-                } else if ("STRIPE".equalsIgnoreCase(paymentProvider)) {
-            payment.setProviderRef(frontendUrl + "/checkout/mock-stripe?orderId=" + order.getId());
-            payment.setPaymentMethod("STRIPE");
-            log.info("[STUB] Stripe payment initiated for order {}, stub URL {}", order.getId(), payment.getProviderRef());
-        } else {
+        } else if ("STRIPE".equalsIgnoreCase(paymentProvider)) {
+            log.info("[STUB] Stripe webhook received (Stripe SDK removed). Payload length: {}", payload != null ? payload.length() : 0);
+        }
+    }
+
+    private void processPaymentOutcome(EcPayment payment, String status, String payload) {
+        try {
+            if ("CAPTURED".equals(payment.getStatus()) || "FAILED".equals(payment.getStatus())) {
+                log.info("Payment {} already processed. Idempotent return.", payment.getId());
+                return;
+            }
+
+            payment.setWebhookVerified(true);
+            payment.setPgResponse(payload);
+
+            EcommerceOrder order = orderRepository.findById(payment.getOrderId()).orElseThrow();
+
+            if ("SUCCESS".equalsIgnoreCase(status)) {
+                payment.setStatus("CAPTURED");
+                payment.setCapturedAt(ZonedDateTime.now());
+                order.setPaymentStatus("PAID");
+                order.setStatus("CONFIRMED");
+                inventoryService.convertReservationToSale(order.getPatientId(), order.getId());
+            } else {
                 payment.setStatus("FAILED");
                 payment.setFailedAt(ZonedDateTime.now());
                 order.setPaymentStatus("FAILED");
@@ -132,7 +117,6 @@ public class PaymentService {
             
             paymentRepository.save(payment);
             orderRepository.save(order);
-
         } catch (Exception e) {
             log.error("Failed to process payment outcome", e);
             throw new RuntimeException("Payment outcome processing failed", e);

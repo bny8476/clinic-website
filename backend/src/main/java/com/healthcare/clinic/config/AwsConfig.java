@@ -1,4 +1,4 @@
-﻿package com.healthcare.clinic.config;
+package com.healthcare.clinic.config;
 
 import org.springframework.context.annotation.Configuration;
 

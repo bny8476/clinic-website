@@ -1,4 +1,4 @@
-﻿package com.healthcare.clinic.telemedicine.service;
+package com.healthcare.clinic.telemedicine.service;
 
 import com.healthcare.clinic.telemedicine.entity.TeleconsultSession;
 import com.healthcare.clinic.telemedicine.repository.TeleconsultSessionRepository;

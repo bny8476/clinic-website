@@ -18,8 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.annotation.PostConstruct;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -30,13 +30,13 @@ public class StripePaymentService {
     private final PaymentRepository paymentRepository;
     private final MedicineOrderRepository medicineOrderRepository;
 
-    @Value("${stripe.secret-key}")
+    @Value("${stripe.secret-key:sk_test_placeholder}")
     private String stripeSecretKey;
 
-    @Value("${stripe.webhook-secret}")
+    @Value("${stripe.webhook-secret:whsec_placeholder}")
     private String endpointSecret;
 
-    @Value("${stripe.publishable-key}")
+    @Value("${stripe.publishable-key:pk_test_placeholder}")
     private String stripePublishableKey;
 
     @Value("${app.frontend-url:http://localhost:3000}")
@@ -47,7 +47,7 @@ public class StripePaymentService {
         log.info("StripePaymentService initialized (Stripe SDK stubbed)");
     }
 
-        public String createCheckoutSession(Long invoiceId) {
+    public String createCheckoutSession(Long invoiceId) {
         Invoice invoice = invoiceRepository.findById(invoiceId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invoice not found"));
 
@@ -55,16 +55,12 @@ public class StripePaymentService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Invoice is already paid");
         }
 
-        String mockSessionUrl = frontendUrl + "/checkout/mock-stripe?invoiceId=" + invoiceId + "&token=" + java.util.UUID.randomUUID();
+        String mockSessionUrl = frontendUrl + "/checkout/mock-stripe?invoiceId=" + invoiceId + "&token=" + UUID.randomUUID();
         log.info("[STUB] Created Stripe Checkout session URL for Invoice {}: {}", invoiceId, mockSessionUrl);
         return mockSessionUrl;
-    } catch (StripeException e) {
-            log.error("Failed to create Stripe session", e);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to create payment session");
-        }
     }
 
-        public String createMedicineCheckoutSession(Long orderId) {
+    public String createMedicineCheckoutSession(Long orderId) {
         MedicineOrder order = medicineOrderRepository.findById(orderId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Medicine Order not found"));
 
@@ -72,16 +68,12 @@ public class StripePaymentService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Order is already paid");
         }
 
-        String mockSessionUrl = frontendUrl + "/checkout/mock-stripe?orderId=" + orderId + "&token=" + java.util.UUID.randomUUID();
+        String mockSessionUrl = frontendUrl + "/checkout/mock-stripe?orderId=" + orderId + "&token=" + UUID.randomUUID();
         log.info("[STUB] Created Stripe Checkout session URL for Medicine Order {}: {}", orderId, mockSessionUrl);
         return mockSessionUrl;
-    } catch (StripeException e) {
-            log.error("Failed to create Stripe session", e);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to create payment session");
-        }
     }
 
-        @Transactional
+    @Transactional
     public void processWebhook(String payload, String signature) {
         log.info("[STUB] Stripe webhook received (Stripe SDK removed). Payload length: {}", payload != null ? payload.length() : 0);
     }

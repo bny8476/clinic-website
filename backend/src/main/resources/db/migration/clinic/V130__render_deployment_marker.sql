@@ -1,2 +1,2 @@
-﻿-- Render deployment marker
+-- Render deployment marker
 SELECT 1;
