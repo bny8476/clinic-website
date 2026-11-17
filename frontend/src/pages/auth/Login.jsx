@@ -82,21 +82,27 @@ export default function Login() {
   } = useAuthStore();
 
   // Validate internal returnTo parameter to prevent open redirects
-  const getReturnTo = () => {
-    const pendingStr = localStorage.getItem('pendingBooking');
-    if (pendingStr) {
-      try {
-        const pending = JSON.parse(pendingStr);
-        if (pending.doctorId) {
-          return `/patient/book/${pending.doctorId}?date=${pending.date || ''}`;
+  const getReturnTo = (userRoles = []) => {
+    const isPatientOnly = userRoles.includes('ROLE_PATIENT') && !userRoles.includes('ROLE_ADMIN') && !userRoles.includes('ROLE_SUPER_ADMIN') && !userRoles.includes('ROLE_SYSTEM_ADMIN') && !userRoles.includes('ROLE_DOCTOR');
+    if (isPatientOnly) {
+      const pendingStr = localStorage.getItem('pendingBooking');
+      if (pendingStr) {
+        try {
+          const pending = JSON.parse(pendingStr);
+          if (pending.doctorId) {
+            return `/patient/book/${pending.doctorId}?date=${pending.date || ''}`;
+          }
+        } catch (e) {
+          // ignore
         }
-      } catch (e) {
-        // ignore
+        return '/patient/book';
       }
-      return '/patient/book';
     }
     const returnTo = searchParams.get('redirect') || searchParams.get('returnTo') || location.state?.from?.pathname;
     if (returnTo && returnTo.startsWith('/') && !returnTo.startsWith('//')) {
+      if (returnTo === '/403' || returnTo === '/unauthorized' || returnTo === '/login') {
+        return null;
+      }
       return returnTo;
     }
     return null;
@@ -104,7 +110,7 @@ export default function Login() {
 
   useEffect(() => {
     if (isTokenValid(token) && roles && roles.length > 0) {
-      const target = getReturnTo() || getDefaultDashboardRoute(roles);
+      const target = getReturnTo(roles) || getDefaultDashboardRoute(roles);
       navigate(target, { replace: true });
     }
   }, [token, roles, navigate]);
@@ -114,7 +120,7 @@ export default function Login() {
     clearError();
     const res = await storeLogin(email.trim(), password, rememberMe);
     if (res.success) {
-      const target = getReturnTo() || getDefaultDashboardRoute(res.roles);
+      const target = getReturnTo(res.roles) || getDefaultDashboardRoute(res.roles);
       navigate(target, { replace: true });
     }
   };
@@ -124,7 +130,7 @@ export default function Login() {
     clearError();
     const res = await verifyMfa(mfaEmail, otp.trim());
     if (res.success) {
-      const target = getReturnTo() || getDefaultDashboardRoute(res.roles);
+      const target = getReturnTo(res.roles) || getDefaultDashboardRoute(res.roles);
       navigate(target, { replace: true });
     }
   };

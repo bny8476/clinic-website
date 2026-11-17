@@ -5,11 +5,16 @@ import useAuthStore, { getDefaultDashboardRoute } from '../../store/authStore';
 
 export default function Unauthorized() {
   const navigate = useNavigate();
-  const { roles, user } = useAuthStore();
+  const { roles, user, logout } = useAuthStore();
 
   const handleBackToDashboard = () => {
     const target = getDefaultDashboardRoute(roles);
     navigate(target, { replace: true });
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login', { replace: true });
   };
 
   return (
@@ -27,11 +32,11 @@ export default function Unauthorized() {
 
         <div className="flex flex-col sm:flex-row gap-3">
           <button
-            onClick={() => navigate(-1)}
+            onClick={handleLogout}
             className="flex-1 py-3 px-4 rounded-xl border border-slate-200 text-slate-700 font-bold text-sm hover:bg-slate-50 transition cursor-pointer flex items-center justify-center gap-2"
           >
             <ArrowLeft size={16} />
-            <span>Go Back</span>
+            <span>Sign Out</span>
           </button>
           
           <button
