@@ -67,7 +67,26 @@ public class SecurityConfig {
                 .frameOptions(frameOptions -> frameOptions.deny())
                 .xssProtection(xss -> xss.headerValue(org.springframework.security.web.header.writers.XXssProtectionHeaderWriter.HeaderValue.ENABLED_MODE_BLOCK))
             )
-            .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
+            .exceptionHandling(exception -> exception
+                .authenticationEntryPoint(unauthorizedHandler)
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    String origin = request.getHeader("Origin");
+                    if (origin != null && !origin.isBlank()) {
+                        response.setHeader("Access-Control-Allow-Origin", origin);
+                        response.setHeader("Access-Control-Allow-Credentials", "true");
+                        response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD");
+                        response.setHeader("Access-Control-Allow-Headers", "*");
+                    }
+                    response.setContentType(org.springframework.http.MediaType.APPLICATION_JSON_VALUE);
+                    response.setStatus(jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN);
+                    final java.util.Map<String, Object> body = new java.util.HashMap<>();
+                    body.put("status", jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN);
+                    body.put("error", "Forbidden");
+                    body.put("message", accessDeniedException.getMessage());
+                    body.put("path", request.getServletPath());
+                    new com.fasterxml.jackson.databind.ObjectMapper().writeValue(response.getOutputStream(), body);
+                })
+            )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> {
                 auth.requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll();
@@ -119,6 +138,12 @@ public class SecurityConfig {
         }
         if (!patterns.contains("https://clinic-website-ndzj.onrender.com")) {
             patterns.add("https://clinic-website-ndzj.onrender.com");
+        }
+        if (!patterns.contains("https://*.vercel.app")) {
+            patterns.add("https://*.vercel.app");
+        }
+        if (!patterns.contains("https://*.onrender.com")) {
+            patterns.add("https://*.onrender.com");
         }
 
         if (!isProd) {

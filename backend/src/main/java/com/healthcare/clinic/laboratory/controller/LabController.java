@@ -151,7 +151,7 @@ public class LabController {
      * Used by LabWorklist.jsx frontend component.
      */
     @GetMapping("/worklist")
-    @PreAuthorize("hasRole('LAB_TECH') or hasRole('NURSE') or hasRole('SUPER_ADMIN') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('LAB_TECH') or hasRole('LAB_TECHNICIAN') or hasRole('LAB') or hasRole('PATHOLOGIST') or hasRole('SUPER_ADMIN') or hasRole('ADMIN') or hasRole('SYSTEM_ADMIN') or hasRole('NURSE')")
     public ResponseEntity<Page<LabTestRequest>> getWorklist(
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String search,
@@ -171,7 +171,7 @@ public class LabController {
      * Used by LabWorklist.jsx frontend component.
      */
     @PostMapping("/requests/generate-barcodes")
-    @PreAuthorize("hasRole('LAB_TECH') or hasRole('SUPER_ADMIN') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('LAB_TECH') or hasRole('LAB_TECHNICIAN') or hasRole('LAB') or hasRole('PATHOLOGIST') or hasRole('SUPER_ADMIN') or hasRole('ADMIN') or hasRole('SYSTEM_ADMIN')")
     public ResponseEntity<List<LabBarcode>> generateBarcodes(@RequestBody List<Long> requestIds) {
         List<LabBarcode> barcodes = barcodeService.generateBarcodesForRequests(requestIds);
         return ResponseEntity.ok(barcodes);
@@ -193,7 +193,7 @@ public class LabController {
     }
 
     @GetMapping("/requests/status/{status}")
-    @PreAuthorize("hasRole('LAB_TECH') or hasRole('NURSE') or hasRole('SUPER_ADMIN') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('LAB_TECH') or hasRole('LAB_TECHNICIAN') or hasRole('LAB') or hasRole('PATHOLOGIST') or hasRole('SUPER_ADMIN') or hasRole('ADMIN') or hasRole('SYSTEM_ADMIN') or hasRole('NURSE')")
     public ResponseEntity<List<LabTestRequest>> getRequestsByStatus(@PathVariable String status) {
         return ResponseEntity.ok(requestRepository.findByStatus(status));
     }
@@ -204,13 +204,13 @@ public class LabController {
      * Used by LabRecentRequests.jsx (lab dashboard, "All Requests" filter).
      */
     @GetMapping("/requests/all")
-    @PreAuthorize("hasRole('LAB_TECH') or hasRole('NURSE') or hasRole('SUPER_ADMIN') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('LAB_TECH') or hasRole('LAB_TECHNICIAN') or hasRole('LAB') or hasRole('PATHOLOGIST') or hasRole('SUPER_ADMIN') or hasRole('ADMIN') or hasRole('SYSTEM_ADMIN') or hasRole('NURSE')")
     public ResponseEntity<List<LabTestRequest>> getAllRequests() {
         return ResponseEntity.ok(requestRepository.findAll(Sort.by(Sort.Direction.DESC, "requestedAt")));
     }
 
     @PutMapping("/requests/{requestId}/status")
-    @PreAuthorize("hasRole('LAB_TECH') or hasRole('SUPER_ADMIN') or hasRole('NURSE')")
+    @PreAuthorize("hasRole('LAB_TECH') or hasRole('LAB_TECHNICIAN') or hasRole('LAB') or hasRole('PATHOLOGIST') or hasRole('SUPER_ADMIN') or hasRole('ADMIN') or hasRole('SYSTEM_ADMIN') or hasRole('NURSE')")
     @AuditableAction(module = "LABORATORY", action = "EDIT_STATUS", resourceType = "LabTestRequest", sensitivityLevel = "HIGH")
     public ResponseEntity<LabTestRequest> updateRequestStatus(@PathVariable Long requestId, @RequestParam String status) {
         LabTestRequest request = requestRepository.findById(requestId).orElseThrow();
@@ -248,7 +248,7 @@ public class LabController {
     }
 
     @PostMapping(value = "/requests/{requestId}/result", consumes = {"multipart/form-data", "application/json"})
-    @PreAuthorize("hasRole('LAB_TECH') or hasRole('SUPER_ADMIN')")
+    @PreAuthorize("hasRole('LAB_TECH') or hasRole('LAB_TECHNICIAN') or hasRole('LAB') or hasRole('PATHOLOGIST') or hasRole('SUPER_ADMIN') or hasRole('ADMIN') or hasRole('SYSTEM_ADMIN')")
     @AuditableAction(module = "LABORATORY", action = "ENTER_RESULT", resourceType = "LabResult", sensitivityLevel = "HIGH")
     public ResponseEntity<LabResult> addResult(
             @PathVariable Long requestId,

@@ -34,6 +34,8 @@ export function isTokenValid(token) {
 export const ROLE_DASHBOARDS = {
   ROLE_SUPER_ADMIN: '/super-admin/dashboard',
   SUPER_ADMIN: '/super-admin/dashboard',
+  ROLE_SYSTEM_ADMIN: '/admin/dashboard',
+  SYSTEM_ADMIN: '/admin/dashboard',
   ROLE_ADMIN: '/admin/dashboard',
   ADMIN: '/admin/dashboard',
   ROLE_DOCTOR: '/doctor/dashboard',
@@ -67,6 +69,7 @@ export const ROLE_DASHBOARDS = {
 
 const ROLE_PRIORITY_ORDER = [
   'ROLE_SUPER_ADMIN', 'SUPER_ADMIN',
+  'ROLE_SYSTEM_ADMIN', 'SYSTEM_ADMIN',
   'ROLE_ADMIN', 'ADMIN',
   'ROLE_DOCTOR', 'DOCTOR',
   'ROLE_NURSE', 'NURSE',

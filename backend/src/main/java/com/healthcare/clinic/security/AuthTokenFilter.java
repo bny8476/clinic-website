@@ -73,13 +73,35 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                 io.jsonwebtoken.Claims claims = jwtUtils.getClaimsFromJwtToken(jwt);
 
                 String username = claims.getSubject();
-                Long userId = claims.get("userId", Long.class);
-                Long branchId = claims.get("branchId", Long.class);
+                
+                Long userId = null;
+                Object rawUserId = claims.get("userId");
+                if (rawUserId instanceof Number num) {
+                    userId = num.longValue();
+                } else if (rawUserId != null) {
+                    try {
+                        userId = Long.parseLong(rawUserId.toString());
+                    } catch (NumberFormatException ignored) {}
+                }
 
-                List<String> roles = claims.get("roles", List.class);
+                Long branchId = null;
+                Object rawBranchId = claims.get("branchId");
+                if (rawBranchId instanceof Number num) {
+                    branchId = num.longValue();
+                } else if (rawBranchId != null) {
+                    try {
+                        branchId = Long.parseLong(rawBranchId.toString());
+                    } catch (NumberFormatException ignored) {}
+                }
 
-                if (roles == null) {
-                    roles = Collections.emptyList();
+                List<String> roles = new ArrayList<>();
+                Object rawRoles = claims.get("roles");
+                if (rawRoles instanceof List<?> list) {
+                    for (Object item : list) {
+                        if (item != null) {
+                            roles.add(item.toString());
+                        }
+                    }
                 }
 
                 log.info(
@@ -99,9 +121,23 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                     authorities.add(new SimpleGrantedAuthority(roleWithPrefix));
                     authorities.add(new SimpleGrantedAuthority(roleWithoutPrefix));
 
-                    if (roleWithPrefix.equals("ROLE_SUPER_ADMIN")) {
+                    if (roleWithPrefix.equals("ROLE_SUPER_ADMIN") || roleWithPrefix.equals("ROLE_SYSTEM_ADMIN")) {
                         authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
                         authorities.add(new SimpleGrantedAuthority("ADMIN"));
+                        authorities.add(new SimpleGrantedAuthority("ROLE_SUPER_ADMIN"));
+                        authorities.add(new SimpleGrantedAuthority("SUPER_ADMIN"));
+                        authorities.add(new SimpleGrantedAuthority("ROLE_SYSTEM_ADMIN"));
+                        authorities.add(new SimpleGrantedAuthority("SYSTEM_ADMIN"));
+                    }
+                    if (roleWithPrefix.equals("ROLE_ADMIN")) {
+                        authorities.add(new SimpleGrantedAuthority("ROLE_SUPER_ADMIN"));
+                        authorities.add(new SimpleGrantedAuthority("SUPER_ADMIN"));
+                    }
+                    if (roleWithPrefix.equals("ROLE_LAB") || roleWithPrefix.equals("ROLE_PATHOLOGIST") || roleWithPrefix.equals("ROLE_LAB_SENIOR") || roleWithPrefix.equals("ROLE_LAB_TECHNICIAN")) {
+                        authorities.add(new SimpleGrantedAuthority("ROLE_LAB_TECH"));
+                        authorities.add(new SimpleGrantedAuthority("LAB_TECH"));
+                        authorities.add(new SimpleGrantedAuthority("ROLE_LAB"));
+                        authorities.add(new SimpleGrantedAuthority("LAB"));
                     }
                 }
 
