@@ -71,6 +71,12 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> {
                 auth.requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll();
+                auth.requestMatchers(
+                    "/", "/index.html", "/favicon.*", "/assets/**", "/images/**",
+                    "/*.png", "/*.svg", "/*.ico", "/*.json", "/*.js", "/*.css",
+                    "/env-config.js", "/manifest.webmanifest", "/registerSW.js", "/sw.js", "/workbox-*.js",
+                    "/login", "/register", "/admin/**", "/doctor/**", "/patient/**", "/pharmacy/**", "/reception/**", "/nurse/**", "/lab/**", "/unauthorized"
+                ).permitAll();
                 auth.requestMatchers("/api/auth/**", "/api/health", "/api/pharmacy/config/public", "/error").permitAll();
                 auth.requestMatchers(org.springframework.http.HttpMethod.POST, "/api/ai/chat", "/api/v1/ai/chat").permitAll();
                 auth.requestMatchers("/api/sse/**", "/api/notifications/stream").permitAll();
