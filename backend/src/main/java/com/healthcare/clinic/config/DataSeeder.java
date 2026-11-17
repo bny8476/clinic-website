@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -53,7 +54,8 @@ public class DataSeeder implements CommandLineRunner {
         }
     }
 
-    private void seedDatabase() {
+    @Transactional
+    public void seedDatabase() {
 
         String[] allRoleNames = {
             "ROLE_ADMIN", "ROLE_SUPER_ADMIN", "ROLE_SYSTEM_ADMIN", "ROLE_BRANCH_ADMIN",
@@ -83,13 +85,7 @@ public class DataSeeder implements CommandLineRunner {
             Set<String> coreAdminRoleNames = Set.of(
                 "ROLE_ADMIN", "ROLE_SUPER_ADMIN", "ROLE_SYSTEM_ADMIN", "ROLE_BRANCH_ADMIN"
             );
-            User admin = seedUser("admin@clinic.com", "Clinic@2026#Admin", "Admin", "User", coreAdminRoleNames);
-            if (!adminRoles.isEmpty()) {
-                Set<Role> combined = new HashSet<>(admin.getRoles() != null ? admin.getRoles() : Collections.emptySet());
-                combined.addAll(adminRoles);
-                admin.setRoles(combined);
-                userRepository.save(admin);
-            }
+            seedUser("admin@clinic.com", "Clinic@2026#Admin", "Admin", "User", coreAdminRoleNames);
             log.info("DataSeeder: successfully ensured admin@clinic.com account.");
         } catch (Exception e) {
             log.error("DataSeeder: error seeding admin@clinic.com: {}", e.getMessage());
@@ -247,7 +243,7 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private User seedUser(String email, String password, String firstName, String lastName, Set<String> roleNames) {
-        User user = userRepository.findByEmail(email).orElseGet(() -> 
+        User user = userRepository.findByEmailWithRoles(email).orElseGet(() -> 
             User.builder().email(email).firstName(firstName).lastName(lastName).build()
         );
         user.setPasswordHash(passwordEncoder.encode(password));
@@ -256,7 +252,7 @@ public class DataSeeder implements CommandLineRunner {
         user.setEnabled(true);
 
         if (roleNames != null && !roleNames.isEmpty()) {
-            Set<Role> roles = new HashSet<>(user.getRoles() != null ? user.getRoles() : Collections.emptySet());
+            Set<Role> roles = user.getRoles() != null ? new HashSet<>(user.getRoles()) : new HashSet<>();
             for (String roleName : roleNames) {
                 roleRepository.findByName(roleName).ifPresent(roles::add);
             }
