@@ -66,70 +66,111 @@ public class DataSeeder implements CommandLineRunner {
 
         Set<Role> adminRoles = new HashSet<>();
         for (String roleName : allRoleNames) {
-            Role role = roleRepository.findByName(roleName).orElseGet(() -> {
-                Role newRole = Role.builder().name(roleName).build();
-                newRole.setLoginPortal(getLoginPortalForRole(roleName));
-                return roleRepository.save(newRole);
-            });
-            adminRoles.add(role);
+            try {
+                Role role = roleRepository.findByName(roleName).orElseGet(() -> {
+                    Role newRole = Role.builder().name(roleName).build();
+                    newRole.setLoginPortal(getLoginPortalForRole(roleName));
+                    return roleRepository.save(newRole);
+                });
+                adminRoles.add(role);
+            } catch (Exception e) {
+                log.warn("DataSeeder: could not seed role {}: {}", roleName, e.getMessage());
+            }
+        }
+
+        // Always seed Core Admin users first with highest priority
+        try {
+            User admin = seedUser("admin@clinic.com", "Clinic@2026#Admin", "Admin", "User", null);
+            if (!adminRoles.isEmpty()) {
+                admin.setRoles(adminRoles);
+                userRepository.save(admin);
+            }
+            log.info("DataSeeder: successfully ensured admin@clinic.com account.");
+        } catch (Exception e) {
+            log.error("DataSeeder: error seeding admin@clinic.com: {}", e.getMessage());
+        }
+
+        try {
+            seedUser("superadmin@clinic.com", "Clinic@2026#Super", "Super", "Admin", Set.of("ROLE_SUPER_ADMIN"));
+        } catch (Exception e) {
+            log.warn("DataSeeder: superadmin error: {}", e.getMessage());
+        }
+
+        try {
+            seedUser("manager@clinic.com", "Clinic@2026#Manager", "Manager", "User", Set.of("ROLE_BRANCH_ADMIN"));
+        } catch (Exception e) {
+            log.warn("DataSeeder: manager error: {}", e.getMessage());
         }
 
         // Seed Tenant
-        Tenant tenant = tenantRepository.findById(1L).orElseGet(() -> {
-            Tenant newTenant = Tenant.builder().name("Main Healthcare Group").email("admin@main.clinic.com").status("ACTIVE").build();
-            return tenantRepository.save(newTenant);
-        });
+        Tenant tenant = null;
+        try {
+            tenant = tenantRepository.findById(1L).orElseGet(() -> {
+                Tenant newTenant = Tenant.builder().name("Main Healthcare Group").email("admin@main.clinic.com").status("ACTIVE").build();
+                return tenantRepository.save(newTenant);
+            });
+        } catch (Exception e) {
+            log.warn("DataSeeder: tenant seed warning: {}", e.getMessage());
+        }
 
         // Seed Branch
-        Branch branch = branchRepository.findById(1L).orElseGet(() -> {
-            Branch newBranch = Branch.builder().tenant(tenant).name("Main Clinic Branch").address("123 Health Ave").city("City").state("State").country("Country").postalCode("12345").timezone("UTC").isActive(true).build();
-            return branchRepository.save(newBranch);
-        });
+        final Tenant finalTenant = tenant;
+        try {
+            branchRepository.findById(1L).orElseGet(() -> {
+                Branch newBranch = Branch.builder().tenant(finalTenant).name("Main Clinic Branch").address("123 Health Ave").city("City").state("State").country("Country").postalCode("12345").timezone("UTC").isActive(true).build();
+                return branchRepository.save(newBranch);
+            });
+        } catch (Exception e) {
+            log.warn("DataSeeder: branch seed warning: {}", e.getMessage());
+        }
 
-        seedUser("superadmin@clinic.com", "Clinic@2026#Super", "Super", "Admin", Set.of("ROLE_SUPER_ADMIN"));
-        
-        User admin = seedUser("admin@clinic.com", "Clinic@2026#Admin", "Admin", "User", null);
-        admin.setRoles(adminRoles);
-        userRepository.save(admin);
-
-        seedUser("manager@clinic.com", "Clinic@2026#Manager", "Manager", "User", Set.of("ROLE_BRANCH_ADMIN"));
-        
-        User doctor = seedUser("doctor@clinic.com", "Clinic@2026#Doctor", "John", "Doe", Set.of("ROLE_DOCTOR"));
-        
-        // Ensure the seeded doctor has a DoctorProfile so the dashboard loads
-        if (doctorProfileRepository.findByUserId(doctor.getId()).isEmpty()) {
-            DoctorProfile profile = DoctorProfile.builder()
-                    .userId(doctor.getId())
-                    .specialty("Cardiology")
-                    .qualifications("MBBS, MD (Cardiology)")
-                    .experienceYears(10)
-                    .consultationFee(new java.math.BigDecimal("50.00"))
-                    .bio("Experienced cardiologist specializing in cardiovascular wellness and preventive care.")
-                    .registrationNumber("DOC-CARD-2026-88")
-                    .isActive(true)
-                    .branchId(1L)
-                    .build();
-            doctorProfileRepository.save(profile);
-            log.info("DataSeeder: created default DoctorProfile for doctor@clinic.com.");
+        User doctor = null;
+        try {
+            doctor = seedUser("doctor@clinic.com", "Clinic@2026#Doctor", "John", "Doe", Set.of("ROLE_DOCTOR"));
+        } catch (Exception e) {
+            log.error("DataSeeder: error seeding doctor@clinic.com: {}", e.getMessage());
         }
         
-        DoctorProfile savedProfile = doctorProfileRepository.findByUserId(doctor.getId()).orElse(null);
-        if (savedProfile != null && doctorWorkingHoursRepository.findByDoctorIdAndIsActiveTrue(savedProfile.getId()).isEmpty()) {
-            for (int day = 1; day <= 5; day++) { // Monday to Friday
-                DoctorWorkingHours hours = DoctorWorkingHours.builder()
-                        .doctor(savedProfile)
-                        .dayOfWeek(day)
-                        .startTime(java.time.LocalTime.of(9, 0))
-                        .endTime(java.time.LocalTime.of(17, 0))
-                        .slotDurationMinutes(20)
-                        .isActive(true)
-                        .branchId(savedProfile.getBranchId())
-                        .createdAt(java.time.Instant.now())
-                        .updatedAt(java.time.Instant.now())
-                        .build();
-                doctorWorkingHoursRepository.save(hours);
+        // Ensure the seeded doctor has a DoctorProfile so the dashboard loads
+        if (doctor != null) {
+            try {
+                if (doctorProfileRepository.findByUserId(doctor.getId()).isEmpty()) {
+                    DoctorProfile profile = DoctorProfile.builder()
+                            .userId(doctor.getId())
+                            .specialty("Cardiology")
+                            .qualifications("MBBS, MD (Cardiology)")
+                            .experienceYears(10)
+                            .consultationFee(new java.math.BigDecimal("50.00"))
+                            .bio("Experienced cardiologist specializing in cardiovascular wellness and preventive care.")
+                            .registrationNumber("DOC-CARD-2026-88")
+                            .isActive(true)
+                            .branchId(1L)
+                            .build();
+                    doctorProfileRepository.save(profile);
+                    log.info("DataSeeder: created default DoctorProfile for doctor@clinic.com.");
+                }
+                
+                DoctorProfile savedProfile = doctorProfileRepository.findByUserId(doctor.getId()).orElse(null);
+                if (savedProfile != null && doctorWorkingHoursRepository.findByDoctorIdAndIsActiveTrue(savedProfile.getId()).isEmpty()) {
+                    for (int day = 1; day <= 5; day++) { // Monday to Friday
+                        DoctorWorkingHours hours = DoctorWorkingHours.builder()
+                                .doctor(savedProfile)
+                                .dayOfWeek(day)
+                                .startTime(java.time.LocalTime.of(9, 0))
+                                .endTime(java.time.LocalTime.of(17, 0))
+                                .slotDurationMinutes(20)
+                                .isActive(true)
+                                .branchId(savedProfile.getBranchId())
+                                .createdAt(java.time.Instant.now())
+                                .updatedAt(java.time.Instant.now())
+                                .build();
+                        doctorWorkingHoursRepository.save(hours);
+                    }
+                    log.info("DataSeeder: created default DoctorWorkingHours for doctor@clinic.com.");
+                }
+            } catch (Exception e) {
+                log.warn("DataSeeder: doctor profile/hours warning: {}", e.getMessage());
             }
-            log.info("DataSeeder: created default DoctorWorkingHours for doctor@clinic.com.");
         }
 
         seedUser("nurse@clinic.com", "Clinic@2026#Nurse", "Jane", "Smith", Set.of("ROLE_NURSE"));

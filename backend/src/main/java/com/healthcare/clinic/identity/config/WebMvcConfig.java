@@ -29,6 +29,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .allowedOriginPatterns(
                         "https://clinic-website-bny2.vercel.app",
                         "https://clinic-website-three-chi.vercel.app",
+                        "https://clinic-website-ndzj.onrender.com",
+                        "https://*.onrender.com",
+                        "https://*.vercel.app",
                         "http://localhost:5173",
                         "http://localhost:3000",
                         "http://localhost:5174",

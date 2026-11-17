@@ -44,6 +44,11 @@ public class ClinicDatabaseConfig {
             String envUrl = getFirstNonEmptyProperty("DATABASE_URL", "SPRING_DATASOURCE_URL", "SPRING_DATASOURCE_CLINIC_URL", "POSTGRES_URL", "MYSQL_URL", "DB_URL");
             if (envUrl != null && !envUrl.trim().isEmpty()) {
                 url = envUrl;
+            } else if (isProduction) {
+                // In production, if localhost:5432 is default with no external DB,
+                // do NOT attempt connecting to localhost (it blocks for 30s and triggers port scan timeout).
+                // Immediately use H2 fallback.
+                url = null;
             }
         }
 
@@ -98,7 +103,7 @@ public class ClinicDatabaseConfig {
         dataSource.setConnectionTestQuery("SELECT 1");
         dataSource.setMaximumPoolSize(environment.getProperty("app.datasource.clinic.maximum-pool-size", Integer.class, 5));
         dataSource.setMinimumIdle(environment.getProperty("app.datasource.clinic.minimum-idle", Integer.class, 1));
-        dataSource.setConnectionTimeout(environment.getProperty("app.datasource.clinic.connection-timeout", Long.class, 30000L));
+        dataSource.setConnectionTimeout(environment.getProperty("app.datasource.clinic.connection-timeout", Long.class, 10000L));
         dataSource.setIdleTimeout(environment.getProperty("app.datasource.clinic.idle-timeout", Long.class, 600000L));
         dataSource.setMaxLifetime(environment.getProperty("app.datasource.clinic.max-lifetime", Long.class, 1800000L));
 

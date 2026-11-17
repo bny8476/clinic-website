@@ -104,12 +104,15 @@ public class SecurityConfig {
             }
         }
 
-        // Always ensure Vercel frontend production origins are present
+        // Always ensure Vercel and Render frontend production origins are present
         if (!patterns.contains("https://clinic-website-three-chi.vercel.app")) {
             patterns.add("https://clinic-website-three-chi.vercel.app");
         }
         if (!patterns.contains("https://clinic-website-bny2.vercel.app")) {
             patterns.add("https://clinic-website-bny2.vercel.app");
+        }
+        if (!patterns.contains("https://clinic-website-ndzj.onrender.com")) {
+            patterns.add("https://clinic-website-ndzj.onrender.com");
         }
 
         if (!isProd) {
