@@ -80,9 +80,14 @@ public class DataSeeder implements CommandLineRunner {
 
         // Always seed Core Admin users first with highest priority
         try {
-            User admin = seedUser("admin@clinic.com", "Clinic@2026#Admin", "Admin", "User", null);
+            Set<String> coreAdminRoleNames = Set.of(
+                "ROLE_ADMIN", "ROLE_SUPER_ADMIN", "ROLE_SYSTEM_ADMIN", "ROLE_BRANCH_ADMIN"
+            );
+            User admin = seedUser("admin@clinic.com", "Clinic@2026#Admin", "Admin", "User", coreAdminRoleNames);
             if (!adminRoles.isEmpty()) {
-                admin.setRoles(adminRoles);
+                Set<Role> combined = new HashSet<>(admin.getRoles() != null ? admin.getRoles() : Collections.emptySet());
+                combined.addAll(adminRoles);
+                admin.setRoles(combined);
                 userRepository.save(admin);
             }
             log.info("DataSeeder: successfully ensured admin@clinic.com account.");
@@ -250,13 +255,13 @@ public class DataSeeder implements CommandLineRunner {
         user.setLockedUntil(null);
         user.setEnabled(true);
 
-        Set<Role> roles = new HashSet<>();
-        if (roleNames != null) {
+        if (roleNames != null && !roleNames.isEmpty()) {
+            Set<Role> roles = new HashSet<>(user.getRoles() != null ? user.getRoles() : Collections.emptySet());
             for (String roleName : roleNames) {
                 roleRepository.findByName(roleName).ifPresent(roles::add);
             }
+            user.setRoles(roles);
         }
-        user.setRoles(roles);
         User savedUser = userRepository.save(user);
         log.info("DataSeeder: synced {} credentials and roles.", email);
         return savedUser;
