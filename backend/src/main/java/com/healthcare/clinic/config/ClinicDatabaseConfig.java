@@ -71,6 +71,11 @@ public class ClinicDatabaseConfig {
                 }
                 int port = uri.getPort() > 0 ? uri.getPort() : 5432;
                 url = "jdbc:postgresql://" + uri.getHost() + ":" + port + uri.getPath();
+                if (uri.getQuery() != null && !uri.getQuery().trim().isEmpty()) {
+                    url += "?" + uri.getQuery();
+                } else {
+                    url += "?sslmode=require";
+                }
             } catch (Exception e) {
                 System.err.println("[Clinic DB] Warning parsing DATABASE_URL: " + e.getMessage());
             }
