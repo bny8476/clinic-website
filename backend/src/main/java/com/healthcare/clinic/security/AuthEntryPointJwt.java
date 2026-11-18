@@ -19,28 +19,38 @@ import java.util.Map;
 public class AuthEntryPointJwt implements AuthenticationEntryPoint {
 
     @Override
-    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
-            throws IOException, ServletException {
-        log.error("Unauthorized error: {}", authException.getMessage());
+    public void commence(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            AuthenticationException authException
+    ) throws IOException, ServletException {
 
-        String origin = request.getHeader("Origin");
-        if (origin != null && !origin.isBlank()) {
-            response.setHeader("Access-Control-Allow-Origin", origin);
-            response.setHeader("Access-Control-Allow-Credentials", "true");
-            response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD");
-            response.setHeader("Access-Control-Allow-Headers", "*");
-        }
+        log.warn(
+            "Unauthorized request: {} {} | reason={}",
+            request.getMethod(),
+            request.getRequestURI(),
+            authException.getMessage()
+        );
 
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
         final Map<String, Object> body = new HashMap<>();
-        body.put("status", HttpServletResponse.SC_UNAUTHORIZED);
+
+        body.put(
+            "status",
+            HttpServletResponse.SC_UNAUTHORIZED
+        );
+
         body.put("error", "Unauthorized");
         body.put("message", authException.getMessage());
         body.put("path", request.getServletPath());
 
         final ObjectMapper mapper = new ObjectMapper();
-        mapper.writeValue(response.getOutputStream(), body);
+
+        mapper.writeValue(
+            response.getOutputStream(),
+            body
+        );
     }
 }

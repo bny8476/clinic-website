@@ -30,21 +30,36 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
+
+        // Always skip CORS preflight requests
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             return true;
         }
+
         String path = request.getServletPath();
+
         if (path == null || path.isEmpty()) {
             path = request.getRequestURI();
         }
 
-        if ("/api/auth/me".equals(path)) {
-            return false;
+        // Public endpoints that do NOT require JWT
+        if ("/api/health".equals(path)) {
+            return true;
         }
 
-        return path.startsWith("/api/auth/")
-                || path.equals("/api/health")
-                || path.equals("/error");
+        if ("/error".equals(path)) {
+            return true;
+        }
+
+        // Authentication endpoints
+        // Login/register/refresh don't need an existing JWT.
+        // /api/auth/me DOES need the JWT.
+        if (path.startsWith("/api/auth/")) {
+            return !"/api/auth/me".equals(path);
+        }
+
+        // Everything else should go through JWT authentication
+        return false;
     }
 
     @Override
