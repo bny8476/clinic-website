@@ -69,13 +69,13 @@ public class SseNotificationService {
         }
     }
 
-    @org.springframework.scheduling.annotation.Scheduled(fixedRate = 20000)
+    @org.springframework.scheduling.annotation.Scheduled(fixedRate = 10000)
     public void sendHeartbeats() {
         userEmitters.forEach((userId, emitters) -> {
             List<SseEmitter> deadEmitters = new ArrayList<>();
             for (SseEmitter emitter : emitters) {
                 try {
-                    emitter.send(SseEmitter.event().comment("heartbeat"));
+                    emitter.send(SseEmitter.event().name("PING").data("keep-alive"));
                 } catch (Exception e) {
                     deadEmitters.add(emitter);
                 }

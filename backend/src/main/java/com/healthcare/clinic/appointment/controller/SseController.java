@@ -59,7 +59,12 @@ public class SseController {
     }
 
     @GetMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter subscribe(@RequestParam("ticket") String ticket) {
+    public SseEmitter subscribe(
+            @RequestParam("ticket") String ticket,
+            jakarta.servlet.http.HttpServletResponse response) {
+        response.setHeader("Cache-Control", "no-cache, no-transform");
+        response.setHeader("X-Accel-Buffering", "no");
+
         SseTicketService.TicketDetails details = sseTicketService.consumeTicket(ticket);
         if (details == null) {
             throw new org.springframework.security.access.AccessDeniedException("Invalid or expired SSE ticket");
@@ -74,15 +79,21 @@ public class SseController {
         emitter.onTimeout(() -> connections.remove(connection));
         emitter.onError(e -> connections.remove(connection));
 
+        try {
+            emitter.send(SseEmitter.event().name("INIT").data("Connected to Appointment SSE Stream"));
+        } catch (Exception e) {
+            connections.remove(connection);
+        }
+
         return emitter;
     }
 
-    @org.springframework.scheduling.annotation.Scheduled(fixedRate = 15000)
+    @org.springframework.scheduling.annotation.Scheduled(fixedRate = 10000)
     public void sendHeartbeats() {
         List<ClientConnection> deadConnections = new CopyOnWriteArrayList<>();
         for (ClientConnection conn : connections) {
             try {
-                conn.emitter.send(SseEmitter.event().comment("ping"));
+                conn.emitter.send(SseEmitter.event().name("PING").data("keep-alive"));
             } catch (Exception e) {
                 deadConnections.add(conn);
             }

@@ -117,15 +117,27 @@ const DoctorDashboard = () => {
   // Subscribe to real-time appointment updates
   useEffect(() => {
     if (isInitializingAuth || !token || !isTokenValid(token)) return;
-    let evtSource;
+    let evtSource = null;
     let isMounted = true;
+    let reconnectTimer = null;
     
+    const scheduleReconnect = () => {
+      if (!isMounted || reconnectTimer) return;
+      reconnectTimer = setTimeout(() => {
+        reconnectTimer = null;
+        connectSSE();
+      }, 10000);
+    };
+
     const connectSSE = async () => {
       try {
         const res = await axiosPrivate.post('/sse/appointments/ticket', null, { timeout: 10000 });
         if (!isMounted) return;
         const ticket = res.data?.ticket;
-        if (!ticket) return;
+        if (!ticket) {
+          scheduleReconnect();
+          return;
+        }
         
         evtSource = new EventSource(`${BASE_URL.replace('/api', '')}/api/sse/appointments?ticket=${ticket}`);
         
@@ -162,13 +174,20 @@ const DoctorDashboard = () => {
         });
   
         evtSource.onerror = () => {
-          if (evtSource) evtSource.close();
+          if (evtSource) {
+            evtSource.close();
+            evtSource = null;
+          }
+          scheduleReconnect();
         };
       } catch (err) {
         if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
           console.warn('SSE appointment updates timed out. Real-time feed paused.');
         } else if (err.response?.status !== 401) {
           console.warn('SSE connection unavailable:', err.message || err);
+        }
+        if (err.response?.status !== 401) {
+          scheduleReconnect();
         }
       }
     };
@@ -177,6 +196,7 @@ const DoctorDashboard = () => {
 
     return () => {
       isMounted = false;
+      if (reconnectTimer) clearTimeout(reconnectTimer);
       if (evtSource) evtSource.close();
     };
   }, [user?.id, queryClient, token, isInitializingAuth]);

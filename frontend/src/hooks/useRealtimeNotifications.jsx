@@ -14,17 +14,33 @@ export function useRealtimeNotifications() {
 
     let eventSource = null;
     let isSubscribed = true;
+    let reconnectTimer = null;
+    let retryDelay = 1000;
+
+    const scheduleReconnect = () => {
+      if (!isSubscribed || reconnectTimer) return;
+      reconnectTimer = setTimeout(() => {
+        reconnectTimer = null;
+        connectSse();
+      }, retryDelay);
+      retryDelay = Math.min(retryDelay * 2, 30000);
+    };
 
     const connectSse = async () => {
       try {
         const ticketRes = await axiosPrivate.post('/notifications/ticket', null, { timeout: 10000 });
         const ticket = ticketRes.data?.ticket;
-        if (!ticket || !isSubscribed) return;
+        if (!isSubscribed) return;
+        if (!ticket) {
+          scheduleReconnect();
+          return;
+        }
 
         const streamUrl = `${BASE_URL.replace('/api', '')}/api/notifications/stream?ticket=${ticket}`;
-        eventSource = new EventSource(streamUrl);
+        const source = new EventSource(streamUrl);
+        eventSource = source;
 
-        eventSource.addEventListener('NOTIFICATION', (event) => {
+        source.addEventListener('NOTIFICATION', (event) => {
           try {
             const data = JSON.parse(event.data);
             toast.custom((t) => (
@@ -63,10 +79,16 @@ export function useRealtimeNotifications() {
           }
         });
 
-        eventSource.onerror = () => {
-          if (eventSource) {
-            eventSource.close();
-          }
+        source.onopen = () => {
+          retryDelay = 1000;
+        };
+        source.onerror = () => {
+          // A new one-use ticket is required for each stream connection, so close
+          // the failed source and reconnect through connectSse instead of letting
+          // EventSource retry the expired ticket URL.
+          source.close();
+          if (eventSource === source) eventSource = null;
+          scheduleReconnect();
         };
       } catch (err) {
         if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
@@ -74,6 +96,7 @@ export function useRealtimeNotifications() {
         } else if (err.response?.status !== 401) {
           console.warn("SSE notifications unavailable:", err.message || err);
         }
+        if (err.response?.status !== 401) scheduleReconnect();
       }
     };
 
@@ -81,6 +104,7 @@ export function useRealtimeNotifications() {
 
     return () => {
       isSubscribed = false;
+      if (reconnectTimer) clearTimeout(reconnectTimer);
       if (eventSource) {
         eventSource.close();
       }

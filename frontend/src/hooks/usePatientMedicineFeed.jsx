@@ -19,12 +19,25 @@ export function usePatientMedicineFeed(onUpdate) {
 
     let eventSource = null;
     let isSubscribed = true;
+    let reconnectTimer = null;
+
+    const scheduleReconnect = () => {
+      if (!isSubscribed || reconnectTimer) return;
+      reconnectTimer = setTimeout(() => {
+        reconnectTimer = null;
+        connect();
+      }, 10000);
+    };
 
     const connect = async () => {
       try {
         const ticketRes = await axiosPrivate.post('/sse/patient-medicines/ticket', null, { timeout: 10000 });
         const ticket = ticketRes.data?.ticket;
-        if (!ticket || !isSubscribed) return;
+        if (!isSubscribed) return;
+        if (!ticket) {
+          scheduleReconnect();
+          return;
+        }
 
         const url = `${BASE_URL.replace('/api', '')}/api/sse/patient-medicines?ticket=${ticket}`;
         eventSource = new EventSource(url);
@@ -44,13 +57,18 @@ export function usePatientMedicineFeed(onUpdate) {
         eventSource.onerror = () => {
           if (eventSource) {
             eventSource.close();
+            eventSource = null;
           }
+          scheduleReconnect();
         };
       } catch (err) {
         if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
           console.warn('SSE medicine feed ticket timed out. Real-time feed paused.');
         } else if (err.response?.status !== 401) {
           console.warn('SSE patient medicine feed unavailable:', err.message || err);
+        }
+        if (err.response?.status !== 401) {
+          scheduleReconnect();
         }
       }
     };
@@ -59,6 +77,7 @@ export function usePatientMedicineFeed(onUpdate) {
 
     return () => {
       isSubscribed = false;
+      if (reconnectTimer) clearTimeout(reconnectTimer);
       if (eventSource) {
         eventSource.close();
       }

@@ -42,9 +42,10 @@ public class NotificationController {
             @RequestParam(value = "ticket", required = false) String ticket,
             jakarta.servlet.http.HttpServletResponse response) {
             
-        response.setHeader("Cache-Control", "no-cache");
+        response.setHeader("Cache-Control", "no-cache, no-transform");
         response.setHeader("X-Accel-Buffering", "no");
-        response.setHeader("Connection", "keep-alive");
+        // Do not set Connection: keep-alive here. It is a hop-by-hop header and is
+        // invalid on HTTP/2 and HTTP/3, which browsers may negotiate with Render.
         Long userId = user != null ? user.getUserId() : SecurityUtils.getCurrentUserId();
         if (userId == null && StringUtils.hasText(ticket)) {
             SseTicketService.TicketDetails details = sseTicketService.consumeTicket(ticket);

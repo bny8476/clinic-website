@@ -4,7 +4,7 @@ import Card from '../../components/ui/Card';
 import EmptyState from '../../components/ui/EmptyState';
 import { useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { axiosPrivate } from '../../api/axios';
+import { BASE_URL, axiosPrivate } from '../../api/axios';
 import useAuthStore from '../../store/authStore';
 import { AlertTriangle, ArrowLeft, Bell, CheckCircle2, MailOpen } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -46,14 +46,27 @@ const LabNotifications = () => {
 
     let eventSource = null;
     let isSubscribed = true;
+    let reconnectTimer = null;
+
+    const scheduleReconnect = () => {
+      if (!isSubscribed || reconnectTimer) return;
+      reconnectTimer = setTimeout(() => {
+        reconnectTimer = null;
+        connectSse();
+      }, 10000);
+    };
 
     const connectSse = async () => {
       try {
         const res = await axiosPrivate.post('/sse/lab/ticket', null, { timeout: 10000 });
         const ticket = res.data?.ticket;
-        if (!ticket || !isSubscribed) return;
+        if (!isSubscribed) return;
+        if (!ticket) {
+          scheduleReconnect();
+          return;
+        }
 
-        eventSource = new EventSource(`/api/sse/lab?ticket=${ticket}`);
+        eventSource = new EventSource(`${BASE_URL.replace('/api', '')}/api/sse/lab?ticket=${ticket}`);
 
         const handleSseMessage = () => {
           queryClient.invalidateQueries({ queryKey: ['my-notifications'] });
@@ -67,13 +80,18 @@ const LabNotifications = () => {
         eventSource.onerror = () => {
           if (eventSource) {
             eventSource.close();
+            eventSource = null;
           }
+          scheduleReconnect();
         };
       } catch (err) {
         if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
           console.warn('Lab SSE ticket timed out. Real-time updates paused.');
         } else if (err.response?.status !== 401) {
           console.warn('Failed to get ticket for lab SSE:', err.message || err);
+        }
+        if (err.response?.status !== 401) {
+          scheduleReconnect();
         }
       }
     };
@@ -82,6 +100,7 @@ const LabNotifications = () => {
 
     return () => {
       isSubscribed = false;
+      if (reconnectTimer) clearTimeout(reconnectTimer);
       if (eventSource) {
         eventSource.close();
       }

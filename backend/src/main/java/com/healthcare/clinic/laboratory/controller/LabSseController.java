@@ -61,7 +61,11 @@ public class LabSseController {
     @GetMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter subscribe(
             @AuthenticationPrincipal UserPrincipal user,
-            @RequestParam(value = "ticket", required = false) String ticket) {
+            @RequestParam(value = "ticket", required = false) String ticket,
+            jakarta.servlet.http.HttpServletResponse response) {
+        response.setHeader("Cache-Control", "no-cache, no-transform");
+        response.setHeader("X-Accel-Buffering", "no");
+
         UserPrincipal principal = user;
         if (principal == null && StringUtils.hasText(ticket)) {
             SseTicketService.TicketDetails details = sseTicketService.consumeTicket(ticket);
@@ -88,7 +92,26 @@ public class LabSseController {
         emitter.onTimeout(() -> connections.remove(connection));
         emitter.onError(e -> connections.remove(connection));
 
+        try {
+            emitter.send(SseEmitter.event().name("INIT").data("Connected to Lab SSE Stream"));
+        } catch (Exception e) {
+            connections.remove(connection);
+        }
+
         return emitter;
+    }
+
+    @org.springframework.scheduling.annotation.Scheduled(fixedRate = 10000)
+    public void sendHeartbeats() {
+        List<ClientConnection> deadConnections = new CopyOnWriteArrayList<>();
+        for (ClientConnection conn : connections) {
+            try {
+                conn.emitter.send(SseEmitter.event().name("PING").data("keep-alive"));
+            } catch (Exception e) {
+                deadConnections.add(conn);
+            }
+        }
+        connections.removeAll(deadConnections);
     }
 
     @EventListener
