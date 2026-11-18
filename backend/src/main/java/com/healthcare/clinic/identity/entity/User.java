@@ -76,6 +76,8 @@ public class User implements UserDetails {
 
     private ZonedDateTime updatedAt;
 
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "user_roles",
