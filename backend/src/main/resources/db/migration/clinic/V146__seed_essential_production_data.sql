@@ -216,7 +216,7 @@ BEGIN
         RETURNING id INTO v_slot3_id;
 
         -- Book appointments for the patient
-        IF v_patient_id IS NOT NULL AND v_slot1_id IS NOT NULL THEN
+        IF v_patient_id IS NOT NULL AND v_slot1_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM appointments WHERE slot_id = v_slot1_id) THEN
             INSERT INTO appointments (
                 patient_id, doctor_id, slot_id, status, reason_for_visit, 
                 notes, branch_id, tenant_id, appointment_type, version, 
@@ -227,10 +227,11 @@ BEGIN
                 'Patient reports well-managed blood pressure on current medication.', 1, 1, 'IN_PERSON', 0,
                 'APT-2026-' || v_slot1_id, 1, CURRENT_DATE, 20,
                 'PAID', 'ONLINE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
-            );
+            )
+            ON CONFLICT DO NOTHING;
         END IF;
 
-        IF v_patient_id IS NOT NULL AND v_slot3_id IS NOT NULL THEN
+        IF v_patient_id IS NOT NULL AND v_slot3_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM appointments WHERE slot_id = v_slot3_id) THEN
             INSERT INTO appointments (
                 patient_id, doctor_id, slot_id, status, reason_for_visit, 
                 notes, branch_id, tenant_id, appointment_type, version, 
@@ -241,21 +242,20 @@ BEGIN
                 'Consultation completed. Lab tests requested.', 1, 1, 'IN_PERSON', 0,
                 'APT-2026-' || v_slot3_id, 1, CURRENT_DATE, 20,
                 'PAID', 'ONLINE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
-            );
+            )
+            ON CONFLICT DO NOTHING;
         END IF;
 
-        -- Sample Lab Request
-        IF v_patient_id IS NOT NULL THEN
+        -- Sample Lab Request (only if catalog items exist)
+        IF v_patient_id IS NOT NULL AND EXISTS (SELECT 1 FROM lab_test_catalog WHERE id = 1) THEN
             INSERT INTO lab_test_requests (
                 patient_id, doctor_id, test_catalog_id, status, priority,
                 lab_request_number, branch_id, requested_at
             ) VALUES (
                 v_patient_id, v_doctor_id, 1, 'REQUESTED', 'ROUTINE',
                 'REQ-2026-001', 1, CURRENT_TIMESTAMP
-            ), (
-                v_patient_id, v_doctor_id, 2, 'SAMPLE_COLLECTED', 'HIGH',
-                'REQ-2026-002', 1, CURRENT_TIMESTAMP
-            );
+            )
+            ON CONFLICT DO NOTHING;
         END IF;
     END IF;
 END $$;

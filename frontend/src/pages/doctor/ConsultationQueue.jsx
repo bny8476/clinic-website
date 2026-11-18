@@ -27,17 +27,24 @@ const ConsultationQueue = () => {
     
     const connectSSE = async () => {
       try {
-        const res = await axiosPrivate.post('/sse/appointments/ticket');
+        const res = await axiosPrivate.post('/sse/appointments/ticket', null, { timeout: 10000 });
         if (!isMounted) return;
-        const ticket = res.data.ticket;
+        const ticket = res.data?.ticket;
+        if (!ticket) return;
+
         evtSource = new EventSource(`${BASE_URL.replace('/api', '')}/api/sse/appointments?ticket=${ticket}`);
         
         evtSource.onmessage = () => {
           queryClient.invalidateQueries(['doctor-queue']);
         };
+        evtSource.onerror = () => {
+          if (evtSource) evtSource.close();
+        };
       } catch (err) {
-        if (err.response?.status !== 401) {
-          console.error('SSE Error:', err);
+        if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+          console.warn('SSE ticket request timed out. Real-time queue updates paused.');
+        } else if (err.response?.status !== 401) {
+          console.warn('SSE connection unavailable:', err.message || err);
         }
       }
     };

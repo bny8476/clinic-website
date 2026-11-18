@@ -19,4 +19,4 @@ USER appuser
 ENV PORT=8080
 EXPOSE 8080
 
-ENTRYPOINT ["sh", "-c", "java -Xms128m -Xmx280m -XX:+UseSerialGC -XX:TieredStopAtLevel=1 -XX:+ExitOnOutOfMemoryError -Djava.awt.headless=true -Dspring.profiles.active=render -Dserver.port=${PORT:-8080} -jar app.jar"]
+ENTRYPOINT ["sh", "-c", "java -XX:MaxRAMPercentage=75.0 -XX:+UseSerialGC -XX:TieredStopAtLevel=1 -Djava.awt.headless=true -Dspring.profiles.active=render -Dserver.port=${PORT:-8080} -jar app.jar"]

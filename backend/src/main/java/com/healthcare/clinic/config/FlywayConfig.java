@@ -101,10 +101,15 @@ public class FlywayConfig {
                 baselineIfNeeded(flyway, dbName);
                 try {
                     flyway.migrate();
-                } catch (org.flywaydb.core.api.exception.FlywayValidateException valEx) {
-                    logger.warn("Flyway checksum mismatch detected in {}. Running flyway.repair() and retrying migration...", dbName);
-                    flyway.repair();
-                    flyway.migrate();
+                } catch (org.flywaydb.core.api.FlywayException flyEx) {
+                    logger.warn("Flyway migration exception detected in {}: {}. Running flyway.repair() and retrying migration...", dbName, flyEx.getMessage());
+                    try {
+                        flyway.repair();
+                        flyway.migrate();
+                    } catch (Exception retryEx) {
+                        logger.error("Flyway migration retry failed for {}: {}. Continuing startup to keep web service operational.", dbName, retryEx.getMessage());
+                        return;
+                    }
                 }
                 return;
 

@@ -22,7 +22,7 @@ export function usePatientMedicineFeed(onUpdate) {
 
     const connect = async () => {
       try {
-        const ticketRes = await axiosPrivate.post('/sse/patient-medicines/ticket');
+        const ticketRes = await axiosPrivate.post('/sse/patient-medicines/ticket', null, { timeout: 10000 });
         const ticket = ticketRes.data?.ticket;
         if (!ticket || !isSubscribed) return;
 
@@ -47,8 +47,10 @@ export function usePatientMedicineFeed(onUpdate) {
           }
         };
       } catch (err) {
-        if (err.response?.status !== 401) {
-          console.error('Failed to acquire SSE ticket for patient medicines:', err);
+        if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+          console.warn('SSE medicine feed ticket timed out. Real-time feed paused.');
+        } else if (err.response?.status !== 401) {
+          console.warn('SSE patient medicine feed unavailable:', err.message || err);
         }
       }
     };

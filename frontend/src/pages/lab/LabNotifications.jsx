@@ -49,9 +49,9 @@ const LabNotifications = () => {
 
     const connectSse = async () => {
       try {
-        const res = await axiosPrivate.post('/sse/lab/ticket');
-        const ticket = res.data.ticket;
-        if (!isSubscribed) return;
+        const res = await axiosPrivate.post('/sse/lab/ticket', null, { timeout: 10000 });
+        const ticket = res.data?.ticket;
+        if (!ticket || !isSubscribed) return;
 
         eventSource = new EventSource(`/api/sse/lab?ticket=${ticket}`);
 
@@ -64,14 +64,17 @@ const LabNotifications = () => {
         eventSource.addEventListener('lab-result-critical', handleSseMessage);
         eventSource.addEventListener('lab-status-changed', handleSseMessage);
 
-        eventSource.onerror = (error) => {
-          console.error('SSE connection error:', error);
+        eventSource.onerror = () => {
           if (eventSource) {
             eventSource.close();
           }
         };
       } catch (err) {
-        console.error('Failed to get ticket for lab SSE:', err);
+        if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+          console.warn('Lab SSE ticket timed out. Real-time updates paused.');
+        } else if (err.response?.status !== 401) {
+          console.warn('Failed to get ticket for lab SSE:', err.message || err);
+        }
       }
     };
 

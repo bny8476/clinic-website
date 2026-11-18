@@ -29,14 +29,14 @@ export const BASE_URL = formatApiUrl(rawUrl);
 
 export const axiosPrivate = axios.create({
     baseURL: BASE_URL,
-    timeout: 15000,
+    timeout: 45000,
     headers: { 'Content-Type': 'application/json' },
     withCredentials: true
 });
 
 export const axiosPublic = axios.create({
     baseURL: BASE_URL,
-    timeout: 15000,
+    timeout: 45000,
     headers: { 'Content-Type': 'application/json' },
 });
 

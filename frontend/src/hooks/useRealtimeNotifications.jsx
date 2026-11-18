@@ -17,9 +17,9 @@ export function useRealtimeNotifications() {
 
     const connectSse = async () => {
       try {
-        const ticketRes = await axiosPrivate.post('/notifications/ticket');
-        const ticket = ticketRes.data.ticket;
-        if (!isSubscribed) return;
+        const ticketRes = await axiosPrivate.post('/notifications/ticket', null, { timeout: 10000 });
+        const ticket = ticketRes.data?.ticket;
+        if (!ticket || !isSubscribed) return;
 
         const streamUrl = `${BASE_URL.replace('/api', '')}/api/notifications/stream?ticket=${ticket}`;
         eventSource = new EventSource(streamUrl);
@@ -69,8 +69,10 @@ export function useRealtimeNotifications() {
           }
         };
       } catch (err) {
-        if (err.response?.status !== 401) {
-          console.error("Failed to acquire SSE ticket for notifications:", err);
+        if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+          console.warn("SSE notification ticket timed out. Real-time alerts paused.");
+        } else if (err.response?.status !== 401) {
+          console.warn("SSE notifications unavailable:", err.message || err);
         }
       }
     };
