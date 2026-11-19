@@ -23,6 +23,6 @@ COPY --from=build --chown=appuser:appgroup /app/backend/target/*.jar app.jar
 
 USER appuser
 
-EXPOSE 8080
+EXPOSE 10000
 
-ENTRYPOINT ["sh", "-c", "exec java -XX:MaxRAMPercentage=75.0 -XX:+UseSerialGC -XX:TieredStopAtLevel=1 -Djava.awt.headless=true -Dspring.profiles.active=render -Dserver.port=${PORT:-8080} -jar app.jar"]
+ENTRYPOINT ["sh", "-c", "exec java -XX:MaxRAMPercentage=75.0 -XX:+UseSerialGC -XX:TieredStopAtLevel=1 -Djava.awt.headless=true -Dspring.profiles.active=render -Dserver.address=0.0.0.0 -Dserver.port=${PORT:-10000} -jar app.jar"]
