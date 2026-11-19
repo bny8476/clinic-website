@@ -726,10 +726,11 @@ const DoctorDashboard = () => {
       {currentPanel === 'calendar' && (
         <ModulePanel 
           isOpen={true} onClose={closePanel} 
-          title="Calendar" icon={CalendarIcon} 
-          variant="modal" colorHex="#2160FF" stackIndex={0}
+          title="Doctor Schedule & Calendar" icon={CalendarIcon} 
+          variant="modal" size="wide" colorHex="#2160FF" stackIndex={0}
+          bodyClassName="p-3 sm:p-5 md:p-6 bg-slate-50/60"
         >
-          <DoctorCalendar />
+          <DoctorCalendar onClose={closePanel} />
         </ModulePanel>
       )}
 

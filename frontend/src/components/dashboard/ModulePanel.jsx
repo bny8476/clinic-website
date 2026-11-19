@@ -9,6 +9,10 @@ export default function ModulePanel({
   title, 
   icon: Icon, 
   variant = 'panel', 
+  size = 'md', // 'sm' | 'md' | 'lg' | 'xl' | 'wide' | 'full'
+  maxWidth,
+  className,
+  bodyClassName,
   colorHex = '#D4AF37',
   children,
   stackIndex = 0
@@ -66,6 +70,15 @@ export default function ModulePanel({
   const isPushed = stackIndex > 0;
   const pushTransform = isPushed ? (isModal ? 'scale(0.96)' : 'translateX(-5%) scale(0.98)') : 'none';
 
+  const modalSizeClasses = maxWidth || (
+    size === 'wide' ? 'md:w-[94vw] lg:w-[90vw] xl:w-[86vw] md:max-w-6xl md:max-h-[92vh]' :
+    size === 'full' ? 'md:w-[96vw] md:max-w-7xl md:max-h-[94vh]' :
+    size === 'xl' ? 'md:w-[90vw] md:max-w-5xl md:max-h-[90vh]' :
+    size === 'lg' ? 'md:w-[85vw] md:max-w-4xl md:max-h-[88vh]' :
+    size === 'sm' ? 'md:w-full md:max-w-md md:max-h-[80vh]' :
+    'md:w-full md:max-w-2xl md:max-h-[85vh]'
+  );
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -103,11 +116,12 @@ export default function ModulePanel({
             className={cn(
               "relative bg-white flex flex-col overflow-hidden shadow-2xl transition-all",
               // Mobile styles (bottom sheet for both)
-              "w-full h-[90vh] rounded-t-3xl md:h-auto",
+              "w-full h-[92vh] rounded-t-3xl md:h-auto",
               // Desktop styles
               isModal 
-                ? "md:w-full md:max-w-2xl md:rounded-2xl md:max-h-[85vh] md:m-4" 
-                : "md:fixed md:right-0 md:top-0 md:bottom-0 md:h-screen md:w-[70vw] lg:w-[65vw] md:rounded-none md:rounded-l-2xl border-l border-gray-200"
+                ? cn("md:rounded-2xl md:m-4", modalSizeClasses) 
+                : "md:fixed md:right-0 md:top-0 md:bottom-0 md:h-screen md:w-[70vw] lg:w-[65vw] md:rounded-none md:rounded-l-2xl border-l border-gray-200",
+              className
             )}
           >
             {/* Header */}
@@ -136,7 +150,7 @@ export default function ModulePanel({
             </div>
 
             {/* Body */}
-            <div className="flex-1 overflow-y-auto bg-gray-50/50 p-4 md:p-6 relative">
+            <div className={cn("flex-1 overflow-y-auto bg-gray-50/50 p-4 md:p-6 relative", bodyClassName)}>
               {children}
             </div>
           </motion.div>
