@@ -157,7 +157,8 @@ export function getDefaultDashboardRoute(rawRoles = []) {
     }
   }
 
-  return ROLE_DASHBOARDS[roles[0]] || '/patient/dashboard';
+  const mapped = roles.find(r => ROLE_DASHBOARDS[r]);
+  return (mapped && ROLE_DASHBOARDS[mapped]) || '/patient/dashboard';
 }
 
 const useAuthStore = create(
