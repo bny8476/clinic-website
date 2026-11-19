@@ -12,9 +12,12 @@ import {
   endOfMonth,
   endOfWeek,
   format,
+  isAfter,
+  isBefore,
   isSameDay,
   isSameMonth,
   isToday,
+  startOfDay,
   startOfMonth,
   startOfWeek,
   subDays,
@@ -27,15 +30,15 @@ import {
   ChevronRight, 
   Plus, 
   User, 
-  Check,
-  Clock,
-  Video,
-  Sparkles,
-  RefreshCw,
-  SlidersHorizontal,
-  Stethoscope,
-  Building,
-  CheckCircle2,
+  Check, 
+  Clock, 
+  Video, 
+  Sparkles, 
+  RefreshCw, 
+  SlidersHorizontal, 
+  Stethoscope, 
+  Building, 
+  CheckCircle2, 
   CalendarDays
 } from 'lucide-react';
 
@@ -44,8 +47,8 @@ const DoctorCalendar = ({ onClose }) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  // Realtime date states
-  const [selectedDate, setSelectedDate] = useState(() => new Date());
+  // Realtime date states (default strictly to current active date)
+  const [selectedDate, setSelectedDate] = useState(() => startOfDay(new Date()));
   const [currentMonth, setCurrentMonth] = useState(() => startOfMonth(new Date()));
   const [viewMode, setViewMode] = useState('day'); // 'day' | 'week' | 'month'
 
@@ -54,7 +57,7 @@ const DoctorCalendar = ({ onClose }) => {
     if (!isSameMonth(selectedDate, currentMonth)) {
       setCurrentMonth(startOfMonth(selectedDate));
     }
-  }, [selectedDate]);
+  }, [selectedDate, currentMonth]);
 
   // Calendar filter checkboxes state
   const [filters, setFilters] = useState({
@@ -238,6 +241,11 @@ const DoctorCalendar = ({ onClose }) => {
     return eachDayOfInterval({ start: calStart, end: calEnd });
   }, [currentMonth]);
 
+  // Month boundary check: cannot navigate mini calendar to past months
+  const canGoPrevMonth = useMemo(() => {
+    return isBefore(startOfMonth(new Date()), startOfMonth(currentMonth));
+  }, [currentMonth]);
+
   // Working timeline hours for Day view
   const timeSlots = [
     { label: '08:00 AM', hour: 8 },
@@ -259,8 +267,23 @@ const DoctorCalendar = ({ onClose }) => {
     return Array.from({ length: 7 }, (_, i) => addDays(start, i));
   }, [selectedDate]);
 
+  // Date boundary check: cannot navigate main schedule to past dates
+  const canGoPrevDate = useMemo(() => {
+    if (viewMode === 'day') {
+      return isAfter(startOfDay(selectedDate), startOfDay(new Date()));
+    }
+    if (viewMode === 'week') {
+      return isAfter(startOfWeek(selectedDate, { weekStartsOn: 1 }), startOfWeek(new Date(), { weekStartsOn: 1 }));
+    }
+    if (viewMode === 'month') {
+      return isAfter(startOfMonth(selectedDate), startOfMonth(new Date()));
+    }
+    return false;
+  }, [selectedDate, viewMode]);
+
   // Navigation handlers
   const handlePrev = () => {
+    if (!canGoPrevDate) return;
     if (viewMode === 'day') setSelectedDate(prev => subDays(prev, 1));
     else if (viewMode === 'week') setSelectedDate(prev => subWeeks(prev, 1));
     else if (viewMode === 'month') setSelectedDate(prev => subMonths(prev, 1));
@@ -273,10 +296,12 @@ const DoctorCalendar = ({ onClose }) => {
   };
 
   const handleToday = () => {
-    const now = new Date();
+    const now = startOfDay(new Date());
     setSelectedDate(now);
     setCurrentMonth(startOfMonth(now));
   };
+
+  const currentHour = new Date().getHours();
 
   return (
     <div className="w-full bg-white rounded-2xl md:rounded-3xl p-4 sm:p-6 shadow-sm border border-slate-100/90 font-sans">
@@ -292,9 +317,17 @@ const DoctorCalendar = ({ onClose }) => {
             <div className="flex items-center justify-between mb-3 px-1">
               <button 
                 type="button"
-                onClick={() => setCurrentMonth(prev => subMonths(prev, 1))}
-                className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-white transition-colors cursor-pointer"
-                title="Previous month"
+                disabled={!canGoPrevMonth}
+                onClick={() => {
+                  if (!canGoPrevMonth) return;
+                  setCurrentMonth(prev => subMonths(prev, 1));
+                }}
+                className={`p-1.5 rounded-lg transition-colors ${
+                  canGoPrevMonth
+                    ? 'text-slate-600 hover:text-slate-900 hover:bg-white cursor-pointer'
+                    : 'text-slate-300 opacity-30 cursor-not-allowed select-none'
+                }`}
+                title={canGoPrevMonth ? 'Previous month' : 'Cannot navigate to past months'}
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -304,7 +337,7 @@ const DoctorCalendar = ({ onClose }) => {
               <button 
                 type="button"
                 onClick={() => setCurrentMonth(prev => addMonths(prev, 1))}
-                className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-white transition-colors cursor-pointer"
+                className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white transition-colors cursor-pointer"
                 title="Next month"
               >
                 <ChevronRight className="w-4 h-4" />
@@ -320,9 +353,10 @@ const DoctorCalendar = ({ onClose }) => {
               ))}
             </div>
 
-            {/* Real Days Grid */}
+            {/* Real Days Grid with Completed/Past Dates Disabled */}
             <div className="grid grid-cols-7 gap-1 text-center text-xs">
               {miniCalDays.map((day) => {
+                const isPast = isBefore(startOfDay(day), startOfDay(new Date()));
                 const inCurrentMonth = isSameMonth(day, currentMonth);
                 const isSelected = isSameDay(day, selectedDate);
                 const isCurDay = isToday(day);
@@ -332,24 +366,41 @@ const DoctorCalendar = ({ onClose }) => {
                   <button
                     key={day.toISOString()}
                     type="button"
-                    onClick={() => setSelectedDate(day)}
-                    className={`h-8 rounded-xl font-semibold flex flex-col items-center justify-center relative transition-all cursor-pointer ${
+                    disabled={isPast}
+                    onClick={() => {
+                      if (isPast) return;
+                      setSelectedDate(day);
+                    }}
+                    title={isPast ? 'Past/completed dates cannot be selected' : format(day, 'EEEE, d MMMM yyyy')}
+                    className={`h-8 rounded-xl font-semibold flex flex-col items-center justify-center relative transition-all ${
                       isSelected
                         ? 'bg-blue-600 text-white font-bold shadow-md shadow-blue-500/20'
-                        : isCurDay
-                          ? 'border border-blue-500 text-blue-600 font-bold bg-blue-50/50 hover:bg-blue-100/50'
-                          : inCurrentMonth
-                            ? 'text-slate-700 hover:bg-white hover:shadow-2xs'
-                            : 'text-slate-300 hover:text-slate-500'
+                        : isPast
+                          ? 'text-slate-300 opacity-35 cursor-not-allowed bg-transparent hover:bg-transparent select-none'
+                          : isCurDay
+                            ? 'border border-blue-500 text-blue-600 font-bold bg-blue-50/50 hover:bg-blue-100/50 cursor-pointer'
+                            : inCurrentMonth
+                              ? 'text-slate-700 hover:bg-white hover:shadow-2xs cursor-pointer'
+                              : 'text-slate-300 hover:text-slate-500 cursor-pointer'
                     }`}
                   >
                     <span className="text-xs leading-none">{format(day, 'd')}</span>
-                    {hasApt && !isSelected && (
+                    {hasApt && !isSelected && !isPast && (
                       <span className="w-1 h-1 rounded-full bg-blue-600 mt-0.5" />
                     )}
                   </button>
                 );
               })}
+            </div>
+
+            {/* Quick legend for disabled past dates */}
+            <div className="flex items-center justify-between text-[10px] text-slate-400 pt-3 border-t border-slate-100 mt-3 px-1">
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-blue-600 inline-block" /> Current / Active
+              </span>
+              <span className="flex items-center gap-1.5 text-slate-400">
+                <span className="w-2 h-2 rounded-full bg-slate-300 inline-block opacity-40" /> Completed
+              </span>
             </div>
           </div>
 
@@ -501,9 +552,14 @@ const DoctorCalendar = ({ onClose }) => {
             <div className="flex items-center gap-2">
               <button 
                 type="button"
+                disabled={!canGoPrevDate}
                 onClick={handlePrev}
-                className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition cursor-pointer"
-                title="Previous"
+                className={`p-2 rounded-xl border transition ${
+                  canGoPrevDate 
+                    ? 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700 cursor-pointer' 
+                    : 'border-slate-100 bg-slate-50 text-slate-300 opacity-40 cursor-not-allowed select-none'
+                }`}
+                title={canGoPrevDate ? 'Previous' : 'Cannot navigate to completed dates'}
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -585,11 +641,14 @@ const DoctorCalendar = ({ onClose }) => {
             <div className="space-y-2.5 max-h-[560px] overflow-y-auto pr-2">
               {timeSlots.map((slot) => {
                 const slotEvents = selectedDateEvents.filter(e => e.timeSlotHour === slot.hour);
+                const isPastSlot = isToday(selectedDate) && slot.hour < currentHour;
 
                 return (
                   <div key={slot.label} className="flex items-start gap-3 sm:gap-4 min-h-[56px] group">
                     {/* Slot Time Label */}
-                    <div className="w-16 sm:w-20 text-xs font-bold text-slate-400 pt-2 text-right shrink-0">
+                    <div className={`w-16 sm:w-20 text-xs font-bold pt-2 text-right shrink-0 ${
+                      isPastSlot ? 'text-slate-300 line-through' : 'text-slate-400'
+                    }`}>
                       {slot.label}
                     </div>
 
@@ -642,8 +701,12 @@ const DoctorCalendar = ({ onClose }) => {
                           ))}
                         </div>
                       ) : (
-                        <div className="h-9 rounded-lg border border-transparent group-hover:border-slate-200/60 group-hover:bg-slate-50/50 transition flex items-center px-3 text-[11px] text-slate-300 group-hover:text-slate-400">
-                          <span>Open slot</span>
+                        <div className={`h-9 rounded-lg border border-transparent transition flex items-center px-3 text-[11px] ${
+                          isPastSlot 
+                            ? 'text-slate-300 opacity-60' 
+                            : 'text-slate-300 group-hover:border-slate-200/60 group-hover:bg-slate-50/50 group-hover:text-slate-400'
+                        }`}>
+                          <span>{isPastSlot ? 'Completed slot' : 'Open slot'}</span>
                         </div>
                       )}
                     </div>
@@ -657,6 +720,7 @@ const DoctorCalendar = ({ onClose }) => {
           {viewMode === 'week' && (
             <div className="grid grid-cols-7 gap-2 max-h-[560px] overflow-y-auto">
               {weekDays.map((wDay) => {
+                const isPast = isBefore(startOfDay(wDay), startOfDay(new Date()));
                 const isSelected = isSameDay(wDay, selectedDate);
                 const isCur = isToday(wDay);
                 const dayEvs = filteredEvents.filter(e => e.startDate && isSameDay(e.startDate, wDay));
@@ -664,20 +728,31 @@ const DoctorCalendar = ({ onClose }) => {
                 return (
                   <div 
                     key={wDay.toISOString()} 
-                    onClick={() => setSelectedDate(wDay)}
-                    className={`rounded-2xl border p-2.5 flex flex-col transition cursor-pointer min-h-[400px] ${
-                      isSelected 
-                        ? 'border-blue-500 bg-blue-50/20 shadow-xs' 
-                        : 'border-slate-200/80 bg-slate-50/40 hover:bg-white'
+                    onClick={() => {
+                      if (isPast) return;
+                      setSelectedDate(wDay);
+                    }}
+                    className={`rounded-2xl border p-2.5 flex flex-col transition min-h-[400px] ${
+                      isPast
+                        ? 'border-slate-100 bg-slate-50/50 opacity-40 cursor-not-allowed select-none'
+                        : isSelected 
+                          ? 'border-blue-500 bg-blue-50/20 shadow-xs cursor-pointer' 
+                          : 'border-slate-200/80 bg-slate-50/40 hover:bg-white cursor-pointer'
                     }`}
                   >
                     {/* Column Day Header */}
-                    <div className={`text-center pb-2 border-b border-slate-100 ${isCur ? 'text-blue-600' : 'text-slate-700'}`}>
-                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    <div className={`text-center pb-2 border-b border-slate-100 ${
+                      isPast ? 'text-slate-300' : isCur ? 'text-blue-600' : 'text-slate-700'
+                    }`}>
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                         {format(wDay, 'EEE')}
                       </div>
                       <div className={`text-sm font-extrabold mt-0.5 inline-flex items-center justify-center w-7 h-7 rounded-full ${
-                        isCur ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-800'
+                        isCur 
+                          ? 'bg-blue-600 text-white shadow-xs' 
+                          : isPast 
+                            ? 'text-slate-300' 
+                            : 'text-slate-800'
                       }`}>
                         {format(wDay, 'd')}
                       </div>
@@ -694,7 +769,9 @@ const DoctorCalendar = ({ onClose }) => {
                               if (onClose) onClose();
                               navigate(`/doctor/consultation/${ev.id}`);
                             }}
-                            className={`p-2 rounded-xl text-left border ${ev.borderClr} shadow-2xs hover:shadow-xs transition`}
+                            className={`p-2 rounded-xl text-left border ${ev.borderClr} shadow-2xs hover:shadow-xs transition ${
+                              isPast ? 'opacity-50' : ''
+                            }`}
                           >
                             <p className="text-[11px] font-bold truncate text-slate-900">{ev.patientName}</p>
                             <p className="text-[10px] text-slate-500 font-medium">{ev.startTimeFormatted}</p>
@@ -705,7 +782,7 @@ const DoctorCalendar = ({ onClose }) => {
                         ))
                       ) : (
                         <div className="h-full flex items-center justify-center text-[10px] text-slate-300 font-medium">
-                          No slots
+                          {isPast ? 'Past' : 'No slots'}
                         </div>
                       )}
                     </div>
@@ -729,6 +806,7 @@ const DoctorCalendar = ({ onClose }) => {
                   start: startOfWeek(startOfMonth(selectedDate), { weekStartsOn: 1 }),
                   end: endOfWeek(endOfMonth(selectedDate), { weekStartsOn: 1 })
                 }).map((day) => {
+                  const isPast = isBefore(startOfDay(day), startOfDay(new Date()));
                   const inMonth = isSameMonth(day, selectedDate);
                   const isCur = isToday(day);
                   const isSel = isSameDay(day, selectedDate);
@@ -738,24 +816,33 @@ const DoctorCalendar = ({ onClose }) => {
                     <div
                       key={day.toISOString()}
                       onClick={() => {
+                        if (isPast) return;
                         setSelectedDate(day);
                         setViewMode('day');
                       }}
-                      className={`min-h-[72px] sm:min-h-[85px] p-1.5 rounded-xl border transition cursor-pointer flex flex-col justify-between ${
-                        isSel
-                          ? 'border-blue-500 bg-blue-50/40 ring-1 ring-blue-500/30'
-                          : inMonth
-                            ? 'border-slate-200/80 bg-white hover:bg-slate-50'
-                            : 'border-slate-100 bg-slate-50/50 text-slate-300'
+                      className={`min-h-[72px] sm:min-h-[85px] p-1.5 rounded-xl border transition flex flex-col justify-between ${
+                        isPast
+                          ? 'border-slate-100 bg-slate-50/40 opacity-35 cursor-not-allowed select-none'
+                          : isSel
+                            ? 'border-blue-500 bg-blue-50/40 ring-1 ring-blue-500/30 cursor-pointer'
+                            : inMonth
+                              ? 'border-slate-200/80 bg-white hover:bg-slate-50 cursor-pointer'
+                              : 'border-slate-100 bg-slate-50/50 text-slate-300 cursor-pointer'
                       }`}
                     >
                       <div className="flex items-center justify-between">
                         <span className={`text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center ${
-                          isCur ? 'bg-blue-600 text-white' : inMonth ? 'text-slate-800' : 'text-slate-300'
+                          isCur 
+                            ? 'bg-blue-600 text-white' 
+                            : isPast 
+                              ? 'text-slate-300 line-through' 
+                              : inMonth 
+                                ? 'text-slate-800' 
+                                : 'text-slate-300'
                         }`}>
                           {format(day, 'd')}
                         </span>
-                        {dayEvs.length > 0 && (
+                        {dayEvs.length > 0 && !isPast && (
                           <span className="text-[10px] font-extrabold text-blue-600 bg-blue-100/70 px-1.5 py-0.2 rounded-full">
                             {dayEvs.length}
                           </span>
@@ -764,7 +851,9 @@ const DoctorCalendar = ({ onClose }) => {
 
                       <div className="space-y-0.5 mt-1 overflow-hidden">
                         {dayEvs.slice(0, 2).map((ev) => (
-                          <div key={ev.id} className="text-[9px] font-semibold truncate bg-blue-50 text-blue-700 px-1 py-0.5 rounded">
+                          <div key={ev.id} className={`text-[9px] font-semibold truncate px-1 py-0.5 rounded ${
+                            isPast ? 'bg-slate-100 text-slate-400' : 'bg-blue-50 text-blue-700'
+                          }`}>
                             {ev.startTimeFormatted} {ev.patientName}
                           </div>
                         ))}
