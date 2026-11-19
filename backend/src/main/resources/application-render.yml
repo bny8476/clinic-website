@@ -11,6 +11,7 @@ spring:
       spec: maximumSize=500,expireAfterWrite=600s
 
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: none
 
@@ -38,14 +39,14 @@ app:
       idle-timeout: 600000
       max-lifetime: 1800000
       minimum-idle: 1
-      maximum-pool-size: 5
+      maximum-pool-size: 3
 
 server:
   tomcat:
     threads:
-      max: 25
+      max: 10
       min-spare: 5
-    max-connections: 150
+    max-connections: 100
 
 twilio:
   account-sid: mock

@@ -26,7 +26,7 @@ public class KeepAliveService {
     /**
      * Pings /actuator/health every 10 minutes (600,000 ms).
      */
-    @Scheduled(fixedRate = 600_000)
+    @Scheduled(fixedRate = 600_000, initialDelay = 180_000)
     public void keepAlive() {
         String baseUrl = resolveBaseUrl();
         if (baseUrl == null || baseUrl.isBlank()) {

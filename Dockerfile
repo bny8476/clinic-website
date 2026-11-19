@@ -25,4 +25,4 @@ USER appuser
 
 EXPOSE 10000
 
-ENTRYPOINT ["sh", "-c", "exec java -XX:MaxRAMPercentage=75.0 -XX:+UseSerialGC -XX:TieredStopAtLevel=1 -Djava.awt.headless=true -Dspring.profiles.active=render -Dserver.address=0.0.0.0 -Dserver.port=${PORT:-10000} -jar app.jar"]
+ENTRYPOINT ["sh", "-c", "exec java -Xms128m -Xmx230m -XX:MaxMetaspaceSize=128m -XX:ReservedCodeCacheSize=48m -XX:MaxDirectMemorySize=32m -Xss512k -XX:+UseSerialGC -XX:TieredStopAtLevel=1 -XX:+ExitOnOutOfMemoryError -XX:NativeMemoryTracking=off -Djava.awt.headless=true -Dspring.profiles.active=render -Dserver.address=0.0.0.0 -Dserver.port=${PORT:-10000} -jar app.jar"]

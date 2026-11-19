@@ -23,7 +23,7 @@ public class PrescriptionReconciliationJob {
     private final PrescriptionReconciliationMismatchRepository mismatchRepository;
     private final PharmacyIntegrationClient pharmacyIntegrationClient;
 
-    @Scheduled(fixedRateString = "PT15M")
+    @Scheduled(fixedRateString = "PT15M", initialDelayString = "PT3M")
     public void reconcilePrescriptions() {
         log.info("Starting Prescription Reconciliation Job...");
         

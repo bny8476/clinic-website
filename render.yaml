@@ -5,6 +5,7 @@ services:
     dockerfilePath: ./backend/Dockerfile
     dockerContext: .
     plan: starter
+    healthCheckPath: /api/health
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: render
@@ -18,5 +19,3 @@ services:
         generateValue: true
       - key: ALLOWED_ORIGINS
         sync: false
-      - key: PORT
-        value: 8080
