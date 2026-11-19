@@ -26,21 +26,23 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(org.springframework.web.servlet.config.annotation.CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOriginPatterns(
+                .allowedOrigins(
                         "https://clinic-website-bny2.vercel.app",
                         "https://clinic-website-three-chi.vercel.app",
                         "https://clinic-website-ndzj.onrender.com",
-                        "https://*.onrender.com",
-                        "https://*.vercel.app",
                         "http://localhost:5173",
                         "http://localhost:3000",
-                        "http://localhost:5174",
+                        "http://localhost:5174"
+                )
+                .allowedOriginPatterns(
+                        "https://*.onrender.com",
+                        "https://*.vercel.app",
                         "http://localhost:*",
                         "http://127.0.0.1:*"
                 )
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD")
                 .allowedHeaders("*")
-                .exposedHeaders("*")
+                .exposedHeaders("Authorization", "x-auth-token", "Idempotency-Key", "Content-Disposition")
                 .allowCredentials(true)
                 .maxAge(3600);
     }
