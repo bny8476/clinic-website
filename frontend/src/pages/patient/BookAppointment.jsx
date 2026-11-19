@@ -4,7 +4,19 @@ import useAuthStore, { isTokenValid } from '../../store/authStore';
 import { BASE_URL, axiosPrivate } from '../../api/axios';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { addMonths, eachDayOfInterval, endOfMonth, format, isSameDay, startOfMonth, subMonths } from 'date-fns';
+import {
+  addMonths,
+  eachDayOfInterval,
+  endOfMonth,
+  format,
+  isAfter,
+  isBefore,
+  isSameDay,
+  isToday,
+  startOfDay,
+  startOfMonth,
+  subMonths
+} from 'date-fns';
 import { pageTransition } from '../../components/ui/motion';
 import {
   ArrowLeft,
@@ -37,6 +49,59 @@ import { AnimatePresence, motion } from 'framer-motion';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+/**
+ * Checks whether a given time slot has already completed/passed based on the selected date and current time.
+ * - If date is before today: true (passed)
+ * - If date is after today: false (future)
+ * - If date is today: compares slot time against current wall clock time
+ */
+export function isSlotInPast(slot, date, referenceTime = new Date()) {
+  if (!slot || !date) return false;
+
+  const targetDay = startOfDay(new Date(date));
+  const currentDay = startOfDay(referenceTime);
+
+  if (isBefore(targetDay, currentDay)) {
+    return true;
+  }
+  if (isAfter(targetDay, currentDay)) {
+    return false;
+  }
+
+  // Target date is today
+  if (slot.isPast === true) {
+    return true;
+  }
+
+  // 1. Parse slot.label ("09:00 AM", "04:40 PM")
+  if (slot.label && typeof slot.label === 'string') {
+    const match = slot.label.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+    if (match) {
+      let hours = parseInt(match[1], 10);
+      const minutes = parseInt(match[2], 10);
+      const meridiem = match[3] ? match[3].toUpperCase() : null;
+      if (meridiem === 'PM' && hours < 12) hours += 12;
+      if (meridiem === 'AM' && hours === 12) hours = 0;
+
+      const slotTime = new Date(referenceTime);
+      slotTime.setHours(hours, minutes, 0, 0);
+      return slotTime <= referenceTime;
+    }
+  }
+
+  // 2. Parse slot.startTime ISO string
+  if (slot.startTime) {
+    const parsed = new Date(slot.startTime);
+    if (!isNaN(parsed.getTime())) {
+      const slotTime = new Date(referenceTime);
+      slotTime.setHours(parsed.getHours(), parsed.getMinutes(), parsed.getSeconds() || 0, 0);
+      return slotTime <= referenceTime;
+    }
+  }
+
+  return false;
+}
+
 export default function BookAppointment() {
   const { doctorId } = useParams();
   const [searchParams] = useSearchParams();
@@ -46,12 +111,12 @@ export default function BookAppointment() {
   const queryClient = useQueryClient();
   const { user, token, isInitializingAuth } = useAuthStore();
 
-  // Step state (default to 3 for immediate visualization or step navigation)
+  // Step state
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedDoctorId, setSelectedDoctorId] = useState(doctorId || null);
 
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState(null);
+  const [currentMonth, setCurrentMonth] = useState(() => startOfMonth(new Date()));
+  const [selectedDate, setSelectedDate] = useState(() => startOfDay(new Date()));
   const [selectedSlotId, setSelectedSlotId] = useState(null);
 
   // Step 3 Form State
@@ -88,7 +153,11 @@ export default function BookAppointment() {
           setSelectedDoctorId(String(pending.doctorId));
         }
         if (pending.date) {
-          setSelectedDate(new Date(pending.date));
+          const parsedDate = new Date(pending.date);
+          if (!isBefore(startOfDay(parsedDate), startOfDay(new Date()))) {
+            setSelectedDate(startOfDay(parsedDate));
+            setCurrentMonth(startOfMonth(parsedDate));
+          }
         }
         localStorage.removeItem('pendingBooking');
       } catch (e) {
@@ -121,8 +190,15 @@ export default function BookAppointment() {
     enabled: Boolean(selectedDoctorId && selectedDate)
   });
 
+  const canGoPrevMonth = useMemo(() => {
+    return isBefore(startOfMonth(new Date()), startOfMonth(currentMonth));
+  }, [currentMonth]);
+
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
-  const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
+  const prevMonth = () => {
+    if (!canGoPrevMonth) return;
+    setCurrentMonth(subMonths(currentMonth, 1));
+  };
 
   // Handle SSE updates safely without 401 console spam
   useEffect(() => {
@@ -238,6 +314,14 @@ export default function BookAppointment() {
       return;
     }
 
+    const chosenSlot = displaySlots.find((s) => s.id === selectedSlotId);
+    if (!chosenSlot || isSlotInPast(chosenSlot, selectedDate)) {
+      setError('The selected appointment time has already passed. Please select an upcoming time slot.');
+      setSelectedSlotId(null);
+      setCurrentStep(2);
+      return;
+    }
+
     await queryClient.invalidateQueries(['availableSlots', selectedDoctorId, selectedDate?.toISOString()]);
 
     const fullReason = [reason, symptomsNotes].filter(Boolean).join(' - ') || 'Routine Consultation & Checkup';
@@ -252,6 +336,16 @@ export default function BookAppointment() {
   const displaySlots = useMemo(() => {
     return Array.isArray(availableSlots) ? availableSlots : (availableSlots?.data || []);
   }, [availableSlots]);
+
+  // Automatically deselect slot if it has passed
+  useEffect(() => {
+    if (selectedSlotId && selectedDate && displaySlots.length > 0) {
+      const activeSlot = displaySlots.find((s) => s.id === selectedSlotId);
+      if (!activeSlot || isSlotInPast(activeSlot, selectedDate)) {
+        setSelectedSlotId(null);
+      }
+    }
+  }, [selectedSlotId, selectedDate, displaySlots]);
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
@@ -268,7 +362,7 @@ export default function BookAppointment() {
     });
   }, [allDoctors, searchQuery, selectedSpecialty]);
 
-  const selectedSlotObj = displaySlots.find((s) => s.id === selectedSlotId) || displaySlots[0];
+  const selectedSlotObj = displaySlots.find((s) => s.id === selectedSlotId) || null;
 
   return (
     <motion.div
@@ -551,8 +645,15 @@ export default function BookAppointment() {
 
                   <div className="flex items-center justify-between mb-3 px-1">
                     <button
+                      type="button"
+                      disabled={!canGoPrevMonth}
                       onClick={prevMonth}
-                      className="p-1 rounded-lg hover:bg-slate-100 text-slate-600 transition-colors"
+                      className={`p-1 rounded-lg transition-colors ${
+                        canGoPrevMonth
+                          ? 'hover:bg-slate-100 text-slate-600 cursor-pointer'
+                          : 'text-slate-300 opacity-30 cursor-not-allowed select-none'
+                      }`}
+                      title={canGoPrevMonth ? 'Previous month' : 'Cannot navigate to past months'}
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
@@ -560,8 +661,10 @@ export default function BookAppointment() {
                       {format(currentMonth, 'MMMM yyyy')}
                     </span>
                     <button
+                      type="button"
                       onClick={nextMonth}
-                      className="p-1 rounded-lg hover:bg-slate-100 text-slate-600 transition-colors"
+                      className="p-1 rounded-lg hover:bg-slate-100 text-slate-600 transition-colors cursor-pointer"
+                      title="Next month"
                     >
                       <ChevronRight className="w-4 h-4" />
                     </button>
@@ -575,22 +678,42 @@ export default function BookAppointment() {
 
                   <div className="grid grid-cols-7 text-center gap-y-1.5">
                     {emptyDaysBefore.map((i) => (
-                      <div key={`empty-${i}`} className="text-[11px] text-slate-300">
+                      <div key={`empty-${i}`} className="text-[11px] text-slate-300 opacity-30 select-none">
                         {25 + i}
                       </div>
                     ))}
 
                     {daysInMonth.map((day) => {
+                      const isPast = isBefore(startOfDay(day), startOfDay(new Date()));
                       const isSelected = selectedDate && isSameDay(day, selectedDate);
+                      const isCurrentDay = isToday(day);
 
                       return (
                         <div key={day.toString()} className="flex justify-center">
                           <button
-                            onClick={() => setSelectedDate(day)}
+                            type="button"
+                            disabled={isPast}
+                            onClick={() => {
+                              if (isPast) return;
+                              setSelectedDate(day);
+                              setSelectedSlotId(null);
+                              setError('');
+                            }}
+                            title={
+                              isPast
+                                ? 'Past dates cannot be selected'
+                                : isCurrentDay
+                                  ? 'Today'
+                                  : format(day, 'EEEE, d MMMM yyyy')
+                            }
                             className={`w-7 h-7 rounded-full text-xs font-semibold flex items-center justify-center transition-all ${
                               isSelected
                                 ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-                                : 'text-slate-700 hover:bg-slate-100'
+                                : isPast
+                                  ? 'text-slate-300 opacity-35 cursor-not-allowed bg-transparent hover:bg-transparent select-none'
+                                  : isCurrentDay
+                                    ? 'text-blue-600 font-bold border border-blue-400/60 hover:bg-blue-50 cursor-pointer'
+                                    : 'text-slate-700 hover:bg-slate-100 cursor-pointer'
                             }`}
                           >
                             {format(day, 'd')}
@@ -607,10 +730,20 @@ export default function BookAppointment() {
                 </div>
 
                 <div className="md:col-span-6 space-y-4">
-                  <h4 className="text-sm font-bold text-slate-900">Available Time Slots</h4>
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-bold text-slate-900">Available Time Slots</h4>
+                    <div className="flex items-center gap-2.5 text-[10px] text-slate-400">
+                      <span className="flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-blue-600 inline-block" /> Available
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-slate-300 inline-block" /> Completed
+                      </span>
+                    </div>
+                  </div>
 
                   <div className="text-xs font-semibold text-blue-600 mb-2">
-                    {selectedDate ? format(selectedDate, 'EEEE, d MMMM yyyy') : 'Monday, 17 August 2026'}
+                    {selectedDate ? format(selectedDate, 'EEEE, d MMMM yyyy') : format(new Date(), 'EEEE, d MMMM yyyy')}
                   </div>
 
                   <div className="grid grid-cols-3 gap-2">
@@ -626,32 +759,55 @@ export default function BookAppointment() {
                       </div>
                     ) : (
                       displaySlots.map((slot) => {
-                      const isSelected = selectedSlotId === slot.id;
+                        const isSelected = selectedSlotId === slot.id;
+                        const isPastSlot = isSlotInPast(slot, selectedDate);
+                        const isDisabled = isPastSlot || Boolean(slot.isBooked);
 
-                      return (
-                        <button
-                          key={slot.id}
-                          onClick={() => {
-                            if (slot.isBooked) return;
-                            setSelectedSlotId(slot.id);
-                            setError('');
-                          }}
-                          className={`py-2 px-1.5 rounded-xl text-xs font-semibold transition-all text-center border ${
-                            isSelected
-                              ? 'border-blue-600 bg-blue-50 text-blue-600 shadow-sm'
-                              : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
-                          } ${
-                            slot.isBooked
-                              ? 'opacity-50 cursor-not-allowed'
-                              : 'cursor-pointer'
-                          }`}
-                        >
-                          {slot.label || (slot.startTime ? format(new Date(slot.startTime), 'hh:mm a') : '')}
-                        </button>
-                      );
-                    })
-                  )}
+                        return (
+                          <button
+                            key={slot.id}
+                            type="button"
+                            disabled={isDisabled}
+                            onClick={() => {
+                              if (isDisabled) return;
+                              setSelectedSlotId(slot.id);
+                              setError('');
+                            }}
+                            title={
+                              isPastSlot
+                                ? 'This time slot has already passed'
+                                : slot.isBooked
+                                  ? 'This slot is already booked'
+                                  : 'Select this time slot'
+                            }
+                            className={`py-2 px-1.5 rounded-xl text-xs font-semibold transition-all text-center border relative ${
+                              isSelected
+                                ? 'border-blue-600 bg-blue-50 text-blue-600 shadow-sm ring-1 ring-blue-500/30'
+                                : isPastSlot
+                                  ? 'border-slate-200/70 bg-slate-100/80 text-slate-400 opacity-45 line-through cursor-not-allowed select-none'
+                                  : slot.isBooked
+                                    ? 'border-slate-200/70 bg-slate-100/80 text-slate-400 opacity-45 cursor-not-allowed select-none'
+                                    : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:border-blue-300 cursor-pointer'
+                            }`}
+                          >
+                            {slot.label || (slot.startTime ? format(new Date(slot.startTime), 'hh:mm a') : '')}
+                          </button>
+                        );
+                      })
+                    )}
                   </div>
+
+                  {displaySlots.length > 0 && displaySlots.every((s) => isSlotInPast(s, selectedDate)) && (
+                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800 flex items-start gap-2 mt-2">
+                      <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-bold">All appointment slots for today have completed.</span>
+                        <p className="text-[11px] text-amber-700 mt-0.5">
+                          Please select an upcoming date on the calendar to book an appointment.
+                        </p>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="bg-blue-50/60 rounded-xl p-2.5 text-[11px] text-blue-700 flex items-center gap-2 mt-4 font-medium">
                     <Info className="w-3.5 h-3.5 shrink-0 text-blue-600" />
@@ -679,8 +835,22 @@ export default function BookAppointment() {
                       setError('Please select a date.');
                       return;
                     }
+                    if (isBefore(startOfDay(selectedDate), startOfDay(new Date()))) {
+                      setError('Cannot book appointments for past dates. Please select today or an upcoming date.');
+                      return;
+                    }
                     if (!selectedSlotId || String(selectedSlotId).startsWith('mock-')) {
                       setError('Please select an available time slot.');
+                      return;
+                    }
+                    const chosenSlot = displaySlots.find((s) => s.id === selectedSlotId);
+                    if (!chosenSlot || isSlotInPast(chosenSlot, selectedDate)) {
+                      setError('The selected time slot has already passed. Please select an upcoming time slot.');
+                      setSelectedSlotId(null);
+                      return;
+                    }
+                    if (chosenSlot.isBooked) {
+                      setError('This time slot is already booked. Please choose another slot.');
                       return;
                     }
                     setCurrentStep(3);
@@ -928,8 +1098,8 @@ export default function BookAppointment() {
                       <span>Date & Time</span>
                     </div>
                     <div className="text-right font-bold text-slate-900">
-                      <div>{selectedDate ? format(selectedDate, 'EEEE, d MMMM yyyy') : 'Monday, 17 August 2026'}</div>
-                      <div>{selectedSlotObj?.label || '09:00 AM'}</div>
+                      <div>{selectedDate ? format(selectedDate, 'EEEE, d MMMM yyyy') : format(new Date(), 'EEEE, d MMMM yyyy')}</div>
+                      <div>{selectedSlotObj?.label || 'Selected Time Slot'}</div>
                     </div>
                   </div>
 
@@ -1024,7 +1194,7 @@ export default function BookAppointment() {
               <div className="flex items-center justify-between border-b border-slate-200/60 pb-3">
                 <span className="text-xs font-semibold text-slate-500">Date & Time</span>
                 <span className="text-xs font-bold text-slate-900">
-                  {selectedDate && format(selectedDate, 'EEEE, d MMMM yyyy')} at {selectedSlotObj?.label || '09:00 AM'}
+                  {selectedDate && format(selectedDate, 'EEEE, d MMMM yyyy')}{selectedSlotObj?.label ? ` at ${selectedSlotObj.label}` : ''}
                 </span>
               </div>
 
@@ -1159,10 +1329,10 @@ export default function BookAppointment() {
                   <div>
                     <span className="block text-[10px] text-slate-400 font-medium">Date & Time</span>
                     <span className="block text-xs font-bold text-slate-900">
-                      {selectedDate ? format(selectedDate, 'EEE, d MMM yyyy') : 'Mon, 17 Aug 2026'}
+                      {selectedDate ? format(selectedDate, 'EEE, d MMM yyyy') : format(new Date(), 'EEE, d MMM yyyy')}
                     </span>
                     <span className="block text-[11px] font-semibold text-slate-700">
-                      {selectedSlotObj?.label || '09:00 AM'}
+                      {selectedSlotObj?.label || 'Appointment Confirmed'}
                     </span>
                   </div>
                 </div>

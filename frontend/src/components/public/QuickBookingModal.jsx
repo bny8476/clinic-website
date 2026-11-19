@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { axiosPublic } from '../../api/axios';
 import { usePublicDepartments, usePublicDoctors } from '../../api/publicApi';
+import { isSlotInPast } from '../../pages/patient/BookAppointment';
 
 export default function QuickBookingModal({ isOpen, onClose, initialDoctorId = null }) {
   const navigate = useNavigate();
@@ -133,6 +134,11 @@ export default function QuickBookingModal({ isOpen, onClose, initialDoctorId = n
   const handleNextFromStep3 = () => {
     if (!selectedSlot) {
       setErrorMessage('Please select an available time slot.');
+      return;
+    }
+    if (isSlotInPast(selectedSlot, selectedDate)) {
+      setErrorMessage('The selected time slot has already passed. Please choose an upcoming time slot.');
+      setSelectedSlot(null);
       return;
     }
     setErrorMessage('');
@@ -539,25 +545,58 @@ export default function QuickBookingModal({ isOpen, onClose, initialDoctorId = n
                       No available slots found for this date. Please pick another date.
                     </div>
                   ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-48 overflow-y-auto pr-1">
-                      {availableSlots.map((slot) => {
-                        const isSelected = selectedSlot?.id === slot.id;
-                        return (
-                          <button
-                            key={slot.id}
-                            type="button"
-                            onClick={() => setSelectedSlot(slot)}
-                            className={`p-2.5 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-1.5 ${
-                              isSelected
-                                ? 'bg-blue-600 text-white border-blue-600 shadow-md'
-                                : 'bg-white text-gray-800 border-gray-200 hover:border-blue-300 hover:bg-blue-50/50'
-                            }`}
-                          >
-                            <Clock size={13} />
-                            {slot.label || slot.startTime?.split('T')[1]?.substring(0, 5)}
-                          </button>
-                        );
-                      })}
+                    <div>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-48 overflow-y-auto pr-1">
+                        {availableSlots.map((slot) => {
+                          const isSelected = selectedSlot?.id === slot.id;
+                          const isPast = isSlotInPast(slot, selectedDate);
+                          const isDisabled = isPast || Boolean(slot.isBooked);
+
+                          return (
+                            <button
+                              key={slot.id}
+                              type="button"
+                              disabled={isDisabled}
+                              onClick={() => {
+                                if (isDisabled) return;
+                                setSelectedSlot(slot);
+                                setErrorMessage('');
+                              }}
+                              title={
+                                isPast
+                                  ? 'This time slot has already passed'
+                                  : slot.isBooked
+                                    ? 'This slot is already booked'
+                                    : 'Select slot'
+                              }
+                              className={`p-2.5 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-1.5 ${
+                                isSelected
+                                  ? 'bg-blue-600 text-white border-blue-600 shadow-md'
+                                  : isPast
+                                    ? 'border-gray-200/80 bg-gray-100/80 text-gray-400 opacity-45 line-through cursor-not-allowed select-none'
+                                    : slot.isBooked
+                                      ? 'border-gray-200/80 bg-gray-100/80 text-gray-400 opacity-45 cursor-not-allowed select-none'
+                                      : 'bg-white text-gray-800 border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 cursor-pointer'
+                              }`}
+                            >
+                              <Clock size={13} />
+                              {slot.label || slot.startTime?.split('T')[1]?.substring(0, 5)}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {availableSlots.length > 0 && availableSlots.every((s) => isSlotInPast(s, selectedDate)) && (
+                        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800 flex items-start gap-2 mt-2.5">
+                          <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                          <div>
+                            <span className="font-bold">All appointment slots for today have completed.</span>
+                            <p className="text-[11px] text-amber-700 mt-0.5">
+                              Please select an upcoming date to see available time slots.
+                            </p>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

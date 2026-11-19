@@ -114,8 +114,12 @@ public class AppointmentService {
             return java.util.Collections.emptyList();
         }
 
-        Long userId = doctor.getUserId();
         java.time.ZoneId zone = java.time.ZoneId.systemDefault();
+        if (date.isBefore(java.time.LocalDate.now(zone))) {
+            return java.util.Collections.emptyList();
+        }
+
+        Long userId = doctor.getUserId();
         ZonedDateTime startOfDay = date.atStartOfDay(zone);
         ZonedDateTime endOfDay = startOfDay.plusDays(1).minusNanos(1);
 
@@ -132,11 +136,11 @@ public class AppointmentService {
         }
 
         ZonedDateTime now = ZonedDateTime.now(zone);
+        boolean isToday = date.isEqual(java.time.LocalDate.now(zone));
         java.time.format.DateTimeFormatter timeFormatter = java.time.format.DateTimeFormatter.ofPattern("hh:mm a");
 
         return existingSlots.stream()
                 .filter(slot -> Boolean.FALSE.equals(slot.getIsBooked()))
-                .filter(slot -> !date.isEqual(java.time.LocalDate.now(zone)) || slot.getEndTime().isAfter(now.minusMinutes(10)))
                 .sorted(java.util.Comparator.comparing(AppointmentSlot::getStartTime))
                 .map(slot -> {
                     java.util.Map<String, Object> map = new java.util.HashMap<>();
@@ -145,6 +149,9 @@ public class AppointmentService {
                     map.put("endTime", slot.getEndTime().toString());
                     map.put("label", slot.getStartTime().format(timeFormatter));
                     map.put("isBooked", slot.getIsBooked());
+                    boolean isPast = date.isBefore(java.time.LocalDate.now(zone))
+                            || (isToday && !slot.getStartTime().isAfter(now));
+                    map.put("isPast", isPast);
                     map.put("isPriority", slot.getIsPriority() != null ? slot.getIsPriority() : false);
                     return map;
                 })
@@ -453,6 +460,11 @@ public class AppointmentService {
         if (slot.getDoctor() == null) {
             throw new com.healthcare.clinic.appointment.exception.AppointmentConflictException(
                     "DOCTOR_UNAVAILABLE", "The doctor is not available at this time.");
+        }
+
+        if (slot.getStartTime().isBefore(ZonedDateTime.now(slot.getStartTime().getZone()).minusMinutes(5))) {
+            throw new com.healthcare.clinic.appointment.exception.AppointmentConflictException(
+                    "APPOINTMENT_SLOT_UNAVAILABLE", "This appointment slot has already passed. Please select an upcoming slot.");
         }
 
         java.time.DayOfWeek day = slot.getStartTime().getDayOfWeek();
