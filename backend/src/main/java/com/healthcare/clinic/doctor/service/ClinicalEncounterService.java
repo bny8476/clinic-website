@@ -27,7 +27,7 @@ public class ClinicalEncounterService {
 
     private DoctorProfile getDoctorProfile(Long userId) {
         return doctorProfileRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Doctor profile not found"));
+                .orElseThrow(() -> new com.healthcare.clinic.exception.ResourceNotFoundException("Doctor profile not found"));
     }
 
     public List<ClinicalEncounter> getMyEncounters(Long userId) {
@@ -37,7 +37,7 @@ public class ClinicalEncounterService {
 
     public ClinicalEncounter getEncounter(Long userId, Long id) {
         ClinicalEncounter encounter = encounterRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Encounter not found"));
+                .orElseThrow(() -> new com.healthcare.clinic.exception.ResourceNotFoundException("Encounter not found with id: " + id));
         
         DoctorProfile doctor = doctorProfileRepository.findByUserId(userId).orElse(null);
         if (doctor != null && encounter.getDoctorId() != null && !encounter.getDoctorId().equals(doctor.getId())) {

@@ -175,7 +175,17 @@ const ClinicalWorkspace = () => {
       setAllergies(allergyRes.data);
       setPrescriptions(rxRes.data.filter(rx => rx.encounterId === parseInt(id)));
     } catch (err) {
-      setError('Failed to load clinical workspace. Ensure the encounter is assigned to you.');
+      if (err.response?.status === 404) {
+        setError({
+          title: 'Encounter Not Found',
+          message: `Clinical Encounter #${id} was not found. It may not have been started yet or does not exist in your database.`
+        });
+      } else {
+        setError({
+          title: 'Unable to Load Workspace',
+          message: err.response?.data?.message || 'Failed to load clinical workspace. Ensure the encounter is assigned to you.'
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -223,8 +233,44 @@ const ClinicalWorkspace = () => {
     }
   };
 
-  if (loading) return <div className="p-8 text-center text-slate-500 font-medium">Loading Clinical Workspace...</div>;
-  if (error) return <div className="p-8 text-center text-red-600 bg-red-50 rounded-xl m-4 border border-red-200">{error}</div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 font-sans">
+        <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="text-slate-600 font-bold text-sm">Loading Clinical Workspace...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 font-sans">
+        <div className="bg-white rounded-3xl p-8 max-w-md w-full border border-slate-200 shadow-xl text-center flex flex-col items-center">
+          <div className="w-16 h-16 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mb-5 border border-amber-100">
+            <AlertTriangle size={32} />
+          </div>
+          <h2 className="text-xl font-black text-slate-900 mb-2">{error.title || 'Workspace Error'}</h2>
+          <p className="text-xs text-slate-500 font-medium leading-relaxed mb-6">
+            {error.message}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 w-full">
+            <button 
+              onClick={() => navigate('/doctor/queue')}
+              className="flex-1 py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition shadow-md"
+            >
+              Consultation Queue
+            </button>
+            <button 
+              onClick={() => navigate('/doctor/appointments/today')}
+              className="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition border border-slate-200"
+            >
+              Today's Schedule
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const isFinalized = encounter?.status === 'Finalized' || encounter?.status === 'Signed' || encounter?.status === 'CLOSED';
 

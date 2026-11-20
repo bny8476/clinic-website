@@ -196,7 +196,7 @@ public class EcommerceProduct {
     @Builder.Default
     private Integer minimumStockLevel = 10;
 
-    @Column(name = "medicine_image", length = 500)
+    @Column(name = "medicine_image", columnDefinition = "LONGTEXT")
     private String medicineImage;
 
     @Column(name = "doctor_id")

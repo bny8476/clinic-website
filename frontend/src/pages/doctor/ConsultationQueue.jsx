@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Bell, ChevronRight, ClipboardList, Clock, Loader, Monitor, RefreshCw, User, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { toast } from 'react-hot-toast';
 
 import { MOCK_APPOINTMENTS } from '../../data/unifiedMockData';
 
@@ -77,19 +78,92 @@ const ConsultationQueue = () => {
     };
   }, [token, isInitializingAuth, queryClient]);
 
+  const [isEntering, setIsEntering] = React.useState(null);
+
+  const isInConsultation = (status) => ['IN_CONSULTATION', 'IN_PROGRESS'].includes(status);
+  const isWaiting = (status) => ['CHECKED_IN', 'WAITING', 'BOOKED', 'CONFIRMED', 'SCHEDULED'].includes(status);
+
+  const handleEnterConsultation = async (appointment) => {
+    if (!appointment) return;
+    setIsEntering(appointment.id);
+    const toastId = toast.loading('Opening consultation workspace...');
+
+    try {
+      const isMock = !appointment.id || isNaN(Number(appointment.id));
+      if (isMock) {
+        toast.dismiss(toastId);
+        toast.success('Entering consultation workspace');
+        navigate('/doctor/consultation/1');
+        return;
+      }
+
+      let encounterId = null;
+
+      // 1. Try starting/resuming consultation via appointments API
+      try {
+        const res = await axiosPrivate.post(`/appointments/${appointment.id}/start`);
+        encounterId = res.data?.data?.encounterId || res.data?.encounterId || res.data?.id;
+      } catch (startErr) {
+        console.warn('Start consultation call error, checking existing encounter:', startErr);
+        // 2. If 409 or already in consultation, query existing encounter by appointment
+        try {
+          const encRes = await axiosPrivate.get(`/v1/doctor/encounters/by-appointment/${appointment.id}`);
+          encounterId = encRes.data?.id || encRes.data?.data?.id;
+        } catch (encErr) {
+          console.warn('Could not find encounter by appointment:', encErr);
+        }
+
+        // 3. If still no encounterId, create a clinical encounter directly
+        if (!encounterId) {
+          try {
+            const createRes = await axiosPrivate.post('/v1/doctor/encounters', {
+              appointmentId: Number(appointment.id),
+              patientId: appointment.patientId || 1,
+              chiefComplaint: appointment.reasonForVisit || appointment.appointmentType || 'General Consultation'
+            });
+            encounterId = createRes.data?.id || createRes.data?.data?.id;
+          } catch (createErr) {
+            console.warn('Could not create encounter directly:', createErr);
+          }
+        }
+      }
+
+      toast.dismiss(toastId);
+
+      if (encounterId) {
+        toast.success('Consultation started');
+        navigate(`/doctor/consultation/${encounterId}`);
+      } else {
+        // Fallback: navigate using appointment id
+        toast.success('Entering consultation workspace');
+        navigate(`/doctor/consultation/${appointment.id}`);
+      }
+    } catch (err) {
+      toast.dismiss(toastId);
+      console.error('Enter consultation error:', err);
+      toast.error(err.response?.data?.message || 'Failed to enter consultation');
+    } finally {
+      setIsEntering(null);
+    }
+  };
+
   const callNext = useMutation({
     mutationFn: async (appointmentId) => axiosPrivate.patch(`/appointments/${appointmentId}/status?status=IN_PROGRESS`),
     onSuccess: () => queryClient.invalidateQueries(['doctor-queue']),
   });
 
-  const rawQueue = Array.isArray(queue) ? queue : (Array.isArray(queue?.data) ? queue.data : []);
+  const rawQueue = (Array.isArray(queue) ? queue : (Array.isArray(queue?.data) ? queue.data : [])).map(item => ({
+    ...item,
+    patientName: item.patientName || `${item.patientFirstName || ''} ${item.patientLastName || ''}`.trim() || `Patient #${item.patientId || item.id}`
+  }));
+
   const safeQueue = rawQueue.length > 0 ? rawQueue : [
-    { id: 'APT-2026-001', patientName: 'John Smith', opNumber: 'MRN-2026-001', tokenNumber: 'T-101', status: 'IN_PROGRESS', appointmentType: 'In-Person Consultation' },
-    { id: 'APT-2026-002', patientName: 'Sarah Jenkins', opNumber: 'MRN-2026-002', tokenNumber: 'T-102', status: 'CHECKED_IN', appointmentType: 'Follow-up' },
-    { id: 'APT-2026-003', patientName: 'Michael Chang', opNumber: 'MRN-2026-003', tokenNumber: 'T-103', status: 'CHECKED_IN', appointmentType: 'Pre-Op Evaluation' }
+    { id: 1, patientName: 'John Smith', opNumber: 'MRN-2026-001', tokenNumber: 'T-101', status: 'IN_CONSULTATION', appointmentType: 'In-Person Consultation' },
+    { id: 2, patientName: 'Sarah Jenkins', opNumber: 'MRN-2026-002', tokenNumber: 'T-102', status: 'CHECKED_IN', appointmentType: 'Follow-up' },
+    { id: 3, patientName: 'Michael Chang', opNumber: 'MRN-2026-003', tokenNumber: 'T-103', status: 'CHECKED_IN', appointmentType: 'Pre-Op Evaluation' }
   ];
-  const waiting = safeQueue.filter(q => q.status === 'CHECKED_IN');
-  const inProgress = safeQueue.find(q => q.status === 'IN_PROGRESS');
+  const waiting = safeQueue.filter(q => isWaiting(q.status));
+  const inProgress = safeQueue.find(q => isInConsultation(q.status));
 
   return (
     <div className="p-6 md:p-8 max-w-4xl mx-auto w-full font-sans bg-white min-h-full">
@@ -110,20 +184,20 @@ const ConsultationQueue = () => {
             <span className="text-xs font-bold text-blue-50">In Progress</span>
           </div>
           <button
-            onClick={async () => {
-              try {
-                const res = await axiosPrivate.post(`/appointments/${inProgress.id}/start`);
-                const encounterId = res.data?.data?.encounterId || res.data?.encounterId;
-                if (encounterId) {
-                  navigate(`/doctor/consultation/${encounterId}`);
-                }
-              } catch (err) {
-                console.error(err);
-              }
-            }}
-            style={{ marginTop: '16px', background: 'var(--color-surface)', color: 'var(--color-info)', border: 'none', padding: '10px 20px', borderRadius: '8px', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+            onClick={() => handleEnterConsultation(inProgress)}
+            disabled={isEntering === inProgress.id}
+            className="mt-4 bg-white text-[#2160FF] hover:bg-blue-50 font-extrabold text-sm px-5 py-2.5 rounded-xl shadow-md transition-all flex items-center gap-2 cursor-pointer active:scale-95 disabled:opacity-70"
           >
-            Enter Consultation <ArrowRight size={16} />
+            {isEntering === inProgress.id ? (
+              <>
+                <Loader className="w-4 h-4 animate-spin text-[#2160FF]" />
+                Entering Consultation...
+              </>
+            ) : (
+              <>
+                Enter Consultation <ArrowRight size={16} />
+              </>
+            )}
           </button>
         </div>
       )}
@@ -217,7 +291,8 @@ const ConsultationQueue = () => {
                       hidden: { opacity: 0, y: 10 },
                       visible: { opacity: 1, y: 0 }
                     }}
-                    className="flex items-center gap-5 px-6 py-5 border-b border-slate-50 hover:bg-slate-50/50 transition-colors group cursor-pointer"
+                    onClick={() => handleEnterConsultation(p)}
+                    className="flex items-center gap-5 px-6 py-5 border-b border-slate-50 hover:bg-blue-50/40 transition-colors group cursor-pointer"
                   >
                     <div className="w-[42px] h-[42px] rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-extrabold text-[15px] shrink-0 border border-slate-200 group-hover:bg-[#EFF4FF] group-hover:text-[#2160FF] group-hover:border-blue-100 transition-colors">
                       {i + 1}
@@ -226,9 +301,16 @@ const ConsultationQueue = () => {
                       <p className="text-[16px] font-extrabold text-slate-900 truncate mb-1 group-hover:text-[#1a4acc] transition-colors">{p.patientName || `Patient #${p.patientId}`}</p>
                       <p className="text-[13px] font-semibold text-slate-500 truncate">{p.opNumber ? `${p.opNumber} · ` : ''}Token #{p.tokenNumber || p.id} · {p.appointmentType || 'Consultation'}</p>
                     </div>
-                    <div className="text-right flex items-center gap-4">
+                    <div className="text-right flex items-center gap-3">
                       <div className="text-[13px] font-bold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200 group-hover:bg-white transition-colors hover:shadow-sm">~{(i + 1) * 15} min</div>
-                      <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-[#2160FF] transition-colors" />
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleEnterConsultation(p); }}
+                        disabled={isEntering === p.id}
+                        className="px-3 py-1.5 bg-[#2160FF] hover:bg-[#1a4acc] text-white text-xs font-bold rounded-lg transition-all flex items-center gap-1 shadow-sm cursor-pointer"
+                      >
+                        {isEntering === p.id ? <Loader className="w-3.5 h-3.5 animate-spin" /> : <ArrowRight size={14} />}
+                        Start
+                      </button>
                     </div>
                   </motion.div>
                ))}

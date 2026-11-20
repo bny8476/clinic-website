@@ -240,18 +240,20 @@ export default function PrescriptionTemplates() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap">
             <button 
               onClick={openCreateModal}
-              className="flex items-center gap-2 px-5 py-3 bg-white text-blue-600 border border-blue-200 rounded-xl font-bold text-sm hover:bg-blue-50 transition-colors shadow-sm cursor-pointer"
+              className="w-full sm:w-[220px] h-[46px] flex items-center justify-center gap-2 bg-white text-blue-600 border border-blue-200 hover:border-blue-300 rounded-xl font-bold text-sm hover:bg-blue-50 transition-all shadow-sm cursor-pointer"
             >
-              <PlusSquare className="w-4 h-4" /> Create Custom Template
+              <PlusSquare className="w-4 h-4 shrink-0" /> 
+              <span>Create Custom Template</span>
             </button>
             <button 
               onClick={() => setIsPatientModalOpen(true)}
-              className="flex items-center gap-2 px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm transition-colors shadow-md shadow-blue-500/20 cursor-pointer border-none"
+              className="w-full sm:w-[220px] h-[46px] flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white border border-blue-600 rounded-xl font-bold text-sm transition-all shadow-md shadow-blue-500/20 cursor-pointer"
             >
-              <FilePlus className="w-4 h-4" /> Prescribe to Patient
+              <FilePlus className="w-4 h-4 shrink-0" /> 
+              <span>Prescribe to Patient</span>
             </button>
           </div>
         </div>
@@ -1196,14 +1198,6 @@ const TemplateFormModal = ({ isOpen, templateToEdit, onClose, onSuccess }) => {
                         </h4>
                         <p className="text-xs text-slate-400 mt-0.5">Specify dosage, frequency, duration, and food timing</p>
                       </div>
-
-                      <button 
-                        type="button" 
-                        onClick={addItem} 
-                        className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-blue-600 bg-white hover:bg-blue-50 rounded-xl transition-colors border border-blue-200 shadow-sm cursor-pointer"
-                      >
-                        <Plus className="w-4 h-4" /> Add Medication Row
-                      </button>
                     </div>
 
                     {/* Responsive Table with generous column widths */}
@@ -1333,12 +1327,11 @@ const TemplateFormModal = ({ isOpen, templateToEdit, onClose, onSuccess }) => {
                       </table>
                     </div>
 
-                    <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
-                      <span className="text-xs text-slate-400 font-medium">Click &ldquo;+ Add Medication Row&rdquo; to prescribe combinations</span>
+                    <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-center">
                       <button 
                         type="button" 
                         onClick={addItem} 
-                        className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-blue-600 bg-white hover:bg-blue-50 rounded-xl transition-colors border border-blue-200 shadow-sm cursor-pointer"
+                        className="flex items-center gap-1.5 px-5 py-2.5 text-xs font-bold text-blue-600 bg-white hover:bg-blue-50 rounded-xl transition-colors border border-blue-200 shadow-sm cursor-pointer"
                       >
                         <Plus className="w-4 h-4" /> Add Medication Row
                       </button>

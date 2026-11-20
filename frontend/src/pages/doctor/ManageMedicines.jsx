@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
@@ -21,7 +21,9 @@ import {
   Boxes,
   FileCheck,
   TrendingUp,
-  Tag
+  Tag,
+  UploadCloud,
+  Image as ImageIcon
 } from 'lucide-react';
 
 export default function ManageMedicines() {
@@ -34,6 +36,57 @@ export default function ManageMedicines() {
   const [categoryFilter, setCategoryFilter] = useState('ALL');
   const [prescriptionFilter, setPrescriptionFilter] = useState('ALL'); // 'ALL' | 'RX' | 'OTC'
   const [stockFilter, setStockFilter] = useState('ALL'); // 'ALL' | 'IN_STOCK' | 'LOW_STOCK'
+
+  // Image Upload & Drag-Drop State
+  const fileInputRef = useRef(null);
+  const [isDraggingImage, setIsDraggingImage] = useState(false);
+  const [imageInputMode, setImageInputMode] = useState('upload'); // 'upload' | 'url'
+
+  const handleProcessImage = (file) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload a valid image file (PNG, JPG, WEBP)');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Image size must be under 10 MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new window.Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const maxDim = 800;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxDim) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          }
+        } else {
+          if (height > maxDim) {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const optimizedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        setFormData(prev => ({ ...prev, medicineImage: optimizedDataUrl }));
+        toast.success('Medicine image uploaded & optimized successfully!');
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
 
   const [formData, setFormData] = useState({
     medicineName: '',
@@ -643,9 +696,150 @@ export default function ManageMedicines() {
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Medicine Image URL</label>
-            <input type="url" placeholder="https://images.unsplash.com/..." className="w-full border border-slate-200 rounded-xl p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500" value={formData.medicineImage} onChange={e => setFormData({...formData, medicineImage: e.target.value})} />
+          {/* Medicine Image: Drag, Drop, Browse & Upload */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-bold text-slate-700">
+                Medicine Image <span className="text-slate-400 font-normal">(Drag & drop, browse, or paste)</span>
+              </label>
+              <div className="flex items-center gap-1.5 bg-slate-100 p-0.5 rounded-lg">
+                <button
+                  type="button"
+                  onClick={() => setImageInputMode('upload')}
+                  className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-all cursor-pointer border-none ${
+                    imageInputMode === 'upload' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-800 bg-transparent'
+                  }`}
+                >
+                  Upload File
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setImageInputMode('url')}
+                  className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-all cursor-pointer border-none ${
+                    imageInputMode === 'url' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-800 bg-transparent'
+                  }`}
+                >
+                  Direct URL
+                </button>
+              </div>
+            </div>
+
+            {imageInputMode === 'upload' ? (
+              <div>
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  accept="image/*" 
+                  className="hidden" 
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      handleProcessImage(e.target.files[0]);
+                    }
+                  }} 
+                />
+
+                {formData.medicineImage ? (
+                  /* Image Preview Card */
+                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-20 h-20 rounded-xl overflow-hidden bg-white border border-slate-200 shadow-sm shrink-0 flex items-center justify-center">
+                        <img 
+                          src={formData.medicineImage} 
+                          alt="Medicine preview" 
+                          className="w-full h-full object-cover"
+                          onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=300'; }}
+                        />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <CheckCircle2 size={16} className="text-emerald-600" />
+                          <span className="text-xs font-extrabold text-slate-900">Image Attached</span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 mt-0.5">
+                          Ready for patient e-commerce display
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="text-xs text-blue-600 font-bold hover:underline mt-1 inline-block cursor-pointer border-none bg-transparent p-0"
+                        >
+                          Browse different image...
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="px-3.5 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-100 transition shadow-sm cursor-pointer"
+                      >
+                        Change Image
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, medicineImage: '' })}
+                        className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-xl transition cursor-pointer border-none bg-transparent"
+                        title="Remove image"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  /* Drag & Drop Target Area */
+                  <div
+                    onDragOver={(e) => { e.preventDefault(); setIsDraggingImage(true); }}
+                    onDragLeave={(e) => { e.preventDefault(); setIsDraggingImage(false); }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setIsDraggingImage(false);
+                      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                        handleProcessImage(e.dataTransfer.files[0]);
+                      }
+                    }}
+                    onClick={() => fileInputRef.current?.click()}
+                    className={`border-2 border-dashed rounded-2xl p-6 sm:p-8 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-3 ${
+                      isDraggingImage 
+                        ? 'border-blue-500 bg-blue-50/80 ring-4 ring-blue-100' 
+                        : 'border-slate-300 hover:border-blue-400 bg-slate-50/70 hover:bg-slate-50'
+                    }`}
+                  >
+                    <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center shadow-sm">
+                      <UploadCloud size={24} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-extrabold text-slate-800">
+                        Drop medicine image here, or <span className="text-blue-600 underline">browse</span>
+                      </p>
+                      <p className="text-xs text-slate-400 mt-1">
+                        Supports PNG, JPG, JPEG, WEBP · Auto-optimized for web
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* Fallback direct URL input */
+              <div className="relative">
+                <input 
+                  type="url" 
+                  placeholder="https://images.unsplash.com/... or CDN image URL" 
+                  className="w-full border border-slate-200 rounded-xl p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500 bg-white" 
+                  value={formData.medicineImage} 
+                  onChange={e => setFormData({...formData, medicineImage: e.target.value})} 
+                />
+                {formData.medicineImage && (
+                  <button
+                    type="button"
+                    onClick={() => setFormData({...formData, medicineImage: ''})}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 border-none bg-transparent cursor-pointer"
+                  >
+                    <X size={15} />
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           <div>

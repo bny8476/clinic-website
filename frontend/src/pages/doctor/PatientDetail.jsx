@@ -1,12 +1,11 @@
-import ChartBanner from './emr/ChartBanner';
 import EMRChart from './emr/EMRChart';
 import CarePlan from './emr/CarePlan';
 import ClinicalTimeline from './ClinicalTimeline';
-import { useState } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { Activity, AlertCircle, ArrowLeft, Calendar, ChevronRight, ClipboardList, CreditCard, Droplet, FileText, FlaskConical, FolderOpen, HeartPulse, Info, List, Loader2, Mail, MapPin, Phone, Pill, User } from 'lucide-react';
+import { Activity, AlertCircle, ArrowLeft, Calendar, ChevronLeft, ChevronRight, ClipboardList, CreditCard, Droplet, FileText, FlaskConical, FolderOpen, HeartPulse, Info, List, Loader2, Mail, MapPin, Phone, Pill, User } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 import DoctorMedicineSales from '../../components/doctor/DoctorMedicineSales';
@@ -261,18 +260,92 @@ const BillingTab = ({ patientUserId }) => {
   );
 };
 
+/* ── Helper to parse clinical fields (JSON string, array, or comma-separated) ── */
+const parseClinicalArray = (val) => {
+  if (!val) return [];
+  if (Array.isArray(val)) return val.filter(Boolean);
+  if (typeof val === 'string') {
+    const s = val.trim();
+    if (!s || s === '[]' || s === '""' || s === "''" || s === '"[]"') return [];
+    try {
+      let p = JSON.parse(s);
+      if (typeof p === 'string') {
+        try { p = JSON.parse(p); } catch { /* ignore */ }
+      }
+      if (Array.isArray(p)) return p.filter(Boolean);
+      if (p && typeof p === 'object') return Object.values(p).filter(Boolean);
+      if (typeof p === 'string' && p.trim() && p !== '[]') return [p.trim()];
+    } catch {
+      // not JSON
+    }
+    const cleaned = s.replace(/[[\]"\\]/g, '').trim();
+    return cleaned ? cleaned.split(',').map(x => x.trim()).filter(Boolean) : [];
+  }
+  return [];
+};
+
 /* ── Main Component ───────────────────────────────────────────────── */
 const PatientDetail = ({ patientIdOverride }) => {
   const { patientId: paramPatientId } = useParams();
   const patientId = patientIdOverride || paramPatientId;
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('Overview');
+  const tabsContainerRef = useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const checkTabScroll = () => {
+    if (tabsContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = tabsContainerRef.current;
+      setCanScrollLeft(scrollLeft > 4);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 4);
+    }
+  };
+
+  useEffect(() => {
+    checkTabScroll();
+    const handleResize = () => checkTabScroll();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const scrollTabs = (direction) => {
+    if (tabsContainerRef.current) {
+      const scrollAmount = 260;
+      tabsContainerRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth',
+      });
+      setTimeout(checkTabScroll, 320);
+    }
+  };
 
   // Main patient detail query — returns real data including counts
   const { data: patient, isLoading } = useQuery({
     queryKey: ['patient-detail', patientId],
     queryFn: async () => (await axiosPrivate.get(`/doctor/patients/${patientId}`)).data,
   });
+
+  // Parsed clinical arrays to prevent raw JSON strings like "[\"Hypertension\"]" or "[]"
+  const chronicList = useMemo(() => parseClinicalArray(patient?.chronicConditions), [patient?.chronicConditions]);
+  const surgeryList = useMemo(() => parseClinicalArray(patient?.pastSurgeries), [patient?.pastSurgeries]);
+  const familyList = useMemo(() => parseClinicalArray(patient?.familyHistory), [patient?.familyHistory]);
+  const allergyList = useMemo(() => parseClinicalArray(patient?.allergies), [patient?.allergies]);
+  const medicationList = useMemo(() => parseClinicalArray(patient?.currentMedications || patient?.medications), [patient?.currentMedications, patient?.medications]);
+
+  const displayMedicalHistory = useMemo(() => {
+    if (!patient?.medicalHistorySummary) return null;
+    const raw = String(patient.medicalHistorySummary).trim();
+    if (!raw || raw === '[]' || raw === '""' || raw === "''" || raw === '"[]"') return null;
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed.filter(Boolean).join('. ');
+      if (typeof parsed === 'string') return parsed;
+    } catch {
+      // plain text
+    }
+    return raw.replace(/^[["']+|[["']+$/g, '').trim();
+  }, [patient?.medicalHistorySummary]);
 
   if (isLoading) return (
     <div className="p-10 flex items-center justify-center gap-3 text-slate-500 font-medium">
@@ -299,118 +372,133 @@ const PatientDetail = ({ patientIdOverride }) => {
   const rxCount = patient.previousPrescriptions?.length ?? '—';
 
   return (
-    <div className="p-6 bg-[#F8FAFC] min-h-full font-sans">
-      <div className="max-w-[1400px] mx-auto">
+    <div className={`${patientIdOverride ? 'p-1 sm:p-3' : 'p-6'} bg-[#F8FAFC] min-h-full font-sans`}>
+      <div className="max-w-[1400px] mx-auto space-y-5">
 
-        {/* Breadcrumb Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2 text-sm font-semibold text-slate-500">
-            <span className="cursor-pointer hover:text-slate-800" onClick={() => navigate('/doctor/patients')}>Patients</span>
-            <ChevronRight size={14} className="text-slate-400" />
-            <span className="text-slate-800">Patient Details</span>
+        {/* Breadcrumb Header - Only shown on standalone page, hidden in modal panel */}
+        {!patientIdOverride && (
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2 text-sm font-semibold text-slate-500">
+              <span className="cursor-pointer hover:text-slate-800" onClick={() => navigate('/doctor/patients')}>Patients</span>
+              <ChevronRight size={14} className="text-slate-400" />
+              <span className="text-slate-800">Patient Details</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate('/doctor/patients')}
+              className="flex items-center gap-2 text-sm font-bold text-slate-700 bg-white border border-slate-200 px-4 py-2 rounded-lg shadow-sm hover:bg-slate-50 transition-colors cursor-pointer"
+            >
+              <ArrowLeft size={16} strokeWidth={2.5} /> Back to Patients
+            </button>
           </div>
-          <button
-            onClick={() => navigate('/doctor/patients')}
-            className="flex items-center gap-2 text-sm font-bold text-slate-700 bg-white border border-slate-200 px-4 py-2 rounded-lg shadow-sm hover:bg-slate-50 transition-colors"
-          >
-            <ArrowLeft size={16} strokeWidth={2.5} /> Back to Patients
-          </button>
-        </div>
-
-        <ChartBanner patientId={patientId} />
+        )}
 
         {/* Main Grid */}
-        <div className="flex flex-col lg:flex-row gap-6">
+        <div className="flex flex-col lg:flex-row gap-6 items-start">
 
           {/* LEFT SIDEBAR */}
-          <div className="w-full lg:w-[340px] flex-shrink-0 flex flex-col gap-6">
+          <div className="w-full lg:w-[320px] xl:w-[340px] flex-shrink-0 flex flex-col gap-4">
 
-            {/* Profile Info */}
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 p-6 flex flex-col items-center">
-              <div className="flex items-center gap-4 w-full mb-6">
+            {/* Profile Info Card */}
+            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-6 flex flex-col items-center">
+              <div className="flex items-center gap-4 w-full mb-5">
                 <img
-                  src={`https://i.pravatar.cc/150?u=${profileId || patientId}`}
+                  src={`https://ui-avatars.com/api/?name=${encodeURIComponent(patient.name || 'Patient')}&background=ede9fe&color=5b21b6&bold=true`}
                   alt={patient.name}
-                  className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-sm"
+                  className="w-16 h-16 rounded-2xl object-cover border-2 border-indigo-100 shadow-sm shrink-0"
                 />
-                <div>
-                  <h2 className="text-lg font-bold text-slate-800 leading-tight">{patient.name || '—'}</h2>
-                  <p className="text-xs font-semibold text-slate-500 mt-0.5 mb-1.5">ID: {generateDisplayId(profileId)}</p>
-                  <span className="inline-block px-2.5 py-0.5 bg-indigo-50 text-[#5B21B6] text-[10px] font-bold rounded-md uppercase tracking-wide">
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-lg font-extrabold text-slate-900 leading-tight truncate">{patient.name || '—'}</h2>
+                  <p className="text-xs font-semibold text-slate-500 mt-0.5 mb-1.5 font-mono">ID: {generateDisplayId(profileId)}</p>
+                  <span className="inline-block px-2.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold rounded-md uppercase tracking-wide">
                     Active Patient
                   </span>
                 </div>
               </div>
 
               {/* Detail List */}
-              <div className="w-full flex flex-col gap-4 text-xs font-semibold text-slate-500 border-t border-slate-100 pt-5">
-                <div className="grid grid-cols-[32px_90px_1fr] items-center">
-                  <User size={15} className="text-[#5B21B6] justify-self-center" />
-                  <span className="text-slate-400">Age / Gender</span>
-                  <span className="text-slate-800">
+              <div className="w-full flex flex-col gap-3.5 text-xs font-semibold text-slate-500 border-t border-slate-100 pt-5">
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-2 text-slate-400">
+                    <User size={14} className="text-indigo-600" /> Age / Gender
+                  </span>
+                  <span className="text-slate-800 font-bold">
                     {patient.age ? `${patient.age} yrs` : '—'} / {patient.gender || '—'}
                   </span>
                 </div>
-                <div className="grid grid-cols-[32px_90px_1fr] items-center">
-                  <Phone size={15} className="text-[#5B21B6] justify-self-center" />
-                  <span className="text-slate-400">Phone</span>
-                  <span className="text-slate-800">{patient.phone || '—'}</span>
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-2 text-slate-400">
+                    <Phone size={14} className="text-indigo-600" /> Phone
+                  </span>
+                  <span className="text-slate-800 font-bold">{patient.phone || '—'}</span>
                 </div>
-                <div className="grid grid-cols-[32px_90px_1fr] items-center">
-                  <Mail size={15} className="text-[#5B21B6] justify-self-center" />
-                  <span className="text-slate-400">Email</span>
-                  <span className="text-slate-800 break-all">{patient.email || '—'}</span>
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-2 text-slate-400">
+                    <Mail size={14} className="text-indigo-600" /> Email
+                  </span>
+                  <span className="text-slate-800 font-bold truncate max-w-[170px]" title={patient.email}>{patient.email || '—'}</span>
                 </div>
-                <div className="grid grid-cols-[32px_90px_1fr] items-center">
-                  <Droplet size={15} className="text-[#5B21B6] justify-self-center" />
-                  <span className="text-slate-400">Blood Group</span>
-                  <span className="text-slate-800">{patient.bloodGroup || '—'}</span>
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-2 text-slate-400">
+                    <Droplet size={14} className="text-rose-500" /> Blood Group
+                  </span>
+                  <span className="px-2 py-0.5 bg-rose-50 text-rose-700 text-[11px] font-extrabold rounded border border-rose-100">
+                    {patient.bloodGroup || '—'}
+                  </span>
                 </div>
-                <div className="grid grid-cols-[32px_90px_1fr] items-center">
-                  <Calendar size={15} className="text-[#5B21B6] justify-self-center" />
-                  <span className="text-slate-400">Date of Birth</span>
-                  <span className="text-slate-800">
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-2 text-slate-400">
+                    <Calendar size={14} className="text-indigo-600" /> Date of Birth
+                  </span>
+                  <span className="text-slate-800 font-bold">
                     {patient.dateOfBirth ? new Date(patient.dateOfBirth).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
                   </span>
                 </div>
-                <div className="grid grid-cols-[32px_90px_1fr] items-start mt-1">
-                  <MapPin size={15} className="text-[#5B21B6] justify-self-center mt-0.5" />
-                  <span className="text-slate-400">Address</span>
-                  <span className="text-slate-800 leading-tight">
+                <div className="flex items-start justify-between pt-1">
+                  <span className="flex items-center gap-2 text-slate-400 shrink-0">
+                    <MapPin size={14} className="text-indigo-600 mt-0.5" /> Address
+                  </span>
+                  <span className="text-slate-800 font-medium text-right text-[11px] max-w-[170px] leading-tight">
                     {patient.address || '—'}
                   </span>
                 </div>
               </div>
 
-              {/* Stats Boxes — derived from real data */}
-              <div className="w-full grid grid-cols-3 gap-3 mt-6 border-t border-slate-100 pt-6">
-                <div className="bg-[#F0FDF4] border border-[#DCFCE7] rounded-lg p-2.5 flex flex-col items-center justify-center text-center">
-                  <span className="text-lg font-bold text-[#16A34A]">{apptCount}</span>
-                  <span className="text-[10px] font-bold text-[#15803D] mt-0.5">Appointments</span>
+              {/* Stats Boxes */}
+              <div className="w-full grid grid-cols-3 gap-2 mt-5 border-t border-slate-100 pt-5">
+                <div className="bg-emerald-50/80 border border-emerald-100 rounded-xl p-2.5 flex flex-col items-center justify-center text-center">
+                  <span className="text-base font-black text-emerald-600">{apptCount}</span>
+                  <span className="text-[10px] font-bold text-emerald-800 mt-0.5">Appointments</span>
                 </div>
-                <div className="bg-[#EFF6FF] border border-[#DBEAFE] rounded-lg p-2.5 flex flex-col items-center justify-center text-center">
-                  <span className="text-lg font-bold text-[#2563EB]">{rxCount}</span>
-                  <span className="text-[10px] font-bold text-[#1D4ED8] mt-0.5">Prescriptions</span>
+                <div className="bg-blue-50/80 border border-blue-100 rounded-xl p-2.5 flex flex-col items-center justify-center text-center">
+                  <span className="text-base font-black text-blue-600">{rxCount}</span>
+                  <span className="text-[10px] font-bold text-blue-800 mt-0.5">Prescriptions</span>
                 </div>
-                <div className="bg-[#FFF7ED] border border-[#FFEDD5] rounded-lg p-2.5 flex flex-col items-center justify-center text-center">
-                  <HeartPulse size={18} className="text-[#EA580C] mx-auto" />
-                  <span className="text-[10px] font-bold text-[#C2410C] mt-0.5">Records</span>
+                <div className="bg-amber-50/80 border border-amber-100 rounded-xl p-2.5 flex flex-col items-center justify-center text-center">
+                  <HeartPulse size={16} className="text-amber-600 mb-0.5" />
+                  <span className="text-[10px] font-bold text-amber-800">Records</span>
                 </div>
               </div>
             </div>
 
             {/* Emergency Contact */}
             {(patient.emergencyContactName || patient.emergencyContactPhone) && (
-              <div className="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 p-6 relative">
-                <h3 className="text-[13px] font-bold text-slate-800 mb-4">Emergency Contact</h3>
+              <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-500 m-0">Emergency Contact</h3>
+                  <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-100">Priority</span>
+                </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-semibold text-slate-800">{patient.emergencyContactName || '—'}</p>
-                    <p className="text-xs font-medium text-slate-500 mt-1">{patient.emergencyContactPhone || '—'}</p>
+                    <p className="text-xs font-bold text-slate-900 m-0">{patient.emergencyContactName || '—'}</p>
+                    <p className="text-[11px] font-medium text-slate-500 mt-0.5 m-0">{patient.emergencyContactPhone || '—'}</p>
                   </div>
                   {patient.emergencyContactPhone && (
-                    <a href={`tel:${patient.emergencyContactPhone}`}
-                      className="w-8 h-8 rounded-full bg-indigo-50 text-[#5B21B6] flex items-center justify-center hover:bg-indigo-100 transition-colors">
+                    <a 
+                      href={`tel:${patient.emergencyContactPhone}`}
+                      className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-100 transition-colors cursor-pointer"
+                      title={`Call ${patient.emergencyContactPhone}`}
+                    >
                       <Phone size={14} />
                     </a>
                   )}
@@ -419,272 +507,432 @@ const PatientDetail = ({ patientIdOverride }) => {
             )}
 
             {/* Allergies */}
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 p-6 relative">
-              <h3 className="text-[13px] font-bold text-slate-800 mb-4">Allergies</h3>
-              {patient.allergies && patient.allergies.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {(Array.isArray(patient.allergies) ? patient.allergies : [patient.allergies]).map((a, i) => (
-                    <span key={i} className="px-3 py-1 bg-orange-50 text-[#EA580C] text-[11px] font-bold rounded-md">
+            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-500 m-0">Known Allergies</h3>
+                {allergyList.length > 0 && (
+                  <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">
+                    {allergyList.length} Active
+                  </span>
+                )}
+              </div>
+              {allergyList.length > 0 ? (
+                <div className="flex flex-wrap gap-1.5">
+                  {allergyList.map((a, i) => (
+                    <span key={i} className="px-2.5 py-1 bg-amber-50 text-amber-800 text-[11px] font-bold rounded-lg border border-amber-200/80 flex items-center gap-1.5">
+                      <AlertCircle size={12} className="text-amber-600 shrink-0" />
                       {typeof a === 'string' ? a : (a.allergen || JSON.stringify(a))}
                     </span>
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-slate-400 italic">No known allergies on record</p>
+                <p className="text-xs text-slate-400 italic m-0">No known allergies on record</p>
               )}
             </div>
 
-            {/* Chronic Conditions */}
-            {patient.chronicConditions && (
-              <div className="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 p-6 relative">
-                <h3 className="text-[13px] font-bold text-slate-800 mb-4">Chronic Conditions</h3>
-                <p className="text-xs text-slate-700">{patient.chronicConditions}</p>
+            {/* Chronic Conditions (Left Sidebar Tags) */}
+            {chronicList.length > 0 && (
+              <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-5">
+                <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-500 mb-3 m-0">Chronic Conditions</h3>
+                <div className="flex flex-wrap gap-1.5">
+                  {chronicList.map((c, i) => (
+                    <span key={i} className="px-2.5 py-1 bg-rose-50 text-rose-700 text-[11px] font-bold rounded-lg border border-rose-100 flex items-center gap-1.5">
+                      <Activity size={12} className="text-rose-500 shrink-0" />
+                      {c}
+                    </span>
+                  ))}
+                </div>
               </div>
             )}
           </div>
 
           {/* RIGHT CONTENT */}
-          <div className="flex-1 flex flex-col min-w-0">
+          <div className="flex-1 flex flex-col min-w-0 gap-4">
 
-            {/* Tabs */}
-            <div className="bg-white rounded-t-xl border border-b-0 border-slate-200 px-6 pt-4 flex gap-6 overflow-x-auto scrollbar-hide">
-              {TABS.map(tab => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`relative pb-3 text-sm font-bold whitespace-nowrap transition-colors ${
-                    activeTab === tab ? 'text-[#5B21B6]' : 'text-slate-500 hover:text-slate-700'
-                  }`}
-                >
-                  {tab}
-                  {activeTab === tab && (
-                    <motion.div
-                      layoutId="patientTab"
-                      className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#5B21B6] rounded-t-md"
-                      initial={false}
-                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                    />
-                  )}
-                </button>
-              ))}
+            {/* Tabs Navigation Bar with Scroll Controls on Both Ends */}
+            <div className="bg-white rounded-2xl border border-slate-200/90 p-1.5 shadow-xs flex items-center gap-1.5">
+              {/* Left Scroll Button */}
+              <button
+                type="button"
+                onClick={() => scrollTabs('left')}
+                disabled={!canScrollLeft}
+                className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-all border border-transparent ${
+                  canScrollLeft 
+                    ? 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 hover:border-slate-200 cursor-pointer shadow-2xs' 
+                    : 'text-slate-300 bg-transparent cursor-not-allowed opacity-35'
+                }`}
+                title="Scroll Left"
+                aria-label="Scroll tabs left"
+              >
+                <ChevronLeft size={16} strokeWidth={2.5} />
+              </button>
+
+              {/* Tabs Scroll Container */}
+              <div 
+                ref={tabsContainerRef}
+                onScroll={checkTabScroll}
+                className="flex-1 flex gap-1.5 overflow-x-auto py-0.5 scroll-smooth [&::-webkit-scrollbar]:hidden"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              >
+                {TABS.map(tab => (
+                  <button
+                    key={tab}
+                    type="button"
+                    onClick={() => setActiveTab(tab)}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer border-none shrink-0 ${
+                      activeTab === tab 
+                        ? 'bg-[#2160FF] text-white shadow-sm font-extrabold' 
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 bg-transparent'
+                    }`}
+                  >
+                    {tab}
+                  </button>
+                ))}
+              </div>
+
+              {/* Right Scroll Button */}
+              <button
+                type="button"
+                onClick={() => scrollTabs('right')}
+                disabled={!canScrollRight}
+                className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-all border border-transparent ${
+                  canScrollRight 
+                    ? 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 hover:border-slate-200 cursor-pointer shadow-2xs' 
+                    : 'text-slate-300 bg-transparent cursor-not-allowed opacity-35'
+                }`}
+                title="Scroll Right"
+                aria-label="Scroll tabs right"
+              >
+                <ChevronRight size={16} strokeWidth={2.5} />
+              </button>
             </div>
 
             {/* Tab Content Area */}
-            <div className="bg-white rounded-b-xl border border-slate-200 shadow-sm p-6 flex flex-col gap-6 relative min-h-[400px]">
+            <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-6 flex flex-col gap-6 relative min-h-[450px]">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeTab}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
+                  transition={{ duration: 0.15 }}
                   className="flex-1"
                 >
 
               {activeTab === 'Overview' && (
-                <>
-                  {/* Summary Cards — real data from API response */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-                    <div className="bg-[#F8FAFC] border border-slate-100 rounded-xl p-5 flex items-start gap-4">
-                      <div className="w-10 h-10 rounded-lg bg-indigo-50 text-[#5B21B6] flex items-center justify-center shrink-0">
-                        <Calendar size={20} />
+                <div className="space-y-6">
+                  {/* Summary Cards — 4 Columns on desktop panels, perfectly balanced */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5">
+                    
+                    {/* 1. Last Appointment */}
+                    <div className="bg-[#F8FAFC] border border-slate-200/80 rounded-2xl p-4 flex flex-col justify-between min-h-[118px]">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">Last Visit</span>
+                        <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                          <Calendar size={16} />
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-[11px] font-bold text-slate-500 mb-1">Last Appointment</p>
+                      <div className="my-1">
                         {patient.appointmentHistory?.length > 0 ? (
-                          <>
-                            <p className="text-[15px] font-bold text-slate-800">
-                              {new Date(patient.appointmentHistory[0].date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                            </p>
-                            <p className="text-[11px] font-semibold text-slate-500 mt-1 truncate max-w-[130px]">
-                              {patient.appointmentHistory[0].reason || patient.appointmentHistory[0].status}
-                            </p>
-                          </>
+                          <p className="text-base font-black text-slate-900 m-0">
+                            {new Date(patient.appointmentHistory[0].date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </p>
                         ) : (
-                          <p className="text-[13px] font-semibold text-slate-400">No visits yet</p>
+                          <p className="text-sm font-extrabold text-slate-700 m-0">No visits recorded</p>
+                        )}
+                      </div>
+                      <p className="text-[11px] font-medium text-slate-400 truncate m-0">
+                        {patient.appointmentHistory?.[0]?.reason || 'Consultation history'}
+                      </p>
+                    </div>
+
+                    {/* 2. Chronic Conditions */}
+                    <div className="bg-[#F0FDF4] border border-[#DCFCE7] rounded-2xl p-4 flex flex-col justify-between min-h-[118px]">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-extrabold text-[#15803D] uppercase tracking-wider">Chronic Conditions</span>
+                        <div className="w-8 h-8 rounded-xl bg-green-100 text-[#16A34A] flex items-center justify-center shrink-0">
+                          <Activity size={16} />
+                        </div>
+                      </div>
+                      <div className="my-1">
+                        {chronicList.length > 0 ? (
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            {chronicList.map((c, i) => (
+                              <span key={i} className="px-2 py-0.5 bg-white text-emerald-800 text-xs font-bold rounded-md border border-emerald-200">
+                                {c}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm font-extrabold text-emerald-800 m-0">None Reported</p>
+                        )}
+                      </div>
+                      <p className="text-[11px] font-medium text-emerald-600 truncate m-0">
+                        {chronicList.length > 0 ? `${chronicList.length} Active Condition${chronicList.length > 1 ? 's' : ''}` : 'Routine monitoring'}
+                      </p>
+                    </div>
+
+                    {/* 3. Total Prescriptions */}
+                    <div className="bg-[#FFF7ED] border border-[#FFEDD5] rounded-2xl p-4 flex flex-col justify-between min-h-[118px]">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-extrabold text-[#C2410C] uppercase tracking-wider">Total Prescriptions</span>
+                        <div className="w-8 h-8 rounded-xl bg-orange-100 text-[#EA580C] flex items-center justify-center shrink-0">
+                          <FileText size={16} />
+                        </div>
+                      </div>
+                      <div className="my-1">
+                        <p className="text-2xl font-black text-slate-900 leading-none m-0">{rxCount}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('Prescriptions')}
+                        className="text-[11px] font-bold text-[#EA580C] hover:underline bg-transparent border-none p-0 cursor-pointer text-left"
+                      >
+                        View all prescriptions →
+                      </button>
+                    </div>
+
+                    {/* 4. Total Appointments */}
+                    <div className="bg-[#EFF6FF] border border-[#DBEAFE] rounded-2xl p-4 flex flex-col justify-between min-h-[118px]">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-extrabold text-[#1D4ED8] uppercase tracking-wider">Total Appointments</span>
+                        <div className="w-8 h-8 rounded-xl bg-blue-100 text-[#2563EB] flex items-center justify-center shrink-0">
+                          <ClipboardList size={16} />
+                        </div>
+                      </div>
+                      <div className="my-1">
+                        <p className="text-2xl font-black text-slate-900 leading-none m-0">{apptCount}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('Appointments')}
+                        className="text-[11px] font-bold text-[#2563EB] hover:underline bg-transparent border-none p-0 cursor-pointer text-left"
+                      >
+                        View all appointments →
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Clinical & Medical Summary */}
+                  <div className="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-5 space-y-4">
+                    <div className="flex items-center justify-between pb-3 border-b border-slate-200/60">
+                      <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider m-0 flex items-center gap-2">
+                        <HeartPulse size={16} className="text-rose-500" />
+                        Clinical & Medical Summary
+                      </h3>
+                      <div className="flex items-center gap-2">
+                        {patient.bloodGroup && (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-extrabold text-rose-700 bg-rose-50 px-2.5 py-0.5 rounded-md border border-rose-100">
+                            <Droplet size={11} className="text-rose-500" />
+                            Blood: {patient.bloodGroup}
+                          </span>
+                        )}
+                        <span className="text-[11px] font-extrabold text-slate-600 bg-white px-2 py-0.5 rounded-md border border-slate-200">
+                          {patient.gender || 'Unknown'} · {patient.age ? `${patient.age} yrs` : 'Age N/A'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Medical History Summary (Clinical Note) */}
+                    <div>
+                      <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5 flex items-center gap-1.5">
+                        <FileText size={12} className="text-indigo-500" /> Medical History Notes
+                      </p>
+                      <div className="bg-white p-3.5 rounded-xl border border-slate-200/80 text-xs text-slate-700 font-medium leading-relaxed shadow-2xs">
+                        {displayMedicalHistory || 'No significant prior medical conditions or clinical notes recorded.'}
+                      </div>
+                    </div>
+
+                    {/* 3 Structured Clinical Cards: Chronic Conditions | Past Surgeries | Family History */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
+                      
+                      {/* 1. Chronic Conditions */}
+                      <div className="bg-white p-3.5 rounded-xl border border-slate-200/80 flex flex-col justify-between">
+                        <div>
+                          <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5">
+                            <Activity size={12} className="text-rose-500" /> Chronic Conditions
+                          </p>
+                          {chronicList.length > 0 ? (
+                            <div className="flex flex-wrap gap-1.5">
+                              {chronicList.map((c, i) => (
+                                <span key={i} className="px-2.5 py-1 bg-rose-50 text-rose-700 text-xs font-bold rounded-lg border border-rose-100 flex items-center gap-1">
+                                  <Activity size={11} className="text-rose-500" />
+                                  {c}
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-xs text-slate-400 font-medium italic m-0">None reported</p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* 2. Past Surgeries */}
+                      <div className="bg-white p-3.5 rounded-xl border border-slate-200/80 flex flex-col justify-between">
+                        <div>
+                          <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5">
+                            <ClipboardList size={12} className="text-blue-500" /> Past Surgeries
+                          </p>
+                          {surgeryList.length > 0 ? (
+                            <div className="flex flex-wrap gap-1.5">
+                              {surgeryList.map((s, i) => (
+                                <span key={i} className="px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded-lg border border-slate-200">
+                                  {s}
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-xs text-slate-400 font-medium italic m-0">No past surgeries recorded</p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* 3. Family History */}
+                      <div className="bg-white p-3.5 rounded-xl border border-slate-200/80 flex flex-col justify-between">
+                        <div>
+                          <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5">
+                            <User size={12} className="text-emerald-500" /> Family History
+                          </p>
+                          {familyList.length > 0 ? (
+                            <div className="flex flex-wrap gap-1.5">
+                              {familyList.map((f, i) => (
+                                <span key={i} className="px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-bold rounded-lg border border-slate-200">
+                                  {f}
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-xs text-slate-400 font-medium italic m-0">No significant family history</p>
+                          )}
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+
+                  {/* Recent Appointments & Current Medications — 2 Separate Balanced Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+                    
+                    {/* Card 1: Recent Appointments */}
+                    <div className="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-200/60">
+                          <div className="flex items-center gap-2">
+                            <Calendar size={15} className="text-blue-600" />
+                            <h3 className="text-xs font-extrabold text-slate-800 m-0 uppercase tracking-wider">Recent Appointments</h3>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setActiveTab('Appointments')}
+                            className="text-[#2160FF] text-[11px] font-bold hover:underline bg-transparent border-none p-0 cursor-pointer"
+                          >
+                            View All
+                          </button>
+                        </div>
+
+                        {patient.appointmentHistory?.length > 0 ? (
+                          <div className="flex flex-col gap-3 relative before:absolute before:left-[45px] before:top-2 before:bottom-2 before:w-px before:bg-slate-200">
+                            {patient.appointmentHistory.slice(0, 4).map((event, i) => {
+                              const d = event.date ? new Date(event.date) : null;
+                              return (
+                                <div key={i} className="flex gap-4 relative z-10">
+                                  <div className="w-[45px] pt-0.5 shrink-0 flex flex-col items-center">
+                                    <span className="text-[14px] font-black text-slate-800 leading-none">{d ? d.getDate() : '—'}</span>
+                                    <span className="text-[9px] font-extrabold text-slate-400 uppercase mt-0.5">
+                                      {d ? d.toLocaleString('en', { month: 'short', year: '2-digit' }) : ''}
+                                    </span>
+                                  </div>
+                                  <div className="w-2 h-2 rounded-full bg-[#2160FF] absolute left-[41.5px] top-1.5 ring-4 ring-white" />
+                                  <div className="flex-1 pl-3 pb-1 min-w-0">
+                                    <div className="flex items-center justify-between gap-2 mb-0.5">
+                                      <p className="text-xs font-bold text-slate-800 truncate m-0">{event.reason || 'Consultation'}</p>
+                                      <span className={`px-1.5 py-0.5 text-[9px] font-extrabold rounded shrink-0 ${
+                                        event.status === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
+                                      }`}>{event.status}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <div className="py-6 flex flex-col items-center justify-center text-center">
+                            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-2">
+                              <Calendar size={18} />
+                            </div>
+                            <p className="text-xs font-semibold text-slate-500 m-0">No appointment history available</p>
+                            <p className="text-[11px] text-slate-400 m-0 mt-0.5">Past consultations will appear here</p>
+                          </div>
                         )}
                       </div>
                     </div>
 
-                    <div className="bg-[#F0FDF4] border border-[#DCFCE7] rounded-xl p-5 flex items-start gap-4">
-                      <div className="w-10 h-10 rounded-lg bg-green-100 text-[#16A34A] flex items-center justify-center shrink-0">
-                        <Activity size={20} />
-                      </div>
+                    {/* Card 2: Current Medications */}
+                    <div className="bg-slate-50/70 border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between">
                       <div>
-                        <p className="text-[11px] font-bold text-slate-500 mb-1">Chronic Conditions</p>
-                        <p className="text-[13px] font-bold text-slate-800 leading-snug">
-                          {patient.chronicConditions || 'None reported'}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="bg-[#FFF7ED] border border-[#FFEDD5] rounded-xl p-5 flex items-start gap-4">
-                      <div className="w-10 h-10 rounded-lg bg-orange-100 text-[#EA580C] flex items-center justify-center shrink-0">
-                        <FileText size={20} />
-                      </div>
-                      <div>
-                        <p className="text-[11px] font-bold text-slate-500 mb-1">Total Prescriptions</p>
-                        <p className="text-[17px] font-bold text-slate-800 mb-1">{rxCount}</p>
-                        <button
-                          onClick={() => setActiveTab('Prescriptions')}
-                          className="text-[11px] font-bold text-[#EA580C] hover:underline"
-                        >
-                          View all prescriptions
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="bg-[#EFF6FF] border border-[#DBEAFE] rounded-xl p-5 flex items-start gap-4">
-                      <div className="w-10 h-10 rounded-lg bg-blue-100 text-[#2563EB] flex items-center justify-center shrink-0">
-                        <ClipboardList size={20} />
-                      </div>
-                      <div>
-                        <p className="text-[11px] font-bold text-slate-500 mb-1">Total Appointments</p>
-                        <p className="text-[17px] font-bold text-slate-800 mb-1">{apptCount}</p>
-                        <button
-                          onClick={() => setActiveTab('Appointments')}
-                          className="text-[11px] font-bold text-[#2563EB] hover:underline"
-                        >
-                          View all appointments
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Medical Summary — real fields */}
-                  <div className="w-full">
-                    <h3 className="text-[15px] font-bold text-slate-800 mb-4">Medical Summary</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-y-6 gap-x-4">
-                      <div>
-                        <p className="text-[11px] font-semibold text-slate-400 mb-1">Blood Group</p>
-                        <p className="text-[13px] font-bold text-slate-800">{patient.bloodGroup || '—'}</p>
-                      </div>
-                      <div>
-                        <p className="text-[11px] font-semibold text-slate-400 mb-1">Age</p>
-                        <p className="text-[13px] font-bold text-slate-800">{patient.age ? `${patient.age} years` : '—'}</p>
-                      </div>
-                      <div>
-                        <p className="text-[11px] font-semibold text-slate-400 mb-1">Gender</p>
-                        <p className="text-[13px] font-bold text-slate-800">{patient.gender || '—'}</p>
-                      </div>
-                      <div>
-                        <p className="text-[11px] font-semibold text-slate-400 mb-1">Phone</p>
-                        <p className="text-[13px] font-bold text-slate-800">{patient.phone || '—'}</p>
-                      </div>
-                      <div className="col-span-2 md:col-span-4">
-                        <p className="text-[11px] font-semibold text-slate-400 mb-1">Chronic Conditions</p>
-                        <p className="text-[13px] font-bold text-slate-800">{patient.chronicConditions || 'None reported'}</p>
-                      </div>
-                      {patient.medicalHistorySummary && (
-                        <div className="col-span-2 md:col-span-4">
-                          <p className="text-[11px] font-semibold text-slate-400 mb-1">Medical History Summary</p>
-                          <p className="text-[13px] font-semibold text-slate-800 leading-relaxed">{patient.medicalHistorySummary}</p>
+                        <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-200/60">
+                          <div className="flex items-center gap-2">
+                            <Pill size={15} className="text-orange-600" />
+                            <h3 className="text-xs font-extrabold text-slate-800 m-0 uppercase tracking-wider">Current Medications</h3>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setActiveTab('Prescriptions')}
+                            className="text-[#2160FF] text-[11px] font-bold hover:underline bg-transparent border-none p-0 cursor-pointer"
+                          >
+                            View All
+                          </button>
                         </div>
-                      )}
-                      {patient.pastSurgeries && (
-                        <div className="col-span-2 md:col-span-4">
-                          <p className="text-[11px] font-semibold text-slate-400 mb-1">Past Surgeries</p>
-                          <p className="text-[13px] font-semibold text-slate-800">{patient.pastSurgeries}</p>
-                        </div>
-                      )}
-                      {patient.familyHistory && (
-                        <div className="col-span-2 md:col-span-4">
-                          <p className="text-[11px] font-semibold text-slate-400 mb-1">Family History</p>
-                          <p className="text-[13px] font-semibold text-slate-800">{patient.familyHistory}</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
 
-                  <hr className="border-slate-100" />
-
-                  {/* Recent Appointment History from real API data */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <div>
-                      <div className="flex items-center justify-between mb-5">
-                        <h3 className="text-[14px] font-bold text-slate-800">Recent Appointment History</h3>
-                        <button
-                          onClick={() => setActiveTab('Appointments')}
-                          className="text-[#5B21B6] text-[11px] font-bold hover:underline"
-                        >
-                          View All
-                        </button>
-                      </div>
-                      {patient.appointmentHistory?.length > 0 ? (
-                        <div className="flex flex-col gap-4 relative before:absolute before:left-[45px] before:top-2 before:bottom-2 before:w-px before:bg-slate-200">
-                          {patient.appointmentHistory.slice(0, 4).map((event, i) => {
-                            const d = event.date ? new Date(event.date) : null;
-                            return (
-                              <div key={i} className="flex gap-4 relative z-10">
-                                <div className="w-[45px] pt-0.5 shrink-0 flex flex-col items-center">
-                                  <span className="text-[15px] font-bold text-slate-800 leading-none">{d ? d.getDate() : '—'}</span>
-                                  <span className="text-[9px] font-bold text-slate-500 uppercase mt-0.5">
-                                    {d ? d.toLocaleString('en', { month: 'short', year: '2-digit' }) : ''}
+                        {medicationList.length > 0 ? (
+                          <div className="flex flex-col gap-2">
+                            {medicationList.map((med, i) => {
+                              const medName = typeof med === 'string' ? med : (med.name || med.medicationName || JSON.stringify(med));
+                              return (
+                                <div key={i} className="flex items-center justify-between p-2.5 bg-white border border-slate-200/80 rounded-xl hover:border-orange-200 transition-colors">
+                                  <div className="flex items-center gap-2.5 min-w-0">
+                                    <div className="w-7 h-7 rounded-lg bg-orange-100 text-[#EA580C] flex items-center justify-center font-serif italic font-black text-xs shrink-0">
+                                      Rx
+                                    </div>
+                                    <span className="text-xs font-bold text-slate-800 truncate">{medName}</span>
+                                  </div>
+                                  <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100 shrink-0">
+                                    Active
                                   </span>
                                 </div>
-                                <div className="w-2 h-2 rounded-full bg-[#5B21B6] absolute left-[41.5px] top-1.5 ring-4 ring-white" />
-                                <div className="flex-1 pl-3 pb-1">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <p className="text-[12px] font-bold text-slate-800">{event.reason || 'Consultation'}</p>
-                                    <span className={`px-1.5 py-0.5 text-[9px] font-bold rounded ${
-                                      event.status === 'COMPLETED' ? 'bg-green-50 text-green-600' : 'bg-blue-50 text-blue-600'
-                                    }`}>{event.status}</span>
+                              );
+                            })}
+                          </div>
+                        ) : patient.previousPrescriptions?.length > 0 ? (
+                          <div className="flex flex-col gap-2">
+                            {patient.previousPrescriptions.slice(0, 3).map((rx) => (
+                              <div key={rx.id} className="flex items-center justify-between p-2.5 bg-white border border-slate-200/80 rounded-xl">
+                                <div className="flex items-center gap-2.5 min-w-0">
+                                  <div className="w-7 h-7 rounded-lg bg-orange-100 text-[#EA580C] flex items-center justify-center font-serif italic font-black text-xs shrink-0">
+                                    Rx
+                                  </div>
+                                  <div className="min-w-0">
+                                    <span className="text-xs font-bold text-slate-800 block truncate">{rx.summary || 'Prescription'}</span>
+                                    <p className="text-[10px] text-slate-400 m-0">{rx.date}</p>
                                   </div>
                                 </div>
                               </div>
-                            );
-                          })}
-                        </div>
-                      ) : (
-                        <p className="text-xs text-slate-400 italic">No appointment history available.</p>
-                      )}
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="py-6 flex flex-col items-center justify-center text-center">
+                            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-2">
+                              <Pill size={18} />
+                            </div>
+                            <p className="text-xs font-semibold text-slate-500 m-0">No active medications on record</p>
+                            <p className="text-[11px] text-slate-400 m-0 mt-0.5">Active prescriptions will appear here</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
-                    {/* Current Medications — from API data */}
-                    <div>
-                      <div className="flex items-center justify-between mb-5">
-                        <h3 className="text-[14px] font-bold text-slate-800">Current Medications</h3>
-                        <button
-                          onClick={() => setActiveTab('Prescriptions')}
-                          className="text-[#5B21B6] text-[11px] font-bold hover:underline"
-                        >
-                          View All
-                        </button>
-                      </div>
-                      {patient.currentMedications ? (
-                        <div className="flex flex-col gap-3">
-                          {(Array.isArray(patient.currentMedications)
-                            ? patient.currentMedications
-                            : patient.currentMedications.split(',').map(m => m.trim())
-                          ).map((med, i) => (
-                            <div key={i} className="flex items-center gap-3 py-2 border-b border-slate-50 last:border-0">
-                              <div className="w-8 h-8 rounded-full bg-orange-50 text-orange-600 flex items-center justify-center font-serif italic font-bold shrink-0">Rx</div>
-                              <span className="text-[12px] font-bold text-slate-800">
-                                {typeof med === 'string' ? med : med.name || JSON.stringify(med)}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      ) : patient.previousPrescriptions?.length > 0 ? (
-                        <div className="flex flex-col gap-3">
-                          {patient.previousPrescriptions.slice(0, 3).map((rx) => (
-                            <div key={rx.id} className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
-                              <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-orange-50 text-orange-600 flex items-center justify-center font-serif italic font-bold shrink-0">Rx</div>
-                                <div>
-                                  <span className="text-[12px] font-bold text-slate-800">{rx.summary || 'Prescription'}</span>
-                                  <p className="text-[10px] text-slate-400">{rx.date}</p>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-xs text-slate-400 italic">No current medications on record.</p>
-                      )}
-                    </div>
                   </div>
-                </>
+                </div>
               )}
 
               {activeTab === 'Timeline' && (

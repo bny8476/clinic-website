@@ -139,25 +139,33 @@ const UploadLabReport = () => {
               {/* Patient */}
               <div>
                 <label className="block text-[13px] font-bold text-slate-700 mb-2">Patient <span className="text-red-500">*</span></label>
-                <div className="relative">
-                  <input type="text" name="patient" value={formData.patient} onChange={handleInputChange} placeholder="Search and select patient" className="w-full pl-4 pr-10 py-2.5 border border-slate-200 rounded-lg text-[13px] font-medium text-slate-700 focus:outline-none focus:border-[#2160FF]" />
-                  <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                </div>
+                <input 
+                  type="text" 
+                  name="patient" 
+                  value={formData.patient} 
+                  onChange={handleInputChange} 
+                  placeholder="Enter patient name or ID" 
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-[13px] font-medium text-slate-700 focus:outline-none focus:border-[#2160FF] transition-colors" 
+                />
               </div>
 
               {/* Report Type */}
               <div>
                 <label className="block text-[13px] font-bold text-slate-700 mb-2">Report Type <span className="text-red-500">*</span></label>
-                <div className="relative">
-                  <input type="text" name="reportType" value={formData.reportType} onChange={handleInputChange} placeholder="Select report type" className="w-full pl-4 pr-10 py-2.5 border border-slate-200 rounded-lg text-[13px] font-medium text-slate-700 focus:outline-none focus:border-[#2160FF]" />
-                  <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                </div>
+                <input 
+                  type="text" 
+                  name="reportType" 
+                  value={formData.reportType} 
+                  onChange={handleInputChange} 
+                  placeholder="Enter report type (e.g. Blood Test, X-Ray, Pathology)" 
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-[13px] font-medium text-slate-700 focus:outline-none focus:border-[#2160FF] transition-colors" 
+                />
               </div>
 
               {/* Test/Report Name */}
               <div>
                 <label className="block text-[13px] font-bold text-slate-700 mb-2">Test/Report Name <span className="text-red-500">*</span></label>
-                <input type="text" name="testName" value={formData.testName} onChange={handleInputChange} placeholder="Enter test or report name" className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-[13px] font-medium text-slate-700 focus:outline-none focus:border-[#2160FF]" />
+                <input type="text" name="testName" value={formData.testName} onChange={handleInputChange} placeholder="Enter test or report name" className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-[13px] font-medium text-slate-700 focus:outline-none focus:border-[#2160FF] transition-colors" />
               </div>
 
               {/* Test Date */}
@@ -165,7 +173,7 @@ const UploadLabReport = () => {
                 <label className="block text-[13px] font-bold text-slate-700 mb-2">Test Date <span className="text-red-500">*</span></label>
                 <div className="relative">
                   <Calendar size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input type="date" name="testDate" value={formData.testDate} onChange={handleInputChange} className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-lg text-[13px] font-medium text-slate-700 focus:outline-none focus:border-[#2160FF]" />
+                  <input type="date" name="testDate" value={formData.testDate} onChange={handleInputChange} className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-lg text-[13px] font-medium text-slate-700 focus:outline-none focus:border-[#2160FF] transition-colors" />
                 </div>
               </div>
 
@@ -174,14 +182,14 @@ const UploadLabReport = () => {
                 <label className="block text-[13px] font-bold text-slate-700 mb-2">Report Date <span className="text-red-500">*</span></label>
                 <div className="relative">
                   <Calendar size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input type="date" name="reportDate" value={formData.reportDate} onChange={handleInputChange} className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-lg text-[13px] font-medium text-slate-700 focus:outline-none focus:border-[#2160FF]" />
+                  <input type="date" name="reportDate" value={formData.reportDate} onChange={handleInputChange} className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-lg text-[13px] font-medium text-slate-700 focus:outline-none focus:border-[#2160FF] transition-colors" />
                 </div>
               </div>
 
               {/* Lab/Center Name */}
               <div>
                 <label className="block text-[13px] font-bold text-slate-700 mb-2">Lab/Center Name <span className="text-red-500">*</span></label>
-                <input type="text" name="labName" value={formData.labName} onChange={handleInputChange} placeholder="Enter lab or center name" className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-[13px] font-medium text-slate-700 focus:outline-none focus:border-[#2160FF]" />
+                <input type="text" name="labName" value={formData.labName} onChange={handleInputChange} placeholder="Enter lab or center name" className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-[13px] font-medium text-slate-700 focus:outline-none focus:border-[#2160FF] transition-colors" />
               </div>
 
             </div>
@@ -189,10 +197,14 @@ const UploadLabReport = () => {
             {/* Ref. Doctor */}
             <div className="mt-5">
               <label className="block text-[13px] font-bold text-slate-700 mb-2">Ref. Doctor (Optional)</label>
-              <div className="relative">
-                <input type="text" name="refDoctor" value={formData.refDoctor} onChange={handleInputChange} placeholder="Select referring doctor" className="w-full pl-4 pr-10 py-2.5 border border-slate-200 rounded-lg text-[13px] font-medium text-slate-700 focus:outline-none focus:border-[#2160FF]" />
-                <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              </div>
+              <input 
+                type="text" 
+                name="refDoctor" 
+                value={formData.refDoctor} 
+                onChange={handleInputChange} 
+                placeholder="Enter referring doctor name (optional)" 
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-[13px] font-medium text-slate-700 focus:outline-none focus:border-[#2160FF] transition-colors" 
+              />
             </div>
 
             {/* Notes */}

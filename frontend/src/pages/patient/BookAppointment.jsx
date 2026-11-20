@@ -1002,43 +1002,41 @@ export default function BookAppointment() {
                   <label className="block text-xs font-bold text-slate-800">Additional Preferences</label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {/* Preferred Consultation Language */}
-                    <div className="relative border border-slate-200 rounded-xl px-3 py-2 bg-white">
-                      <span className="block text-[10px] text-slate-400 font-medium">Preferred Consultation Language</span>
-                      <div className="flex items-center justify-between mt-0.5">
-                        <div className="flex items-center gap-2">
-                          <Globe className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                          <select
-                            value={preferredLanguage}
-                            onChange={(e) => setPreferredLanguage(e.target.value)}
-                            className="bg-transparent text-xs font-bold text-slate-800 outline-none cursor-pointer pr-4"
-                          >
-                            <option value="English">English</option>
-                            <option value="Hindi">Hindi</option>
-                            <option value="Spanish">Spanish</option>
-                            <option value="French">French</option>
-                          </select>
-                        </div>
-                        <ChevronDown className="w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+                    <div className="relative border border-slate-200 rounded-xl px-3 py-2 bg-white hover:border-slate-300 transition-colors">
+                      <span className="block text-[10px] text-slate-400 font-medium pointer-events-none">Preferred Consultation Language</span>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <Globe className="w-3.5 h-3.5 text-slate-500 shrink-0 pointer-events-none" />
+                        <select
+                          value={preferredLanguage}
+                          onChange={(e) => setPreferredLanguage(e.target.value)}
+                          className="w-full bg-transparent text-xs font-bold text-slate-800 border-none outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus:border-none shadow-none appearance-none cursor-pointer pr-6"
+                          style={{ outline: 'none', border: 'none', boxShadow: 'none' }}
+                        >
+                          <option value="English">English</option>
+                          <option value="Hindi">Hindi</option>
+                          <option value="Spanish">Spanish</option>
+                          <option value="French">French</option>
+                        </select>
+                        <ChevronDown className="w-3.5 h-3.5 text-slate-400 pointer-events-none absolute right-3 bottom-2.5" />
                       </div>
                     </div>
 
                     {/* Preferred Gender of Doctor */}
-                    <div className="relative border border-slate-200 rounded-xl px-3 py-2 bg-white">
-                      <span className="block text-[10px] text-slate-400 font-medium">Preferred Gender of Doctor (Optional)</span>
-                      <div className="flex items-center justify-between mt-0.5">
-                        <div className="flex items-center gap-2">
-                          <User className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                          <select
-                            value={doctorGenderPref}
-                            onChange={(e) => setDoctorGenderPref(e.target.value)}
-                            className="bg-transparent text-xs font-bold text-slate-800 outline-none cursor-pointer pr-4"
-                          >
-                            <option value="No Preference">No Preference</option>
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                          </select>
-                        </div>
-                        <ChevronDown className="w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+                    <div className="relative border border-slate-200 rounded-xl px-3 py-2 bg-white hover:border-slate-300 transition-colors">
+                      <span className="block text-[10px] text-slate-400 font-medium pointer-events-none">Preferred Gender of Doctor (Optional)</span>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <User className="w-3.5 h-3.5 text-slate-500 shrink-0 pointer-events-none" />
+                        <select
+                          value={doctorGenderPref}
+                          onChange={(e) => setDoctorGenderPref(e.target.value)}
+                          className="w-full bg-transparent text-xs font-bold text-slate-800 border-none outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus:border-none shadow-none appearance-none cursor-pointer pr-6"
+                          style={{ outline: 'none', border: 'none', boxShadow: 'none' }}
+                        >
+                          <option value="No Preference">No Preference</option>
+                          <option value="Male">Male</option>
+                          <option value="Female">Female</option>
+                        </select>
+                        <ChevronDown className="w-3.5 h-3.5 text-slate-400 pointer-events-none absolute right-3 bottom-2.5" />
                       </div>
                     </div>
                   </div>

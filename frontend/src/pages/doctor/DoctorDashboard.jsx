@@ -750,6 +750,7 @@ const DoctorDashboard = () => {
           title="Patients" icon={Users} 
           variant="panel" colorHex="#2160FF" 
           stackIndex={patientId ? 1 : 0}
+          className="md:w-[88vw] lg:w-[84vw] xl:w-[80vw] 2xl:w-[75vw] max-w-[1440px]"
         >
           <PatientList onPatientClick={handlePatientClick} />
         </ModulePanel>
@@ -761,6 +762,7 @@ const DoctorDashboard = () => {
           title="Patient Detail" icon={Users} 
           variant="panel" colorHex="#2160FF" 
           stackIndex={0}
+          className="md:w-[88vw] lg:w-[84vw] xl:w-[80vw] 2xl:w-[75vw] max-w-[1440px]"
         >
           <PatientDetail patientIdOverride={patientId} />
         </ModulePanel>
@@ -769,8 +771,10 @@ const DoctorDashboard = () => {
       {currentPanel === 'new-appointment' && (
         <ModulePanel 
           isOpen={true} onClose={closePanel} 
-          title="New Appointment" icon={CalendarIcon} 
+          title="Appointments & Scheduling" icon={CalendarIcon} 
           variant="panel" colorHex="#2160FF" stackIndex={0}
+          className="md:w-[88vw] lg:w-[84vw] xl:w-[80vw] 2xl:w-[75vw] max-w-[1440px]"
+          bodyClassName="p-0 bg-slate-50/60"
         >
           <NewAppointmentPanel onClose={closePanel} />
         </ModulePanel>
