@@ -477,13 +477,19 @@ const NewAppointmentPanel = ({ onClose }) => {
             >
               {/* Modal Header */}
               <div className="p-5 bg-slate-900 text-white flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-[#2160FF]" />
-                  <h3 className="font-bold text-base">Schedule New Appointment</h3>
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-blue-400">
+                    <Calendar className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-base !text-white m-0">Schedule New Appointment</h3>
+                    <p className="text-xs text-slate-300 m-0">Enter details to book a consultation</p>
+                  </div>
                 </div>
                 <button
+                  type="button"
                   onClick={() => setIsFormOpen(false)}
-                  className="p-1 hover:bg-white/10 rounded-lg transition-colors text-slate-400 hover:text-white"
+                  className="p-1.5 hover:bg-white/10 rounded-lg transition-colors text-slate-400 hover:text-white cursor-pointer"
                 >
                   <X size={18} />
                 </button>
@@ -600,6 +606,7 @@ const NewAppointmentPanel = ({ onClose }) => {
                       name="appointmentDate"
                       value={formData.appointmentDate}
                       onChange={handleChange}
+                      min={new Date().toISOString().split('T')[0]}
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#2160FF]/20 focus:border-[#2160FF] outline-none"
                     />
                   </div>

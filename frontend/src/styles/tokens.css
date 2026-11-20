@@ -131,6 +131,15 @@ h1, h2, h3, h4, h5, h6 {
   margin-top: 0;
 }
 
+[class*="text-white"] h1,
+[class*="text-white"] h2,
+[class*="text-white"] h3,
+[class*="text-white"] h4,
+[class*="text-white"] h5,
+[class*="text-white"] h6 {
+  color: inherit;
+}
+
 * {
   box-sizing: border-box;
 }

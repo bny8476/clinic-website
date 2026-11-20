@@ -50,8 +50,8 @@ const AppointmentDetailModal = ({ appointmentId, onClose }) => {
                 <Stethoscope size={20} />
               </div>
               <div>
-                <h3 className="font-bold text-lg leading-snug">Appointment Summary</h3>
-                <p className="text-xs text-slate-300">
+                <h3 className="font-bold text-lg leading-snug !text-white m-0">Appointment Summary</h3>
+                <p className="text-xs text-slate-300 m-0">
                   {detail?.appointmentNumber ? `ID: ${detail.appointmentNumber}` : `Appointment #${appointmentId}`}
                 </p>
               </div>
