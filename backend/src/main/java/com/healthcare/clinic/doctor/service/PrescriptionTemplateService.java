@@ -52,6 +52,7 @@ public class PrescriptionTemplateService {
         existing.setCategory(updatedTemplate.getCategory());
         existing.setChiefComplaint(updatedTemplate.getChiefComplaint());
         existing.setDiagnosis(updatedTemplate.getDiagnosis());
+        existing.setNotes(updatedTemplate.getNotes());
 
         existing.getItems().clear();
         if (updatedTemplate.getItems() != null) {

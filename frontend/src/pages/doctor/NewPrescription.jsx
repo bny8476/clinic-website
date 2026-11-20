@@ -151,6 +151,7 @@ const NewPrescription = () => {
           setPrescriptionStatus(data.pharmacyStatus || 'DRAFT');
           setChiefComplaint(data.chiefComplaint || '');
           setDiagnosis(data.diagnosis || '');
+          if (data.notes) setNotes(data.notes);
           setSymptoms(data.symptoms || '');
           setMedicalHistory(data.medicalHistory || '');
           setNotes(data.notes || '');
@@ -181,6 +182,7 @@ const NewPrescription = () => {
           const data = res.data;
           setChiefComplaint(data.chiefComplaint || '');
           setDiagnosis(data.diagnosis || '');
+          if (data.notes) setNotes(data.notes);
           if (data.items && data.items.length > 0) {
             setItems(data.items.map((i, idx) => ({
               id: Date.now() + idx + Math.random(),

@@ -28,6 +28,9 @@ public class PrescriptionTemplate {
     @Column(columnDefinition = "TEXT")
     private String diagnosis;
 
+    @Column(columnDefinition = "TEXT")
+    private String notes;
+
     @OneToMany(mappedBy = "template", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PrescriptionTemplateItem> items = new ArrayList<>();
 
