@@ -1,18 +1,32 @@
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import Button from '../../components/ui/Button';
-import FormField from '../../components/ui/FormField';
-import Modal from '../../components/ui/Modal';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { Search, User, UserPlus, X } from 'lucide-react';
+import { 
+  Users, 
+  UserPlus, 
+  Search, 
+  Filter, 
+  RotateCw, 
+  Building, 
+  Mail, 
+  Phone, 
+  Calendar, 
+  FileText, 
+  CheckCircle2, 
+  XCircle, 
+  ChevronRight, 
+  Eye, 
+  ShieldCheck, 
+  X,
+  CreditCard,
+  Briefcase
+} from 'lucide-react';
 import { fadeIn } from '../../components/ui/motion';
-import { motion } from 'framer-motion';
-import { Badge } from '../../components/ui/Badge';
+import { motion, AnimatePresence } from 'framer-motion';
+import HrTopNav from './HrTopNav';
 
-/**
- * Debounce helper
- */
 function useDebouncedValue(value, delay = 300) {
   const [debounced, setDebounced] = React.useState(value);
   React.useEffect(() => {
@@ -22,264 +36,734 @@ function useDebouncedValue(value, delay = 300) {
   return debounced;
 }
 
-const Employees = () => {
-  const [search, setSearch] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
+const DEPARTMENTS = [
+  'ALL',
+  'Cardiology',
+  'Emergency',
+  'Pediatrics',
+  'Inpatient Care',
+  'Nursing Operations',
+  'Pharmacy',
+  'Diagnostic Imaging',
+  'Administration',
+  'Human Resources'
+];
+
+export default function Employees() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  // Form state
-  const [formData, setFormData] = useState({
-    designation: '',
-    department: '',
-    status: 'ACTIVE'
-  });
+  const [search, setSearch] = useState('');
+  const [selectedDept, setSelectedDept] = useState('ALL');
+  const [selectedStatus, setSelectedStatus] = useState('ALL');
+  const [selectedEmpDetails, setSelectedEmpDetails] = useState(null);
 
-  // Real user-select state
+  // Add Employee Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [userSearch, setUserSearch] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    designation: '',
+    department: 'Cardiology',
+    employmentType: 'FULL_TIME',
+    salary: '',
+    dateOfJoining: new Date().toISOString().split('T')[0],
+    isActive: true
+  });
 
   const debouncedUserSearch = useDebouncedValue(userSearch, 300);
 
-  // Fetch matching users from backend
+  // Fetch users for linking
   const { data: userResults = [], isFetching: userSearchLoading } = useQuery({
     queryKey: ['user-search', debouncedUserSearch],
     queryFn: async () => {
       if (!debouncedUserSearch.trim()) return [];
       const res = await axiosPrivate.get('/users/search', { params: { q: debouncedUserSearch } });
-      return res.data;
+      return Array.isArray(res.data) ? res.data : [];
     },
     enabled: debouncedUserSearch.length >= 1,
     staleTime: 30_000,
   });
 
-  // Mutations
-  const mutation = useMutation({
-    mutationFn: async (data) => axiosPrivate.post('/hr/employees', data),
+  // Fetch employee directory
+  const { data: employees = [], isLoading, refetch, isFetching } = useQuery({
+    queryKey: ['hr-employees-list'],
+    queryFn: async () => {
+      try {
+        const res = await axiosPrivate.get('/hr/employees');
+        return Array.isArray(res.data) ? res.data : [];
+      } catch (err) {
+        return [];
+      }
+    },
+    staleTime: 60_000,
+  });
+
+  // Onboard Mutation
+  const addMutation = useMutation({
+    mutationFn: async (payload) => {
+      return (await axiosPrivate.post('/hr/employees', payload)).data;
+    },
     onSuccess: () => {
-      toast.success('Employee added successfully');
+      toast.success('Staff member onboarded successfully!');
       queryClient.invalidateQueries(['hr-employees-list']);
+      queryClient.invalidateQueries(['hr-dashboard-summary']);
       setIsModalOpen(false);
       resetForm();
     },
-    onError: (err) => toast.error(err?.response?.data?.message || 'Failed to add employee')
+    onError: (err) => {
+      toast.error(err?.response?.data?.message || 'Failed to onboard employee');
+    }
   });
 
   const resetForm = () => {
-    setFormData({ designation: '', department: '', status: 'ACTIVE' });
+    setFormData({
+      designation: '',
+      department: 'Cardiology',
+      employmentType: 'FULL_TIME',
+      salary: '',
+      dateOfJoining: new Date().toISOString().split('T')[0],
+      isActive: true
+    });
     setSelectedUser(null);
     setUserSearch('');
   };
 
-  const handleSubmit = (e) => {
+  const handleCreate = (e) => {
     e.preventDefault();
     if (!selectedUser) {
-      toast.error('Please select a user account to link this employee to.');
+      toast.error('Please search and select a registered user account.');
       return;
     }
-    mutation.mutate({
+    if (!formData.designation.trim()) {
+      toast.error('Please enter a designation or job title.');
+      return;
+    }
+
+    addMutation.mutate({
       userId: selectedUser.id,
       department: formData.department,
       designation: formData.designation,
-      employmentType: 'FULL_TIME',
-      dateOfJoining: new Date().toISOString().split('T')[0],
-      salary: 0,
-      isActive: formData.status === 'ACTIVE'
+      employmentType: formData.employmentType,
+      dateOfJoining: formData.dateOfJoining,
+      salary: parseFloat(formData.salary || '0'),
+      isActive: formData.isActive
     });
   };
 
-  // Employee list query
-  const { data: employees = [], isLoading } = useQuery({
-    queryKey: ['hr-employees-list'],
-    queryFn: async () => (await axiosPrivate.get('/hr/employees')).data,
-    staleTime: 60_000,
-  });
+  // KPIs
+  const kpis = useMemo(() => {
+    const total = employees.length;
+    const active = employees.filter(e => e.isActive !== false).length;
+    const depts = new Set(employees.map(e => e.department).filter(Boolean)).size;
+    const fullTime = employees.filter(e => (e.employmentType || '').toUpperCase() === 'FULL_TIME').length;
+    return { total, active, depts, fullTime };
+  }, [employees]);
 
-  const filtered = useMemo(() => {
-    return employees.filter(e =>
-      !search ||
-      (e.name || '').toLowerCase().includes(search.toLowerCase()) ||
-      (e.department || '').toLowerCase().includes(search.toLowerCase())
-    );
-  }, [employees, search]);
+  // Filtering
+  const filteredEmployees = useMemo(() => {
+    return employees.filter(emp => {
+      const name = (emp.user ? `${emp.user.firstName || ''} ${emp.user.lastName || ''}` : emp.name || '').toLowerCase();
+      const email = (emp.user?.email || emp.email || '').toLowerCase();
+      const dept = (emp.department || '').toLowerCase();
+      const desig = (emp.designation || '').toLowerCase();
+      const q = search.toLowerCase();
+
+      const matchesSearch = !search || name.includes(q) || email.includes(q) || dept.includes(q) || desig.includes(q);
+      const matchesDept = selectedDept === 'ALL' || (emp.department || '').toLowerCase() === selectedDept.toLowerCase();
+      const matchesStatus = selectedStatus === 'ALL' 
+        ? true 
+        : selectedStatus === 'ACTIVE' 
+          ? emp.isActive !== false 
+          : emp.isActive === false;
+
+      return matchesSearch && matchesDept && matchesStatus;
+    });
+  }, [employees, search, selectedDept, selectedStatus]);
+
+  const getDeptColor = (dept) => {
+    const d = (dept || '').toLowerCase();
+    if (d.includes('cardio')) return 'bg-red-50 text-red-700 border-red-200';
+    if (d.includes('emerg')) return 'bg-amber-50 text-amber-700 border-amber-200';
+    if (d.includes('nurs')) return 'bg-purple-50 text-purple-700 border-purple-200';
+    if (d.includes('pharm')) return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+    if (d.includes('pediat')) return 'bg-cyan-50 text-cyan-700 border-cyan-200';
+    if (d.includes('diag') || d.includes('radio')) return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+    return 'bg-blue-50 text-blue-700 border-blue-200';
+  };
 
   return (
-    <motion.div initial="hidden" animate="visible" variants={fadeIn} className="w-full max-w-full px-2 sm:px-6 pt-6 sm:pt-8 space-y-6 font-sans">
-      
-      {/* Custom Header matching mockup */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={fadeIn}
+      className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 font-sans"
+    >
+      {/* ── Top Portal Navigation Bar ───────────────────────────────── */}
+      <HrTopNav />
+
+      {/* ── Executive Header Banner ─────────────────────────────────── */}
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white p-6 sm:p-7 rounded-2xl border border-slate-200/80 shadow-2xs">
         <div className="flex items-center gap-4">
-          <div className="w-[60px] h-[60px] bg-[#EEF2FF] rounded-[16px] flex items-center justify-center shrink-0">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="3" y="6" width="18" height="14" rx="2" stroke="#2160FF" strokeWidth="2.5" />
-              <path d="M8 6V4C8 3.44772 8.44772 3 9 3H15C15.5523 3 16 3.44772 16 4V6" stroke="#2160FF" strokeWidth="2.5" strokeLinecap="round" />
-              <circle cx="12" cy="11" r="2.5" stroke="#2160FF" strokeWidth="2" />
-              <path d="M7 17C7 15 9.5 14 12 14C14.5 14 17 15 17 17" stroke="#2160FF" strokeWidth="2" strokeLinecap="round" />
-            </svg>
+          <div className="w-14 h-14 bg-gradient-to-br from-blue-500/10 to-indigo-500/10 rounded-2xl flex items-center justify-center shrink-0 border border-blue-100 shadow-2xs">
+            <Users className="w-7 h-7 text-[#2864FF]" />
           </div>
           <div>
-            <h1 className="text-[28px] font-bold text-slate-900 m-0 leading-tight tracking-tight">
-              Employee Directory
-            </h1>
-            <p className="text-[15px] text-slate-500 m-0 mt-1">
-              Manage staff records linked with system user accounts.
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                Staff Directory & Clinical Workforce
+              </h1>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-blue-50 text-blue-700 border border-blue-200 shadow-2xs">
+                <ShieldCheck size={14} className="text-blue-600" />
+                Linked User Profiles
+              </span>
+            </div>
+            <p className="text-sm font-medium text-slate-500 mt-1">
+              Maintain institutional employee profiles, link verified accounts, manage credentials, and audit department assignments.
             </p>
           </div>
         </div>
-        <button 
-          onClick={() => setIsModalOpen(true)}
-          className="bg-[#2160FF] hover:bg-[#1A4CE6] text-white px-6 py-3 rounded-[12px] font-medium flex items-center gap-2 transition-all shadow-sm"
-        >
-          <UserPlus size={18} /> Add Employee
-        </button>
+
+        {/* Action Controls */}
+        <div className="flex items-center gap-3 shrink-0 flex-wrap sm:flex-nowrap w-full sm:w-auto">
+          <button
+            onClick={() => {
+              refetch();
+              toast.success('Directory refreshed');
+            }}
+            title="Refresh Directory"
+            disabled={isFetching}
+            className="p-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 transition shadow-2xs cursor-pointer flex items-center justify-center shrink-0"
+          >
+            <RotateCw size={17} className={isFetching ? 'animate-spin text-blue-600' : ''} />
+          </button>
+
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-[#2864FF] hover:bg-blue-700 flex items-center gap-2 transition shadow-md shadow-blue-500/20 cursor-pointer"
+          >
+            <UserPlus size={15} /> + Onboard Employee
+          </button>
+        </div>
       </div>
 
-      {/* Main Content Card */}
-      <div className="bg-white rounded-[24px] border border-slate-100 shadow-[0_2px_12px_rgba(0,0,0,0.03)] p-6 sm:p-8 w-full">
-        {/* Search Bar */}
-        <div className="relative mb-8">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-          <input 
-            type="text" 
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search by name, email, department, or designation..."
-            className="w-full pl-12 pr-4 py-4 bg-white border border-[#A6C8FF] rounded-[14px] text-[15px] focus:outline-none focus:ring-4 focus:ring-[#2160FF]/10 focus:border-[#2160FF] transition-all placeholder:text-slate-400 font-medium text-slate-700"
-          />
+      {/* ── Executive KPI Cards ─────────────────────────────────────── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-2xs flex items-center justify-between">
+          <div>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Headcount</p>
+            <p className="text-2xl font-black text-slate-900 mt-1">{kpis.total} Personnel</p>
+            <span className="text-[11px] font-bold text-blue-600">Active clinic staff</span>
+          </div>
+          <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+            <Users size={22} />
+          </div>
         </div>
 
-        {/* Content Area */}
-        {filtered.length === 0 ? (
-          <div className="border border-dashed border-[#A6C8FF] rounded-[20px] p-16 sm:p-24 flex flex-col items-center justify-center bg-[#FAFCFF]">
-            {/* Custom Empty State Illustration */}
-            <div className="relative w-[120px] h-[120px] mb-8 flex items-center justify-center">
-              <div className="absolute inset-0 bg-[#EEF2FF] rounded-full scale-[0.9]"></div>
-              
-              <svg width="80" height="80" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10 ml-2 mt-2">
-                {/* Box Back */}
-                <path d="M30 45L40 70H80L90 45H30Z" fill="#A6C8FF" stroke="#2160FF" strokeWidth="5" strokeLinejoin="round" />
-                
-                {/* Box Front */}
-                <path d="M40 70H80C82.7614 70 85 72.2386 85 75V85C85 87.7614 82.7614 90 80 90H40C37.2386 90 35 87.7614 35 85V75C35 72.2386 37.2386 70 40 70Z" fill="#2160FF" stroke="#2160FF" strokeWidth="5" strokeLinejoin="round" />
-                
-                {/* Cutout handle */}
-                <path d="M50 70C50 75 55 78 60 78C65 78 70 75 70 70" stroke="white" strokeWidth="4" strokeLinecap="round" />
+        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-2xs flex items-center justify-between">
+          <div>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Active Status</p>
+            <p className="text-2xl font-black text-emerald-600 mt-1">{kpis.active}</p>
+            <span className="text-[11px] font-bold text-emerald-600">
+              {kpis.total > 0 ? Math.round((kpis.active / kpis.total) * 100) : 100}% Operational
+            </span>
+          </div>
+          <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <CheckCircle2 size={22} />
+          </div>
+        </div>
 
-                {/* Sparkles */}
-                <path d="M20 30L22 34L26 36L22 38L20 42L18 38L14 36L18 34L20 30Z" fill="#A6C8FF"/>
-                <path d="M100 35L101 38L104 39L101 40L100 43L99 40L96 39L99 38L100 35Z" fill="#A6C8FF"/>
-              </svg>
-              
-              {/* Floating User icon */}
-              <div className="absolute top-0 right-0 bg-[#8C9EFF] w-10 h-10 rounded-full border-[3.5px] border-white flex items-center justify-center z-20 shadow-sm transform translate-x-2 -translate-y-2">
-                <User size={18} className="text-white" />
-              </div>
-            </div>
-            
-            <h2 className="text-[24px] font-bold text-slate-900 mb-2">No employees found</h2>
-            <p className="text-[15px] text-slate-500 mb-8 font-medium">There are no employee records matching your search.</p>
-            <button 
-              onClick={() => setSearch('')}
-              className="bg-white border-2 border-[#2160FF] text-[#2160FF] px-8 py-2.5 rounded-[12px] font-bold text-[14px] flex items-center gap-2 hover:bg-[#EEF2FF] transition-colors shadow-sm"
+        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-2xs flex items-center justify-between">
+          <div>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Clinical Units</p>
+            <p className="text-2xl font-black text-indigo-600 mt-1">{kpis.depts} Departments</p>
+            <span className="text-[11px] font-bold text-indigo-600">Across hospital campus</span>
+          </div>
+          <div className="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+            <Building size={22} />
+          </div>
+        </div>
+
+        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-2xs flex items-center justify-between">
+          <div>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Full-Time Staff</p>
+            <p className="text-2xl font-black text-purple-600 mt-1">{kpis.fullTime}</p>
+            <span className="text-[11px] font-bold text-purple-600">Core hospital team</span>
+          </div>
+          <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+            <Briefcase size={22} />
+          </div>
+        </div>
+      </div>
+
+      {/* ── Search & Filter Controls ─────────────────────────────────── */}
+      <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-2xs space-y-4">
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+          {/* Search Box */}
+          <div className="relative flex-1">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search staff by name, email, department, or clinical designation..."
+              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition"
+            />
+          </div>
+
+          {/* Status Filter */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-slate-400">Status:</span>
+            {['ALL', 'ACTIVE', 'INACTIVE'].map(status => (
+              <button
+                key={status}
+                onClick={() => setSelectedStatus(status)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                  selectedStatus === status
+                    ? 'bg-[#2864FF] text-white shadow-2xs'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                {status}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Department Filter Pills */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none pt-2 border-t border-slate-100">
+          <span className="text-xs font-bold text-slate-400 mr-2 shrink-0">Department:</span>
+          {DEPARTMENTS.map(dept => (
+            <button
+              key={dept}
+              onClick={() => setSelectedDept(dept)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer shrink-0 ${
+                selectedDept === dept
+                  ? 'bg-slate-900 text-white shadow-2xs'
+                  : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200/70'
+              }`}
             >
-              <Search size={16} strokeWidth={2.5} /> Clear Search
+              {dept}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Employee Directory Table ─────────────────────────────────── */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
+        {isLoading ? (
+          <div className="p-16 text-center text-slate-500 font-semibold text-sm flex flex-col items-center justify-center gap-3">
+            <RotateCw size={24} className="animate-spin text-blue-600" />
+            Loading clinical workforce records...
+          </div>
+        ) : filteredEmployees.length === 0 ? (
+          <div className="p-16 text-center flex flex-col items-center justify-center">
+            <div className="w-16 h-16 rounded-2xl bg-blue-50 text-blue-500 flex items-center justify-center mb-4">
+              <Users size={32} />
+            </div>
+            <h3 className="text-lg font-bold text-slate-900">No staff members found</h3>
+            <p className="text-xs text-slate-500 mt-1 max-w-md">
+              No employee records matched your active search query or department filters.
+            </p>
+            <button
+              onClick={() => {
+                setSearch('');
+                setSelectedDept('ALL');
+                setSelectedStatus('ALL');
+              }}
+              className="mt-4 px-4 py-2 rounded-xl text-xs font-bold bg-blue-50 text-blue-600 hover:bg-blue-100 transition cursor-pointer"
+            >
+              Clear Filters
             </button>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-100 text-[13px] font-bold text-slate-400 uppercase tracking-wider">
-                  <th className="px-6 py-4">Name & Designation</th>
-                  <th className="px-6 py-4">Department</th>
-                  <th className="px-6 py-4">Email</th>
-                  <th className="px-6 py-4">Phone</th>
-                  <th className="px-6 py-4">Status</th>
+                <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-500 text-[11px] font-black uppercase tracking-wider">
+                  <th className="py-4 px-6">Personnel & Contact</th>
+                  <th className="py-4 px-6">Department</th>
+                  <th className="py-4 px-6">Role / Designation</th>
+                  <th className="py-4 px-6">Type & Joined</th>
+                  <th className="py-4 px-6">Salary (₹)</th>
+                  <th className="py-4 px-6">Status</th>
+                  <th className="py-4 px-6 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-50">
-                {filtered.map(row => (
-                  <tr key={row.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="px-6 py-4">
-                      <span className="font-bold text-slate-900 text-[15px] block">{row.name}</span>
-                      <span className="text-[13px] font-medium text-slate-500 mt-0.5 block">{row.designation}</span>
-                    </td>
-                    <td className="px-6 py-4 text-[14px] font-medium text-slate-700">{row.department}</td>
-                    <td className="px-6 py-4 text-[14px] text-slate-500">{row.email}</td>
-                    <td className="px-6 py-4 text-[14px] text-slate-500">{row.phone}</td>
-                    <td className="px-6 py-4">
-                      <Badge variant={row.status === 'ACTIVE' || !row.status ? 'success' : 'danger'}>
-                        {row.status || 'ACTIVE'}
-                      </Badge>
-                    </td>
-                  </tr>
-                ))}
+              <tbody className="divide-y divide-slate-100 text-xs font-medium text-slate-700">
+                {filteredEmployees.map(emp => {
+                  const fullName = emp.user 
+                    ? `${emp.user.firstName || ''} ${emp.user.lastName || ''}`.trim() 
+                    : emp.name || `Staff #${emp.id}`;
+                  const email = emp.user?.email || emp.email || 'No email registered';
+                  const initials = fullName
+                    .split(' ')
+                    .map(w => w[0])
+                    .join('')
+                    .substring(0, 2)
+                    .toUpperCase() || 'ST';
+                  const userId = emp.user?.id || emp.userId;
+
+                  return (
+                    <tr key={emp.id} className="hover:bg-slate-50/70 transition-colors">
+                      <td className="py-4 px-6">
+                        <div className="flex items-center gap-3.5">
+                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-extrabold text-xs flex items-center justify-center shrink-0 shadow-2xs">
+                            {initials}
+                          </div>
+                          <div>
+                            <span className="font-bold text-slate-900 text-sm block">{fullName}</span>
+                            <span className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
+                              <Mail size={12} className="text-slate-400" />
+                              {email}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+
+                      <td className="py-4 px-6">
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold border ${getDeptColor(emp.department)}`}>
+                          <Building size={12} />
+                          {emp.department || 'General'}
+                        </span>
+                      </td>
+
+                      <td className="py-4 px-6">
+                        <span className="font-bold text-slate-800 text-xs block">{emp.designation || 'Staff'}</span>
+                        <span className="text-[11px] text-slate-400 mt-0.5 block">Staff ID #{emp.id}</span>
+                      </td>
+
+                      <td className="py-4 px-6">
+                        <span className="font-bold text-slate-700 text-xs block">
+                          {(emp.employmentType || 'FULL_TIME').replace('_', ' ')}
+                        </span>
+                        <span className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
+                          <Calendar size={12} className="text-slate-400" />
+                          {emp.dateOfJoining || 'Recent'}
+                        </span>
+                      </td>
+
+                      <td className="py-4 px-6 font-bold text-slate-900">
+                        {emp.salary ? `₹${parseFloat(emp.salary).toLocaleString('en-IN')}` : '₹—'}
+                      </td>
+
+                      <td className="py-4 px-6">
+                        {emp.isActive !== false ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-black bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            ACTIVE
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-black bg-slate-100 text-slate-600 border border-slate-200">
+                            INACTIVE
+                          </span>
+                        )}
+                      </td>
+
+                      <td className="py-4 px-6 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => setSelectedEmpDetails(emp)}
+                            title="Inspect Profile"
+                            className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition cursor-pointer"
+                          >
+                            <Eye size={15} />
+                          </button>
+                          
+                          <button
+                            onClick={() => navigate(`/hr/documents?staffId=${userId}`)}
+                            title="View Staff Documents"
+                            className="px-2.5 py-1.5 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 transition text-[11px] font-bold flex items-center gap-1 cursor-pointer"
+                          >
+                            <FileText size={13} />
+                            Documents
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         )}
       </div>
 
-      {/* Add Employee Modal */}
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => { setIsModalOpen(false); resetForm(); }}
-        title="Add Employee"
-      >
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <FormField label="Link System User Account" required>
-            {selectedUser ? (
-              <div className="flex items-center justify-between px-4 py-3 border border-[var(--color-success)] bg-[var(--color-success-bg)] rounded-xl text-sm">
-                <span className="font-semibold text-[var(--color-success)]">{selectedUser.firstName} {selectedUser.lastName} — {selectedUser.email}</span>
-                <button type="button" onClick={() => setSelectedUser(null)} className="text-[var(--color-success)] hover:text-red-500 transition-colors"><X size={16} /></button>
-              </div>
-            ) : (
-              <div className="relative">
-                <input
-                  value={userSearch}
-                  onChange={e => { setUserSearch(e.target.value); setUserDropdownOpen(true); }}
-                  onFocus={() => setUserDropdownOpen(true)}
-                  placeholder="Search by name or email…"
-                  className="input-field"
-                />
-                {userDropdownOpen && (userResults.length > 0 || userSearchLoading) && (
-                  <div className="absolute z-10 top-full mt-2 left-0 right-0 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl shadow-lg max-h-48 overflow-y-auto overflow-hidden">
-                    {userSearchLoading && <div className="px-4 py-3 text-sm text-[var(--color-text-muted)]">Searching…</div>}
-                    {userResults.map(u => (
-                      <button key={u.id} type="button"
-                        className="w-full text-left px-4 py-3 text-sm hover:bg-[var(--color-surface-alt)] flex flex-col transition-colors border-b border-[var(--color-border)] last:border-0"
-                        onClick={() => { setSelectedUser(u); setUserDropdownOpen(false); setUserSearch(''); }}>
-                        <span className="font-bold text-[var(--color-text)]">{u.firstName} {u.lastName}</span>
-                        <span className="text-xs text-[var(--color-text-muted)]">{u.email}</span>
-                      </button>
-                    ))}
-                    {!userSearchLoading && userResults.length === 0 && debouncedUserSearch.length >= 1 && (
-                      <div className="px-4 py-3 text-sm text-[var(--color-text-muted)]">No matching users found.</div>
-                    )}
+      {/* ── Onboard Employee Modal ───────────────────────────────────── */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-xl w-full p-6 sm:p-7 max-h-[90vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                    <UserPlus size={20} />
                   </div>
-                )}
+                  <div>
+                    <h3 className="text-lg font-black text-slate-900">Onboard Clinical Staff</h3>
+                    <p className="text-xs text-slate-500">Link a registered user account to clinic HR records.</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => { setIsModalOpen(false); resetForm(); }}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
               </div>
-            )}
-          </FormField>
 
-          <FormField label="Designation" required>
-            <input required value={formData.designation} onChange={e => setFormData({...formData, designation: e.target.value})} className="input-field" placeholder="e.g. Senior Nurse" />
-          </FormField>
-          
-          <FormField label="Department" required>
-            <input required value={formData.department} onChange={e => setFormData({...formData, department: e.target.value})} className="input-field" placeholder="e.g. Cardiology" />
-          </FormField>
-          
-          <div className="pt-4 flex justify-end gap-3 border-t border-[var(--color-border)] mt-6">
-            <Button type="button" variant="ghost" onClick={() => { setIsModalOpen(false); resetForm(); }}>Cancel</Button>
-            <Button type="submit" variant="primary" isLoading={mutation.isPending} disabled={!selectedUser}>
-              Add Employee
-            </Button>
+              <form onSubmit={handleCreate} className="space-y-4 pt-5">
+                {/* Search & Link User */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                    Link User Account <span className="text-red-500">*</span>
+                  </label>
+                  {selectedUser ? (
+                    <div className="flex items-center justify-between p-3 rounded-xl border border-blue-200 bg-blue-50/70">
+                      <div>
+                        <p className="text-xs font-black text-blue-900">{selectedUser.firstName} {selectedUser.lastName}</p>
+                        <p className="text-[11px] text-blue-700">{selectedUser.email}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedUser(null)}
+                        className="text-xs font-bold text-blue-600 hover:text-red-600 transition"
+                      >
+                        Change
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={userSearch}
+                        onChange={e => {
+                          setUserSearch(e.target.value);
+                          setUserDropdownOpen(true);
+                        }}
+                        onFocus={() => setUserDropdownOpen(true)}
+                        placeholder="Search existing users by name or email..."
+                        className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      {userDropdownOpen && debouncedUserSearch.length >= 1 && (
+                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-lg z-20 max-h-48 overflow-y-auto divide-y divide-slate-100">
+                          {userSearchLoading ? (
+                            <div className="p-3 text-xs text-slate-500 text-center">Searching user accounts...</div>
+                          ) : userResults.length === 0 ? (
+                            <div className="p-3 text-xs text-slate-500 text-center">No matching user accounts found.</div>
+                          ) : (
+                            userResults.map(u => (
+                              <button
+                                key={u.id}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedUser(u);
+                                  setUserDropdownOpen(false);
+                                  setUserSearch('');
+                                }}
+                                className="w-full text-left p-2.5 hover:bg-slate-50 flex flex-col transition cursor-pointer"
+                              >
+                                <span className="text-xs font-bold text-slate-900">{u.firstName} {u.lastName}</span>
+                                <span className="text-[11px] text-slate-500">{u.email}</span>
+                              </button>
+                            ))
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                      Department <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={formData.department}
+                      onChange={e => setFormData({ ...formData, department: e.target.value })}
+                      className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                    >
+                      {DEPARTMENTS.filter(d => d !== 'ALL').map(d => (
+                        <option key={d} value={d}>{d}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                      Designation / Title <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.designation}
+                      onChange={e => setFormData({ ...formData, designation: e.target.value })}
+                      placeholder="e.g. Senior Nurse / MD Cardiologist"
+                      className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                      Employment Type
+                    </label>
+                    <select
+                      value={formData.employmentType}
+                      onChange={e => setFormData({ ...formData, employmentType: e.target.value })}
+                      className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                    >
+                      <option value="FULL_TIME">Full Time</option>
+                      <option value="PART_TIME">Part Time</option>
+                      <option value="CONTRACT">Contract</option>
+                      <option value="PRN">Per Diem (PRN)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                      Base Salary (₹)
+                    </label>
+                    <input
+                      type="number"
+                      step="1000"
+                      value={formData.salary}
+                      onChange={e => setFormData({ ...formData, salary: e.target.value })}
+                      placeholder="e.g. 85000"
+                      className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                      Date of Joining
+                    </label>
+                    <input
+                      type="date"
+                      value={formData.dateOfJoining}
+                      onChange={e => setFormData({ ...formData, dateOfJoining: e.target.value })}
+                      className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => { setIsModalOpen(false); resetForm(); }}
+                    className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={addMutation.isPending || !selectedUser}
+                    className="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-[#2864FF] hover:bg-blue-700 disabled:opacity-50 transition shadow-md shadow-blue-500/20 cursor-pointer"
+                  >
+                    {addMutation.isPending ? 'Onboarding...' : 'Confirm Onboard'}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
           </div>
-        </form>
-      </Modal>
+        )}
+      </AnimatePresence>
+
+      {/* ── Employee Detail Modal ────────────────────────────────────── */}
+      <AnimatePresence>
+        {selectedEmpDetails && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-lg w-full p-6 sm:p-7 space-y-5"
+            >
+              <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-extrabold text-sm flex items-center justify-center shrink-0">
+                    {selectedEmpDetails.user?.firstName?.[0] || 'S'}{selectedEmpDetails.user?.lastName?.[0] || 'T'}
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black text-slate-900">
+                      {selectedEmpDetails.user ? `${selectedEmpDetails.user.firstName} ${selectedEmpDetails.user.lastName}` : selectedEmpDetails.name}
+                    </h3>
+                    <p className="text-xs text-slate-500">{selectedEmpDetails.designation} • {selectedEmpDetails.department}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSelectedEmpDetails(null)}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="space-y-3 text-xs">
+                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50">
+                  <span className="font-bold text-slate-500">Staff Record ID:</span>
+                  <span className="font-mono font-bold text-slate-800">#{selectedEmpDetails.id}</span>
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50">
+                  <span className="font-bold text-slate-500">Linked User Account ID:</span>
+                  <span className="font-mono font-bold text-slate-800">#{selectedEmpDetails.userId || selectedEmpDetails.user?.id}</span>
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50">
+                  <span className="font-bold text-slate-500">Official Email:</span>
+                  <span className="font-bold text-slate-800">{selectedEmpDetails.user?.email || selectedEmpDetails.email || '—'}</span>
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50">
+                  <span className="font-bold text-slate-500">Phone Number:</span>
+                  <span className="font-bold text-slate-800">{selectedEmpDetails.user?.phoneNumber || selectedEmpDetails.phone || '—'}</span>
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50">
+                  <span className="font-bold text-slate-500">Employment Type:</span>
+                  <span className="font-bold text-slate-800">{(selectedEmpDetails.employmentType || 'FULL_TIME').replace('_', ' ')}</span>
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50">
+                  <span className="font-bold text-slate-500">Joined Clinic On:</span>
+                  <span className="font-bold text-slate-800">{selectedEmpDetails.dateOfJoining || '—'}</span>
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50">
+                  <span className="font-bold text-slate-500">Base Compensation:</span>
+                  <span className="font-bold text-emerald-600">
+                    {selectedEmpDetails.salary ? `₹${parseFloat(selectedEmpDetails.salary).toLocaleString('en-IN')}` : '—'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="pt-4 flex items-center justify-between border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const uId = selectedEmpDetails.userId || selectedEmpDetails.user?.id;
+                    setSelectedEmpDetails(null);
+                    navigate(`/hr/documents?staffId=${uId}`);
+                  }}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 transition flex items-center gap-1.5 cursor-pointer"
+                >
+                  <FileText size={14} /> View Uploaded Documents
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedEmpDetails(null)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition cursor-pointer"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
-};
-
-export default Employees;
+}

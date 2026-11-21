@@ -25,6 +25,10 @@ public class Employee {
     @Column(name = "user_id", nullable = false, unique = true)
     private Long userId;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    private com.healthcare.clinic.identity.entity.User user;
+
     @Column(nullable = false, length = 100)
     private String department;
 
@@ -74,4 +78,24 @@ public class Employee {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private ZonedDateTime updatedAt;
+
+    @Transient
+    public String getName() {
+        if (user != null) {
+            String first = user.getFirstName() != null ? user.getFirstName() : "";
+            String last = user.getLastName() != null ? user.getLastName() : "";
+            return (first + " " + last).trim();
+        }
+        return null;
+    }
+
+    @Transient
+    public String getEmail() {
+        return user != null ? user.getEmail() : null;
+    }
+
+    @Transient
+    public String getPhoneNumber() {
+        return user != null ? user.getPhoneNumber() : null;
+    }
 }

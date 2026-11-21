@@ -19,7 +19,7 @@ public class LeaveRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "employee_id", nullable = false)
     private Employee employee;
 
@@ -49,4 +49,22 @@ public class LeaveRequest {
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private ZonedDateTime createdAt;
+
+    @Transient
+    public String getEmployeeName() {
+        if (employee != null && employee.getUser() != null) {
+            String first = employee.getUser().getFirstName() != null ? employee.getUser().getFirstName() : "";
+            String last = employee.getUser().getLastName() != null ? employee.getUser().getLastName() : "";
+            return (first + " " + last).trim();
+        }
+        return null;
+    }
+
+    @Transient
+    public long getDays() {
+        if (startDate != null && endDate != null) {
+            return java.time.temporal.ChronoUnit.DAYS.between(startDate, endDate) + 1;
+        }
+        return 0;
+    }
 }

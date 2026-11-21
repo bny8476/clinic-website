@@ -39,6 +39,42 @@ public class HrController {
     private final HrDocumentService hrDocumentService;
     private final CredentialService credentialService;
 
+    @GetMapping("/dashboard")
+    public ResponseEntity<java.util.Map<String, Object>> getHrDashboardSummary() {
+        List<Employee> employees = hrService.getAllEmployees();
+        LocalDate today = LocalDate.now();
+        List<Attendance> todayAttendance = hrService.getAttendanceByDate(today);
+        List<LeaveRequest> allLeaves = hrService.getAllLeaveRequests();
+        List<JobRequisition> activeReqs = recruitmentService.getActiveRequisitions();
+
+        long totalEmployees = employees.size();
+        long presentToday = todayAttendance.stream()
+                .filter(a -> "PRESENT".equalsIgnoreCase(a.getStatus()))
+                .count();
+        long pendingLeaves = allLeaves.stream()
+                .filter(l -> "PENDING".equalsIgnoreCase(l.getStatus()))
+                .count();
+        long onLeaveToday = allLeaves.stream()
+                .filter(l -> "APPROVED".equalsIgnoreCase(l.getStatus()))
+                .filter(l -> l.getStartDate() != null && l.getEndDate() != null &&
+                        !today.isBefore(l.getStartDate()) && !today.isAfter(l.getEndDate()))
+                .count();
+
+        java.util.Map<String, Object> summary = new java.util.HashMap<>();
+        summary.put("totalEmployees", totalEmployees);
+        summary.put("presentToday", presentToday);
+        summary.put("onLeaveToday", onLeaveToday);
+        summary.put("pendingLeaves", pendingLeaves);
+        summary.put("activeRequisitions", activeReqs.size());
+        summary.put("recentEmployees", employees.stream().limit(6).toList());
+        summary.put("pendingLeaveRequests", allLeaves.stream()
+                .filter(l -> "PENDING".equalsIgnoreCase(l.getStatus()))
+                .limit(6)
+                .toList());
+
+        return ResponseEntity.ok(summary);
+    }
+
     @GetMapping("/employees")
     public ResponseEntity<List<Employee>> getAllEmployees() {
         return ResponseEntity.ok(hrService.getAllEmployees());

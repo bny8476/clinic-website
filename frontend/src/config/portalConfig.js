@@ -429,6 +429,7 @@ export const PORTAL_CONFIGS = [
       { label: 'Leave', path: '/hr/leave', icon: 'Calendar', description: 'Leave Management' },
       { label: 'Payroll', path: '/hr/payroll', icon: 'DollarSign', description: 'Payroll Processing' },
       { label: 'Recruitment', path: '/hr/recruitment', icon: 'UserPlus', description: 'Hiring Pipeline' },
+      { label: 'Documents', path: '/hr/documents', icon: 'FileText', description: 'Staff Documents' },
     ],
   },
   {

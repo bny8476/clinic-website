@@ -22,7 +22,7 @@ public class StaffDocument {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "staff_id", nullable = false)
     private User staff;
 
@@ -45,4 +45,19 @@ public class StaffDocument {
     @LastModifiedDate
     @Column(name = "updated_at")
     private ZonedDateTime updatedAt;
+
+    @Transient
+    public String getStaffName() {
+        if (staff != null) {
+            String f = staff.getFirstName() != null ? staff.getFirstName() : "";
+            String l = staff.getLastName() != null ? staff.getLastName() : "";
+            return (f + " " + l).trim();
+        }
+        return null;
+    }
+
+    @Transient
+    public String getStaffEmail() {
+        return staff != null ? staff.getEmail() : null;
+    }
 }

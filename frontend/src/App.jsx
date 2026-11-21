@@ -203,6 +203,7 @@ const PatientSupport = lazy(() => import('./pages/support/PatientSupport'));
 const Attendance = lazy(() => import('./pages/hr/Attendance'));
 const PayrollManagement = lazy(() => import('./pages/hr/PayrollManagement'));
 const Recruitment = lazy(() => import('./pages/hr/Recruitment'));
+const StaffDocuments = lazy(() => import('./pages/hr/StaffDocuments'));
 
 // Analytics Module routes
 const AnalyticsDashboard = lazy(() => import('./pages/analytics/AnalyticsDashboard'));
@@ -631,6 +632,7 @@ function App() {
             <Route path="leave" element={<LeaveManagement />} />
             <Route path="payroll" element={<PayrollManagement />} />
             <Route path="recruitment" element={<Recruitment />} />
+            <Route path="documents" element={<StaffDocuments />} />
           </Route>
 
           {/* ── Analytics Module Routes ─────────────────────────────────────── */}
