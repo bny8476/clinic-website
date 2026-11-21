@@ -1015,24 +1015,6 @@ export default function DoctorMedicalCertificates() {
               )}
             </div>
 
-            {/* All Patients Dropdown */}
-            <div className="relative w-full sm:w-44">
-              <select 
-                value={selectedPatientFilter}
-                onChange={(e) => {
-                  setSelectedPatientFilter(e.target.value);
-                  setCurrentPage(1);
-                }}
-                className="w-full appearance-none px-3.5 py-2 pr-9 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer"
-              >
-                <option value="ALL">All Patients</option>
-                {uniquePatients.map((p, idx) => (
-                  <option key={idx} value={p.name}>{p.name}</option>
-                ))}
-              </select>
-              <ChevronDown size={14} className="text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
-            
             {/* All Status Dropdown */}
             <div className="relative w-full sm:w-40">
               <select 
@@ -1050,7 +1032,7 @@ export default function DoctorMedicalCertificates() {
             </div>
 
             {/* Clear All Filters Button */}
-            {(searchQuery || selectedPatientFilter !== 'ALL' || selectedStatusFilter !== 'ALL' || activeTab !== 'All Certificates') && (
+            {(searchQuery || selectedStatusFilter !== 'ALL' || activeTab !== 'All Certificates') && (
               <button
                 type="button"
                 onClick={() => {

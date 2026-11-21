@@ -372,7 +372,7 @@ export default function BookAppointment() {
       className="min-h-screen bg-[#f8fafc] font-sans pb-16 pt-4 px-4 sm:px-6 lg:px-10 text-slate-800"
     >
       {/* ── Stepper Navigation Bar ────────────────────────────────────────── */}
-      <div className="max-w-7xl mx-auto mb-8">
+      <div className="w-full max-w-[1400px] mx-auto mb-8">
         <div className="flex items-center justify-between relative max-w-4xl mx-auto px-4 pt-2">
 
 
@@ -423,7 +423,7 @@ export default function BookAppointment() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="w-full max-w-[1400px] mx-auto space-y-6">
         {/* ── Page Header Title ────────────────────────────────────────────── */}
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-1">

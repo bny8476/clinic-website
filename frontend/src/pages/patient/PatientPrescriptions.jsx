@@ -1,17 +1,18 @@
+import React, { useState, useMemo } from 'react';
 import logger from '../../utils/logger';
 import useAuthStore from '../../store/authStore';
 import PrescriptionDocument from '../../components/doctor/PrescriptionDocument';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { toast } from 'react-hot-toast';
-import { useState } from 'react';
-import { fadeUp, listStagger, pageTransition, staggerChildren } from '../../components/ui/motion';
+import { useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
+import { fadeUp, listStagger, pageTransition } from '../../components/ui/motion';
 import { 
   Activity, 
   AlertCircle, 
   Calendar, 
   CalendarDays, 
-  CheckCircle, 
   CheckCircle2, 
   ChevronRight, 
   Clock, 
@@ -24,40 +25,64 @@ import {
   Printer, 
   RefreshCw, 
   Search, 
-  Send, 
-  ShieldCheck, 
-  UserCheck, 
-  X 
+  RotateCw,
+  ShoppingBag,
+  CalendarPlus,
+  Sparkles,
+  ArrowRight,
+  Loader2,
+  X,
+  Layers,
+  Check
 } from 'lucide-react';
-import { motion } from 'framer-motion';
-
+import { AnimatePresence, motion } from 'framer-motion';
 import PatientMedicineRecommendations from '../../components/patient/PatientMedicineRecommendations';
 
 const PatientPrescriptions = () => {
   const { user } = useAuthStore();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
   const [viewPrescription, setViewPrescription] = useState(null);
   const [refillModal, setRefillModal] = useState(null);
   const [refillNotes, setRefillNotes] = useState('');
   const [activeFilter, setActiveFilter] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortOrder, setSortOrder] = useState('desc'); // 'desc' | 'asc'
+  const [isDownloadingPdfId, setIsDownloadingPdfId] = useState(null);
 
-  const { data: prescriptions = [], isLoading } = useQuery({
+  // Real prescriptions query
+  const { data: rawPrescriptions = [], isLoading, isFetching, refetch } = useQuery({
     queryKey: ['patientPrescriptions', user?.id],
     queryFn: async () => {
-      const res = await axiosPrivate.get(`/prescriptions/patient/${user?.id}`);
-      return Array.isArray(res.data) ? res.data : (res.data?.content || []);
+      try {
+        const res = await axiosPrivate.get(`/prescriptions/patient/${user?.id}`);
+        return Array.isArray(res.data) ? res.data : (res.data?.content || []);
+      } catch (err) {
+        console.warn('Failed to fetch prescriptions', err);
+        return [];
+      }
     },
     enabled: !!user?.id
   });
 
-  const { data: refillRequests = [], refetch: refetchRefills } = useQuery({
+  const prescriptions = useMemo(() => Array.isArray(rawPrescriptions) ? rawPrescriptions : [], [rawPrescriptions]);
+
+  // Refill requests query
+  const { data: rawRefills = [], refetch: refetchRefills } = useQuery({
     queryKey: ['patientRefillRequests', user?.id],
     queryFn: async () => {
-      const res = await axiosPrivate.get(`/prescriptions/refill`);
-      return Array.isArray(res.data) ? res.data : (res.data?.content || []);
+      try {
+        const res = await axiosPrivate.get(`/prescriptions/refill`);
+        return Array.isArray(res.data) ? res.data : (res.data?.content || []);
+      } catch {
+        return [];
+      }
     },
     enabled: !!user?.id
   });
+
+  const refillRequests = useMemo(() => Array.isArray(rawRefills) ? rawRefills : [], [rawRefills]);
 
   const requestRefillMutation = useMutation({
     mutationFn: async (payload) => {
@@ -68,6 +93,7 @@ const PatientPrescriptions = () => {
       setRefillModal(null);
       setRefillNotes('');
       refetchRefills();
+      queryClient.invalidateQueries(['patientPrescriptions', user?.id]);
     },
     onError: (error) => {
       logger.error('Failed to request refill', error);
@@ -75,343 +101,571 @@ const PatientPrescriptions = () => {
     }
   });
 
-  // Filter logic
-  const filteredPrescriptions = prescriptions.filter(p => {
-    const matchesSearch = !searchQuery || 
-      (p.doctorName && p.doctorName.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (p.diagnosis && p.diagnosis.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (p.items && p.items.some(i => i.medicationName.toLowerCase().includes(searchQuery.toLowerCase())));
+  // Calculate statistics
+  const totalMedsCount = useMemo(() => {
+    return prescriptions.reduce((acc, p) => acc + (p.items?.length || 0), 0);
+  }, [prescriptions]);
 
-    if (!matchesSearch) return false;
-    if (activeFilter === 'DISPENSED') return p.pharmacyStatus === 'DISPENSED';
-    if (activeFilter === 'PENDING') return p.pharmacyStatus !== 'DISPENSED';
-    if (activeFilter === 'REFILLABLE') return p.refillsRemaining > 0;
-    return true;
-  });
+  const dispensedCount = useMemo(() => {
+    return prescriptions.filter(p => p.pharmacyStatus === 'DISPENSED').length;
+  }, [prescriptions]);
+
+  const pendingCount = useMemo(() => {
+    return prescriptions.filter(p => p.pharmacyStatus !== 'DISPENSED').length;
+  }, [prescriptions]);
+
+  const refillableCount = useMemo(() => {
+    return prescriptions.filter(p => (p.refillsRemaining || 0) > 0).length;
+  }, [prescriptions]);
+
+  // Filter & Search Logic
+  const filteredPrescriptions = useMemo(() => {
+    let list = prescriptions.filter(p => {
+      // Filter tab
+      if (activeFilter === 'DISPENSED' && p.pharmacyStatus !== 'DISPENSED') return false;
+      if (activeFilter === 'PENDING' && p.pharmacyStatus === 'DISPENSED') return false;
+      if (activeFilter === 'REFILLABLE' && !(p.refillsRemaining > 0)) return false;
+
+      // Search query
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const docName = (p.doctorName || '').toLowerCase();
+        const diag = (p.diagnosis || '').toLowerCase();
+        const rxId = String(p.id || '').toLowerCase();
+        const matchesMed = (p.items || []).some(item => 
+          (item.medicationName || '').toLowerCase().includes(q) ||
+          (item.instructions || '').toLowerCase().includes(q)
+        );
+
+        if (!docName.includes(q) && !diag.includes(q) && !rxId.includes(q) && !matchesMed) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    // Sort order
+    list.sort((a, b) => {
+      const dateA = new Date(a.createdAt || a.prescriptionDate || 0).getTime();
+      const dateB = new Date(b.createdAt || b.prescriptionDate || 0).getTime();
+      return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+    });
+
+    return list;
+  }, [prescriptions, activeFilter, searchQuery, sortOrder]);
+
+  const handleDownloadPdf = async (prescriptionId) => {
+    try {
+      setIsDownloadingPdfId(prescriptionId);
+      const response = await axiosPrivate.get(`/prescriptions/${prescriptionId}/pdf`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Prescription_${prescriptionId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success('Prescription PDF downloaded');
+    } catch (e) {
+      logger.error('Failed to download PDF', e);
+      toast.error('Failed to download PDF. Please try again.');
+    } finally {
+      setIsDownloadingPdfId(null);
+    }
+  };
 
   return (
     <motion.div 
-      className="min-h-screen bg-slate-50 p-4 md:p-8 pb-32 font-sans text-slate-800 max-w-7xl mx-auto space-y-8"
       variants={pageTransition}
       initial="hidden"
       animate="visible"
       exit="exit"
+      className="min-h-full flex flex-col font-sans overflow-y-auto bg-[#F8FAFC]"
     >
-      {/* ── Page Header ── */}
-      <motion.header variants={fadeUp} className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200/80 pb-6">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="bg-blue-100 text-blue-700 text-[11px] font-black uppercase px-2.5 py-0.5 rounded-md tracking-wider">
-              Patient Portal
-            </span>
-            <span className="text-slate-400 text-xs">•</span>
-            <span className="text-slate-500 text-xs font-semibold">Medical Records</span>
-          </div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-            My Prescriptions
-            <span className="text-xs bg-blue-50 text-blue-600 font-bold px-3 py-1 rounded-full border border-blue-100">
-              {prescriptions.length} Total
-            </span>
-          </h1>
-          <p className="text-slate-500 text-sm font-medium mt-1">
-            View prescriptions sent to you by your doctor, track pharmacy status, and request refills online.
-          </p>
-        </div>
+      <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
-        {/* Action / Search Pill Bar */}
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <input 
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search medicine or doctor..."
-              className="pl-9 pr-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 w-64 shadow-2xs"
-            />
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
-          </div>
-        </div>
-      </motion.header>
-
-      {/* ── Doctor Recommended Medicine Sales Banner ── */}
-      <PatientMedicineRecommendations />
-
-      {/* ── Filter Tabs ── */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div className="flex items-center gap-2 bg-slate-200/60 p-1.5 rounded-2xl">
-          {[
-            { id: 'ALL', label: 'All Prescriptions' },
-            { id: 'DISPENSED', label: 'Dispensed' },
-            { id: 'PENDING', label: 'Pending Pharmacy' },
-            { id: 'REFILLABLE', label: 'Refill Eligible' }
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveFilter(tab.id)}
-              className={`px-4 py-2 rounded-xl text-xs font-extrabold transition ${
-                activeFilter === tab.id 
-                  ? 'bg-white text-blue-600 shadow-2xs' 
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Refill Requests Banner (if any pending) ── */}
-      {refillRequests && refillRequests.length > 0 && (
-        <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-2xs space-y-4">
-          <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
-            <RefreshCw className="w-4 h-4 text-blue-600 animate-spin-slow" />
-            Recent Refill Requests
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {refillRequests.map(req => (
-              <div key={req.id} className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl flex items-center justify-between gap-3">
-                <div className="space-y-0.5">
-                  <p className="text-xs font-bold text-slate-900">Refill for Rx #{req.prescriptionId}</p>
-                  <p className="text-[11px] text-slate-500 font-medium">
-                    Requested: {req.requestedAt ? new Date(req.requestedAt).toLocaleDateString() : 'Recently'}
-                  </p>
-                </div>
-                <span className={`px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider ${
-                  req.status === 'PENDING' ? 'bg-amber-100 text-amber-800' :
-                  req.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-800' :
-                  'bg-rose-100 text-rose-800'
-                }`}>
-                  {req.status}
-                </span>
+        {/* ── Top Header Card ──────────────────────────────────────────────── */}
+        <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-7 shadow-xs">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+            <div className="flex items-start sm:items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shadow-md shadow-emerald-500/20 shrink-0">
+                <Pill className="w-7 h-7" />
               </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ── Prescriptions List ── */}
-      {isLoading ? (
-        <div className="bg-white rounded-3xl p-12 text-center text-slate-400 font-bold text-sm shadow-2xs">
-          Loading your prescriptions...
-        </div>
-      ) : filteredPrescriptions.length > 0 ? (
-        <motion.div variants={staggerChildren} initial="hidden" animate="visible" className="space-y-6">
-          {filteredPrescriptions.map((prescription) => (
-            <motion.div 
-              variants={listStagger} 
-              layout 
-              key={prescription.id} 
-              className="bg-white rounded-3xl border border-slate-100 p-6 md:p-8 shadow-2xs hover:shadow-xs transition space-y-6"
-            >
-              {/* Card Top Row: Doctor Info + Pharmacy Status */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center font-black text-lg shadow-2xs">
-                    Dr
-                  </div>
-                  <div>
-                    <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
-                      Dr. {prescription.doctorName || 'Medical Officer'}
-                    </h3>
-                    <p className="text-xs text-slate-500 font-medium flex items-center gap-3 mt-0.5">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                        {new Date(prescription.createdAt || prescription.prescriptionDate || new Date()).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
-                      </span>
-                      <span>•</span>
-                      <span className="text-blue-600 font-bold">Rx #{prescription.id}</span>
-                    </p>
-                  </div>
-                </div>
-
-                {/* Status Badges */}
-                <div className="flex items-center gap-3 self-start sm:self-auto">
-                  <span className={`px-4 py-1.5 rounded-full text-xs font-black tracking-wide flex items-center gap-1.5 ${
-                    prescription.pharmacyStatus === 'DISPENSED'
-                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                      : 'bg-amber-50 text-amber-700 border border-amber-200'
-                  }`}>
-                    {prescription.pharmacyStatus === 'DISPENSED' ? (
-                      <>
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                        Dispensed
-                      </>
-                    ) : (
-                      <>
-                        <Clock className="w-4 h-4 text-amber-600" />
-                        Pending Pharmacy
-                      </>
-                    )}
+              <div>
+                <div className="flex items-center gap-2.5">
+                  <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                    My Prescriptions & Medications
+                  </h1>
+                  <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <Sparkles className="w-3 h-3" /> E-Prescription Live
                   </span>
                 </div>
+                <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1 max-w-2xl leading-relaxed">
+                  Review digital prescriptions issued by your attending physicians, monitor pharmacy fulfillment, reorder medicines, and request refill renewals.
+                </p>
               </div>
+            </div>
 
-              {/* Doctor's Diagnosis & Notes (if available) */}
-              {(prescription.diagnosis || prescription.notes || prescription.chiefComplaint) && (
-                <div className="bg-blue-50/60 border border-blue-100 rounded-2xl p-4 space-y-1.5 text-xs text-slate-700">
-                  {prescription.diagnosis && (
-                    <p className="font-bold text-slate-900">
-                      <span className="text-blue-600">Diagnosis:</span> {prescription.diagnosis}
+            <div className="flex flex-wrap items-center gap-2.5 self-start lg:self-auto">
+              <button
+                onClick={() => refetch()}
+                title="Sync Prescriptions"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200/80 transition shadow-2xs cursor-pointer"
+              >
+                <RotateCw className={`w-3.5 h-3.5 ${isFetching ? 'animate-spin text-[#2160FF]' : 'text-slate-500'}`} />
+                <span>Sync</span>
+              </button>
+
+              <button
+                onClick={() => navigate('/patient/order-medicine')}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-sm shadow-emerald-500/25 cursor-pointer border-none"
+              >
+                <ShoppingBag className="w-4 h-4" />
+                <span>Order Medicines</span>
+              </button>
+
+              <button
+                onClick={() => navigate('/patient/book')}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black text-white bg-[#2160FF] hover:bg-blue-600 transition shadow-sm shadow-blue-500/25 cursor-pointer border-none"
+              >
+                <CalendarPlus className="w-4 h-4" />
+                <span>Consult Doctor</span>
+              </button>
+            </div>
+          </div>
+
+          {/* ── Top KPI Metrics Strip ────────────────────────────────────── */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 mt-6 pt-6 border-t border-slate-100">
+            <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-200/60 flex items-center justify-between">
+              <div>
+                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Prescriptions</p>
+                <h3 className="text-2xl font-black text-slate-900 mt-0.5">{prescriptions.length}</h3>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-white border border-slate-200/80 text-slate-700 flex items-center justify-center font-bold shadow-2xs">
+                <FileText className="w-5 h-5 text-slate-600" />
+              </div>
+            </div>
+
+            <div className="bg-emerald-50/50 rounded-2xl p-4 border border-emerald-100 flex items-center justify-between">
+              <div>
+                <p className="text-[11px] font-bold text-emerald-700/80 uppercase tracking-wider">Dispensed by Pharmacy</p>
+                <h3 className="text-2xl font-black text-emerald-600 mt-0.5">{dispensedCount}</h3>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-white border border-emerald-200/60 text-emerald-600 flex items-center justify-center font-bold shadow-2xs">
+                <CheckCircle2 className="w-5 h-5" />
+              </div>
+            </div>
+
+            <div className="bg-amber-50/50 rounded-2xl p-4 border border-amber-100 flex items-center justify-between">
+              <div>
+                <p className="text-[11px] font-bold text-amber-700/80 uppercase tracking-wider">Pending Fulfillment</p>
+                <h3 className="text-2xl font-black text-amber-600 mt-0.5">{pendingCount}</h3>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-white border border-amber-200/60 text-amber-600 flex items-center justify-center font-bold shadow-2xs">
+                <Clock className="w-5 h-5" />
+              </div>
+            </div>
+
+            <div className="bg-blue-50/50 rounded-2xl p-4 border border-blue-100 flex items-center justify-between">
+              <div>
+                <p className="text-[11px] font-bold text-blue-700/80 uppercase tracking-wider">Active Prescribed Meds</p>
+                <h3 className="text-2xl font-black text-[#2160FF] mt-0.5">{totalMedsCount}</h3>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-white border border-blue-200/60 text-[#2160FF] flex items-center justify-center font-bold shadow-2xs">
+                <Pill className="w-5 h-5" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Doctor Recommended Medicine Sales Banner ─────────────────────── */}
+        <PatientMedicineRecommendations />
+
+        {/* ── Filter Bar, Tabs & Search Controls ───────────────────────────── */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+          
+          {/* Category Tabs */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
+            {[
+              { id: 'ALL', label: 'All Prescriptions', count: prescriptions.length },
+              { id: 'DISPENSED', label: 'Dispensed', count: dispensedCount },
+              { id: 'PENDING', label: 'Pending Pharmacy', count: pendingCount },
+              { id: 'REFILLABLE', label: 'Refill Eligible', count: refillableCount },
+            ].map(tab => {
+              const isActive = activeFilter === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveFilter(tab.id)}
+                  className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition cursor-pointer whitespace-nowrap border ${
+                    isActive
+                      ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                      : 'bg-slate-50 text-slate-600 border-slate-200/80 hover:bg-slate-100 hover:text-slate-900'
+                  }`}
+                >
+                  <span>{tab.label}</span>
+                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
+                    isActive ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'
+                  }`}>
+                    {tab.count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Search & Sort Controls */}
+          <div className="flex items-center gap-2.5">
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search medicine, doctor, diagnosis..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="pl-8 pr-3 py-1.5 text-xs font-medium rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition w-56 sm:w-64"
+              />
+            </div>
+
+            <select
+              value={sortOrder}
+              onChange={e => setSortOrder(e.target.value)}
+              aria-label="Sort prescriptions"
+              style={{ backgroundImage: 'none' }}
+              className="text-xs font-bold text-slate-700 bg-white border border-slate-200 rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 cursor-pointer shadow-2xs"
+            >
+              <option value="desc">Newest First</option>
+              <option value="asc">Oldest First</option>
+            </select>
+          </div>
+        </div>
+
+        {/* ── Active Refill Requests Strip (if any) ────────────────────────── */}
+        {refillRequests && refillRequests.length > 0 && (
+          <div className="bg-white rounded-3xl border border-slate-200/80 p-5 sm:p-6 shadow-2xs space-y-3">
+            <h3 className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-2">
+              <RefreshCw className="w-4 h-4 text-[#2160FF]" />
+              Active Refill Requests ({refillRequests.length})
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {refillRequests.map(req => (
+                <div key={req.id} className="p-4 bg-slate-50/80 border border-slate-200/80 rounded-2xl flex items-center justify-between gap-3">
+                  <div className="space-y-0.5">
+                    <p className="text-xs font-extrabold text-slate-900">Refill for Rx #{req.prescriptionId}</p>
+                    <p className="text-[11px] text-slate-500 font-medium">
+                      Requested: {req.requestedAt ? format(new Date(req.requestedAt), 'MMM d, yyyy') : 'Recently'}
                     </p>
-                  )}
-                  {prescription.notes && (
-                    <p className="font-medium text-slate-600">
-                      <span className="font-bold text-slate-800">Doctor's Notes:</span> {prescription.notes}
-                    </p>
-                  )}
+                  </div>
+                  <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${
+                    req.status === 'PENDING' ? 'bg-amber-50 text-amber-800 border-amber-200' :
+                    req.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
+                    'bg-rose-50 text-rose-800 border-rose-200'
+                  }`}>
+                    {req.status}
+                  </span>
                 </div>
-              )}
+              ))}
+            </div>
+          </div>
+        )}
 
-              {/* Medicines List */}
-              <div className="space-y-3">
-                <h4 className="text-xs font-extrabold uppercase text-slate-400 tracking-wider">
-                  Prescribed Medications ({prescription.items?.length || 0})
-                </h4>
-                
-                <div className="grid grid-cols-1 gap-3">
-                  {prescription.items && prescription.items.map((item, iIdx) => (
-                    <div 
-                      key={item.id || iIdx} 
-                      className="p-4 bg-slate-50/70 border border-slate-200/60 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4"
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 text-blue-600 flex items-center justify-center font-bold text-base shrink-0 shadow-2xs">
-                          💊
+        {/* ── Prescriptions List / Empty State ─────────────────────────────── */}
+        {isLoading ? (
+          <div className="bg-white rounded-3xl p-16 flex flex-col items-center justify-center gap-3 text-slate-400 shadow-2xs border border-slate-200/80">
+            <Loader2 className="w-9 h-9 animate-spin text-emerald-600" />
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Loading electronic prescriptions...</p>
+          </div>
+        ) : filteredPrescriptions.length === 0 ? (
+          /* Professional Empty State */
+          <div className="bg-white rounded-3xl border border-slate-200/80 shadow-2xs p-12 sm:p-16 text-center flex flex-col items-center">
+            <div className="w-20 h-20 rounded-3xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4 ring-8 ring-emerald-50/50">
+              <Pill className="w-9 h-9" />
+            </div>
+            
+            <h3 className="text-xl font-black text-slate-900 mb-1.5 tracking-tight">
+              {prescriptions.length === 0 ? 'No prescriptions on file' : 'No matching prescriptions found'}
+            </h3>
+            
+            <p className="text-xs sm:text-sm text-slate-500 max-w-md mb-6 leading-relaxed">
+              {prescriptions.length === 0
+                ? "You don't have any electronic prescriptions issued yet. When your doctor prescribes medications during consultations, they will appear here automatically."
+                : `No prescriptions match your filter "${activeFilter}" or search term. Try resetting your search filters.`}
+            </p>
+
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              {prescriptions.length > 0 && (
+                <button
+                  onClick={() => { setActiveFilter('ALL'); setSearchQuery(''); }}
+                  className="px-4 py-2.5 border border-slate-200 text-xs font-bold text-slate-700 rounded-xl hover:bg-slate-50 transition cursor-pointer bg-white"
+                >
+                  Clear Filters
+                </button>
+              )}
+              <button
+                onClick={() => navigate('/patient/order-medicine')}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-xs font-black text-white rounded-xl hover:bg-emerald-700 transition cursor-pointer shadow-sm shadow-emerald-500/20 border-none"
+              >
+                <ShoppingBag className="w-4 h-4" />
+                <span>Browse & Order Medicines</span>
+              </button>
+              <button
+                onClick={() => navigate('/patient/book')}
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition cursor-pointer"
+              >
+                <span>Consult a Doctor</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        ) : (
+          /* Cards Grid */
+          <div className="space-y-5">
+            <AnimatePresence>
+              {filteredPrescriptions.map((prescription) => {
+                const isDispensed = prescription.pharmacyStatus === 'DISPENSED';
+                const rxDate = prescription.createdAt || prescription.prescriptionDate;
+                const formattedDate = rxDate ? format(new Date(rxDate), 'EEEE, MMMM d, yyyy') : 'Recent';
+
+                return (
+                  <motion.div
+                    key={prescription.id}
+                    variants={listStagger}
+                    className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-2xs hover:shadow-md hover:border-emerald-200 transition-all p-5 sm:p-7 space-y-5 relative overflow-hidden"
+                  >
+                    {/* Left Accent Bar */}
+                    <div className={`absolute left-0 top-0 bottom-0 w-1 sm:w-1.5 ${
+                      isDispensed ? 'bg-emerald-500' : 'bg-amber-500'
+                    }`} />
+
+                    {/* Top Header Row */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-500 text-white flex items-center justify-center font-black text-base shadow-2xs shrink-0">
+                          Rx
                         </div>
-                        <div className="space-y-1">
-                          <h5 className="text-sm font-black text-slate-900">
-                            {item.medicationName}{' '}
-                            <span className="text-xs font-normal text-slate-500">
-                              ({item.type || 'Tablet'}, {item.strength || item.dosage || '500mg'})
+                        <div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
+                              Dr. {prescription.doctorName || 'Attending Physician'}
+                            </h3>
+                            <span className="font-mono text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
+                              #Rx-{prescription.id}
                             </span>
-                          </h5>
-                          <div className="flex items-center gap-4 text-xs font-semibold text-slate-600 flex-wrap">
-                            <span className="flex items-center gap-1 text-slate-700">
-                              <Activity className="w-3.5 h-3.5 text-blue-500" />
-                              {item.frequency || 'Once Daily'}
-                            </span>
-                            <span>•</span>
-                            <span className="flex items-center gap-1 text-slate-700">
-                              <CalendarDays className="w-3.5 h-3.5 text-slate-400" />
-                              {item.duration || item.durationDays || '7'} Days
-                            </span>
-                            {item.instructions && (
-                              <>
-                                <span>•</span>
-                                <span className="flex items-center gap-1 text-amber-700">
-                                  <Info className="w-3.5 h-3.5 text-amber-500" />
-                                  {item.instructions}
-                                </span>
-                              </>
+                            {prescription.refillsRemaining > 0 && (
+                              <span className="text-[10px] font-black uppercase tracking-wider bg-blue-50 text-[#2160FF] border border-blue-200 px-2.5 py-0.5 rounded-full">
+                                {prescription.refillsRemaining} Refill(s) Left
+                              </span>
                             )}
                           </div>
+                          <p className="text-xs text-slate-500 font-medium flex items-center gap-2 mt-0.5">
+                            <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                            <span>{formattedDate}</span>
+                            {prescription.doctorSpecialty && (
+                              <>
+                                <span>•</span>
+                                <span className="text-slate-600 font-semibold">{prescription.doctorSpecialty}</span>
+                              </>
+                            )}
+                          </p>
                         </div>
                       </div>
 
-                      {/* Dispensed quantity progress */}
-                      <div className="text-right text-xs font-bold text-slate-500 bg-white px-3.5 py-2 rounded-xl border border-slate-200/80 shrink-0">
-                        <span className="text-slate-400 text-[10px] block uppercase font-bold">Qty Dispensed</span>
-                        <span className="text-slate-900">
-                          {item.dispensedQuantity || (prescription.pharmacyStatus === 'DISPENSED' ? (item.prescribedQuantity || item.durationDays || 30) : 0)} / {item.prescribedQuantity || item.durationDays || 30}
+                      {/* Pharmacy Status Pill */}
+                      <div className="flex items-center gap-2 self-start sm:self-auto">
+                        <span className={`px-3.5 py-1.5 rounded-full text-xs font-black tracking-wide flex items-center gap-1.5 border ${
+                          isDispensed 
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                            : 'bg-amber-50 text-amber-700 border border-amber-200'
+                        }`}>
+                          {isDispensed ? (
+                            <>
+                              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                              <span>Dispensed by Pharmacy</span>
+                            </>
+                          ) : (
+                            <>
+                              <Clock className="w-4 h-4 text-amber-600" />
+                              <span>Pending Fulfillment</span>
+                            </>
+                          )}
                         </span>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
 
-              {/* Action Buttons Bar */}
-              <div className="flex items-center justify-between pt-4 border-t border-slate-100 flex-wrap gap-3">
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setViewPrescription(prescription)}
-                    className="px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl text-xs font-extrabold transition flex items-center gap-2"
-                  >
-                    <Eye className="w-4 h-4" /> View Prescription
-                  </button>
+                    {/* Doctor's Diagnosis & Notes (if any) */}
+                    {(prescription.diagnosis || prescription.notes || prescription.chiefComplaint) && (
+                      <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-4 space-y-1.5 text-xs">
+                        {prescription.diagnosis && (
+                          <p className="text-slate-900 font-bold">
+                            <span className="text-[#2160FF] uppercase tracking-wider text-[11px] font-black mr-1">Diagnosis:</span>
+                            {prescription.diagnosis}
+                          </p>
+                        )}
+                        {prescription.notes && (
+                          <p className="text-slate-600 font-medium leading-relaxed">
+                            <span className="text-slate-800 font-bold mr-1">Physician's Instructions:</span>
+                            {prescription.notes}
+                          </p>
+                        )}
+                      </div>
+                    )}
 
-                  <button
-                    onClick={async () => {
-                      try {
-                        const response = await axiosPrivate.get(`/prescriptions/${prescription.id}/pdf`, { responseType: 'blob' });
-                        const url = window.URL.createObjectURL(new Blob([response.data]));
-                        const link = document.createElement('a');
-                        link.href = url;
-                        link.setAttribute('download', `prescription_${prescription.id}.pdf`);
-                        document.body.appendChild(link);
-                        link.click();
-                        link.remove();
-                      } catch (e) {
-                        logger.error('Failed to download PDF', e);
-                        toast.error('Failed to download PDF. Please try again.');
-                      }
-                    }}
-                    className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-extrabold transition flex items-center gap-2"
-                  >
-                    <Download className="w-4 h-4" /> Download PDF
-                  </button>
-                </div>
+                    {/* Prescribed Medications Section */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-[11px] font-black uppercase text-slate-400 tracking-wider">
+                          Prescribed Medication Regimen ({prescription.items?.length || 0})
+                        </h4>
+                        <button
+                          onClick={() => navigate('/patient/order-medicine')}
+                          className="text-xs font-extrabold text-emerald-600 hover:text-emerald-700 hover:underline flex items-center gap-1"
+                        >
+                          <ShoppingBag className="w-3.5 h-3.5" />
+                          <span>Order Meds Online</span>
+                        </button>
+                      </div>
 
-                {prescription.refillsRemaining > 0 && (
-                  <button
-                    onClick={() => setRefillModal(prescription)}
-                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-extrabold shadow-sm transition flex items-center gap-2"
-                  >
-                    <RefreshCw className="w-4 h-4" /> Request Refill ({prescription.refillsRemaining} left)
-                  </button>
-                )}
-              </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {prescription.items && prescription.items.map((item, idx) => (
+                          <div 
+                            key={item.id || idx}
+                            className="p-4 bg-slate-50/70 hover:bg-slate-50 border border-slate-200/60 rounded-2xl flex flex-col justify-between gap-3 transition"
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className="w-10 h-10 rounded-xl bg-white border border-slate-200/80 text-emerald-600 flex items-center justify-center font-bold text-base shrink-0 shadow-2xs">
+                                💊
+                              </div>
+                              <div className="space-y-0.5 min-w-0 flex-1">
+                                <h5 className="text-sm font-black text-slate-900 truncate">
+                                  {item.medicationName}
+                                </h5>
+                                <p className="text-xs font-semibold text-slate-500">
+                                  {item.type || 'Tablet'} • {item.strength || item.dosage || 'Standard Dose'}
+                                </p>
+                              </div>
+                            </div>
 
-            </motion.div>
-          ))}
-        </motion.div>
-      ) : (
-        <div className="bg-white rounded-3xl p-16 text-center shadow-2xs space-y-4">
-          <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto text-2xl font-black">
-            💊
+                            <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-200/60 text-xs text-slate-600">
+                              <span className="inline-flex items-center gap-1 font-bold text-slate-700">
+                                <Activity className="w-3 h-3 text-[#2160FF]" />
+                                {item.frequency || 'Daily'}
+                              </span>
+                              <span>•</span>
+                              <span className="inline-flex items-center gap-1 font-bold text-slate-700">
+                                <CalendarDays className="w-3 h-3 text-slate-400" />
+                                {item.duration || item.durationDays || '7'} Days
+                              </span>
+                              {item.instructions && (
+                                <>
+                                  <span>•</span>
+                                  <span className="text-amber-700 font-semibold truncate">
+                                    {item.instructions}
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Bottom Action Bar */}
+                    <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-100">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          onClick={() => setViewPrescription(prescription)}
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-[#2160FF] bg-blue-50 hover:bg-[#2160FF] hover:text-white border border-blue-200/60 transition shadow-2xs cursor-pointer"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>View Official Rx</span>
+                        </button>
+
+                        <button
+                          onClick={() => handleDownloadPdf(prescription.id)}
+                          disabled={isDownloadingPdfId === prescription.id}
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 transition shadow-2xs cursor-pointer disabled:opacity-50"
+                        >
+                          {isDownloadingPdfId === prescription.id ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin text-[#2160FF]" />
+                          ) : (
+                            <Download className="w-3.5 h-3.5 text-slate-500" />
+                          )}
+                          <span>Download PDF</span>
+                        </button>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {prescription.refillsRemaining > 0 && (
+                          <button
+                            onClick={() => setRefillModal(prescription)}
+                            className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-50 text-[#2160FF] hover:bg-[#2160FF] hover:text-white border border-blue-200/60 rounded-xl text-xs font-bold transition shadow-2xs cursor-pointer"
+                          >
+                            <RefreshCw className="w-3.5 h-3.5" />
+                            <span>Request Refill ({prescription.refillsRemaining} left)</span>
+                          </button>
+                        )}
+
+                        <button
+                          onClick={() => navigate('/patient/order-medicine')}
+                          className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-xs transition cursor-pointer border-none"
+                        >
+                          <ShoppingBag className="w-3.5 h-3.5" />
+                          <span>Order From Pharmacy</span>
+                        </button>
+                      </div>
+                    </div>
+
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
           </div>
-          <h3 className="text-lg font-black text-slate-900">No Prescriptions Found</h3>
-          <p className="text-xs text-slate-500 max-w-sm mx-auto font-medium">
-            You don't have any prescriptions matching your current filter. Prescriptions issued by your doctor during consultations will appear here automatically.
-          </p>
-        </div>
-      )}
+        )}
 
-      {/* ── Refill Request Modal ── */}
+      </div>
+
+      {/* ── Refill Request Modal ─────────────────────────────────────────── */}
       {refillModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl shadow-xl w-full max-w-md overflow-hidden space-y-6 p-6 border border-slate-100">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+          <div className="bg-white rounded-3xl shadow-xl w-full max-w-md overflow-hidden space-y-5 p-6 border border-slate-100">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
-                <RefreshCw className="w-5 h-5 text-blue-600" />
+                <RefreshCw className="w-5 h-5 text-[#2160FF]" />
                 Request Prescription Refill
               </h3>
-              <button onClick={() => setRefillModal(null)} className="text-slate-400 hover:text-slate-600 p-1">
+              <button 
+                onClick={() => setRefillModal(null)} 
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <p className="text-xs text-slate-600 font-medium leading-relaxed">
-              You are requesting a refill for the prescription from <strong className="text-slate-900">Dr. {refillModal.doctorName}</strong>. You have <span className="text-blue-600 font-bold">{refillModal.refillsRemaining} refill(s)</span> remaining.
+              You are requesting an authorized medication refill for the prescription issued by{' '}
+              <strong className="text-slate-900">Dr. {refillModal.doctorName || 'your physician'}</strong>. You currently have{' '}
+              <span className="text-[#2160FF] font-black">{refillModal.refillsRemaining} refill(s)</span> remaining.
             </p>
 
             <div className="space-y-1.5">
               <label className="block text-xs font-bold text-slate-500">
-                Notes for Doctor / Pharmacist (Optional)
+                Notes for Doctor & Pharmacist (Optional)
               </label>
               <textarea 
                 value={refillNotes}
                 onChange={(e) => setRefillNotes(e.target.value)}
-                placeholder="E.g., Please send to my default pharmacy branch"
+                placeholder="E.g., Please deliver to my primary address or home clinic"
                 rows={3}
-                className="w-full p-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 font-medium resize-none"
+                className="w-full p-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 font-medium resize-none"
               />
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-2">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
               <button 
                 onClick={() => setRefillModal(null)}
-                className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl text-xs font-bold transition"
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition border-none cursor-pointer"
                 disabled={requestRefillMutation.isPending}
               >
                 Cancel
@@ -423,32 +677,41 @@ const PatientPrescriptions = () => {
                     notes: refillNotes
                   });
                 }}
-                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs font-bold shadow-md transition flex items-center gap-2"
+                className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-xs transition flex items-center gap-1.5 border-none cursor-pointer disabled:opacity-50"
                 disabled={requestRefillMutation.isPending}
               >
-                {requestRefillMutation.isPending ? 'Submitting...' : 'Submit Refill Request'}
+                {requestRefillMutation.isPending ? 'Submitting...' : 'Confirm Refill Request'}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ── View Prescription Document Modal ── */}
+      {/* ── Official Prescription Document Modal ──────────────────────────── */}
       {viewPrescription && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6 md:p-8 space-y-6 relative border border-slate-100 my-8">
             <div className="flex items-center justify-between border-b border-slate-100 pb-4 print:hidden">
-              <h3 className="text-lg font-black text-slate-900">Official Prescription View</h3>
+              <div>
+                <h3 className="text-lg font-black text-slate-900">Official Clinical Prescription</h3>
+                <p className="text-xs text-slate-400 font-medium">Rx #{viewPrescription.id} • Issued by Licensed Medical Practitioner</p>
+              </div>
               <div className="flex items-center gap-2">
                 <button 
                   onClick={() => window.print()}
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-xs font-bold transition flex items-center gap-2 shadow-sm"
+                  className="px-4 py-2 bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-2xs border-none cursor-pointer"
                 >
-                  <Printer className="w-4 h-4" /> Print Document
+                  <Printer className="w-4 h-4" /> Print
+                </button>
+                <button 
+                  onClick={() => handleDownloadPdf(viewPrescription.id)}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-2xs border-none cursor-pointer"
+                >
+                  <Download className="w-4 h-4" /> PDF
                 </button>
                 <button 
                   onClick={() => setViewPrescription(null)}
-                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition"
+                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition cursor-pointer border-none bg-transparent"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -484,6 +747,7 @@ const PatientPrescriptions = () => {
           </div>
         </div>
       )}
+
     </motion.div>
   );
 };

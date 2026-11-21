@@ -43,6 +43,15 @@ public class DependentProfile {
     @Column(length = 50)
     private String relationship;
 
+    @Column(length = 10)
+    private String bloodGroup;
+
+    @Column(length = 25)
+    private String contactNumber;
+
+    @Column(columnDefinition = "TEXT")
+    private String allergies;
+
     @Column(columnDefinition = "TEXT")
     private String medicalHistorySummary;
 

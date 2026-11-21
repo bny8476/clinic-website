@@ -13,6 +13,9 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { 
   Calendar as CalendarIcon, 
   ChevronLeft, 
+  ChevronRight,
+  Clock,
+  Activity,
   FileText, 
   FlaskConical, 
   Loader2, 
@@ -23,16 +26,23 @@ import {
   Video,
   Bot,
   ArrowRight,
-  ShoppingBag
+  ShoppingBag,
+  Sparkles,
+  CheckCircle2,
+  X,
+  HeartPulse,
+  Stethoscope
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const STATUS_MAP = {
   COMPLETED: { label: 'Seen', style: 'bg-emerald-100 text-emerald-700' },
   CHECKED_IN: { label: 'In Queue', style: 'bg-blue-100 text-blue-700' },
-  IN_PROGRESS: { label: 'In Queue', style: 'bg-blue-100 text-blue-700' },
+  IN_PROGRESS: { label: 'In Consultation', style: 'bg-blue-100 text-blue-700' },
+  IN_CONSULTATION: { label: 'In Consultation', style: 'bg-blue-100 text-blue-700' },
+  WAITING: { label: 'Waiting', style: 'bg-amber-100 text-amber-700' },
   SCHEDULED: { label: 'Waiting', style: 'bg-amber-100 text-amber-700' },
-  CONFIRMED: { label: 'Waiting', style: 'bg-amber-100 text-amber-700' },
+  CONFIRMED: { label: 'Confirmed', style: 'bg-sky-100 text-sky-700' },
   CANCELLED: { label: 'Cancelled', style: 'bg-rose-100 text-rose-700' },
   NO_SHOW: { label: 'No Show', style: 'bg-slate-100 text-slate-600' },
 };
@@ -48,6 +58,7 @@ const DoctorDashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [journeyTimeframe, setJourneyTimeframe] = useState('day');
+  const [selectedDate, setSelectedDate] = useState(() => new Date());
 
   const currentPanel = searchParams.get('panel');
   const patientId = searchParams.get('patientId');
@@ -63,7 +74,7 @@ const DoctorDashboard = () => {
     }
   };
 
-  // ─── API: Today's appointments ───
+  // ─── API: Today's appointments (Real-time live sync) ───
   const { data: rawToday = [], isLoading: loadingToday } = useQuery({
       queryKey: ['doctor-today-appointments'],
       queryFn: async () => {
@@ -71,14 +82,14 @@ const DoctorDashboard = () => {
           const start = new Date(); start.setHours(0,0,0,0);
           const end = new Date(); end.setHours(23,59,59,999);
           const res = await axiosPrivate.get(`/appointments/today?start=${start.toISOString()}&end=${end.toISOString()}`);
-          return Array.isArray(res.data) ? res.data : (res.data?.content || res.data?.data || []);
+          return Array.isArray(res.data) ? res.data : (res.data?.data || res.data?.content || []);
         } catch {
           return [];
         }
       },
       enabled: !!user?.id,
-      refetchInterval: 30000,
-      staleTime: 60000,
+      refetchInterval: 10000,
+      staleTime: 5000,
   });
 
   // ─── API: All doctor appointments ───
@@ -87,12 +98,14 @@ const DoctorDashboard = () => {
     queryFn: async () => {
       try {
         const res = await axiosPrivate.get('/appointments/doctor/me');
-        return Array.isArray(res.data) ? res.data : (res.data?.content || res.data?.data || []);
+        return Array.isArray(res.data) ? res.data : (res.data?.data || res.data?.content || []);
       } catch {
         return [];
       }
     },
     enabled: !!user?.id,
+    refetchInterval: 10000,
+    staleTime: 5000,
   });
 
   const { data: rawLab = [], isLoading: loadingLab } = useQuery({
@@ -100,12 +113,13 @@ const DoctorDashboard = () => {
     queryFn: async () => {
       try {
         const res = await axiosPrivate.get('/lab/doctor/my-requests');
-        return Array.isArray(res.data) ? res.data : (res.data?.content || res.data?.data || []);
+        return Array.isArray(res.data) ? res.data : (res.data?.data || res.data?.content || []);
       } catch {
         return [];
       }
     },
     enabled: !!user?.id,
+    refetchInterval: 15000,
   });
 
   const todayAppointments = useMemo(() => Array.isArray(rawToday) ? rawToday : [], [rawToday]);
@@ -114,7 +128,7 @@ const DoctorDashboard = () => {
 
   const queryClient = useQueryClient();
 
-  // Subscribe to real-time appointment updates
+  // Subscribe to real-time appointment updates via SSE
   useEffect(() => {
     if (isInitializingAuth || !token || !isTokenValid(token)) return;
     let evtSource = null;
@@ -127,6 +141,13 @@ const DoctorDashboard = () => {
         reconnectTimer = null;
         connectSSE();
       }, 10000);
+    };
+
+    const invalidateAllFeeds = () => {
+      queryClient.invalidateQueries(['doctor-today-appointments']);
+      queryClient.invalidateQueries(['doctorAllAppointments', user?.id]);
+      queryClient.invalidateQueries(['doctor-queue']);
+      queryClient.invalidateQueries(['doctorLabRequests']);
     };
 
     const connectSSE = async () => {
@@ -144,34 +165,43 @@ const DoctorDashboard = () => {
         evtSource.addEventListener('appointment-booked', (event) => {
           try {
             const data = JSON.parse(event.data);
-            if (String(data.doctorId) === String(user?.id)) {
-              queryClient.invalidateQueries(['doctor-today-appointments']);
-              queryClient.invalidateQueries(['doctorAllAppointments', user?.id]);
+            if (!data.doctorId || String(data.doctorId) === String(user?.id)) {
+              invalidateAllFeeds();
             }
-          } catch {}
+          } catch {
+            invalidateAllFeeds();
+          }
         });
         
         evtSource.addEventListener('appointment-cancelled', (event) => {
           try {
             const data = JSON.parse(event.data);
-            if (String(data.doctorId) === String(user?.id)) {
-              queryClient.invalidateQueries(['doctor-today-appointments']);
-              queryClient.invalidateQueries(['doctorAllAppointments', user?.id]);
-              queryClient.invalidateQueries(['doctor-queue']);
+            if (!data.doctorId || String(data.doctorId) === String(user?.id)) {
+              invalidateAllFeeds();
             }
-          } catch {}
+          } catch {
+            invalidateAllFeeds();
+          }
         });
   
         evtSource.addEventListener('appointment-status-changed', (event) => {
           try {
             const data = JSON.parse(event.data);
-            if (String(data.doctorId) === String(user?.id)) {
-              queryClient.invalidateQueries(['doctor-today-appointments']);
-              queryClient.invalidateQueries(['doctorAllAppointments', user?.id]);
-              queryClient.invalidateQueries(['doctor-queue']);
+            if (!data.doctorId || String(data.doctorId) === String(user?.id)) {
+              invalidateAllFeeds();
             }
-          } catch {}
+          } catch {
+            invalidateAllFeeds();
+          }
         });
+
+        evtSource.addEventListener('queue-token-called', () => {
+          invalidateAllFeeds();
+        });
+
+        evtSource.onmessage = () => {
+          invalidateAllFeeds();
+        };
   
         evtSource.onerror = () => {
           if (evtSource) {
@@ -182,7 +212,7 @@ const DoctorDashboard = () => {
         };
       } catch (err) {
         if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
-          console.warn('SSE appointment updates timed out. Real-time feed paused.');
+          console.warn('SSE appointment updates timed out. Real-time feed will use active polling.');
         } else if (err.response?.status !== 401) {
           console.warn('SSE connection unavailable:', err.message || err);
         }
@@ -248,6 +278,14 @@ const DoctorDashboard = () => {
       if (upcoming[0]) return upcoming[0];
       if (todayAppointments[0]) return todayAppointments[0];
     }
+    if (allAppointments.length > 0) {
+      const now = new Date();
+      const upcoming = allAppointments
+        .filter(apt => apt && apt.status !== 'COMPLETED' && apt.status !== 'CANCELLED' && apt.startTime && new Date(apt.startTime) > now)
+        .sort((a, b) => new Date(a?.startTime || 0) - new Date(b?.startTime || 0));
+      if (upcoming[0]) return upcoming[0];
+      if (allAppointments[0]) return allAppointments[0];
+    }
     // Fallback matching screenshot 1:1
     return {
       id: 14,
@@ -258,31 +296,263 @@ const DoctorDashboard = () => {
       endTime: '2026-08-24T09:20:00',
       reasonForVisit: 'Fever',
     };
-  }, [todayAppointments]);
+  }, [todayAppointments, allAppointments]);
 
-  // ─── Health Journey Timeline Events matching 1:1 Screenshot ───
-  const healthJourneyEvents = [
+  // ─── Health Journey Date Navigation & Computations ───
+  const handlePrevDate = () => {
+    setSelectedDate(prev => {
+      const d = new Date(prev);
+      if (journeyTimeframe === 'day') d.setDate(d.getDate() - 1);
+      else if (journeyTimeframe === 'week') d.setDate(d.getDate() - 7);
+      else if (journeyTimeframe === 'month') d.setMonth(d.getMonth() - 1);
+      return d;
+    });
+  };
+
+  const handleNextDate = () => {
+    setSelectedDate(prev => {
+      const d = new Date(prev);
+      if (journeyTimeframe === 'day') d.setDate(d.getDate() + 1);
+      else if (journeyTimeframe === 'week') d.setDate(d.getDate() + 7);
+      else if (journeyTimeframe === 'month') d.setMonth(d.getMonth() + 1);
+      return d;
+    });
+  };
+
+  const resetToToday = () => {
+    setSelectedDate(new Date());
+  };
+
+  const journeyDateBadge = useMemo(() => {
+    const today = new Date();
+    const isSameDay = (d1, d2) => (
+      d1.getFullYear() === d2.getFullYear() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getDate() === d2.getDate()
+    );
+
+    if (journeyTimeframe === 'day') {
+      if (isSameDay(selectedDate, today)) return 'Today';
+      const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
+      if (isSameDay(selectedDate, yesterday)) return 'Yesterday';
+      const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
+      if (isSameDay(selectedDate, tomorrow)) return 'Tomorrow';
+      return selectedDate.toLocaleDateString([], { 
+        month: 'short', 
+        day: 'numeric', 
+        year: selectedDate.getFullYear() !== today.getFullYear() ? 'numeric' : undefined 
+      });
+    }
+
+    if (journeyTimeframe === 'week') {
+      const start = new Date(selectedDate);
+      const day = start.getDay();
+      const diff = start.getDate() - day + (day === 0 ? -6 : 1);
+      start.setDate(diff);
+      const end = new Date(start);
+      end.setDate(end.getDate() + 6);
+
+      const isCurrentWeek = () => {
+        const tStart = new Date(today);
+        const tDay = tStart.getDay();
+        const tDiff = tStart.getDate() - tDay + (tDay === 0 ? -6 : 1);
+        tStart.setDate(tDiff);
+        return isSameDay(start, tStart);
+      };
+
+      if (isCurrentWeek()) return 'This Week';
+      return `${start.toLocaleDateString([], { month: 'short', day: 'numeric' })} - ${end.toLocaleDateString([], { month: 'short', day: 'numeric' })}`;
+    }
+
+    if (journeyTimeframe === 'month') {
+      if (selectedDate.getFullYear() === today.getFullYear() && selectedDate.getMonth() === today.getMonth()) {
+        return 'This Month';
+      }
+      return selectedDate.toLocaleDateString([], { month: 'short', year: 'numeric' });
+    }
+
+    return 'Today';
+  }, [selectedDate, journeyTimeframe]);
+
+  // Combine and de-duplicate all doctor appointments
+  const allMergedAppointments = useMemo(() => {
+    const map = new Map();
+    (allAppointments || []).forEach(a => { if (a && a.id) map.set(String(a.id), a); });
+    (todayAppointments || []).forEach(a => { if (a && a.id) map.set(String(a.id), a); });
+    return Array.from(map.values());
+  }, [allAppointments, todayAppointments]);
+
+  // Find nearest appointment for quick jump
+  const nearestAppointment = useMemo(() => {
+    if (allMergedAppointments.length === 0) return null;
+    const now = new Date();
+    const upcoming = allMergedAppointments
+      .filter(a => a?.startTime && new Date(a.startTime) > now)
+      .sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
+    if (upcoming[0]) return upcoming[0];
+    return allMergedAppointments[0];
+  }, [allMergedAppointments]);
+
+  // Initial starter sample items only if the entire database has zero appointments
+  const sampleFallbackEvents = useMemo(() => [
     {
+      id: 'sample-1',
       time: '08:00 AM',
       title: 'Blood Pressure Stabilized',
-      subtitle: 'Average: 120/80 mmHg',
+      subtitle: 'Average: 120/80 mmHg • Nurse Triage',
+      status: 'COMPLETED',
+      statusLabel: 'Stabilized',
+      statusStyle: 'bg-emerald-100 text-emerald-700',
+      indicatorColor: 'bg-emerald-500',
+      nodeClass: 'bg-emerald-50 text-emerald-600 border border-emerald-200',
+      icon: <Activity className="w-4 h-4 text-emerald-600" />,
+      isSample: true,
     },
     {
+      id: 'sample-2',
       time: '10:30 AM',
       title: 'Annual Cardiac Screening',
-      subtitle: 'Dr. Michael Lee • Cardiology Unit 4',
+      subtitle: `Dr. ${user?.firstName || 'Michael'} ${user?.lastName || 'Lee'} • Cardiology Unit 4`,
+      status: 'SCHEDULED',
+      statusLabel: 'Scheduled',
+      statusStyle: 'bg-blue-100 text-blue-700',
+      indicatorColor: 'bg-blue-500',
+      nodeClass: 'bg-red-50 text-red-600 border border-red-200',
+      icon: <HeartPulse className="w-4 h-4 text-red-600" />,
+      isSample: true,
     },
     {
+      id: 'sample-3',
       time: '01:00 PM',
       title: 'Physical Therapy Session',
       subtitle: 'Lower Back Recovery • Day 12',
+      status: 'SCHEDULED',
+      statusLabel: 'Scheduled',
+      statusStyle: 'bg-blue-100 text-blue-700',
+      indicatorColor: 'bg-indigo-500',
+      nodeClass: 'bg-indigo-50 text-indigo-600 border border-indigo-200',
+      icon: <Stethoscope className="w-4 h-4 text-indigo-600" />,
+      isSample: true,
     },
     {
+      id: 'sample-4',
       time: '03:30 PM',
       title: 'Mental Wellness Check',
       subtitle: 'Guided Meditation • Focus: Stress Relief',
+      status: 'SCHEDULED',
+      statusLabel: 'Scheduled',
+      statusStyle: 'bg-blue-100 text-blue-700',
+      indicatorColor: 'bg-purple-500',
+      nodeClass: 'bg-purple-50 text-purple-600 border border-purple-200',
+      icon: <Sparkles className="w-4 h-4 text-purple-600" />,
+      isSample: true,
     },
-  ];
+  ], [user]);
+
+  // ─── Real-time Health Journey Timeline Events ───
+  const healthJourneyEvents = useMemo(() => {
+    const isSameDay = (d1, d2) => (
+      d1.getFullYear() === d2.getFullYear() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getDate() === d2.getDate()
+    );
+
+    // Filter appointments for the selected timeframe
+    const matchedAppointments = allMergedAppointments.filter(apt => {
+      const aptDate = apt?.startTime ? new Date(apt.startTime) : null;
+      if (!aptDate || isNaN(aptDate.getTime())) return false;
+
+      if (journeyTimeframe === 'day') {
+        return isSameDay(aptDate, selectedDate);
+      } else if (journeyTimeframe === 'week') {
+        const start = new Date(selectedDate);
+        const day = start.getDay();
+        const diff = start.getDate() - day + (day === 0 ? -6 : 1);
+        start.setDate(diff);
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(start);
+        end.setDate(end.getDate() + 6);
+        end.setHours(23, 59, 59, 999);
+        return aptDate >= start && aptDate <= end;
+      } else if (journeyTimeframe === 'month') {
+        return (
+          aptDate.getFullYear() === selectedDate.getFullYear() &&
+          aptDate.getMonth() === selectedDate.getMonth()
+        );
+      }
+      return false;
+    });
+
+    if (matchedAppointments.length === 0) {
+      if (allMergedAppointments.length === 0 && journeyDateBadge === 'Today') {
+        return sampleFallbackEvents;
+      }
+      return [];
+    }
+
+    // Map real appointments to journey events
+    const mapped = matchedAppointments.map((apt, idx) => {
+      const aptDate = new Date(apt.startTime);
+      const timeStr = formatTime(apt.startTime);
+      const dateStr = aptDate.toLocaleDateString([], { month: 'short', day: 'numeric' });
+      const patientName = `${apt.patientFirstName || ''} ${apt.patientLastName || ''}`.trim() || 'Patient';
+      const statusInfo = STATUS_MAP[apt.status] || STATUS_MAP.SCHEDULED;
+
+      let indicatorColor = 'bg-slate-900';
+      let nodeClass = 'bg-blue-50 text-blue-600 border border-blue-200';
+      let icon = <Stethoscope className="w-4 h-4 text-blue-600" />;
+
+      if (apt.appointmentType === 'TELECONSULTATION') {
+        nodeClass = 'bg-purple-50 text-purple-600 border border-purple-200';
+        icon = <Video className="w-4 h-4 text-purple-600" />;
+      } else if (['IN_CONSULTATION', 'IN_PROGRESS'].includes(apt.status)) {
+        indicatorColor = 'bg-blue-600 animate-pulse';
+        nodeClass = 'bg-blue-600 text-white shadow-sm ring-2 ring-blue-300 animate-pulse';
+        icon = <Activity className="w-4 h-4 text-white" />;
+      } else if (apt.status === 'COMPLETED') {
+        indicatorColor = 'bg-emerald-600';
+        nodeClass = 'bg-emerald-50 text-emerald-600 border border-emerald-200';
+        icon = <CheckCircle2 className="w-4 h-4 text-emerald-600" />;
+      } else if (['CHECKED_IN', 'WAITING'].includes(apt.status)) {
+        indicatorColor = 'bg-amber-500';
+        nodeClass = 'bg-amber-50 text-amber-600 border border-amber-200';
+        icon = <Clock className="w-4 h-4 text-amber-600" />;
+      } else if (apt.status === 'CANCELLED') {
+        indicatorColor = 'bg-rose-500';
+        nodeClass = 'bg-rose-50 text-rose-600 border border-rose-200';
+        icon = <X className="w-4 h-4 text-rose-600" />;
+      }
+
+      const mainTitle = apt.reasonForVisit || `${patientName} Consultation`;
+      const subtitleParts = [
+        patientName,
+        apt.tokenNumber ? `Token #${apt.tokenNumber}` : `Token #${101 + idx}`,
+        apt.appointmentType === 'TELECONSULTATION' ? 'Teleconsultation' : 'In-Person OPD',
+        statusInfo.label
+      ];
+
+      return {
+        id: apt.id,
+        appointmentId: apt.id,
+        patientId: apt.patientId,
+        patientName,
+        rawDate: aptDate,
+        time: timeStr || '09:00 AM',
+        dateDisplay: journeyTimeframe !== 'day' ? dateStr : null,
+        title: mainTitle,
+        subtitle: subtitleParts.join(' • '),
+        status: apt.status,
+        statusLabel: statusInfo.label,
+        statusStyle: statusInfo.style,
+        indicatorColor,
+        nodeClass,
+        icon,
+      };
+    });
+
+    mapped.sort((a, b) => (a.rawDate?.getTime() || 0) - (b.rawDate?.getTime() || 0));
+    return mapped;
+  }, [allMergedAppointments, journeyTimeframe, selectedDate, sampleFallbackEvents, journeyDateBadge]);
 
   // ─── Next appointment date parts ───
   const nextAptDate = (nextAppointment && nextAppointment.startTime && !isNaN(new Date(nextAppointment.startTime))) ? new Date(nextAppointment.startTime) : new Date();
@@ -547,16 +817,33 @@ const DoctorDashboard = () => {
           <div className="lg:col-span-6">
             <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 space-y-6">
               
-              {/* Header */}
-              <div className="flex items-center justify-between pb-2 border-b border-slate-50">
-                <div className="flex items-center gap-3">
-                  <button className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-50">
-                    <ChevronLeft className="w-5 h-5" />
-                  </button>
+              {/* Header with Date Navigation & Switcher */}
+              <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-slate-50">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center bg-slate-50 rounded-xl p-0.5 border border-slate-100">
+                    <button 
+                      onClick={handlePrevDate} 
+                      title={`Previous ${journeyTimeframe}`}
+                      className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-white transition cursor-pointer"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={handleNextDate} 
+                      title={`Next ${journeyTimeframe}`}
+                      className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-white transition cursor-pointer"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
                   <h2 className="text-base font-bold text-slate-900">Health Journey</h2>
-                  <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">
-                    Today
-                  </span>
+                  <button
+                    onClick={resetToToday}
+                    title="Click to reset to Today"
+                    className="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded-full text-xs font-bold transition cursor-pointer"
+                  >
+                    {journeyDateBadge}
+                  </button>
                 </div>
 
                 {/* Day / Week / Month Switcher */}
@@ -565,9 +852,9 @@ const DoctorDashboard = () => {
                     <button
                       key={tf}
                       onClick={() => setJourneyTimeframe(tf)}
-                      className={`px-3 py-1 rounded-lg text-xs font-bold capitalize transition ${
+                      className={`px-3 py-1 rounded-lg text-xs font-bold capitalize transition cursor-pointer ${
                         journeyTimeframe === tf 
-                          ? 'bg-white text-blue-600 shadow-sm' 
+                          ? 'bg-white text-blue-600 shadow-xs' 
                           : 'text-slate-500 hover:text-slate-800'
                       }`}
                     >
@@ -578,27 +865,107 @@ const DoctorDashboard = () => {
               </div>
 
               {/* Vertical Timeline List */}
-              <div className="space-y-4 pt-2">
-                {healthJourneyEvents.map((evt, idx) => (
-                  <div key={idx} className="flex items-center gap-6">
-                    {/* Time */}
-                    <div className="w-20 text-xs font-bold text-slate-400 text-right flex-shrink-0">
-                      {evt.time}
-                    </div>
+              {loadingToday && allMergedAppointments.length === 0 ? (
+                <Loading />
+              ) : healthJourneyEvents.length > 0 ? (
+                <div className="space-y-4 pt-2">
+                  {healthJourneyEvents.map((evt, idx) => {
+                    const isLast = idx === healthJourneyEvents.length - 1;
+                    return (
+                      <div 
+                        key={evt.id || idx} 
+                        onClick={() => {
+                          if (evt.patientId) handlePatientClick(evt.patientId);
+                          else setSearchParams({ panel: 'queue' });
+                        }}
+                        className="relative flex items-stretch gap-3 sm:gap-4 group cursor-pointer"
+                        title={evt.isSample ? "Sample clinical protocol preview" : `View details for ${evt.title}`}
+                      >
+                        {/* Time Column (Left) */}
+                        <div className="w-16 sm:w-20 text-xs font-bold text-slate-400 text-right shrink-0 pt-2 group-hover:text-blue-600 transition-colors">
+                          <div>{evt.time}</div>
+                          {evt.dateDisplay && (
+                            <div className="text-[10px] text-slate-400 font-semibold">{evt.dateDisplay}</div>
+                          )}
+                        </div>
 
-                    {/* Timeline Card */}
-                    <div className="flex-1 bg-slate-50 hover:bg-slate-100/80 transition-colors border border-slate-100 rounded-2xl p-4 flex items-center gap-4 shadow-2xs">
-                      {/* Black Vertical Indicator */}
-                      <div className="w-1 h-10 bg-slate-900 rounded-full flex-shrink-0" />
-                      
-                      <div className="space-y-0.5">
-                        <h4 className="font-bold text-slate-900 text-sm">{evt.title}</h4>
-                        <p className="text-xs text-slate-500 font-medium">{evt.subtitle}</p>
+                        {/* Dedicated Center-Anchored Spine Column */}
+                        <div className="relative flex flex-col items-center shrink-0 w-8 sm:w-9">
+                          {/* Continuous Vertical Line */}
+                          <div className={`absolute top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-200 via-indigo-100 to-slate-200 ${
+                            isLast ? 'h-5' : 'h-full'
+                          }`} />
+
+                          {/* Centered Node Pin */}
+                          <div className={`relative z-10 w-8 h-8 rounded-xl flex items-center justify-center ring-4 ring-white shadow-2xs group-hover:scale-110 transition-transform ${evt.nodeClass || 'bg-blue-50 text-blue-600 border border-blue-200'}`}>
+                            {evt.icon || <Stethoscope className="w-4 h-4 text-blue-600" />}
+                          </div>
+                        </div>
+
+                        {/* Timeline Card */}
+                        <div className="flex-1 min-w-0 bg-white group-hover:bg-blue-50/40 group-hover:border-blue-300 transition-all border border-slate-200/90 rounded-2xl p-3.5 sm:p-4 flex items-center justify-between gap-4 shadow-2xs">
+                          <div className="flex items-center gap-3.5 min-w-0">
+                            {/* Left colored stripe */}
+                            <div className={`w-1 h-9 ${evt.indicatorColor} rounded-full shrink-0 transition-colors`} />
+                            
+                            <div className="space-y-0.5 min-w-0">
+                              <h4 className="font-bold text-slate-900 text-sm truncate group-hover:text-blue-900 transition-colors">
+                                {evt.title}
+                              </h4>
+                              <p className="text-xs text-slate-500 font-medium truncate">
+                                {evt.subtitle}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Status pill & Arrow */}
+                          <div className="flex items-center gap-2 shrink-0">
+                            {evt.statusLabel && (
+                              <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${evt.statusStyle}`}>
+                                {evt.statusLabel}
+                              </span>
+                            )}
+                            <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all" />
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-center py-10 px-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 space-y-3">
+                  <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center mx-auto text-blue-600 shadow-2xs">
+                    <CalendarIcon className="w-6 h-6" />
                   </div>
-                ))}
-              </div>
+                  <div className="space-y-1">
+                    <h4 className="text-sm font-bold text-slate-800">No Journey Events Found</h4>
+                    <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                      No clinical consultations or scheduled appointments found for {journeyDateBadge.toLowerCase() === 'today' ? 'today' : journeyDateBadge}.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+                    {nearestAppointment && nearestAppointment.startTime && (
+                      <button
+                        onClick={() => {
+                          setSelectedDate(new Date(nearestAppointment.startTime));
+                          setJourneyTimeframe('day');
+                        }}
+                        className="px-3.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+                      >
+                        Jump to {new Date(nearestAppointment.startTime).toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setSearchParams({ panel: 'new-appointment' })}
+                      className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-2xs transition flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <CalendarIcon className="w-3.5 h-3.5" />
+                      Schedule Appointment
+                    </button>
+                  </div>
+                </div>
+              )}
 
             </div>
           </div>

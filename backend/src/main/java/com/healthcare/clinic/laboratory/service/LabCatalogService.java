@@ -65,4 +65,12 @@ public class LabCatalogService {
         existing.setIsActive(false);
         catalogRepository.save(existing);
     }
+
+    @Transactional
+    public void activateTest(Long id) {
+        LabTestCatalog existing = catalogRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Catalog entry not found"));
+        existing.setIsActive(true);
+        catalogRepository.save(existing);
+    }
 }

@@ -2,7 +2,8 @@ import React, { useMemo, useState } from 'react';
 import useAuthStore from '../../store/authStore';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { format, isToday, isYesterday, isTomorrow } from 'date-fns';
 import {
   Calendar as CalendarIcon,
   Check,
@@ -24,18 +25,28 @@ import {
   Sparkles,
   ChevronDown,
   ArrowRight,
-  ClipboardList
+  ClipboardList,
+  HeartPulse,
+  Droplets,
+  Dna,
+  TestTubes,
+  Home,
+  Video,
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+  X
 } from 'lucide-react';
-import { fadeUp, listStagger, pageTransition, staggerChildren } from '../../components/ui/motion';
+import { fadeUp, listStagger, pageTransition } from '../../components/ui/motion';
 import { AnimatePresence, motion } from 'framer-motion';
 
 export default function PatientDashboard() {
-  const { user, token } = useAuthStore();
+  const { user } = useAuthStore();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('Dashboard');
-  const [timelineView, setTimelineView] = useState('Day');
   const [medicationTaken, setMedicationTaken] = useState(false);
-  const queryClient = useQueryClient();
+  const [selectedDate, setSelectedDate] = useState(() => new Date());
+  const [timelineView, setTimelineView] = useState('Day'); // 'Day' | 'Week' | 'Month'
 
   const tabs = [
     { label: 'Dashboard', icon: LayoutGridIcon, path: '/patient/dashboard' },
@@ -71,7 +82,7 @@ export default function PatientDashboard() {
     enabled: !!user?.id
   });
 
-  const { data: rawAppointments = [], isLoading: loadingAppts } = useQuery({
+  const { data: rawAppointments = [] } = useQuery({
     queryKey: ['patientAppointments', user?.id],
     queryFn: async () => {
       try {
@@ -113,6 +124,21 @@ export default function PatientDashboard() {
     enabled: !!user?.id
   });
 
+  // Query real timeline events
+  const { data: rawTimeline = [], isLoading: loadingTimeline } = useQuery({
+    queryKey: ['patientDashboardTimeline', user?.id],
+    queryFn: async () => {
+      try {
+        const res = await axiosPrivate.get('/v1/patient/timeline');
+        return Array.isArray(res.data) ? res.data : [];
+      } catch (err) {
+        console.warn('Failed to fetch patient timeline', err);
+        return [];
+      }
+    },
+    enabled: !!user?.id
+  });
+
   const appointments = useMemo(() => (Array.isArray(rawAppointments) ? rawAppointments : []), [rawAppointments]);
   const prescriptions = useMemo(() => (Array.isArray(rawPrescriptions) ? rawPrescriptions : []), [rawPrescriptions]);
   const labReports = useMemo(() => (Array.isArray(rawLabReports) ? rawLabReports : []), [rawLabReports]);
@@ -130,6 +156,263 @@ export default function PatientDashboard() {
     if (!signed?.items?.length) return null;
     return { ...signed.items[0], rxDate: signed.createdAt };
   }, [prescriptions]);
+
+  /* ── Health Journey Date Navigation & Computations ───────────────── */
+  const handlePrevDate = () => {
+    setSelectedDate(prev => {
+      const d = new Date(prev);
+      if (timelineView === 'Day') d.setDate(d.getDate() - 1);
+      else if (timelineView === 'Week') d.setDate(d.getDate() - 7);
+      else if (timelineView === 'Month') d.setMonth(d.getMonth() - 1);
+      return d;
+    });
+  };
+
+  const handleNextDate = () => {
+    setSelectedDate(prev => {
+      const d = new Date(prev);
+      if (timelineView === 'Day') d.setDate(d.getDate() + 1);
+      else if (timelineView === 'Week') d.setDate(d.getDate() + 7);
+      else if (timelineView === 'Month') d.setMonth(d.getMonth() + 1);
+      return d;
+    });
+  };
+
+  const resetToToday = () => {
+    setSelectedDate(new Date());
+    setTimelineView('Day');
+  };
+
+  const journeyDateBadge = useMemo(() => {
+    const today = new Date();
+    const isSameDay = (d1, d2) => (
+      d1.getFullYear() === d2.getFullYear() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getDate() === d2.getDate()
+    );
+
+    if (timelineView === 'Day') {
+      if (isSameDay(selectedDate, today)) return 'Today';
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      if (isSameDay(selectedDate, yesterday)) return 'Yesterday';
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      if (isSameDay(selectedDate, tomorrow)) return 'Tomorrow';
+      return format(selectedDate, 'MMM d, yyyy');
+    }
+
+    if (timelineView === 'Week') {
+      const start = new Date(selectedDate);
+      const day = start.getDay();
+      const diff = start.getDate() - day + (day === 0 ? -6 : 1);
+      start.setDate(diff);
+      const end = new Date(start);
+      end.setDate(end.getDate() + 6);
+      return `${format(start, 'MMM d')} - ${format(end, 'MMM d')}`;
+    }
+
+    if (timelineView === 'Month') {
+      if (selectedDate.getFullYear() === today.getFullYear() && selectedDate.getMonth() === today.getMonth()) {
+        return 'This Month';
+      }
+      return format(selectedDate, 'MMMM yyyy');
+    }
+
+    return 'Today';
+  }, [selectedDate, timelineView]);
+
+  // Starter sample events for Today if database timeline has zero records
+  const samplePatientEvents = useMemo(() => {
+    const now = new Date();
+    const makeTime = (hours, mins) => {
+      const d = new Date(now);
+      d.setHours(hours, mins, 0, 0);
+      return d.toISOString();
+    };
+
+    return [
+      {
+        id: 'VIT-101',
+        type: 'VITALS',
+        title: 'Blood Pressure & Vitals Stabilized',
+        description: 'Vitals: 120/80 mmHg • Heart Rate: 72 bpm (Normal Range)',
+        status: 'COMPLETED',
+        eventDate: makeTime(8, 0),
+      },
+      {
+        id: 'LAB-108',
+        type: 'LAB_REPORT',
+        title: 'Complete Blood Count (CBC) with Differential',
+        description: 'Specimen verified in Hematology analyzer. Evaluation normal.',
+        status: 'VERIFIED',
+        eventDate: makeTime(10, 30),
+      },
+      {
+        id: 'APPT-402',
+        type: 'APPOINTMENT',
+        title: 'Cardiology Follow-Up Consultation',
+        description: 'Dr. Michael Lee • Cardiology Unit 4 • ECG review',
+        status: 'SCHEDULED',
+        eventDate: makeTime(13, 0),
+      },
+      {
+        id: 'PRES-204',
+        type: 'PRESCRIPTION',
+        title: 'Prescription: Atorvastatin 20mg & Metformin',
+        description: 'Prescribed for 30 days. Fasting morning dose.',
+        status: 'ACTIVE',
+        eventDate: makeTime(15, 30),
+      }
+    ];
+  }, []);
+
+  // Filtered health journey events for the selected date & timeframe
+  const healthJourneyEvents = useMemo(() => {
+    const isSameDay = (d1, d2) => (
+      d1.getFullYear() === d2.getFullYear() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getDate() === d2.getDate()
+    );
+
+    const baseList = rawTimeline.length > 0 ? rawTimeline : samplePatientEvents;
+
+    const matched = baseList.filter(item => {
+      const dateVal = item.eventDate ? new Date(item.eventDate) : null;
+      if (!dateVal || isNaN(dateVal.getTime())) return false;
+
+      if (timelineView === 'Day') {
+        return isSameDay(dateVal, selectedDate);
+      } else if (timelineView === 'Week') {
+        const start = new Date(selectedDate);
+        const day = start.getDay();
+        const diff = start.getDate() - day + (day === 0 ? -6 : 1);
+        start.setDate(diff);
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(start);
+        end.setDate(end.getDate() + 6);
+        end.setHours(23, 59, 59, 999);
+        return dateVal >= start && dateVal <= end;
+      } else if (timelineView === 'Month') {
+        return (
+          dateVal.getFullYear() === selectedDate.getFullYear() &&
+          dateVal.getMonth() === selectedDate.getMonth()
+        );
+      }
+      return false;
+    });
+
+    return matched.map((event, idx) => {
+      const date = new Date(event.eventDate);
+      const timeStr = format(date, 'hh:mm a');
+      const dateStr = format(date, 'MMM d');
+      const title = event.title || 'Medical Event';
+      const type = event.type || '';
+      const desc = event.description || '';
+
+      // Intelligent clinical categorizer
+      let category = 'Medical';
+      let nodeClass = 'bg-blue-50 text-blue-600 border border-blue-200';
+      let icon = <Activity className="w-4 h-4 text-blue-600" />;
+      let actionPath = '/patient/timeline';
+
+      const titleLower = title.toLowerCase();
+
+      if (titleLower.includes('blood') || titleLower.includes('cbc') || titleLower.includes('differential')) {
+        category = 'Hematology';
+        nodeClass = 'bg-rose-50 text-rose-600 border border-rose-200';
+        icon = <Droplets className="w-4 h-4 text-rose-600" />;
+        actionPath = '/patient/lab-reports';
+      } else if (titleLower.includes('troponin') || titleLower.includes('cardiac') || titleLower.includes('heart') || titleLower.includes('blood pressure')) {
+        category = 'Cardiology';
+        nodeClass = 'bg-red-50 text-red-600 border border-red-200';
+        icon = <HeartPulse className="w-4 h-4 text-red-600" />;
+        actionPath = '/patient/timeline';
+      } else if (titleLower.includes('urine') || titleLower.includes('urinalysis') || titleLower.includes('renal')) {
+        category = 'Urinalysis';
+        nodeClass = 'bg-amber-50 text-amber-600 border border-amber-200';
+        icon = <FlaskConical className="w-4 h-4 text-amber-600" />;
+        actionPath = '/patient/lab-reports';
+      } else if (titleLower.includes('lipid') || titleLower.includes('cholesterol') || titleLower.includes('glucose')) {
+        category = 'Biochemistry';
+        nodeClass = 'bg-cyan-50 text-cyan-600 border border-cyan-200';
+        icon = <Dna className="w-4 h-4 text-cyan-600" />;
+        actionPath = '/patient/lab-reports';
+      } else if (type === 'APPOINTMENT') {
+        category = 'Consultation';
+        nodeClass = 'bg-indigo-50 text-indigo-600 border border-indigo-200';
+        icon = <Stethoscope className="w-4 h-4 text-indigo-600" />;
+        actionPath = '/patient/appointments';
+      } else if (type === 'PRESCRIPTION') {
+        category = 'Pharmacy';
+        nodeClass = 'bg-emerald-50 text-emerald-600 border border-emerald-200';
+        icon = <Pill className="w-4 h-4 text-emerald-600" />;
+        actionPath = '/patient/prescriptions';
+      } else if (type === 'HOME_VISIT') {
+        category = 'Home Care';
+        nodeClass = 'bg-orange-50 text-orange-600 border border-orange-200';
+        icon = <Home className="w-4 h-4 text-orange-600" />;
+        actionPath = '/patient/timeline';
+      } else if (type === 'TELECONSULTATION') {
+        category = 'Telehealth';
+        nodeClass = 'bg-purple-50 text-purple-600 border border-purple-200';
+        icon = <Video className="w-4 h-4 text-purple-600" />;
+        actionPath = '/patient/teleconsultations';
+      }
+
+      // Urgency Pill
+      let urgencyBadge = null;
+      if (desc.includes('CRITICAL')) {
+        urgencyBadge = (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-50 text-rose-700 border border-rose-200">
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
+            CRITICAL
+          </span>
+        );
+      } else if (desc.includes('ABNORMAL')) {
+        urgencyBadge = (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+            <AlertCircle className="w-2.5 h-2.5 text-amber-600" />
+            ABNORMAL
+          </span>
+        );
+      }
+
+      // Status Badge
+      let statusBadge = (
+        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200 uppercase">
+          {(event.status || 'Active').replace(/_/g, ' ')}
+        </span>
+      );
+      if (['COMPLETED', 'VERIFIED', 'RELEASED', 'DONE'].includes((event.status || '').toUpperCase())) {
+        statusBadge = (
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase">
+            COMPLETED
+          </span>
+        );
+      } else if (['REQUESTED', 'SCHEDULED'].includes((event.status || '').toUpperCase())) {
+        statusBadge = (
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 uppercase">
+            {(event.status || '').toUpperCase()}
+          </span>
+        );
+      }
+
+      return {
+        id: event.id || `evt-${idx}`,
+        time: timeStr,
+        dateDisplay: timelineView !== 'Day' ? dateStr : null,
+        title,
+        subtitle: desc || `${category} interaction`,
+        category,
+        nodeClass,
+        icon,
+        urgencyBadge,
+        statusBadge,
+        actionPath
+      };
+    });
+  }, [rawTimeline, samplePatientEvents, timelineView, selectedDate]);
 
   return (
     <motion.div
@@ -274,28 +557,45 @@ export default function PatientDashboard() {
         </div>
 
         {/* ── CENTER COLUMN (6 Cols): Health Journey Timeline ───────────────── */}
-        <div className="lg:col-span-6 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-6">
-          {/* Timeline Header */}
+        <div className="lg:col-span-6 bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-sm space-y-5">
+          {/* Timeline Header with Real Interactive Controls */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
             <div className="flex items-center gap-2">
-              <button className="p-1 rounded-lg hover:bg-slate-100 text-slate-400">
+              <button 
+                onClick={handlePrevDate}
+                title="Previous Date"
+                className="p-1 rounded-lg hover:bg-slate-100 text-slate-500 transition cursor-pointer"
+              >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <h2 className="text-base font-bold text-slate-900">Health Journey</h2>
-              <span className="bg-blue-50 text-blue-600 rounded-full px-3 py-0.5 text-xs font-bold flex items-center gap-1 ml-1">
-                <CalendarIcon className="w-3 h-3" />
-                Today
-              </span>
+              <button 
+                onClick={handleNextDate}
+                title="Next Date"
+                className="p-1 rounded-lg hover:bg-slate-100 text-slate-500 transition cursor-pointer"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+              
+              <h2 className="text-base font-extrabold text-slate-900 ml-1">Health Journey</h2>
+              
+              <button
+                onClick={resetToToday}
+                title="Reset to Today"
+                className="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200/60 rounded-full px-3 py-0.5 text-xs font-bold flex items-center gap-1 transition cursor-pointer ml-1"
+              >
+                <CalendarIcon className="w-3 h-3 text-blue-600" />
+                <span>{journeyDateBadge}</span>
+              </button>
             </div>
 
             {/* Day / Week / Month Segmented Switcher */}
-            <div className="flex items-center bg-slate-100 p-1 rounded-xl text-xs font-bold text-slate-500 self-start sm:self-auto">
+            <div className="flex items-center bg-slate-100 p-1 rounded-xl text-xs font-bold text-slate-500 self-start sm:self-auto border border-slate-200/60">
               {['Day', 'Week', 'Month'].map((v) => (
                 <button
                   key={v}
                   onClick={() => setTimelineView(v)}
-                  className={`px-4 py-1 rounded-lg transition-all cursor-pointer ${
-                    timelineView === v ? 'bg-blue-600 text-white shadow-2xs' : 'hover:text-slate-900'
+                  className={`px-3.5 py-1 rounded-lg transition-all cursor-pointer ${
+                    timelineView === v ? 'bg-blue-600 text-white shadow-2xs font-extrabold' : 'hover:text-slate-900'
                   }`}
                 >
                   {v}
@@ -304,74 +604,107 @@ export default function PatientDashboard() {
             </div>
           </div>
 
-          {/* Timeline Events List */}
-          <div className="relative pl-14 space-y-6 before:absolute before:left-11 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
-            {/* Event 1: 08:00 AM */}
-            <div className="relative flex items-start gap-4">
-              <span className="absolute -left-14 top-1 text-[11px] font-semibold text-slate-400 w-10 text-right">
-                08:00 AM
-              </span>
-              <div className="w-7 h-7 rounded-full bg-blue-50 border-2 border-blue-600 text-blue-600 flex items-center justify-center z-10 shrink-0 shadow-2xs">
-                <Activity className="w-3.5 h-3.5" />
+          {/* ── Timeline Events List with Center-Anchored Spine ── */}
+          {loadingTimeline ? (
+            <div className="flex flex-col items-center justify-center py-12 gap-2 text-slate-400">
+              <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+              <p className="text-xs font-bold uppercase tracking-wider">Syncing Health Journey...</p>
+            </div>
+          ) : healthJourneyEvents.length > 0 ? (
+            <div className="space-y-4 pt-1">
+              {healthJourneyEvents.map((evt, idx) => {
+                const isLast = idx === healthJourneyEvents.length - 1;
+                return (
+                  <div key={evt.id || idx} className="relative flex items-stretch gap-3 sm:gap-4 group">
+                    {/* Time Column (Left): 56px wide, right-aligned, exact time */}
+                    <div className="w-14 sm:w-16 text-right shrink-0 pt-2">
+                      <span className="block text-xs font-black text-slate-800 tracking-tight">{evt.time}</span>
+                      {evt.dateDisplay && (
+                        <span className="block text-[10px] font-bold text-slate-400 mt-0.5">{evt.dateDisplay}</span>
+                      )}
+                    </div>
+
+                    {/* Dedicated Center-Anchored Spine Column */}
+                    <div className="relative flex flex-col items-center shrink-0 w-8 sm:w-9">
+                      {/* Vertical continuous spine line: passes dead-center through node */}
+                      <div className={`absolute top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-200 via-indigo-100 to-slate-200 ${
+                        isLast ? 'h-5' : 'h-full'
+                      }`} />
+                      
+                      {/* Centered Themed Node Pin */}
+                      <div className={`relative z-10 w-8 h-8 rounded-xl flex items-center justify-center ring-4 ring-white shadow-2xs group-hover:scale-110 transition-transform ${evt.nodeClass}`}>
+                        {evt.icon}
+                      </div>
+                    </div>
+
+                    {/* Creative Interactive Health Card */}
+                    <div 
+                      onClick={() => evt.actionPath && navigate(evt.actionPath)}
+                      className="flex-1 min-w-0 bg-white hover:bg-blue-50/30 border border-slate-200/90 hover:border-blue-300 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs transition-all flex items-center justify-between gap-3 cursor-pointer"
+                    >
+                      <div className="min-w-0 space-y-0.5">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <h4 className="text-xs font-bold text-slate-900 truncate group-hover:text-blue-600 transition-colors">
+                            {evt.title}
+                          </h4>
+                          {evt.urgencyBadge}
+                        </div>
+                        <p className="text-[11px] text-slate-500 truncate">
+                          {evt.subtitle}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        {evt.statusBadge}
+                        <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all" />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-10 px-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center mx-auto text-blue-600 shadow-2xs">
+                <CalendarIcon className="w-6 h-6" />
               </div>
-              <div className="flex-1 bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs space-y-1">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-bold text-slate-900">Blood Pressure Stabilized</h4>
-                  <span className="w-2 h-2 rounded-full bg-blue-600" />
-                </div>
-                <p className="text-xs text-slate-600">
-                  Average: <span className="font-bold text-emerald-600">120/80</span> mmHg
+              <div className="space-y-1">
+                <h4 className="text-sm font-bold text-slate-800">No Journey Events Found</h4>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                  No medical records or consultations scheduled for {journeyDateBadge.toLowerCase() === 'today' ? 'today' : journeyDateBadge}.
                 </p>
               </div>
-            </div>
-
-            {/* Event 2: 10:30 AM */}
-            <div className="relative flex items-start gap-4">
-              <span className="absolute -left-14 top-1 text-[11px] font-semibold text-slate-400 w-10 text-right">
-                10:30 AM
-              </span>
-              <div className="w-7 h-7 rounded-full bg-amber-50 border-2 border-amber-500 text-amber-500 flex items-center justify-center z-10 shrink-0 shadow-2xs">
-                <Heart className="w-3.5 h-3.5" />
-              </div>
-              <div className="flex-1 bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs space-y-1">
-                <h4 className="text-xs font-bold text-slate-900">Annual Cardiac Screening</h4>
-                <p className="text-xs text-slate-500">Dr. Michael Lee • Cardiology Unit 4</p>
-              </div>
-            </div>
-
-            {/* Event 3: 01:00 PM */}
-            <div className="relative flex items-start gap-4">
-              <span className="absolute -left-14 top-1 text-[11px] font-semibold text-slate-400 w-10 text-right">
-                01:00 PM
-              </span>
-              <div className="w-7 h-7 rounded-full bg-emerald-50 border-2 border-emerald-600 text-emerald-600 flex items-center justify-center z-10 shrink-0 shadow-2xs">
-                <User className="w-3.5 h-3.5" />
-              </div>
-              <div className="flex-1 bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs space-y-1">
-                <h4 className="text-xs font-bold text-slate-900">Physical Therapy Session</h4>
-                <p className="text-xs text-slate-500">Lower Back Recovery • Day 12</p>
+              <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+                <button
+                  onClick={resetToToday}
+                  className="px-3.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl text-xs font-bold transition cursor-pointer"
+                >
+                  Return to Today
+                </button>
+                <button
+                  onClick={() => navigate('/patient/timeline')}
+                  className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-2xs transition flex items-center gap-1.5 cursor-pointer"
+                >
+                  View Full Timeline
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
               </div>
             </div>
+          )}
 
-            {/* Event 4: 03:30 PM */}
-            <div className="relative flex items-start gap-4">
-              <span className="absolute -left-14 top-1 text-[11px] font-semibold text-slate-400 w-10 text-right">
-                03:30 PM
-              </span>
-              <div className="w-7 h-7 rounded-full bg-purple-50 border-2 border-purple-600 text-purple-600 flex items-center justify-center z-10 shrink-0 shadow-2xs">
-                <Sparkles className="w-3.5 h-3.5" />
-              </div>
-              <div className="flex-1 bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs space-y-1">
-                <h4 className="text-xs font-bold text-slate-900">Mental Wellness Check</h4>
-                <p className="text-xs text-slate-500">Guided Meditation • Focus: Stress Relief</p>
-              </div>
+          {/* Bottom Encouragement & Timeline Link Banner */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50/50 rounded-2xl p-3.5 flex items-center justify-between gap-2.5 border border-blue-100/80">
+            <div className="flex items-center gap-2 text-xs font-bold text-blue-800 min-w-0">
+              <Sparkles className="w-4 h-4 text-blue-600 shrink-0" />
+              <span className="truncate">Keep it up! Track all clinical milestones in your timeline.</span>
             </div>
-          </div>
-
-          {/* Bottom Encouragement Banner */}
-          <div className="bg-gradient-to-r from-blue-50 to-blue-100/50 rounded-2xl p-4 flex items-center gap-2.5 text-xs font-bold text-blue-700 border border-blue-100/80">
-            <Sparkles className="w-4 h-4 text-blue-600 shrink-0" />
-            <span>Keep it up! You're on track for a healthier tomorrow.</span>
+            <button
+              onClick={() => navigate('/patient/timeline')}
+              className="text-xs font-extrabold text-blue-600 hover:text-blue-800 hover:underline shrink-0 flex items-center gap-1"
+            >
+              <span>Full Journey</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
 
@@ -430,14 +763,16 @@ export default function PatientDashboard() {
               </button>
             </div>
 
-            {/* Empty Illustration Graphic */}
+            {/* Empty or Content Graphic */}
             <div className="py-4 space-y-2">
               <div className="w-14 h-14 rounded-full bg-blue-50/70 border border-blue-100 flex items-center justify-center text-blue-600 mx-auto shadow-2xs">
                 <FlaskConical className="w-6 h-6 text-blue-600" />
               </div>
-              <h4 className="text-xs font-bold text-slate-800">No new lab reports</h4>
+              <h4 className="text-xs font-bold text-slate-800">
+                {labReports.length > 0 ? `${labReports.length} Lab Reports Available` : 'No new lab reports'}
+              </h4>
               <p className="text-[11px] text-slate-400 max-w-[180px] mx-auto">
-                Your recent lab results will appear here.
+                {labReports.length > 0 ? 'Diagnostic test results ready for review.' : 'Your recent lab results will appear here.'}
               </p>
             </div>
           </div>

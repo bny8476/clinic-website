@@ -48,24 +48,27 @@ const LabStatusDonut = ({ summary }) => {
   const chartData = data;
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col h-full">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-lg font-bold text-gray-900">Requests Overview</h2>
-        <span className="text-xs font-semibold text-gray-600 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200 flex items-center gap-1.5">
-          <Calendar className="w-3.5 h-3.5" /> Realtime Live
+    <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs p-6 flex flex-col h-full justify-between">
+      <div className="flex justify-between items-center mb-5 pb-3 border-b border-slate-100">
+        <div>
+          <h2 className="text-base font-extrabold text-slate-900 tracking-tight">Status Pipeline Distribution</h2>
+          <p className="text-xs text-slate-400 font-medium">Real-time status progression of active test requests</p>
+        </div>
+        <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-xl border border-blue-200/60 flex items-center gap-1.5 shrink-0">
+          <Calendar className="w-3.5 h-3.5 text-[#2160FF]" /> Live
         </span>
       </div>
       
-      <div className="flex-1 flex flex-col xl:flex-row items-center justify-center gap-8">
-        <div className="relative w-56 h-56 flex-shrink-0">
+      <div className="flex-1 flex flex-col sm:flex-row items-center justify-center gap-6">
+        <div className="relative w-48 h-48 sm:w-52 sm:h-52 flex-shrink-0">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={chartData}
                 cx="50%"
                 cy="50%"
-                innerRadius={75}
-                outerRadius={105}
+                innerRadius={65}
+                outerRadius={92}
                 paddingAngle={2}
                 dataKey="value"
                 stroke="none"
@@ -75,28 +78,28 @@ const LabStatusDonut = ({ summary }) => {
                 ))}
               </Pie>
               <Tooltip 
-                formatter={(value) => [`${value} Requests`, '']}
-                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                formatter={(value) => [`${value} Orders`, '']}
+                contentStyle={{ borderRadius: '12px', border: 'none', backgroundColor: '#0F172A', color: '#FFF', fontSize: '12px', fontWeight: 'bold' }}
               />
             </PieChart>
           </ResponsiveContainer>
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <span className="text-4xl font-extrabold text-gray-900 leading-none mb-1">{chartTotal}</span>
-            <span className="text-sm font-semibold text-gray-500">Total</span>
+            <span className="text-3xl font-black text-slate-900 leading-none mb-1">{chartTotal}</span>
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total</span>
           </div>
         </div>
         
-        <div className="flex-1 w-full max-w-xs grid grid-cols-1 gap-y-2.5">
+        <div className="flex-1 w-full space-y-2">
           {chartData.map((item) => (
-            <div key={item.name} className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }}></div>
-                <span className="text-xs font-semibold text-gray-700">{item.name}</span>
+            <div key={item.name} className="flex items-center justify-between text-xs py-0.5">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }}></div>
+                <span className="font-bold text-slate-700 truncate">{item.name}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-gray-900 w-6 text-right">{item.value}</span>
-                <span className="text-[10px] font-medium text-gray-400 w-12 text-right">
-                  {chartTotal > 0 ? `(${((item.value / chartTotal) * 100).toFixed(1)}%)` : '(0%)'}
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="font-black text-slate-900">{item.value}</span>
+                <span className="text-[10px] font-bold text-slate-400 w-11 text-right">
+                  {chartTotal > 0 ? `(${((item.value / chartTotal) * 100).toFixed(0)}%)` : '(0%)'}
                 </span>
               </div>
             </div>

@@ -24,8 +24,16 @@ const LabPriorityDonut = ({ summary }) => {
   const chartData = data;
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col h-full">
-      <h2 className="text-lg font-bold text-gray-900 mb-6">Priority Breakdown</h2>
+    <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs p-6 flex flex-col h-full justify-between">
+      <div className="mb-5 pb-3 border-b border-slate-100 flex items-center justify-between">
+        <div>
+          <h2 className="text-base font-extrabold text-slate-900 tracking-tight">Priority Breakdown</h2>
+          <p className="text-xs text-slate-400 font-medium">STAT vs routine distribution</p>
+        </div>
+        <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 border border-rose-200">
+          Urgency
+        </span>
+      </div>
       
       <div className="flex-1 flex flex-col sm:flex-row items-center justify-center gap-6">
         <div className="relative w-36 h-36 flex-shrink-0">
@@ -35,8 +43,8 @@ const LabPriorityDonut = ({ summary }) => {
                 data={chartData}
                 cx="50%"
                 cy="50%"
-                innerRadius={50}
-                outerRadius={70}
+                innerRadius={46}
+                outerRadius={65}
                 paddingAngle={3}
                 dataKey="value"
                 stroke="none"
@@ -46,29 +54,31 @@ const LabPriorityDonut = ({ summary }) => {
                 ))}
               </Pie>
               <Tooltip 
-                formatter={(value) => [`${value} Requests`, '']}
-                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                formatter={(value) => [`${value} Orders`, '']}
+                contentStyle={{ borderRadius: '12px', border: 'none', backgroundColor: '#0F172A', color: '#FFF', fontSize: '12px', fontWeight: 'bold' }}
               />
             </PieChart>
           </ResponsiveContainer>
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <span className="text-2xl font-extrabold text-gray-900 leading-none">{chartTotal}</span>
-            <span className="text-[10px] font-medium text-gray-500 mt-1 uppercase">Total</span>
+            <span className="text-2xl font-black text-slate-900 leading-none">{chartTotal}</span>
+            <span className="text-[10px] font-bold text-slate-400 mt-0.5 uppercase tracking-wider">Total</span>
           </div>
         </div>
         
-        <div className="flex-1 w-full space-y-3">
+        <div className="flex-1 w-full space-y-2.5">
           {chartData.map((item) => (
             <div key={item.name} className="flex flex-col">
-              <div className="flex items-center gap-2 mb-0.5">
-                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }}></div>
-                <span className="text-xs font-bold text-gray-700">{item.name}</span>
-              </div>
-              <div className="pl-4 flex items-center gap-2">
-                <span className="text-sm font-semibold text-gray-900">{item.value}</span>
-                <span className="text-xs font-medium text-gray-500">
-                  {chartTotal > 0 ? `(${((item.value / chartTotal) * 100).toFixed(1)}%)` : '(0%)'}
-                </span>
+              <div className="flex items-center justify-between text-xs mb-0.5">
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }}></div>
+                  <span className="font-bold text-slate-700">{item.name}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-black text-slate-900">{item.value}</span>
+                  <span className="text-[10px] font-bold text-slate-400">
+                    {chartTotal > 0 ? `(${((item.value / chartTotal) * 100).toFixed(0)}%)` : '(0%)'}
+                  </span>
+                </div>
               </div>
             </div>
           ))}

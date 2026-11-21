@@ -18,7 +18,7 @@ export default function OrderMedicine() {
   const [activeCategory, setActiveCategory] = useState("All Medicines");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("relevance");
-  const [viewMode, setViewMode] = useState("list");
+  const [viewMode, setViewMode] = useState("grid");
   const [currentPage, setCurrentPage] = useState(1);
   const [cart, setCart] = useState([]);
   const pageSize = 8;
@@ -227,13 +227,14 @@ export default function OrderMedicine() {
           <select 
             value={activeCategory}
             onChange={(e) => { setActiveCategory(e.target.value); setCurrentPage(1); }}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 bg-white focus:outline-none appearance-none cursor-pointer"
+            style={{ backgroundImage: 'none' }}
+            className="w-full pl-4 pr-10 py-3 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-[#2864FF]/20 focus:border-[#2864FF] appearance-none cursor-pointer [background-image:none]"
           >
             {categories.map((cat, i) => (
               <option key={i} value={cat}>{cat}</option>
             ))}
           </select>
-          <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+          <ChevronDown size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
         </div>
         <button 
           onClick={() => { setSearchQuery(''); setActiveCategory('All Medicines'); setCurrentPage(1); }}
@@ -267,32 +268,47 @@ export default function OrderMedicine() {
         <div className="flex-1 w-full">
           <div className="flex justify-between items-center mb-5">
             <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">Available Medicines</h2>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <div className="relative">
                 <select 
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="text-sm border border-slate-200 bg-white rounded-lg px-3 py-2 pr-8 font-semibold text-slate-700 focus:outline-none appearance-none cursor-pointer shadow-sm"
+                  style={{ backgroundImage: 'none' }}
+                  className="text-xs font-bold border border-slate-200 bg-white rounded-xl px-3 py-2 pr-8 text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#2864FF]/20 focus:border-[#2864FF] appearance-none cursor-pointer shadow-2xs [background-image:none]"
                 >
-                  <option value="relevance">Sort by: Relevance</option>
+                  <option value="relevance">Sort: Relevance</option>
                   <option value="price-low">Price: Low to High</option>
                   <option value="price-high">Price: High to Low</option>
                   <option value="name-asc">Name (A-Z)</option>
                 </select>
-                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               </div>
-              <div className="flex bg-slate-100/80 rounded-lg p-1 border border-slate-200/60 shadow-inner">
+              
+              {/* Grid / List Toggle Switch */}
+              <div className="flex bg-slate-100 rounded-xl p-1 border border-slate-200/80 shadow-2xs">
                 <button 
+                  type="button"
                   onClick={() => setViewMode('grid')}
-                  className={`p-1.5 rounded shadow-sm transition ${viewMode === 'grid' ? 'bg-white text-[#2864FF]' : 'text-slate-400 hover:text-slate-600'}`}
+                  title="Grid View"
+                  className={`p-1.5 rounded-lg transition-all cursor-pointer border-none flex items-center justify-center ${
+                    viewMode === 'grid' 
+                      ? 'bg-white text-[#2864FF] shadow-xs' 
+                      : 'text-slate-400 hover:text-slate-600 bg-transparent'
+                  }`}
                 >
-                  <LayoutGrid size={16} />
+                  <LayoutGrid size={16} strokeWidth={2.4} />
                 </button>
                 <button 
+                  type="button"
                   onClick={() => setViewMode('list')}
-                  className={`p-1.5 rounded shadow-sm transition ${viewMode === 'list' ? 'bg-white text-[#2864FF]' : 'text-slate-400 hover:text-slate-600'}`}
+                  title="List View"
+                  className={`p-1.5 rounded-lg transition-all cursor-pointer border-none flex items-center justify-center ${
+                    viewMode === 'list' 
+                      ? 'bg-white text-[#2864FF] shadow-xs' 
+                      : 'text-slate-400 hover:text-slate-600 bg-transparent'
+                  }`}
                 >
-                  <List size={16} />
+                  <List size={16} strokeWidth={2.4} />
                 </button>
               </div>
             </div>
@@ -303,7 +319,7 @@ export default function OrderMedicine() {
             initial="hidden"
             animate="visible"
             className={viewMode === 'grid'
-              ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 min-h-[300px] relative"
+              ? "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 min-h-[300px] relative"
               : "bg-white rounded-2xl border border-slate-200 shadow-sm divide-y divide-slate-100 overflow-hidden min-h-[300px] relative"
             }
           >
@@ -322,42 +338,100 @@ export default function OrderMedicine() {
             {paginatedMedicines.map(med => {
               const stock = med.stockQuantity != null ? med.stockQuantity : 50;
               const isOutOfStock = stock <= 0;
+              const cartItem = cart.find(item => item.medicineId === med.id);
 
               if (viewMode === 'grid') {
                 return (
                   <motion.div
                     key={med.id}
                     variants={listStagger}
-                    className="p-5 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between hover:shadow-md transition"
+                    className="p-4 bg-white rounded-2xl border border-slate-200/80 shadow-2xs hover:shadow-md hover:border-blue-200/80 transition-all duration-200 flex flex-col justify-between h-full group"
                   >
                     <div>
-                      <div className="w-full h-32 bg-slate-50 rounded-xl overflow-hidden border border-slate-100 mb-4 flex items-center justify-center p-3">
+                      {/* Image Thumbnail with Badges */}
+                      <div className="w-full h-36 bg-slate-50/80 rounded-xl overflow-hidden border border-slate-100 mb-3.5 flex items-center justify-center p-3 relative group-hover:bg-blue-50/20 transition-colors">
+                        <span className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-md text-[10px] font-bold bg-white/90 backdrop-blur-xs text-slate-600 border border-slate-200/60 shadow-2xs">
+                          {med.category || 'Medicine'}
+                        </span>
+                        
+                        <span className={`absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                          isOutOfStock 
+                            ? 'bg-rose-50 text-rose-700 border-rose-200' 
+                            : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                        }`}>
+                          {isOutOfStock ? 'Out of Stock' : `Stock: ${stock}`}
+                        </span>
+
                         {med.imageUrl ? (
-                          <img src={med.imageUrl} alt={med.name} className="max-w-full max-h-full object-contain mix-blend-multiply rounded-md" />
+                          <img 
+                            src={med.imageUrl} 
+                            alt={med.name} 
+                            className="max-w-full max-h-full object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105" 
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                            }}
+                          />
                         ) : (
-                          <div className="text-slate-300"><ShoppingBag size={40}/></div>
+                          <div className="text-slate-300">
+                            <ShoppingBag size={36} />
+                          </div>
                         )}
                       </div>
-                      <h3 className="font-extrabold text-slate-900 text-base mb-1 line-clamp-1">{med.name}</h3>
-                      <p className="text-xs font-medium text-slate-500 mb-2 line-clamp-2">{med.description || "No composition info"}</p>
-                      <p className="text-xs font-semibold text-emerald-600 mb-3">Stock: {stock}</p>
+
+                      {/* Medicine Name & Info */}
+                      <h3 className="font-extrabold text-slate-900 text-[15px] mb-1 line-clamp-1 group-hover:text-[#2864FF] transition-colors" title={med.name}>
+                        {med.name}
+                      </h3>
+                      <p className="text-xs font-medium text-slate-400 mb-3 line-clamp-1" title={med.description}>
+                        {med.description || "Composition & dosage on prescription"}
+                      </p>
                     </div>
-                    <div>
+
+                    {/* Price and Cart Action */}
+                    <div className="pt-2 border-t border-slate-100">
                       <div className="flex items-baseline justify-between mb-3">
-                        <p className="font-extrabold text-slate-900 text-lg">₹{Number(med.price || 0).toFixed(2)}</p>
-                        <span className="text-xs font-medium text-slate-400">{med.unit || "1 unit"}</span>
+                        <p className="font-black text-slate-900 text-lg">
+                          ₹{Number(med.price || 0).toFixed(2)}
+                        </p>
+                        <span className="text-xs font-bold text-slate-400">
+                          {med.unit || "1 unit"}
+                        </span>
                       </div>
-                      <button 
-                        onClick={() => addToCart(med)}
-                        disabled={isOutOfStock}
-                        className={`w-full flex items-center justify-center gap-2 py-2.5 border rounded-xl text-sm font-bold shadow-sm transition ${
-                          isOutOfStock
-                            ? 'border-slate-200 text-slate-400 bg-slate-50 cursor-not-allowed'
-                            : 'border-blue-200 text-[#2864FF] hover:bg-blue-50 hover:border-blue-300 bg-white cursor-pointer'
-                        }`}
-                      >
-                        <ShoppingBag size={16} /> {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
-                      </button>
+
+                      {cartItem ? (
+                        <div className="flex items-center justify-between p-1 bg-blue-50/70 border border-blue-200/80 rounded-xl">
+                          <button
+                            type="button"
+                            onClick={() => updateQuantity(med.id, -1)}
+                            className="w-8 h-8 rounded-lg bg-white text-[#2864FF] hover:bg-blue-100 flex items-center justify-center font-black transition-colors cursor-pointer border-none shadow-2xs"
+                          >
+                            <Minus size={14} />
+                          </button>
+                          <span className="font-extrabold text-xs text-[#2864FF]">
+                            {cartItem.quantity} in cart
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => updateQuantity(med.id, 1)}
+                            disabled={cartItem.quantity >= stock}
+                            className="w-8 h-8 rounded-lg bg-[#2864FF] text-white hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center font-black transition-colors cursor-pointer border-none shadow-2xs"
+                          >
+                            <Plus size={14} />
+                          </button>
+                        </div>
+                      ) : (
+                        <button 
+                          onClick={() => addToCart(med)}
+                          disabled={isOutOfStock}
+                          className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer shadow-2xs ${
+                            isOutOfStock
+                              ? 'border border-slate-200 text-slate-400 bg-slate-50 cursor-not-allowed'
+                              : 'bg-[#2864FF] hover:bg-blue-600 text-white border-none'
+                          }`}
+                        >
+                          <ShoppingBag size={14} /> {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
+                        </button>
+                      )}
                     </div>
                   </motion.div>
                 );
