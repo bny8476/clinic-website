@@ -132,13 +132,11 @@ public class AppointmentBranchResolutionTest {
     @AfterEach
     void tearDown() {
         SecurityContextHolder.clearContext();
-        appointmentRepository.deleteAll();
-        slotRepository.deleteAll();
-        doctorRepository.deleteAll();
-        patientProfileRepository.deleteAll();
-        try {
-            userRepository.deleteAll();
-        } catch (Exception ignored) {}
+        try { appointmentRepository.deleteAll(); } catch (Exception ignored) {}
+        try { slotRepository.deleteAll(); } catch (Exception ignored) {}
+        try { doctorRepository.deleteAll(); } catch (Exception ignored) {}
+        try { patientProfileRepository.deleteAll(); } catch (Exception ignored) {}
+        try { userRepository.deleteAll(); } catch (Exception ignored) {}
     }
 
     @Test

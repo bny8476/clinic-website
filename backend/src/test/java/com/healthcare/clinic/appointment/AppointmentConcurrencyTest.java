@@ -110,10 +110,10 @@ public class AppointmentConcurrencyTest {
 
     @AfterEach
     void tearDown() {
-        appointmentRepository.deleteAll();
-        slotRepository.deleteAll();
-        doctorRepository.deleteAll();
-        userRepository.deleteAll();
+        try { appointmentRepository.deleteAll(); } catch (Exception ignored) {}
+        try { slotRepository.deleteAll(); } catch (Exception ignored) {}
+        try { doctorRepository.deleteAll(); } catch (Exception ignored) {}
+        try { userRepository.deleteAll(); } catch (Exception ignored) {}
     }
 
     @Test

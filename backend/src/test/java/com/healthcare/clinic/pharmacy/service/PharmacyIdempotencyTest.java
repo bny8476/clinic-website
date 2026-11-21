@@ -61,10 +61,10 @@ public class PharmacyIdempotencyTest {
         stockBatchRepository.deleteAll();
         prescriptionRepository.deleteAll();
         medicineRepository.deleteAll();
-        userRepository.deleteAll();
+        try { userRepository.deleteAll(); } catch (Exception ignored) {}
 
         testPharmacist = new User();
-        testPharmacist.setEmail("pharmacist@idempotency-test.com");
+        testPharmacist.setEmail("pharmacist_" + System.nanoTime() + "@idempotency-test.com");
         testPharmacist.setPasswordHash("$2a$10$password");
         testPharmacist.setFirstName("Jane");
         testPharmacist.setLastName("Chem");
@@ -118,7 +118,7 @@ public class PharmacyIdempotencyTest {
         stockBatchRepository.deleteAll();
         prescriptionRepository.deleteAll();
         medicineRepository.deleteAll();
-        userRepository.deleteAll();
+        try { userRepository.deleteAll(); } catch (Exception ignored) {}
     }
 
     @Test

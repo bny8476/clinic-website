@@ -50,6 +50,7 @@ public class LabAuthorizationTest {
     @Autowired private PatientProfileRepository patientProfileRepository;
     @Autowired private UserRepository userRepository;
     @Autowired private BranchRepository branchRepository;
+    @Autowired(required = false) private com.healthcare.clinic.laboratory.repository.LabQualityControlRepository qualityControlRepository;
 
     // Removed BillingService mock to prevent context pollution that breaks Radiology tests.
 
@@ -64,11 +65,14 @@ public class LabAuthorizationTest {
 
     @BeforeEach
     void setUp() {
-        resultRepository.deleteAll();
-        requestRepository.deleteAll();
-        catalogRepository.deleteAll();
-        patientProfileRepository.deleteAll();
-        userRepository.deleteAll();
+        if (qualityControlRepository != null) {
+            try { qualityControlRepository.deleteAll(); } catch (Exception ignored) {}
+        }
+        try { resultRepository.deleteAll(); } catch (Exception ignored) {}
+        try { requestRepository.deleteAll(); } catch (Exception ignored) {}
+        try { catalogRepository.deleteAll(); } catch (Exception ignored) {}
+        try { patientProfileRepository.deleteAll(); } catch (Exception ignored) {}
+        try { userRepository.deleteAll(); } catch (Exception ignored) {}
 
         testBranch = branchRepository.findAll().stream().findFirst().orElseGet(() -> {
             Branch b = Branch.builder()
@@ -114,16 +118,19 @@ public class LabAuthorizationTest {
     void tearDown() {
         SecurityContextHolder.clearContext();
         TestSecurityContextHolder.clearContext();
-        resultRepository.deleteAll();
-        requestRepository.deleteAll();
-        catalogRepository.deleteAll();
-        patientProfileRepository.deleteAll();
-        userRepository.deleteAll();
+        if (qualityControlRepository != null) {
+            try { qualityControlRepository.deleteAll(); } catch (Exception ignored) {}
+        }
+        try { resultRepository.deleteAll(); } catch (Exception ignored) {}
+        try { requestRepository.deleteAll(); } catch (Exception ignored) {}
+        try { catalogRepository.deleteAll(); } catch (Exception ignored) {}
+        try { patientProfileRepository.deleteAll(); } catch (Exception ignored) {}
+        try { userRepository.deleteAll(); } catch (Exception ignored) {}
     }
 
     private User buildUser(String email, String role) {
         User u = new User();
-        u.setEmail(email);
+        u.setEmail(System.nanoTime() + "_" + email);
         u.setPasswordHash("$2a$10$hashedpassword");
         u.setFirstName("Test");
         u.setLastName("User");

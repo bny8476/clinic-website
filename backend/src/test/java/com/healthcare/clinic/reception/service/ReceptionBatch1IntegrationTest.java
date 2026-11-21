@@ -46,9 +46,10 @@ public class ReceptionBatch1IntegrationTest {
 
     @BeforeEach
     void setUp() {
+        String suffix = "_" + System.nanoTime();
         // Create receptionist
         testReceptionist = new User();
-        testReceptionist.setEmail("reception@test.com");
+        testReceptionist.setEmail("reception" + suffix + "@test.com");
         testReceptionist.setFirstName("Rec");
         testReceptionist.setLastName("Eption");
         testReceptionist.setPasswordHash("hash");
@@ -57,8 +58,8 @@ public class ReceptionBatch1IntegrationTest {
 
         // Create patient user
         testPatientUser = new User();
-        testPatientUser.setEmail("patient.rec@test.com");
-        testPatientUser.setFirstName("John");
+        testPatientUser.setEmail("patient.rec" + suffix + "@test.com");
+        testPatientUser.setFirstName("RecBatchOneJohn");
         testPatientUser.setLastName("Doe");
         testPatientUser.setPhoneNumber("+1987654321");
         testPatientUser.setPasswordHash("hash");
@@ -88,7 +89,7 @@ public class ReceptionBatch1IntegrationTest {
 
     @Test
     void testSearchPatients() {
-        List<Map<String, Object>> byName = patientService.searchPatients("John", null);
+        List<Map<String, Object>> byName = patientService.searchPatients("RecBatchOneJohn", null);
         assertThat(byName).hasSize(1);
         assertThat(byName.get(0).get("opNumber")).isEqualTo("OP-2026-001");
 

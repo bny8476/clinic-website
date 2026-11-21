@@ -65,10 +65,10 @@ public class PharmacyDispensingConcurrencyTest {
         stockBatchRepository.deleteAll();
         prescriptionRepository.deleteAll();
         medicineRepository.deleteAll();
-        userRepository.deleteAll();
+        try { userRepository.deleteAll(); } catch (Exception ignored) {}
 
         testPharmacist = new User();
-        testPharmacist.setEmail("pharmacist@test.com");
+        testPharmacist.setEmail("pharmacist_" + System.nanoTime() + "@test.com");
         testPharmacist.setPasswordHash("$2a$10$password");
         testPharmacist.setFirstName("John");
         testPharmacist.setLastName("Doe");
@@ -151,7 +151,7 @@ public class PharmacyDispensingConcurrencyTest {
         stockBatchRepository.deleteAll();
         prescriptionRepository.deleteAll();
         medicineRepository.deleteAll();
-        userRepository.deleteAll();
+        try { userRepository.deleteAll(); } catch (Exception ignored) {}
     }
 
     @Test

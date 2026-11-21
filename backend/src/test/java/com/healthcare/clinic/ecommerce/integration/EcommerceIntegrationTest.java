@@ -64,10 +64,12 @@ public class EcommerceIntegrationTest {
 
     @BeforeEach
     void setup() {
-        userRepository.deleteAll();
+        try {
+            userRepository.deleteAll();
+        } catch (Exception ignored) {}
         
         testPatient = userRepository.save(User.builder()
-                .email("ec_patient@example.com")
+                .email("ec_patient_" + System.nanoTime() + "@example.com")
                 .passwordHash("password")
                 .firstName("Test")
                 .lastName("Patient")

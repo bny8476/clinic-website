@@ -117,7 +117,6 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource(org.springframework.core.env.Environment env) {
         CorsConfiguration configuration = new CorsConfiguration();
-        java.util.List<String> explicitOrigins = new java.util.ArrayList<>();
         java.util.List<String> patternOrigins = new java.util.ArrayList<>();
         boolean isProd = isProduction(env);
 
@@ -126,42 +125,37 @@ public class SecurityConfig {
                 String trimmed = origin.trim();
                 if (!trimmed.isEmpty()) {
                     if (trimmed.contains("*")) {
+                        if (!isProd && !patternOrigins.contains(trimmed)) {
+                            patternOrigins.add(trimmed);
+                        }
+                    } else if (!patternOrigins.contains(trimmed)) {
                         patternOrigins.add(trimmed);
-                    } else {
-                        explicitOrigins.add(trimmed);
                     }
                 }
             }
         }
 
         // Always ensure explicit production origins are present
-        if (!explicitOrigins.contains("https://clinic-website-bny2.vercel.app")) {
-            explicitOrigins.add("https://clinic-website-bny2.vercel.app");
+        if (!patternOrigins.contains("https://clinic-website-bny2.vercel.app")) {
+            patternOrigins.add("https://clinic-website-bny2.vercel.app");
         }
-        if (!explicitOrigins.contains("https://clinic-website-three-chi.vercel.app")) {
-            explicitOrigins.add("https://clinic-website-three-chi.vercel.app");
+        if (!patternOrigins.contains("https://clinic-website-three-chi.vercel.app")) {
+            patternOrigins.add("https://clinic-website-three-chi.vercel.app");
         }
-        if (!explicitOrigins.contains("https://clinic-website-ndzj.onrender.com")) {
-            explicitOrigins.add("https://clinic-website-ndzj.onrender.com");
-        }
-
-        // Wildcard patterns
-        if (!patternOrigins.contains("https://*.vercel.app")) {
-            patternOrigins.add("https://*.vercel.app");
-        }
-        if (!patternOrigins.contains("https://*.onrender.com")) {
-            patternOrigins.add("https://*.onrender.com");
+        if (!patternOrigins.contains("https://clinic-website-ndzj.onrender.com")) {
+            patternOrigins.add("https://clinic-website-ndzj.onrender.com");
         }
 
         if (!isProd) {
-            explicitOrigins.add("http://localhost:5173");
-            explicitOrigins.add("http://localhost:3000");
-            explicitOrigins.add("http://localhost:5174");
-            patternOrigins.add("http://localhost:*");
-            patternOrigins.add("http://127.0.0.1:*");
+            if (!patternOrigins.contains("http://localhost:*")) patternOrigins.add("http://localhost:*");
+            if (!patternOrigins.contains("http://127.0.0.1:*")) patternOrigins.add("http://127.0.0.1:*");
+            if (!patternOrigins.contains("http://localhost:5173")) patternOrigins.add("http://localhost:5173");
+            if (!patternOrigins.contains("http://localhost:3000")) patternOrigins.add("http://localhost:3000");
+            if (!patternOrigins.contains("http://localhost:5174")) patternOrigins.add("http://localhost:5174");
+            if (!patternOrigins.contains("https://*.vercel.app")) patternOrigins.add("https://*.vercel.app");
+            if (!patternOrigins.contains("https://*.onrender.com")) patternOrigins.add("https://*.onrender.com");
         }
 
-        configuration.setAllowedOrigins(explicitOrigins);
         configuration.setAllowedOriginPatterns(patternOrigins);
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"));
         configuration.setAllowedHeaders(Arrays.asList("*"));

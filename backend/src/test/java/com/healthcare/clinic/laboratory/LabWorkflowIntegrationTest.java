@@ -44,6 +44,7 @@ public class LabWorkflowIntegrationTest {
     @Autowired private PatientProfileRepository patientProfileRepository;
     @Autowired private UserRepository userRepository;
     @Autowired private BranchRepository branchRepository;
+    @Autowired(required = false) private com.healthcare.clinic.laboratory.repository.LabQualityControlRepository qualityControlRepository;
 
     // Removed BillingService mock to prevent context pollution that breaks Radiology tests.
 
@@ -54,11 +55,14 @@ public class LabWorkflowIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        resultRepository.deleteAll();
-        requestRepository.deleteAll();
-        catalogRepository.deleteAll();
-        patientProfileRepository.deleteAll();
-        userRepository.deleteAll();
+        if (qualityControlRepository != null) {
+            try { qualityControlRepository.deleteAll(); } catch (Exception ignored) {}
+        }
+        try { resultRepository.deleteAll(); } catch (Exception ignored) {}
+        try { requestRepository.deleteAll(); } catch (Exception ignored) {}
+        try { catalogRepository.deleteAll(); } catch (Exception ignored) {}
+        try { patientProfileRepository.deleteAll(); } catch (Exception ignored) {}
+        try { userRepository.deleteAll(); } catch (Exception ignored) {}
 
         testBranch = branchRepository.findAll().stream().findFirst().orElseGet(() -> {
             Branch b = Branch.builder()
@@ -75,7 +79,7 @@ public class LabWorkflowIntegrationTest {
         });
 
         testPatientUser = new User();
-        testPatientUser.setEmail("lab-patient@test.com");
+        testPatientUser.setEmail("lab-patient-" + System.nanoTime() + "@test.com");
         testPatientUser.setPasswordHash("$2a$10$hashedpassword");
         testPatientUser.setFirstName("Lab");
         testPatientUser.setLastName("Patient");
@@ -103,11 +107,14 @@ public class LabWorkflowIntegrationTest {
 
     @AfterEach
     void tearDown() {
-        resultRepository.deleteAll();
-        requestRepository.deleteAll();
-        catalogRepository.deleteAll();
-        patientProfileRepository.deleteAll();
-        userRepository.deleteAll();
+        if (qualityControlRepository != null) {
+            try { qualityControlRepository.deleteAll(); } catch (Exception ignored) {}
+        }
+        try { resultRepository.deleteAll(); } catch (Exception ignored) {}
+        try { requestRepository.deleteAll(); } catch (Exception ignored) {}
+        try { catalogRepository.deleteAll(); } catch (Exception ignored) {}
+        try { patientProfileRepository.deleteAll(); } catch (Exception ignored) {}
+        try { userRepository.deleteAll(); } catch (Exception ignored) {}
     }
 
     // ─── Helper ────────────────────────────────────────────────────────────────

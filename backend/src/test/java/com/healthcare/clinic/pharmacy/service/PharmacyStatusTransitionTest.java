@@ -59,10 +59,10 @@ public class PharmacyStatusTransitionTest {
         stockBatchRepository.deleteAll();
         prescriptionRepository.deleteAll();
         medicineRepository.deleteAll();
-        userRepository.deleteAll();
+        try { userRepository.deleteAll(); } catch (Exception ignored) {}
 
         testPharmacist = new User();
-        testPharmacist.setEmail("pharmacist@status-test.com");
+        testPharmacist.setEmail("pharmacist_" + System.nanoTime() + "@status-test.com");
         testPharmacist.setPasswordHash("$2a$10$password");
         testPharmacist.setFirstName("Status");
         testPharmacist.setLastName("Tester");
@@ -100,7 +100,7 @@ public class PharmacyStatusTransitionTest {
         stockBatchRepository.deleteAll();
         prescriptionRepository.deleteAll();
         medicineRepository.deleteAll();
-        userRepository.deleteAll();
+        try { userRepository.deleteAll(); } catch (Exception ignored) {}
     }
 
     private PharmacyPrescriptionRecord createVerifiedPrescription() {

@@ -88,8 +88,9 @@ public class ReceptionBatch2IntegrationTest {
         branch.setTimezone("UTC");
         branch = branchRepository.save(branch);
 
+        String suffix = "_" + System.nanoTime();
         testReceptionist = new User();
-        testReceptionist.setEmail("reception2@test.com");
+        testReceptionist.setEmail("reception2" + suffix + "@test.com");
         testReceptionist.setFirstName("Rec");
         testReceptionist.setLastName("Two");
         testReceptionist.setPasswordHash("hash");
@@ -97,7 +98,7 @@ public class ReceptionBatch2IntegrationTest {
         testReceptionist = userRepository.save(testReceptionist);
 
         User patientUser = new User();
-        patientUser.setEmail("patient2@test.com");
+        patientUser.setEmail("patient2" + suffix + "@test.com");
         patientUser.setFirstName("John");
         patientUser.setLastName("Doe");
         patientUser.setPhoneNumber("+111222333");
@@ -111,7 +112,7 @@ public class ReceptionBatch2IntegrationTest {
         testPatient = patientProfileRepository.save(testPatient);
 
         User doctorUser = new User();
-        doctorUser.setEmail("doctor2@test.com");
+        doctorUser.setEmail("doctor2" + suffix + "@test.com");
         doctorUser.setFirstName("Doc");
         doctorUser.setLastName("Tor");
         doctorUser.setPasswordHash("hash");
