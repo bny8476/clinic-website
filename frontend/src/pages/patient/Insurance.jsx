@@ -242,13 +242,19 @@ export default function Insurance() {
     setFormData(updated);
   };
 
-  // 1. Fetch Patient Dependents (to allow selecting family member on claim)
+  // 1. Fetch Patient Dependents (Dual fallback: /v1/patient/dependents & /v1/patient/settings/dependents)
   const { data: dependents = [] } = useQuery({
     queryKey: ['patientDependents'],
     queryFn: async () => {
       try {
-        const res = await axiosPrivate.get('/v1/patient/dependents');
-        return Array.isArray(res.data) ? res.data : [];
+        try {
+          const res = await axiosPrivate.get('/v1/patient/dependents');
+          if (Array.isArray(res.data)) return res.data;
+        } catch (e1) {
+          // Fallback to canonical settings endpoint
+        }
+        const res2 = await axiosPrivate.get('/v1/patient/settings/dependents');
+        return Array.isArray(res2.data) ? res2.data : [];
       } catch (e) {
         return [];
       }
