@@ -15,7 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/patient/support")
-@PreAuthorize("hasAuthority('ROLE_SUPPORT') or hasAuthority('ROLE_CUSTOMER_SUPPORT') or hasAuthority('ROLE_SUPER_ADMIN')")
+@PreAuthorize("hasAnyAuthority('ROLE_PATIENT', 'ROLE_SUPPORT', 'ROLE_CUSTOMER_SUPPORT', 'ROLE_ADMIN', 'ROLE_SUPER_ADMIN')")
 @RequiredArgsConstructor
 public class SupportPortalController {
     
