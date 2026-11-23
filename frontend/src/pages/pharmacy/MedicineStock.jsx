@@ -183,7 +183,7 @@ export default function MedicineStock() {
       <motion.div
         variants={staggerContainer}
         initial="hidden"
-        animate="show"
+        animate="visible"
         className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4"
       >
         <motion.div variants={fadeIn} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col gap-3 hover:shadow-md transition-shadow">

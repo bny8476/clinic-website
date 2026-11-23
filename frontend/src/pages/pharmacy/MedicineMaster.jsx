@@ -279,9 +279,12 @@ export default function MedicineMaster() {
       return <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-blue-50 text-blue-600 border border-blue-100">In Stock</span>;
     }},
     { header: 'ACTIONS', render: (row) => (
-      <div className="flex gap-1 justify-center">
-        <button onClick={() => openModal(row)} className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded transition-colors" title="Options">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+      <div className="flex items-center gap-1.5 justify-center">
+        <button onClick={() => openModal(row)} className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer" title="Edit Medicine">
+          <Edit size={15} />
+        </button>
+        <button onClick={() => handleDelete(row.id)} className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer" title="Delete Medicine">
+          <X size={15} />
         </button>
       </div>
     )}
@@ -460,71 +463,30 @@ export default function MedicineMaster() {
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6 items-start">
-        <div className="flex-1 w-full bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm flex flex-col">
-          <div className="p-5 border-b border-slate-200 flex justify-between items-center bg-white">
-            <h3 className="text-lg font-bold text-slate-800">Medicine List</h3>
-            <span className="text-sm text-slate-500 font-medium">Total {totalElements.toLocaleString()} Medicines</span>
-          </div>
-          
-          <div className="overflow-x-auto">
-            {loading ? (
-              <TableSkeleton rows={10} columns={10} />
-            ) : (
-              <>
-                <DataTable columns={columns} data={medicines} striped className="border-0 shadow-none [&>div>table>thead>tr>th]:bg-slate-50 [&>div>table>thead>tr>th]:text-slate-500 [&>div>table>thead>tr>th]:font-semibold [&>div>table>thead>tr>th]:uppercase [&>div>table>thead>tr>th]:tracking-wider [&>div>table>thead>tr>th]:text-[10px] [&>div>table>thead>tr>th]:py-4 [&>div>table>tbody>tr>td]:py-3" />
-                {totalElements > 0 && (
-                  <div className="p-4 border-t border-slate-200">
-                    <Pagination totalRecords={totalElements} currentPage={page + 1} pageSize={size} onPageChange={(p) => goToPage(p - 1)} onPageSizeChange={() => {}} />
-                  </div>
-                )}
-              </>
-            )}
+      {/* ── Full-Width Responsive Medicine List ── */}
+      <div className="w-full bg-white border border-slate-200/90 rounded-2xl overflow-hidden shadow-2xs flex flex-col">
+        <div className="p-5 border-b border-slate-200 flex items-center justify-between bg-white">
+          <div className="flex items-center gap-3">
+            <h3 className="text-lg font-bold text-slate-900 m-0">Medicine Directory</h3>
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200/80">
+              Total {totalElements.toLocaleString()} Medicines
+            </span>
           </div>
         </div>
-
-        <div className="w-full lg:w-[280px] shrink-0 bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-          <div className="p-5 border-b border-slate-200 bg-white">
-            <h3 className="text-lg font-bold text-slate-800">Quick Actions</h3>
-          </div>
-          <div className="p-4 flex flex-col gap-3">
-            <button onClick={() => openModal()} className="w-full flex items-center gap-4 p-3.5 bg-indigo-50/50 hover:bg-indigo-50 border border-indigo-100 rounded-xl text-indigo-700 font-semibold text-sm transition-colors text-left group">
-              <div className="p-2 bg-indigo-100 text-indigo-600 rounded-lg group-hover:bg-indigo-200 transition-colors">
-                <Plus className="w-4 h-4" />
-              </div>
-              Add Medicine
-            </button>
-            <button className="w-full flex items-center gap-4 p-3.5 bg-blue-50/50 hover:bg-blue-50 border border-blue-100 rounded-xl text-blue-700 font-semibold text-sm transition-colors text-left group">
-              <div className="p-2 bg-blue-100 text-blue-600 rounded-lg group-hover:bg-blue-200 transition-colors">
-                <Upload className="w-4 h-4" />
-              </div>
-              Import Medicines
-            </button>
-            <button className="w-full flex items-center gap-4 p-3.5 bg-blue-50/50 hover:bg-blue-50 border border-blue-100 rounded-xl text-blue-700 font-semibold text-sm transition-colors text-left group">
-              <div className="p-2 bg-blue-100 text-blue-600 rounded-lg group-hover:bg-blue-200 transition-colors">
-                <Download className="w-4 h-4" />
-              </div>
-              Export Medicines
-            </button>
-            <button className="w-full flex items-center gap-4 p-3.5 bg-orange-50/50 hover:bg-orange-50 border border-orange-100 rounded-xl text-orange-700 font-semibold text-sm transition-colors text-left group">
-              <div className="p-2 bg-orange-100 text-orange-600 rounded-lg group-hover:bg-orange-200 transition-colors">
-                <ArrowLeftRight className="w-4 h-4" />
-              </div>
-              Stock Transfer
-            </button>
-            <button className="w-full flex items-center gap-4 p-3.5 bg-rose-50/50 hover:bg-rose-50 border border-rose-100 rounded-xl text-rose-700 font-semibold text-sm transition-colors text-left group">
-              <div className="p-2 bg-rose-100 text-rose-600 rounded-lg group-hover:bg-rose-200 transition-colors">
-                <Printer className="w-4 h-4" />
-              </div>
-              Print List
-            </button>
-            <button className="w-full flex items-center gap-4 p-3.5 bg-purple-50/50 hover:bg-purple-50 border border-purple-100 rounded-xl text-purple-700 font-semibold text-sm transition-colors text-left group">
-              <div className="p-2 bg-purple-100 text-purple-600 rounded-lg group-hover:bg-purple-200 transition-colors">
-                <Settings className="w-4 h-4" />
-              </div>
-              Bulk Update
-            </button>
-          </div>
+        
+        <div className="w-full overflow-x-auto [scrollbar-width:thin]">
+          {loading ? (
+            <TableSkeleton rows={10} columns={10} />
+          ) : (
+            <>
+              <DataTable columns={columns} data={medicines} striped className="border-0 shadow-none [&>div>table>thead>tr>th]:bg-slate-50 [&>div>table>thead>tr>th]:text-slate-500 [&>div>table>thead>tr>th]:font-semibold [&>div>table>thead>tr>th]:uppercase [&>div>table>thead>tr>th]:tracking-wider [&>div>table>thead>tr>th]:text-[10px] [&>div>table>thead>tr>th]:py-4 [&>div>table>tbody>tr>td]:py-3" />
+              {totalElements > 0 && (
+                <div className="p-4 border-t border-slate-200 bg-slate-50/50">
+                  <Pagination totalRecords={totalElements} currentPage={page + 1} pageSize={size} onPageChange={(p) => goToPage(p - 1)} onPageSizeChange={() => {}} />
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
 
