@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
@@ -39,7 +39,14 @@ import {
     Sparkles,
     FileText,
     Power,
-    Edit3
+    Edit3,
+    EyeOff,
+    X,
+    ArrowRight,
+    ArrowLeft,
+    RefreshCw,
+    GraduationCap,
+    Clock
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -75,6 +82,7 @@ const UserManagement = () => {
     const [resetPasswordUser, setResetPasswordUser] = useState(null);
     const [newPassword, setNewPassword] = useState('');
     const [activeStep, setActiveStep] = useState(1);
+    const [showPassword, setShowPassword] = useState(false);
 
     // Form state
     const initialFormState = {
@@ -295,13 +303,14 @@ const DEFAULT_ROLES = [
         setActiveStep(1);
     };
 
-    const closeModal = () => {
+    const closeModal = useCallback(() => {
         setEditingUser(null);
         setIsCreateModalOpen(false);
         setViewingUser(null);
         setFormData(initialFormState);
         setActiveStep(1);
-    };
+        setShowPassword(false);
+    }, []);
 
     const handleSave = (e) => {
         e?.preventDefault();
@@ -658,365 +667,667 @@ const DEFAULT_ROLES = [
             >
                 {/* Modal Header */}
                 <div className="-mx-6 -mt-6 px-6 py-5 bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-950 text-white border-b border-slate-800 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-[#2160FF]/20 text-[#2160FF] border border-[#2160FF]/30 flex items-center justify-center font-bold">
-                            <UserPlus size={20} />
+                    <div className="flex items-center gap-3.5">
+                        <div className="w-11 h-11 rounded-2xl bg-[#2160FF]/20 text-[#2160FF] border border-[#2160FF]/30 flex items-center justify-center font-bold shadow-inner shrink-0">
+                            <UserPlus size={22} className="text-blue-400" />
                         </div>
                         <div>
-                            <h2 className="text-lg font-bold font-display m-0 text-white">
-                                {editingUser ? "Edit User Account" : "Add New User Account"}
-                            </h2>
+                            <div className="flex items-center gap-2">
+                                <h2 className="text-lg font-bold font-display m-0 text-white">
+                                    {editingUser ? "Edit User Account" : "Add New User Account"}
+                                </h2>
+                                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-500/20 text-blue-300 border border-blue-400/30">
+                                    Step {activeStep} of {isDoctorSelected ? 4 : 3}
+                                </span>
+                            </div>
                             <p className="text-xs text-slate-300 m-0 mt-0.5">
-                                Step {activeStep} of {isDoctorSelected ? 4 : 3}: Account, Roles & Branch Scope
+                                {editingUser 
+                                    ? "Update credential access, organizational permissions, and scope assignments." 
+                                    : "Provision new institutional healthcare staff, roles, and branch credentials."}
                             </p>
                         </div>
                     </div>
+                    <button
+                        type="button"
+                        onClick={closeModal}
+                        className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer border-0 bg-transparent"
+                        title="Close modal"
+                    >
+                        <X size={18} />
+                    </button>
                 </div>
 
                 {/* Step Indicators */}
-                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 py-3 mb-4">
-                    <button
-                        onClick={() => setActiveStep(1)}
-                        className={`flex items-center gap-2 text-xs font-bold transition-colors border-0 bg-transparent cursor-pointer ${activeStep === 1 ? 'text-[#2160FF]' : 'text-slate-400'}`}
-                    >
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center ${activeStep === 1 ? 'bg-[#2160FF] text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>1</div>
-                        Account Info
-                    </button>
-                    <div className="h-0.5 flex-1 bg-slate-100 dark:bg-slate-800 mx-2" />
-                    <button
-                        onClick={() => setActiveStep(2)}
-                        className={`flex items-center gap-2 text-xs font-bold transition-colors border-0 bg-transparent cursor-pointer ${activeStep === 2 ? 'text-[#2160FF]' : 'text-slate-400'}`}
-                    >
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center ${activeStep === 2 ? 'bg-[#2160FF] text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>2</div>
-                        Role & Branch
-                    </button>
+                <div className="bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 my-4">
+                    <div className="flex items-center justify-between gap-1 sm:gap-2">
+                        {/* Step 1: Account Info */}
+                        <button
+                            type="button"
+                            onClick={() => setActiveStep(1)}
+                            className={`flex items-center gap-2 text-xs font-bold transition-all border-0 bg-transparent cursor-pointer px-2 py-1 rounded-xl ${
+                                activeStep === 1 
+                                    ? 'text-[#2160FF] dark:text-blue-400' 
+                                    : activeStep > 1 
+                                    ? 'text-emerald-600 dark:text-emerald-400' 
+                                    : 'text-slate-400'
+                            }`}
+                        >
+                            <div className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-black transition-all ${
+                                activeStep === 1 
+                                    ? 'bg-[#2160FF] text-white shadow-sm shadow-blue-500/30' 
+                                    : activeStep > 1 
+                                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' 
+                                    : 'bg-slate-200 dark:bg-slate-700 text-slate-500'
+                            }`}>
+                                {activeStep > 1 ? <Check size={14} strokeWidth={3} /> : '1'}
+                            </div>
+                            <span className="hidden sm:inline">Account Info</span>
+                        </button>
 
-                    {isDoctorSelected && (
-                        <>
-                            <div className="h-0.5 flex-1 bg-slate-100 dark:bg-slate-800 mx-2" />
-                            <button
-                                onClick={() => setActiveStep(3)}
-                                className={`flex items-center gap-2 text-xs font-bold transition-colors border-0 bg-transparent cursor-pointer ${activeStep === 3 ? 'text-[#2160FF]' : 'text-slate-400'}`}
-                            >
-                                <div className={`w-6 h-6 rounded-full flex items-center justify-center ${activeStep === 3 ? 'bg-[#2160FF] text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>3</div>
-                                Doctor Profile
-                            </button>
-                        </>
-                    )}
+                        <div className={`h-0.5 flex-1 mx-1 transition-all ${activeStep > 1 ? 'bg-emerald-400' : 'bg-slate-200 dark:bg-slate-700'}`} />
 
-                    <div className="h-0.5 flex-1 bg-slate-100 dark:bg-slate-800 mx-2" />
-                    <button
-                        onClick={() => setActiveStep(isDoctorSelected ? 4 : 3)}
-                        className={`flex items-center gap-2 text-xs font-bold transition-colors border-0 bg-transparent cursor-pointer ${activeStep === (isDoctorSelected ? 4 : 3) ? 'text-[#2160FF]' : 'text-slate-400'}`}
-                    >
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center ${activeStep === (isDoctorSelected ? 4 : 3) ? 'bg-[#2160FF] text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
-                            {isDoctorSelected ? 4 : 3}
-                        </div>
-                        Review
-                    </button>
+                        {/* Step 2: Role & Scope */}
+                        <button
+                            type="button"
+                            onClick={() => {
+                                if (formData.firstName && formData.email) setActiveStep(2);
+                            }}
+                            className={`flex items-center gap-2 text-xs font-bold transition-all border-0 bg-transparent cursor-pointer px-2 py-1 rounded-xl ${
+                                activeStep === 2 
+                                    ? 'text-[#2160FF] dark:text-blue-400' 
+                                    : activeStep > 2 
+                                    ? 'text-emerald-600 dark:text-emerald-400' 
+                                    : 'text-slate-400'
+                            }`}
+                        >
+                            <div className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-black transition-all ${
+                                activeStep === 2 
+                                    ? 'bg-[#2160FF] text-white shadow-sm shadow-blue-500/30' 
+                                    : activeStep > 2 
+                                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' 
+                                    : 'bg-slate-200 dark:bg-slate-700 text-slate-500'
+                            }`}>
+                                {activeStep > 2 ? <Check size={14} strokeWidth={3} /> : '2'}
+                            </div>
+                            <span className="hidden sm:inline">Role & Scope</span>
+                        </button>
+
+                        {isDoctorSelected && (
+                            <>
+                                <div className={`h-0.5 flex-1 mx-1 transition-all ${activeStep > 3 ? 'bg-emerald-400' : 'bg-slate-200 dark:bg-slate-700'}`} />
+                                {/* Step 3: Doctor Profile */}
+                                <button
+                                    type="button"
+                                    onClick={() => setActiveStep(3)}
+                                    className={`flex items-center gap-2 text-xs font-bold transition-all border-0 bg-transparent cursor-pointer px-2 py-1 rounded-xl ${
+                                        activeStep === 3 
+                                            ? 'text-[#2160FF] dark:text-blue-400' 
+                                            : activeStep > 3 
+                                            ? 'text-emerald-600 dark:text-emerald-400' 
+                                            : 'text-slate-400'
+                                    }`}
+                                >
+                                    <div className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-black transition-all ${
+                                        activeStep === 3 
+                                            ? 'bg-[#2160FF] text-white shadow-sm shadow-blue-500/30' 
+                                            : activeStep > 3 
+                                            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' 
+                                            : 'bg-slate-200 dark:bg-slate-700 text-slate-500'
+                                    }`}>
+                                        {activeStep > 3 ? <Check size={14} strokeWidth={3} /> : '3'}
+                                    </div>
+                                    <span className="hidden sm:inline">Doctor Profile</span>
+                                </button>
+                            </>
+                        )}
+
+                        <div className={`h-0.5 flex-1 mx-1 transition-all ${activeStep === (isDoctorSelected ? 4 : 3) ? 'bg-[#2160FF]' : 'bg-slate-200 dark:bg-slate-700'}`} />
+
+                        {/* Step Review */}
+                        <button
+                            type="button"
+                            onClick={() => {
+                                if (formData.firstName && formData.email && (formData.roleNames || []).length > 0) {
+                                    setActiveStep(isDoctorSelected ? 4 : 3);
+                                }
+                            }}
+                            className={`flex items-center gap-2 text-xs font-bold transition-all border-0 bg-transparent cursor-pointer px-2 py-1 rounded-xl ${
+                                activeStep === (isDoctorSelected ? 4 : 3) 
+                                    ? 'text-[#2160FF] dark:text-blue-400' 
+                                    : 'text-slate-400'
+                            }`}
+                        >
+                            <div className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-black transition-all ${
+                                activeStep === (isDoctorSelected ? 4 : 3) 
+                                    ? 'bg-[#2160FF] text-white shadow-sm shadow-blue-500/30' 
+                                    : 'bg-slate-200 dark:bg-slate-700 text-slate-500'
+                            }`}>
+                                {isDoctorSelected ? '4' : '3'}
+                            </div>
+                            <span className="hidden sm:inline">Review & Submit</span>
+                        </button>
+                    </div>
                 </div>
 
-                <form onSubmit={handleSave} className="space-y-4">
-                    {/* STEP 1: ACCOUNT INFORMATION */}
+                <form 
+                    onSubmit={handleSave} 
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' && e.target.tagName === 'INPUT' && activeStep !== (isDoctorSelected ? 4 : 3)) {
+                            e.preventDefault();
+                        }
+                    }}
+                    className="space-y-4"
+                >
+                    {/* ── STEP 1: ACCOUNT CREDENTIALS ── */}
                     {activeStep === 1 && (
                         <div className="space-y-4">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                                    <label className="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
                                         First Name <span className="text-rose-500">*</span>
                                     </label>
-                                    <input 
-                                        type="text" 
-                                        value={formData.firstName}
-                                        onChange={e => setFormData({ ...formData, firstName: e.target.value })}
-                                        required
-                                        placeholder="e.g. Alexander"
-                                        className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#2160FF]"
-                                    />
+                                    <div className="relative">
+                                        <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                        <input 
+                                            type="text" 
+                                            autoFocus
+                                            value={formData.firstName}
+                                            onChange={e => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
+                                            required
+                                            placeholder="e.g. Sarah"
+                                            className="w-full pl-10 pr-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2160FF]/20 focus:border-[#2160FF] transition-all font-medium"
+                                        />
+                                    </div>
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                                    <label className="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
                                         Last Name <span className="text-rose-500">*</span>
                                     </label>
-                                    <input 
-                                        type="text" 
-                                        value={formData.lastName}
-                                        onChange={e => setFormData({ ...formData, lastName: e.target.value })}
-                                        required
-                                        placeholder="e.g. Wright"
-                                        className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#2160FF]"
-                                    />
+                                    <div className="relative">
+                                        <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                        <input 
+                                            type="text" 
+                                            value={formData.lastName}
+                                            onChange={e => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
+                                            required
+                                            placeholder="e.g. Jenkins"
+                                            className="w-full pl-10 pr-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2160FF]/20 focus:border-[#2160FF] transition-all font-medium"
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                                        Email Address <span className="text-rose-500">*</span>
+                                    <label className="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
+                                        Institutional Email <span className="text-rose-500">*</span>
                                     </label>
-                                    <input 
-                                        type="email" 
-                                        value={formData.email}
-                                        onChange={e => setFormData({ ...formData, email: e.target.value })}
-                                        required
-                                        placeholder="alexander@clinic.com"
-                                        className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 font-mono focus:outline-none focus:ring-2 focus:ring-[#2160FF]"
-                                    />
+                                    <div className="relative">
+                                        <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                        <input 
+                                            type="email" 
+                                            value={formData.email}
+                                            onChange={e => setFormData({ ...formData, email: e.target.value })}
+                                            required
+                                            placeholder="sarah.jenkins@hospital.org"
+                                            className="w-full pl-10 pr-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 font-mono placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2160FF]/20 focus:border-[#2160FF] transition-all"
+                                        />
+                                    </div>
+                                    <span className="text-[10px] text-slate-400 mt-1 block">Primary login identity &amp; clinical communications address.</span>
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                                        Phone Number
+                                    <label className="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
+                                        Contact Phone Number
                                     </label>
-                                    <input 
-                                        type="text" 
-                                        value={formData.phone}
-                                        onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                                        placeholder="+1 555-0192"
-                                        className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 font-mono focus:outline-none focus:ring-2 focus:ring-[#2160FF]"
-                                    />
+                                    <div className="relative">
+                                        <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                        <input 
+                                            type="text" 
+                                            value={formData.phone}
+                                            onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                                            placeholder="+91 98765 43210"
+                                            className="w-full pl-10 pr-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 font-mono placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2160FF]/20 focus:border-[#2160FF] transition-all"
+                                        />
+                                    </div>
+                                    <span className="text-[10px] text-slate-400 mt-1 block">Used for 2FA OTPs and emergency rota call-outs.</span>
                                 </div>
                             </div>
 
                             {!editingUser && (
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                                        Password <span className="text-rose-500">*</span>
-                                    </label>
-                                    <input 
-                                        type="password" 
-                                        value={formData.password}
-                                        onChange={e => setFormData({ ...formData, password: e.target.value })}
-                                        required={!editingUser}
-                                        minLength={8}
-                                        placeholder="At least 8 characters..."
-                                        className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 font-mono focus:outline-none focus:ring-2 focus:ring-[#2160FF]"
-                                    />
+                                    <div className="flex items-center justify-between mb-1.5">
+                                        <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                                            Account Password <span className="text-rose-500">*</span>
+                                        </label>
+                                        <span className="text-[10px] text-slate-400">Min 8 characters</span>
+                                    </div>
+                                    <div className="relative">
+                                        <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                        <input 
+                                            type={showPassword ? 'text' : 'password'} 
+                                            value={formData.password}
+                                            onChange={e => setFormData({ ...formData, password: e.target.value })}
+                                            required={!editingUser}
+                                            minLength={8}
+                                            placeholder="Enter strong password..."
+                                            className="w-full pl-10 pr-10 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 font-mono placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2160FF]/20 focus:border-[#2160FF] transition-all"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 border-0 bg-transparent cursor-pointer p-0.5"
+                                            title={showPassword ? 'Hide password' : 'Show password'}
+                                        >
+                                            {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                                        </button>
+                                    </div>
                                 </div>
                             )}
 
-                            <div className="pt-2">
+                            {/* Account Status Switch */}
+                            <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-700 flex items-center justify-between">
+                                <div>
+                                    <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200 block">Account Status</span>
+                                    <span className="text-[11px] text-slate-500">Allow this user to sign into clinic systems immediately.</span>
+                                </div>
                                 <button
                                     type="button"
-                                    onClick={() => setActiveStep(2)}
-                                    className="w-full bg-[#2160FF] text-white py-2.5 rounded-xl font-bold text-xs hover:bg-[#1b52dc] transition cursor-pointer"
+                                    onClick={() => setFormData({ ...formData, enabled: !formData.enabled })}
+                                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border flex items-center gap-1.5 ${
+                                        formData.enabled
+                                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300'
+                                            : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300'
+                                    }`}
                                 >
-                                    Continue to Role & Scope →
+                                    <span className={`w-2 h-2 rounded-full ${formData.enabled ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                                    {formData.enabled ? 'Active Account' : 'Suspended'}
+                                </button>
+                            </div>
+
+                            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        if (!formData.firstName.trim() || !formData.lastName.trim() || !formData.email.trim()) {
+                                            toast.error('Please enter first name, last name, and email');
+                                            return;
+                                        }
+                                        if (!editingUser && (!formData.password || formData.password.length < 8)) {
+                                            toast.error('Password must be at least 8 characters');
+                                            return;
+                                        }
+                                        setActiveStep(2);
+                                    }}
+                                    className="px-6 py-2.5 bg-[#2160FF] hover:bg-blue-600 text-white rounded-xl font-bold text-xs shadow-md shadow-blue-500/20 transition-all flex items-center gap-2 cursor-pointer border-0"
+                                >
+                                    <span>Continue to Role &amp; Scope</span>
+                                    <ArrowRight size={14} />
                                 </button>
                             </div>
                         </div>
                     )}
 
-                    {/* STEP 2: ROLE & SCOPE */}
+                    {/* ── STEP 2: SYSTEM ROLES & ORGANIZATION SCOPE ── */}
                     {activeStep === 2 && (
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                                    System Roles <span className="text-rose-500">*</span>
-                                </label>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-700 max-h-48 overflow-y-auto">
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                                        Assign System Roles <span className="text-rose-500">*</span>
+                                    </label>
+                                    <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400">
+                                        {(formData.roleNames || []).length} Selected
+                                    </span>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-56 overflow-y-auto p-1">
                                     {availableRoles.map(role => {
                                         const cleanRole = role.replace('ROLE_', '');
                                         const isSelected = (formData.roleNames || []).includes(role);
                                         const IconComponent = ROLE_ICONS[cleanRole] || Shield;
 
+                                        const roleMeta = {
+                                            ADMIN: { desc: 'Branch admin operations, users & compliance' },
+                                            SUPER_ADMIN: { desc: 'Global multi-tenant governance' },
+                                            DOCTOR: { desc: 'Clinical EHR prescriptions & consults' },
+                                            NURSE: { desc: 'Inpatient triage & vitals telemetry' },
+                                            PHARMACIST: { desc: 'Pharmacy dispensing & stock management' },
+                                            LAB_TECH: { desc: 'Diagnostic pathology & lab reports' },
+                                            RECEPTION: { desc: 'Front-desk intake & appointments' },
+                                            HR: { desc: 'Staff rosters & duty shift desk' },
+                                            FINANCE: { desc: 'Billing invoices & accounts ledger' },
+                                            PATIENT: { desc: 'Patient self-service portal access' }
+                                        }[cleanRole] || { desc: 'System operational role' };
+
                                         return (
-                                            <button
-                                                type="button"
+                                            <div
                                                 key={role}
                                                 onClick={() => handleRoleToggle(role)}
-                                                className={`flex items-center gap-2 p-2 rounded-xl border text-xs font-semibold transition-all cursor-pointer text-left ${
+                                                className={`p-3 rounded-2xl border cursor-pointer transition-all flex items-start gap-3 ${
                                                     isSelected 
-                                                        ? 'bg-blue-50 dark:bg-blue-900/40 border-[#2160FF] text-[#2160FF] dark:text-blue-300' 
-                                                        : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
+                                                        ? 'bg-blue-50/70 dark:bg-blue-900/30 border-[#2160FF] ring-2 ring-blue-500/20 shadow-2xs' 
+                                                        : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700/80 hover:border-slate-300 hover:bg-slate-50/60'
                                                 }`}
                                             >
-                                                <div className={`w-5 h-5 rounded-lg flex items-center justify-center flex-shrink-0 ${isSelected ? 'bg-[#2160FF] text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
-                                                    {isSelected ? <Check size={12} /> : <IconComponent size={12} />}
+                                                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+                                                    isSelected 
+                                                        ? 'bg-[#2160FF] text-white shadow-xs' 
+                                                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                                                }`}>
+                                                    <IconComponent size={16} />
                                                 </div>
-                                                <span className="truncate">{cleanRole}</span>
-                                            </button>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center justify-between gap-1">
+                                                        <h5 className="text-xs font-extrabold text-slate-900 dark:text-slate-100 m-0 truncate">
+                                                            {cleanRole.replace('_', ' ')}
+                                                        </h5>
+                                                        {isSelected ? (
+                                                            <div className="w-4 h-4 rounded-full bg-[#2160FF] text-white flex items-center justify-center shrink-0">
+                                                                <Check size={10} strokeWidth={3} />
+                                                            </div>
+                                                        ) : (
+                                                            <div className="w-4 h-4 rounded-full border border-slate-300 shrink-0" />
+                                                        )}
+                                                    </div>
+                                                    <p className="text-[10px] text-slate-500 m-0 mt-0.5 line-clamp-1">
+                                                        {roleMeta.desc}
+                                                    </p>
+                                                </div>
+                                            </div>
                                         );
                                     })}
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {/* Organization Scope */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                                        Assigned Branch
+                                    <label className="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
+                                        Assigned Clinic Branch
                                     </label>
-                                    <select
-                                        value={formData.branchId}
-                                        onChange={e => setFormData({ ...formData, branchId: e.target.value })}
-                                        className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#2160FF]"
-                                    >
-                                        <option value="">Select Branch</option>
-                                        {branches.map(b => (
-                                            <option key={b.id} value={b.id}>{b.name}</option>
-                                        ))}
-                                    </select>
+                                    <div className="relative">
+                                        <Building className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                        <select
+                                            value={formData.branchId}
+                                            onChange={e => setFormData({ ...formData, branchId: e.target.value })}
+                                            className="w-full pl-10 pr-8 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#2160FF]/20 focus:border-[#2160FF] cursor-pointer appearance-none font-medium"
+                                        >
+                                            <option value="">All Branches / Global Scope</option>
+                                            {branches.map(b => (
+                                                <option key={b.id} value={b.id}>{b.name}</option>
+                                            ))}
+                                        </select>
+                                        <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                    </div>
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                                        Department
+                                    <label className="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
+                                        Clinical Department
                                     </label>
-                                    <select
-                                        value={formData.departmentId}
-                                        onChange={e => setFormData({ ...formData, departmentId: e.target.value })}
-                                        className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#2160FF]"
-                                    >
-                                        <option value="">Select Department</option>
-                                        {departments.map(d => (
-                                            <option key={d.id} value={d.id}>{d.name}</option>
-                                        ))}
-                                    </select>
+                                    <div className="relative">
+                                        <Briefcase className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                        <select
+                                            value={formData.departmentId}
+                                            onChange={e => setFormData({ ...formData, departmentId: e.target.value })}
+                                            className="w-full pl-10 pr-8 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#2160FF]/20 focus:border-[#2160FF] cursor-pointer appearance-none font-medium"
+                                        >
+                                            <option value="">General Hospital Pool</option>
+                                            {departments.map(d => (
+                                                <option key={d.id} value={d.id}>{d.name}</option>
+                                            ))}
+                                        </select>
+                                        <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="flex items-center justify-between pt-2">
+                            <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
                                 <button
                                     type="button"
                                     onClick={() => setActiveStep(1)}
-                                    className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-900 border-0 bg-transparent cursor-pointer"
+                                    className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 border-0 bg-transparent cursor-pointer flex items-center gap-1.5"
                                 >
-                                    ← Back
+                                    <ArrowLeft size={14} />
+                                    <span>Back</span>
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={() => setActiveStep(isDoctorSelected ? 3 : (isDoctorSelected ? 4 : 3))}
-                                    className="bg-[#2160FF] text-white px-5 py-2 rounded-xl font-bold text-xs hover:bg-[#1b52dc] transition cursor-pointer"
+                                    onClick={() => {
+                                        if (!formData.roleNames || formData.roleNames.length === 0) {
+                                            toast.error('Please assign at least one system role');
+                                            return;
+                                        }
+                                        setActiveStep(isDoctorSelected ? 3 : (isDoctorSelected ? 4 : 3));
+                                    }}
+                                    className="px-6 py-2.5 bg-[#2160FF] hover:bg-blue-600 text-white rounded-xl font-bold text-xs shadow-md shadow-blue-500/20 transition-all flex items-center gap-2 cursor-pointer border-0"
                                 >
-                                    {isDoctorSelected ? 'Doctor Profile Details →' : 'Review & Submit →'}
+                                    <span>{isDoctorSelected ? 'Doctor Profile Details' : 'Review & Submit'}</span>
+                                    <ArrowRight size={14} />
                                 </button>
                             </div>
                         </div>
                     )}
 
-                    {/* STEP 3: DOCTOR PROFILE (Only if Doctor role selected) */}
+                    {/* ── STEP 3: DOCTOR CLINICAL PROFILE (Only if Doctor role selected) ── */}
                     {activeStep === 3 && isDoctorSelected && (
                         <div className="space-y-4">
-                            <div className="p-3 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 text-purple-800 dark:text-purple-300 rounded-xl text-xs flex items-center gap-2">
-                                <Stethoscope size={16} />
-                                Doctor Role Detected: Provision clinical practitioner profile details below.
+                            <div className="p-3.5 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/40 dark:to-blue-950/40 border border-purple-200 dark:border-purple-800/60 rounded-2xl flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-xl bg-purple-500/20 text-purple-600 dark:text-purple-300 flex items-center justify-center shrink-0 font-bold">
+                                    <Stethoscope size={18} />
+                                </div>
+                                <div>
+                                    <h4 className="text-xs font-extrabold text-purple-900 dark:text-purple-200 m-0">
+                                        Licensed Practitioner Profile
+                                    </h4>
+                                    <p className="text-[11px] text-purple-700 dark:text-purple-300 m-0 mt-0.5">
+                                        Configure doctor credentials, OPD consultation tariff, and medical council license registration.
+                                    </p>
+                                </div>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                                    <label className="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
                                         Medical Specialty
                                     </label>
-                                    <input 
-                                        type="text" 
-                                        value={formData.specialty}
-                                        onChange={e => setFormData({ ...formData, specialty: e.target.value })}
-                                        placeholder="General Medicine"
-                                        className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#2160FF]"
-                                    />
+                                    <div className="relative">
+                                        <Activity className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                        <input 
+                                            type="text" 
+                                            value={formData.specialty}
+                                            onChange={e => setFormData({ ...formData, specialty: e.target.value })}
+                                            placeholder="e.g. Cardiology"
+                                            className="w-full pl-10 pr-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#2160FF]/20 focus:border-[#2160FF] font-medium"
+                                        />
+                                    </div>
+                                    <div className="flex flex-wrap gap-1.5 mt-2">
+                                        {['Cardiology', 'Pediatrics', 'Orthopedics', 'General Medicine', 'Neurology'].map(s => (
+                                            <button
+                                                type="button"
+                                                key={s}
+                                                onClick={() => setFormData({ ...formData, specialty: s })}
+                                                className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border transition-colors cursor-pointer ${
+                                                    formData.specialty === s 
+                                                        ? 'bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-900 dark:text-purple-200' 
+                                                        : 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 hover:bg-slate-200'
+                                                }`}
+                                            >
+                                                {s}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                                        License / Registration #
+                                    <label className="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
+                                        Medical Council Registration #
                                     </label>
-                                    <input 
-                                        type="text" 
-                                        value={formData.registrationNumber}
-                                        onChange={e => setFormData({ ...formData, registrationNumber: e.target.value })}
-                                        placeholder="MCI-19283"
-                                        className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 font-mono focus:outline-none focus:ring-2 focus:ring-[#2160FF]"
-                                    />
+                                    <div className="relative">
+                                        <Award className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                        <input 
+                                            type="text" 
+                                            value={formData.registrationNumber}
+                                            onChange={e => setFormData({ ...formData, registrationNumber: e.target.value })}
+                                            placeholder="MCI-19283-B"
+                                            className="w-full pl-10 pr-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 font-mono focus:outline-none focus:ring-2 focus:ring-[#2160FF]/20 focus:border-[#2160FF]"
+                                        />
+                                    </div>
+                                    <span className="text-[10px] text-slate-400 mt-1 block">Institutional board verification number.</span>
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                                        Consultation Fee ($/₹)
+                                    <label className="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
+                                        Standard Consultation Fee (₹)
                                     </label>
-                                    <input 
-                                        type="number" 
-                                        value={formData.consultationFee}
-                                        onChange={e => setFormData({ ...formData, consultationFee: e.target.value })}
-                                        placeholder="500"
-                                        className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#2160FF]"
-                                    />
+                                    <div className="relative">
+                                        <DollarSign className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                        <input 
+                                            type="number" 
+                                            value={formData.consultationFee}
+                                            onChange={e => setFormData({ ...formData, consultationFee: e.target.value })}
+                                            placeholder="500"
+                                            className="w-full pl-10 pr-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 font-mono focus:outline-none focus:ring-2 focus:ring-[#2160FF]/20 focus:border-[#2160FF]"
+                                        />
+                                    </div>
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                                        Qualifications
+                                    <label className="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
+                                        Qualifications &amp; Degrees
                                     </label>
-                                    <input 
-                                        type="text" 
-                                        value={formData.qualifications}
-                                        onChange={e => setFormData({ ...formData, qualifications: e.target.value })}
-                                        placeholder="MBBS, MD"
-                                        className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#2160FF]"
-                                    />
+                                    <div className="relative">
+                                        <GraduationCap className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                        <input 
+                                            type="text" 
+                                            value={formData.qualifications}
+                                            onChange={e => setFormData({ ...formData, qualifications: e.target.value })}
+                                            placeholder="MBBS, MD, DM (Cardiology)"
+                                            className="w-full pl-10 pr-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#2160FF]/20 focus:border-[#2160FF] font-medium"
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="flex items-center justify-between pt-2">
+                            <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
                                 <button
                                     type="button"
                                     onClick={() => setActiveStep(2)}
-                                    className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-900 border-0 bg-transparent cursor-pointer"
+                                    className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 border-0 bg-transparent cursor-pointer flex items-center gap-1.5"
                                 >
-                                    ← Back
+                                    <ArrowLeft size={14} />
+                                    <span>Back</span>
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => setActiveStep(4)}
-                                    className="bg-[#2160FF] text-white px-5 py-2 rounded-xl font-bold text-xs hover:bg-[#1b52dc] transition cursor-pointer"
+                                    className="px-6 py-2.5 bg-[#2160FF] hover:bg-blue-600 text-white rounded-xl font-bold text-xs shadow-md shadow-blue-500/20 transition-all flex items-center gap-2 cursor-pointer border-0"
                                 >
-                                    Review Summary →
+                                    <span>Review Summary</span>
+                                    <ArrowRight size={14} />
                                 </button>
                             </div>
                         </div>
                     )}
 
-                    {/* STEP REVIEW / SUBMIT */}
+                    {/* ── STEP REVIEW & SUBMIT ── */}
                     {activeStep === (isDoctorSelected ? 4 : 3) && (
                         <div className="space-y-4">
-                            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-700 space-y-3 text-xs">
-                                <div className="font-bold text-slate-900 dark:text-slate-100 text-sm border-b border-slate-200 dark:border-slate-700 pb-2">
-                                    User Provisioning Review
+                            {/* Profile Preview Card */}
+                            <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-50/70 to-slate-50 dark:from-slate-800/60 dark:to-slate-800/30 border border-blue-100 dark:border-slate-700 flex items-start gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-[#2160FF] text-white flex items-center justify-center font-black text-sm shrink-0 shadow-md shadow-blue-500/20">
+                                    {(formData.firstName?.[0] || 'U') + (formData.lastName?.[0] || '')}
                                 </div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center justify-between gap-2">
+                                        <h4 className="text-sm font-extrabold text-slate-900 dark:text-slate-100 m-0 truncate">
+                                            {formData.firstName} {formData.lastName}
+                                        </h4>
+                                        <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full ${
+                                            formData.enabled 
+                                                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' 
+                                                : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
+                                        }`}>
+                                            {formData.enabled ? 'ACTIVE' : 'SUSPENDED'}
+                                        </span>
+                                    </div>
+                                    <p className="text-xs text-slate-500 font-mono m-0 mt-0.5">
+                                        {formData.email} • {formData.phone || 'No phone'}
+                                    </p>
+                                    <div className="flex flex-wrap gap-1.5 mt-2">
+                                        {(formData.roleNames || []).map(r => (
+                                            <span key={r} className="text-[10px] font-extrabold px-2 py-0.5 rounded-lg bg-blue-100 text-[#2160FF] dark:bg-blue-950 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                                                {r.replace('ROLE_', '')}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
 
-                                <div className="grid grid-cols-2 gap-2">
-                                    <div><span className="text-slate-400">Full Name:</span> <strong className="text-slate-800 dark:text-slate-200">{formData.firstName} {formData.lastName}</strong></div>
-                                    <div><span className="text-slate-400">Email:</span> <strong className="font-mono text-slate-800 dark:text-slate-200">{formData.email}</strong></div>
-                                    <div><span className="text-slate-400">Phone:</span> <strong className="font-mono text-slate-800 dark:text-slate-200">{formData.phone || 'N/A'}</strong></div>
-                                    <div><span className="text-slate-400">Roles:</span> <strong className="text-blue-600">{(formData.roleNames || []).join(', ') || 'ROLE_PATIENT'}</strong></div>
-                                    <div><span className="text-slate-400">Branch:</span> <strong className="text-slate-800 dark:text-slate-200">{branches.find(b => String(b.id) === String(formData.branchId))?.name || 'All Branches'}</strong></div>
-                                    <div><span className="text-slate-400">Department:</span> <strong className="text-slate-800 dark:text-slate-200">{departments.find(d => String(d.id) === String(formData.departmentId))?.name || 'General'}</strong></div>
+                            {/* Provisioning Meta Grid */}
+                            <div className="grid grid-cols-2 gap-3 text-xs bg-slate-50 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700">
+                                <div>
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Assigned Branch</span>
+                                    <span className="font-bold text-slate-800 dark:text-slate-200 mt-0.5 block truncate">
+                                        {branches.find(b => String(b.id) === String(formData.branchId))?.name || 'All Branches (Enterprise Scope)'}
+                                    </span>
+                                </div>
+                                <div>
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Department Wing</span>
+                                    <span className="font-bold text-slate-800 dark:text-slate-200 mt-0.5 block truncate">
+                                        {departments.find(d => String(d.id) === String(formData.departmentId))?.name || 'General Hospital Department'}
+                                    </span>
                                 </div>
 
                                 {isDoctorSelected && (
-                                    <div className="pt-2 border-t border-slate-200 dark:border-slate-700 text-purple-700 dark:text-purple-300">
-                                        Doctor Profile: {formData.specialty} ({formData.qualifications}) Fee: ${formData.consultationFee}
-                                    </div>
+                                    <>
+                                        <div className="pt-2 border-t border-slate-200 dark:border-slate-700 col-span-2 grid grid-cols-2 gap-3">
+                                            <div>
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Specialty &amp; Degree</span>
+                                                <span className="font-bold text-purple-700 dark:text-purple-300 mt-0.5 block truncate">
+                                                    {formData.specialty} ({formData.qualifications || 'MBBS'})
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">License &amp; Rate</span>
+                                                <span className="font-bold text-slate-800 dark:text-slate-200 mt-0.5 block">
+                                                    {formData.registrationNumber || 'Pending'} • ₹{formData.consultationFee}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </>
                                 )}
                             </div>
 
-                            <div className="flex items-center justify-between pt-2">
+                            <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
                                 <button
                                     type="button"
                                     onClick={() => setActiveStep(isDoctorSelected ? 3 : 2)}
-                                    className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-900 border-0 bg-transparent cursor-pointer"
+                                    className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 border-0 bg-transparent cursor-pointer flex items-center gap-1.5"
                                 >
-                                    ← Back
+                                    <ArrowLeft size={14} />
+                                    <span>Back</span>
                                 </button>
                                 <button 
                                     type="submit"
                                     disabled={createMutation.isPending || updateMutation.isPending}
-                                    className="bg-[#2160FF] hover:bg-[#1b52dc] text-white px-6 py-2.5 text-xs font-bold rounded-xl shadow-lg shadow-blue-600/25 border-0 disabled:opacity-50 transition-all cursor-pointer flex items-center gap-2"
+                                    className="bg-[#2160FF] hover:bg-blue-600 text-white px-6 py-2.5 text-xs font-bold rounded-xl shadow-lg shadow-blue-500/25 border-0 disabled:opacity-50 transition-all cursor-pointer flex items-center gap-2"
                                     style={{ backgroundColor: '#2160FF' }}
                                 >
-                                    {createMutation.isPending || updateMutation.isPending ? 'Saving...' : (editingUser ? 'Save User Changes' : 'Confirm & Create User')}
+                                    {createMutation.isPending || updateMutation.isPending ? (
+                                        <>
+                                            <RefreshCw className="w-4 h-4 animate-spin" />
+                                            <span>Provisioning User...</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <CheckCircle2 size={16} />
+                                            <span>{editingUser ? 'Save User Changes' : 'Confirm & Create User'}</span>
+                                        </>
+                                    )}
                                 </button>
                             </div>
                         </div>

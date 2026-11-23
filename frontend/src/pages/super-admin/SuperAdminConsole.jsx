@@ -193,7 +193,13 @@ const SuperAdminConsole = ({ defaultTab = 'health' }) => {
   ];
 
   return (
-    <DashboardShell tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} quickActions={[]}>
+    <DashboardShell 
+      tabs={tabs} 
+      activeTab={activeTab} 
+      onTabChange={setActiveTab} 
+      tabsClassName="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-5 lg:grid-cols-5 xl:grid-cols-5 gap-2.5 px-6 py-3.5 bg-white border-b border-slate-200 shrink-0 w-full max-w-full"
+      quickActions={[]}
+    >
       
       {/* ── Hero Banner ── */}
       <div className="relative bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl overflow-hidden border border-indigo-900/50">
@@ -208,10 +214,6 @@ const SuperAdminConsole = ({ defaultTab = 'health' }) => {
                 <h1 className="text-2xl sm:text-3xl font-extrabold font-display tracking-tight text-white m-0">
                   Super Admin Console
                 </h1>
-                <span className="px-3 py-1 bg-emerald-500/20 border border-emerald-400/30 rounded-full text-xs font-bold text-emerald-300 flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  System Operational
-                </span>
               </div>
               <p className="text-sm text-slate-300 m-0 mt-1 max-w-2xl">
                 Enterprise Management — Global Configurations, Security, RBAC & Multi-Tenant Compliance

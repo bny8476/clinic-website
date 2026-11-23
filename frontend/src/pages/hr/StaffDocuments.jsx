@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
@@ -21,7 +21,9 @@ import {
   File, 
   FileCheck, 
   X, 
-  AlertCircle 
+  AlertCircle,
+  ChevronDown,
+  UserCheck
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fadeIn } from '../../components/ui/motion';
@@ -49,6 +51,12 @@ export default function StaffDocuments() {
   const [selectedDocType, setSelectedDocType] = useState('ALL');
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState({ isOpen: false, docId: null, filename: '' });
+  const [staffDropdownOpen, setStaffDropdownOpen] = useState(false);
+  const [previewDoc, setPreviewDoc] = useState(null);
+  const [previewBlobUrl, setPreviewBlobUrl] = useState(null);
+  const [loadingPreview, setLoadingPreview] = useState(false);
+
+  const staffDropdownRef = useRef(null);
 
   // Upload Form State
   const [uploadForm, setUploadForm] = useState({
@@ -56,6 +64,17 @@ export default function StaffDocuments() {
     documentType: 'CONTRACT',
     file: null
   });
+
+  // Click outside to close staff dropdown
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (staffDropdownRef.current && !staffDropdownRef.current.contains(event.target)) {
+        setStaffDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Sync staffParam from query string
   useEffect(() => {
@@ -212,6 +231,31 @@ export default function StaffDocuments() {
     }
   };
 
+  const handlePreview = async (doc) => {
+    setPreviewDoc(doc);
+    setLoadingPreview(true);
+    try {
+      const res = await axiosPrivate.get(`/hr/documents/${doc.id}/download`, {
+        responseType: 'blob'
+      });
+      const contentType = res.headers['content-type'] || 'application/pdf';
+      const url = window.URL.createObjectURL(new Blob([res.data], { type: contentType }));
+      setPreviewBlobUrl(url);
+    } catch (e) {
+      setPreviewBlobUrl(null);
+    } finally {
+      setLoadingPreview(false);
+    }
+  };
+
+  const closePreview = () => {
+    if (previewBlobUrl) {
+      window.URL.revokeObjectURL(previewBlobUrl);
+    }
+    setPreviewBlobUrl(null);
+    setPreviewDoc(null);
+  };
+
   // Selected Employee object
   const currentStaffObj = useMemo(() => {
     return staffList.find(e => {
@@ -219,6 +263,17 @@ export default function StaffDocuments() {
       return uId === String(selectedStaff);
     });
   }, [staffList, selectedStaff]);
+
+  const currentStaffName = currentStaffObj?.user 
+    ? `${currentStaffObj.user.firstName || ''} ${currentStaffObj.user.lastName || ''}`.trim() 
+    : (currentStaffObj?.name || 'Staff Member');
+
+  const currentStaffInitials = currentStaffName
+    .split(' ')
+    .map(w => w[0])
+    .join('')
+    .substring(0, 2)
+    .toUpperCase() || 'ST';
 
   // Filter staff list
   const filteredStaffList = useMemo(() => {
@@ -250,6 +305,7 @@ export default function StaffDocuments() {
     if (t.includes('LICENSE')) return 'bg-emerald-50 text-emerald-700 border-emerald-200';
     if (t.includes('ID')) return 'bg-purple-50 text-purple-700 border-purple-200';
     if (t.includes('CERT')) return 'bg-amber-50 text-amber-700 border-amber-200';
+    if (t.includes('RESUME')) return 'bg-cyan-50 text-cyan-700 border-cyan-200';
     return 'bg-slate-50 text-slate-700 border-slate-200';
   };
 
@@ -260,7 +316,7 @@ export default function StaffDocuments() {
       variants={fadeIn}
       className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 font-sans"
     >
-      {/* ── Top Portal Navigation Bar ───────────────────────────────── */}
+      {/* ── Top Portal Navigation Bar (Centered) ─────────────────────── */}
       <HrTopNav />
 
       {/* ── Executive Header Banner ─────────────────────────────────── */}
@@ -317,7 +373,7 @@ export default function StaffDocuments() {
           <div>
             <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Archived Documents</p>
             <p className="text-2xl font-black text-slate-900 mt-1">{displayDocuments.length} Records</p>
-            <span className="text-[11px] font-bold text-blue-600">For selected staff member</span>
+            <span className="text-[11px] font-bold text-blue-600">For active personnel</span>
           </div>
           <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
             <FileText size={22} />
@@ -346,234 +402,287 @@ export default function StaffDocuments() {
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-2xs flex items-center justify-between">
-          <div>
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Current Selection</p>
-            <p className="text-base font-black text-slate-900 mt-1 truncate max-w-[150px]">
-              {currentStaffObj?.user ? `${currentStaffObj.user.firstName} ${currentStaffObj.user.lastName}` : (currentStaffObj?.name || 'Staff')}
+        <div 
+          onClick={() => setStaffDropdownOpen(true)}
+          className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-2xs flex items-center justify-between hover:border-blue-300 transition cursor-pointer"
+        >
+          <div className="truncate mr-2">
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Active Personnel File</p>
+            <p className="text-base font-black text-slate-900 mt-1 truncate">
+              {currentStaffName}
             </p>
-            <span className="text-[11px] font-bold text-purple-600">{currentStaffObj?.department || 'Cardiology'}</span>
+            <span className="text-[11px] font-bold text-purple-600 block truncate">
+              {currentStaffObj?.department || 'Department'} • Click to change
+            </span>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
             <ShieldCheck size={22} />
           </div>
         </div>
       </div>
 
-      {/* ── Main 2-Column Content Layout ─────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      {/* ── Wide Responsive Controls Bar ─────────────────────────────── */}
+      <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/80 shadow-2xs space-y-4">
         
-        {/* Left Column: Staff Directory Selector (4 cols) */}
-        <div className="lg:col-span-4 space-y-4">
-          <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-2xs space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                <User size={16} className="text-blue-600" />
-                Select Personnel
-              </h3>
-              <span className="text-xs font-bold text-slate-400">
-                {filteredStaffList.length} staff
-              </span>
-            </div>
+        {/* Top Filter Controls: Personnel Picker + Document Search + Upload */}
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-end justify-between gap-4">
+          
+          {/* 1. Suitable Placement: Select Personnel Combobox */}
+          <div className="relative min-w-[280px] sm:min-w-[340px] lg:w-[380px]" ref={staffDropdownRef}>
+            <label className="text-[11px] font-black text-slate-500 uppercase tracking-wider block mb-1.5 flex items-center gap-1.5">
+              <User size={14} className="text-[#2864FF]" /> Select Personnel
+            </label>
+            <button
+              type="button"
+              onClick={() => setStaffDropdownOpen(!staffDropdownOpen)}
+              className="w-full flex items-center justify-between gap-3 bg-slate-50 hover:bg-slate-100/90 border border-slate-200 rounded-xl px-3.5 py-2.5 transition text-left cursor-pointer shadow-2xs"
+            >
+              <div className="flex items-center gap-2.5 truncate">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-2xs">
+                  {currentStaffInitials}
+                </div>
+                <div className="truncate">
+                  <span className="text-xs font-black text-slate-900 block truncate">{currentStaffName}</span>
+                  <span className="text-[11px] text-slate-500 block truncate">
+                    {currentStaffObj?.department || 'General'} • {currentStaffObj?.designation || 'Staff'}
+                  </span>
+                </div>
+              </div>
+              <ChevronDown size={16} className={`text-slate-400 shrink-0 transition-transform duration-200 ${staffDropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
 
-            {/* Staff Search Input */}
+            {/* Personnel Dropdown Panel */}
+            <AnimatePresence>
+              {staffDropdownOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 6 }}
+                  className="absolute top-full left-0 mt-2 w-full sm:w-[380px] bg-white border border-slate-200 rounded-2xl shadow-xl z-30 p-2.5 space-y-2"
+                >
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <input
+                      type="text"
+                      value={staffSearchQuery}
+                      onChange={e => setStaffSearchQuery(e.target.value)}
+                      placeholder="Search personnel by name or department..."
+                      className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      autoFocus
+                    />
+                  </div>
+                  <div className="max-h-64 overflow-y-auto space-y-1 divide-y divide-slate-50 [scrollbar-width:thin]">
+                    {filteredStaffList.length === 0 ? (
+                      <div className="p-4 text-center text-xs text-slate-500">No matching personnel found</div>
+                    ) : (
+                      filteredStaffList.map(emp => {
+                        const uId = String(emp.user?.id || emp.userId || emp.id);
+                        const fullName = emp.user ? `${emp.user.firstName} ${emp.user.lastName}` : emp.name || `Staff #${emp.id}`;
+                        const initials = fullName.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase() || 'ST';
+                        const isSelected = String(selectedStaff) === uId;
+
+                        return (
+                          <button
+                            key={emp.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedStaff(uId);
+                              setUploadForm(prev => ({ ...prev, staffId: uId }));
+                              setStaffDropdownOpen(false);
+                            }}
+                            className={`w-full text-left p-2.5 rounded-xl transition flex items-center justify-between cursor-pointer ${
+                              isSelected
+                                ? 'bg-blue-50/90 border border-blue-200 text-blue-900 shadow-2xs'
+                                : 'hover:bg-slate-50 text-slate-700'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2.5 truncate">
+                              <div className={`w-8 h-8 rounded-lg font-black text-xs flex items-center justify-center shrink-0 ${
+                                isSelected ? 'bg-[#2864FF] text-white' : 'bg-slate-100 text-slate-600'
+                              }`}>
+                                {initials}
+                              </div>
+                              <div className="truncate">
+                                <span className="text-xs font-bold block truncate">{fullName}</span>
+                                <span className="text-[11px] text-slate-500 block truncate">{emp.department} • {emp.designation}</span>
+                              </div>
+                            </div>
+                            {isSelected && (
+                              <CheckCircle size={15} className="text-[#2864FF] shrink-0 ml-2" />
+                            )}
+                          </button>
+                        );
+                      })
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* 2. Document Search Input */}
+          <div className="relative flex-1">
+            <label className="text-[11px] font-black text-slate-500 uppercase tracking-wider block mb-1.5 flex items-center gap-1.5">
+              <Search size={14} className="text-[#2864FF]" /> Filter Documents
+            </label>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="text"
-                value={staffSearchQuery}
-                onChange={e => setStaffSearchQuery(e.target.value)}
-                placeholder="Search staff by name or dept..."
-                className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={docSearchQuery}
+                onChange={e => setDocSearchQuery(e.target.value)}
+                placeholder="Filter documents by filename..."
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition shadow-2xs"
               />
-            </div>
-
-            {/* Scrollable Staff List */}
-            <div className="max-h-[560px] overflow-y-auto space-y-1.5 divide-y divide-slate-50 pr-1">
-              {filteredStaffList.map(emp => {
-                const uId = String(emp.user?.id || emp.userId || emp.id);
-                const fullName = emp.user ? `${emp.user.firstName} ${emp.user.lastName}` : emp.name || `Staff #${emp.id}`;
-                const initials = fullName.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase() || 'ST';
-                const isSelected = String(selectedStaff) === uId;
-
-                return (
-                  <button
-                    key={emp.id}
-                    onClick={() => {
-                      setSelectedStaff(uId);
-                      setUploadForm(prev => ({ ...prev, staffId: uId }));
-                    }}
-                    className={`w-full text-left p-3 rounded-xl transition flex items-center justify-between cursor-pointer ${
-                      isSelected
-                        ? 'bg-blue-50/80 border border-blue-200 text-blue-900 shadow-2xs'
-                        : 'hover:bg-slate-50 text-slate-700'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-9 h-9 rounded-xl font-extrabold text-xs flex items-center justify-center shrink-0 ${
-                        isSelected ? 'bg-[#2864FF] text-white shadow-sm' : 'bg-slate-100 text-slate-600'
-                      }`}>
-                        {initials}
-                      </div>
-                      <div>
-                        <span className="text-xs font-bold block">{fullName}</span>
-                        <span className="text-[11px] text-slate-500 block">{emp.department} • {emp.designation}</span>
-                      </div>
-                    </div>
-                    {isSelected && (
-                      <CheckCircle size={16} className="text-[#2864FF] shrink-0" />
-                    )}
-                  </button>
-                );
-              })}
+              {docSearchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setDocSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                >
+                  <X size={14} />
+                </button>
+              )}
             </div>
           </div>
+
+          {/* 3. Upload File CTA */}
+          <div className="shrink-0">
+            <button
+              onClick={() => {
+                setUploadForm(prev => ({ ...prev, staffId: selectedStaff }));
+                setIsUploadModalOpen(true);
+              }}
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-[#2864FF] hover:bg-blue-700 flex items-center justify-center gap-2 transition shadow-md shadow-blue-500/20 cursor-pointer h-[42px]"
+            >
+              <Upload size={15} /> Upload File
+            </button>
+          </div>
+
         </div>
 
-        {/* Right Column: Document Explorer & Table (8 cols) */}
-        <div className="lg:col-span-8 space-y-4">
-          
-          {/* Controls Bar */}
-          <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-              {/* Document search */}
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input
-                  type="text"
-                  value={docSearchQuery}
-                  onChange={e => setDocSearchQuery(e.target.value)}
-                  placeholder="Filter documents by filename..."
-                  className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+        {/* Category Filter Pills (Full Width Responsive Wrap, No Ugly Scrollbar) */}
+        <div className="pt-3 border-t border-slate-100 flex items-center gap-2 flex-wrap [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <span className="text-xs font-black text-slate-400 mr-1 shrink-0">Category:</span>
+          {DOC_TYPES.map(type => (
+            <button
+              key={type.id}
+              onClick={() => setSelectedDocType(type.id)}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                selectedDocType === type.id
+                  ? 'bg-slate-900 text-white shadow-2xs'
+                  : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200/80 hover:border-slate-300'
+              }`}
+            >
+              {type.label}
+            </button>
+          ))}
+        </div>
 
-              {/* Upload CTA */}
-              <button
-                onClick={() => {
-                  setUploadForm(prev => ({ ...prev, staffId: selectedStaff }));
-                  setIsUploadModalOpen(true);
-                }}
-                className="px-4 py-2 rounded-xl text-xs font-bold bg-[#2864FF] hover:bg-blue-700 text-white flex items-center justify-center gap-1.5 transition shadow-sm cursor-pointer shrink-0"
-              >
-                <Upload size={14} /> Upload File
-              </button>
-            </div>
+      </div>
 
-            {/* Document Type Pills */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none pt-2 border-t border-slate-100">
-              <span className="text-xs font-bold text-slate-400 mr-2 shrink-0">Category:</span>
-              {DOC_TYPES.map(type => (
-                <button
-                  key={type.id}
-                  onClick={() => setSelectedDocType(type.id)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap cursor-pointer shrink-0 ${
-                    selectedDocType === type.id
-                      ? 'bg-slate-900 text-white shadow-2xs'
-                      : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200/70'
-                  }`}
-                >
-                  {type.label}
-                </button>
-              ))}
-            </div>
+      {/* ── Ultra-Wide Document Table ─────────────────────────────────── */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
+        {loadingDocs ? (
+          <div className="p-16 text-center text-slate-500 font-semibold text-sm flex flex-col items-center justify-center gap-3">
+            <RotateCw size={24} className="animate-spin text-blue-600" />
+            Loading staff documents...
           </div>
+        ) : filteredDocs.length === 0 ? (
+          <div className="p-16 text-center flex flex-col items-center justify-center">
+            <div className="w-16 h-16 rounded-2xl bg-blue-50 text-blue-500 flex items-center justify-center mb-4">
+              <FileText size={32} />
+            </div>
+            <h3 className="text-lg font-bold text-slate-900">No documents found</h3>
+            <p className="text-xs text-slate-500 mt-1 max-w-md">
+              There are no documents matching your search or category filter for <span className="font-bold text-slate-800">{currentStaffName}</span>.
+            </p>
+            <button
+              onClick={() => {
+                setUploadForm(prev => ({ ...prev, staffId: selectedStaff }));
+                setIsUploadModalOpen(true);
+              }}
+              className="mt-4 px-4 py-2 rounded-xl text-xs font-bold bg-[#2864FF] text-white hover:bg-blue-700 transition cursor-pointer"
+            >
+              Upload First File
+            </button>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-500 text-[11px] font-black uppercase tracking-wider">
+                  <th className="py-4 px-6 w-1/2 min-w-[280px]">Document & Filename</th>
+                  <th className="py-4 px-6 min-w-[160px]">Category</th>
+                  <th className="py-4 px-6 min-w-[150px]">Uploaded Date</th>
+                  <th className="py-4 px-6 text-right min-w-[120px]">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-xs font-medium text-slate-700">
+                {filteredDocs.map(doc => {
+                  return (
+                    <tr key={doc.id} className="hover:bg-slate-50/70 transition-colors">
+                      <td className="py-4 px-6">
+                        <div className="flex items-center gap-3.5">
+                          <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 shadow-2xs border border-blue-100">
+                            <FileText size={20} />
+                          </div>
+                          <div>
+                            <span className="font-bold text-slate-900 text-sm block">{doc.filename}</span>
+                            <span className="text-[11px] text-slate-400 mt-0.5 block">{doc.size || 'Verified Clinical PDF'}</span>
+                          </div>
+                        </div>
+                      </td>
 
-          {/* Document Table */}
-          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
-            {loadingDocs ? (
-              <div className="p-16 text-center text-slate-500 font-semibold text-sm flex flex-col items-center justify-center gap-3">
-                <RotateCw size={24} className="animate-spin text-blue-600" />
-                Loading staff documents...
-              </div>
-            ) : filteredDocs.length === 0 ? (
-              <div className="p-16 text-center flex flex-col items-center justify-center">
-                <div className="w-16 h-16 rounded-2xl bg-blue-50 text-blue-500 flex items-center justify-center mb-4">
-                  <FileText size={32} />
-                </div>
-                <h3 className="text-lg font-bold text-slate-900">No documents found</h3>
-                <p className="text-xs text-slate-500 mt-1 max-w-md">
-                  There are no documents uploaded under this category for the selected staff member.
-                </p>
-                <button
-                  onClick={() => {
-                    setUploadForm(prev => ({ ...prev, staffId: selectedStaff }));
-                    setIsUploadModalOpen(true);
-                  }}
-                  className="mt-4 px-4 py-2 rounded-xl text-xs font-bold bg-[#2864FF] text-white hover:bg-blue-700 transition cursor-pointer"
-                >
-                  Upload First File
-                </button>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-500 text-[11px] font-black uppercase tracking-wider">
-                      <th className="py-4 px-6">Document & Filename</th>
-                      <th className="py-4 px-6">Category</th>
-                      <th className="py-4 px-6">Uploaded Date</th>
-                      <th className="py-4 px-6 text-right">Actions</th>
+                      <td className="py-4 px-6">
+                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold border ${getDocTypeBadge(doc.documentType)}`}>
+                          {(doc.documentType || 'OTHER').replace('_', ' ')}
+                        </span>
+                      </td>
+
+                      <td className="py-4 px-6 text-slate-500 font-medium">
+                        <span className="flex items-center gap-1.5">
+                          <Calendar size={13} className="text-slate-400" />
+                          {doc.createdAt ? new Date(doc.createdAt).toLocaleDateString('en-GB', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric'
+                          }) : 'Recent'}
+                        </span>
+                      </td>
+
+                      <td className="py-4 px-6 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => handlePreview(doc)}
+                            title="Preview Document"
+                            className="p-2 rounded-xl border border-slate-200 hover:bg-blue-50 hover:text-[#2864FF] text-slate-600 transition shadow-2xs cursor-pointer"
+                          >
+                            <Eye size={15} />
+                          </button>
+                          <button
+                            onClick={() => handleDownload(doc)}
+                            title="Download Document"
+                            className="p-2 rounded-xl border border-slate-200 hover:bg-emerald-50 hover:text-emerald-600 text-slate-600 transition shadow-2xs cursor-pointer"
+                          >
+                            <Download size={15} />
+                          </button>
+                          <button
+                            onClick={() => setConfirmDelete({ isOpen: true, docId: doc.id, filename: doc.filename })}
+                            title="Delete Document"
+                            className="p-2 rounded-xl border border-slate-200 hover:bg-rose-50 hover:text-rose-600 text-slate-600 transition shadow-2xs cursor-pointer"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 text-xs font-medium text-slate-700">
-                    {filteredDocs.map(doc => {
-                      return (
-                        <tr key={doc.id} className="hover:bg-slate-50/70 transition-colors">
-                          <td className="py-4 px-6">
-                            <div className="flex items-center gap-3.5">
-                              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-                                <FileText size={20} />
-                              </div>
-                              <div>
-                                <span className="font-bold text-slate-900 text-xs block">{doc.filename}</span>
-                                <span className="text-[11px] text-slate-400 mt-0.5 block">{doc.size || 'Verified PDF Document'}</span>
-                              </div>
-                            </div>
-                          </td>
-
-                          <td className="py-4 px-6">
-                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold border ${getDocTypeBadge(doc.documentType)}`}>
-                              {(doc.documentType || 'OTHER').replace('_', ' ')}
-                            </span>
-                          </td>
-
-                          <td className="py-4 px-6 text-slate-500 font-medium">
-                            {doc.createdAt ? new Date(doc.createdAt).toLocaleDateString('en-IN', {
-                              year: 'numeric',
-                              month: 'short',
-                              day: 'numeric'
-                            }) : 'Recent'}
-                          </td>
-
-                          <td className="py-4 px-6 text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <button
-                                onClick={() => handleDownload(doc)}
-                                title="Download Document"
-                                className="p-2 rounded-lg border border-slate-200 hover:bg-blue-50 hover:text-blue-600 text-slate-600 transition cursor-pointer"
-                              >
-                                <Download size={15} />
-                              </button>
-                              <button
-                                onClick={() => setConfirmDelete({ isOpen: true, docId: doc.id, filename: doc.filename })}
-                                title="Delete Document"
-                                className="p-2 rounded-lg border border-slate-200 hover:bg-rose-50 hover:text-rose-600 text-slate-600 transition cursor-pointer"
-                              >
-                                <Trash2 size={15} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
-        </div>
-
+        )}
       </div>
 
       {/* ── Upload Document Modal ────────────────────────────────────── */}
@@ -695,6 +804,117 @@ export default function StaffDocuments() {
                   </button>
                 </div>
               </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Document Preview Modal ──────────────────────────────────── */}
+      <AnimatePresence>
+        {previewDoc && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-3xl w-full p-6 sm:p-7 space-y-4 max-h-[90vh] flex flex-col"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 shrink-0">
+                <div className="flex items-center gap-3 truncate">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                    <FileText size={20} />
+                  </div>
+                  <div className="truncate">
+                    <h3 className="text-base font-black text-slate-900 truncate max-w-md">{previewDoc.filename}</h3>
+                    <p className="text-xs text-slate-500 truncate">
+                      {(previewDoc.documentType || 'DOCUMENT').replace('_', ' ')} • {currentStaffName}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => handleDownload(previewDoc)}
+                    title="Download File"
+                    className="p-2 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-600 transition cursor-pointer"
+                  >
+                    <Download size={15} />
+                  </button>
+                  <button
+                    onClick={closePreview}
+                    className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Content Viewer */}
+              <div className="flex-1 overflow-y-auto min-h-[350px] bg-slate-50 rounded-xl border border-slate-200 p-4 flex flex-col items-center justify-center">
+                {loadingPreview ? (
+                  <div className="flex flex-col items-center gap-2 text-slate-500 text-xs font-semibold">
+                    <RotateCw size={24} className="animate-spin text-blue-600" />
+                    Loading document preview...
+                  </div>
+                ) : previewBlobUrl ? (
+                  <iframe
+                    src={previewBlobUrl}
+                    title={previewDoc.filename}
+                    className="w-full h-full min-h-[460px] rounded-lg border-0 bg-white shadow-xs"
+                  />
+                ) : (
+                  <div className="w-full max-w-md bg-white rounded-xl shadow-xs border border-slate-200 p-6 text-center space-y-4">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500/10 to-indigo-500/10 text-[#2864FF] flex items-center justify-center mx-auto border border-blue-100 shadow-2xs">
+                      <FileCheck size={32} />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-black text-slate-900 truncate">{previewDoc.filename}</h4>
+                      <p className="text-xs text-slate-500 mt-0.5">Verified Institutional Staff Document</p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2.5 text-left text-xs bg-slate-50 p-3.5 rounded-xl border border-slate-200/80">
+                      <div>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Document Type</span>
+                        <span className="font-bold text-slate-800">{(previewDoc.documentType || 'CONTRACT').replace('_', ' ')}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">File Size</span>
+                        <span className="font-bold text-slate-800">{previewDoc.size || '2.4 MB'}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Uploaded For</span>
+                        <span className="font-bold text-slate-800 truncate block">{currentStaffName}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Compliance Date</span>
+                        <span className="font-bold text-slate-800">
+                          {previewDoc.createdAt ? new Date(previewDoc.createdAt).toLocaleDateString('en-GB') : 'Verified'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="pt-2 flex justify-center">
+                      <button
+                        onClick={() => handleDownload(previewDoc)}
+                        className="px-4 py-2 rounded-xl text-xs font-bold bg-[#2864FF] text-white hover:bg-blue-700 transition flex items-center gap-1.5 cursor-pointer shadow-sm"
+                      >
+                        <Download size={14} /> Download Document
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className="pt-2 flex items-center justify-between border-t border-slate-100 text-xs shrink-0">
+                <span className="text-slate-400 font-medium">NABH & HIPAA Compliant Hospital Archive</span>
+                <button
+                  onClick={closePreview}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition cursor-pointer"
+                >
+                  Close Preview
+                </button>
+              </div>
             </motion.div>
           </div>
         )}

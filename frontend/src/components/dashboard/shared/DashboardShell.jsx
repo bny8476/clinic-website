@@ -5,6 +5,7 @@ export const DashboardShell = ({
   tabs = [],
   activeTab,
   onTabChange,
+  tabsClassName,
   children
 }) => {
   return (
@@ -32,7 +33,7 @@ export const DashboardShell = ({
 
       {/* ── Main Navigation Tabs ── */}
       {tabs.length > 0 && (
-        <div className="flex items-center flex-wrap gap-2.5 px-6 py-3 bg-white border-b border-slate-200 shrink-0 w-full max-w-full overflow-x-hidden">
+        <div className={tabsClassName || "flex items-center flex-wrap gap-2.5 px-6 py-3 bg-white border-b border-slate-200 shrink-0 w-full max-w-full overflow-x-hidden"}>
           {tabs.map((tab, i) => {
             const tabId = typeof tab === 'string' ? tab : tab.id;
             const tabLabel = typeof tab === 'string' ? tab : tab.label;
@@ -43,22 +44,22 @@ export const DashboardShell = ({
               <button 
                 key={i}
                 onClick={() => onTabChange && onTabChange(tabId)}
-                className={`flex items-center gap-3 px-3.5 py-2 rounded-xl border transition-all cursor-pointer ${
+                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-2xl border transition-all cursor-pointer min-w-0 ${tabsClassName ? 'w-full' : ''} ${
                   isActive 
                     ? 'border-[#2160FF] bg-[#2160FF] text-white shadow-md shadow-blue-500/20' 
-                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300'
+                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300 shadow-2xs'
                 }`}
               >
                 {TabIcon && (
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
                     isActive ? 'bg-white/20 text-white' : 'bg-blue-50 text-[#2160FF]'
                   }`}>
                     <TabIcon className="w-4 h-4" strokeWidth={2.2} />
                   </div>
                 )}
-                <div className="text-left leading-tight">
-                  <p className={`text-[12px] font-bold ${isActive ? 'text-white' : 'text-slate-900'}`}>{tabLabel}</p>
-                  {tabSub && <p className={`text-[10px] ${isActive ? 'text-blue-100' : 'text-slate-400'}`}>{tabSub}</p>}
+                <div className="text-left leading-tight min-w-0 flex-1 truncate">
+                  <p className={`text-[12px] font-extrabold truncate ${isActive ? 'text-white' : 'text-slate-900'}`}>{tabLabel}</p>
+                  {tabSub && <p className={`text-[10px] font-medium truncate mt-0.5 ${isActive ? 'text-blue-100' : 'text-slate-400'}`}>{tabSub}</p>}
                 </div>
               </button>
             );

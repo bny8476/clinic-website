@@ -26,6 +26,11 @@ export default function Modal({
   const panelRef = useRef(null);
   const titleId = title ? 'modal-title' : undefined;
   const descId = description ? 'modal-desc' : undefined;
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   /* ── Focus trap ───────────────────────────────────────────────────────── */
   useEffect(() => {
@@ -33,14 +38,17 @@ export default function Modal({
 
     const previouslyFocused = document.activeElement;
 
-    const firstFocusable = panelRef.current?.querySelector(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    );
-    firstFocusable?.focus();
+    // Only set initial focus if focus is currently outside the modal panel
+    if (panelRef.current && !panelRef.current.contains(document.activeElement)) {
+      const firstFocusable = panelRef.current?.querySelector(
+        'input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'
+      );
+      firstFocusable?.focus();
+    }
 
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
-        onClose();
+        onCloseRef.current?.();
         return;
       }
 
@@ -77,7 +85,7 @@ export default function Modal({
       window.removeEventListener('keydown', handleKeyDown);
       previouslyFocused?.focus();
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   const sizes = {
     sm: 'max-w-sm',
