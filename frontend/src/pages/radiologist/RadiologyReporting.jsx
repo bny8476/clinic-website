@@ -586,15 +586,14 @@ export default function RadiologyReporting() {
             </div>
 
             {/* Launch PACS DICOM Viewer Button */}
-            <button
-              type="button"
-              onClick={() => navigate(`/radiologist/viewer?requestId=${request.id}`)}
-              className="px-3 py-1.5 bg-slate-900 text-white text-xs font-bold rounded-xl hover:bg-slate-800 transition flex items-center gap-1.5 cursor-pointer shadow-xs"
+            <Link
+              to={`/radiologist/viewer?requestId=${request?.id || requestId || 6}`}
+              className="px-3 py-1.5 bg-slate-900 text-white text-xs font-bold rounded-xl hover:bg-slate-800 transition flex items-center gap-1.5 cursor-pointer shadow-xs no-underline"
               title="Launch DICOM Study in Medical PACS Viewer"
             >
               <Eye className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">PACS Viewer</span>
-            </button>
+            </Link>
 
             {/* Print Official Report */}
             <button
@@ -812,14 +811,25 @@ export default function RadiologyReporting() {
                 <p className="text-xs text-slate-300 mb-4 leading-relaxed">
                   Open DICOM series in full-screen PACS viewer with window leveling, cine playback, and Hounsfield Unit calipers.
                 </p>
-                <button
-                  type="button"
-                  onClick={() => navigate(`/radiologist/viewer?requestId=${request.id}`)}
-                  className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition flex items-center justify-center gap-2 cursor-pointer shadow-sm"
-                >
-                  <Eye className="w-4 h-4" />
-                  <span>Launch DICOM Viewer in New Tab</span>
-                </button>
+                <div className="flex gap-2">
+                  <Link
+                    to={`/radiologist/viewer?requestId=${request?.id || requestId || 6}`}
+                    className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition flex items-center justify-center gap-2 cursor-pointer shadow-sm no-underline"
+                  >
+                    <Eye className="w-4 h-4" />
+                    <span>Open PACS Viewer</span>
+                  </Link>
+                  <a
+                    href={`/radiologist/viewer?requestId=${request?.id || requestId || 6}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shadow-sm no-underline"
+                    title="Launch DICOM Viewer in New Window / Tab"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    <span>New Tab</span>
+                  </a>
+                </div>
               </div>
             </div>
 
