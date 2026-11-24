@@ -59,7 +59,7 @@ public class PaymentService {
     
     @Transactional
     public Payment capturePayment(Long paymentId, String transactionRef) {
-        Payment payment = paymentRepository.findByIdWithLock(paymentId)
+        Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new IllegalArgumentException("Payment not found"));
                 
         if (payment.getStatus() != PaymentStatus.INITIATED && payment.getStatus() != PaymentStatus.PENDING) {

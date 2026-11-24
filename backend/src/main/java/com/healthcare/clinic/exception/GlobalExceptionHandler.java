@@ -102,7 +102,7 @@ public class GlobalExceptionHandler {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
         } else {
             body.put("code", "DATA_INTEGRITY_VIOLATION");
-            body.put("message", "A database integrity error occurred while processing your request.");
+            body.put("message", "A database integrity error occurred while processing your request: " + rootMsg);
             body.put("timestamp", java.time.Instant.now().toString());
             body.put("path", request.getRequestURI());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);

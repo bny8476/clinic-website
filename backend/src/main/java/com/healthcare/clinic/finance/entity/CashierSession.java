@@ -68,6 +68,19 @@ public class CashierSession {
     @Column(name = "approved_by")
     private Long approvedBy;
 
+    @PrePersist
+    public void prePersist() {
+        if (openedAt == null) {
+            openedAt = ZonedDateTime.now();
+        }
+        if (cashCollections == null) cashCollections = BigDecimal.ZERO;
+        if (cardCollections == null) cardCollections = BigDecimal.ZERO;
+        if (digitalCollections == null) digitalCollections = BigDecimal.ZERO;
+        if (refundsIssued == null) refundsIssued = BigDecimal.ZERO;
+        if (varianceAmount == null) varianceAmount = BigDecimal.ZERO;
+        if (status == null) status = SessionStatus.OPEN;
+    }
+
     public enum SessionStatus {
         OPEN,
         CLOSED,

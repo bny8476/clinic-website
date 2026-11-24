@@ -56,4 +56,20 @@ public class Payment {
 
     @Column(columnDefinition = "TEXT")
     private String notes;
+
+    @Column(name = "invoice_id")
+    private Long invoiceId;
+
+    @PrePersist
+    public void prePersist() {
+        if (createdAt == null) {
+            createdAt = ZonedDateTime.now();
+        }
+        if (status == null) {
+            status = PaymentStatus.INITIATED;
+        }
+        if (paymentMethod == null) {
+            paymentMethod = "CASH";
+        }
+    }
 }

@@ -61,4 +61,16 @@ public class InsuranceClaim {
 
     @Column(columnDefinition = "TEXT")
     private String notes;
+
+    @PrePersist
+    public void prePersist() {
+        if (submittedAt == null) {
+            submittedAt = ZonedDateTime.now();
+        }
+        if (status == null) {
+            status = ClaimStatus.SUBMITTED;
+        }
+        if (deductibleAmount == null) deductibleAmount = BigDecimal.ZERO;
+        if (copayAmount == null) copayAmount = BigDecimal.ZERO;
+    }
 }

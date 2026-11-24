@@ -20,13 +20,13 @@ public class RefundController {
     private final RefundService refundService;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'ACCOUNTANT', 'SUPER_ADMIN')")
     public ResponseEntity<List<Refund>> getRefunds() {
         return ResponseEntity.ok(refundService.getAllRefunds());
     }
 
     @PostMapping("/initiate")
-    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'ACCOUNTANT', 'SUPER_ADMIN')")
     public ResponseEntity<Refund> initiateRefund(@RequestBody Map<String, Object> request) {
         Long paymentId = Long.valueOf(request.get("paymentId").toString());
         BigDecimal amount = new BigDecimal(request.get("amount").toString());
@@ -39,7 +39,7 @@ public class RefundController {
     }
 
     @PostMapping("/{refundId}/approve")
-    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'ACCOUNTANT', 'SUPER_ADMIN')")
     public ResponseEntity<Refund> approveRefund(
             @PathVariable Long refundId,
             @RequestBody Map<String, Object> request) {
@@ -50,7 +50,7 @@ public class RefundController {
     }
 
     @PostMapping("/{refundId}/process")
-    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'ACCOUNTANT', 'SUPER_ADMIN')")
     public ResponseEntity<Refund> processRefund(@PathVariable Long refundId) {
         Refund refund = refundService.processRefund(refundId);
         return ResponseEntity.ok(refund);
