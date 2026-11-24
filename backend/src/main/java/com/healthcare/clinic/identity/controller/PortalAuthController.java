@@ -225,16 +225,22 @@ public class PortalAuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Refresh token is required");
         }
 
-        return refreshTokenService.findByToken(tokenStr)
-                .map(refreshTokenService::verifyExpiration)
-                .map(com.healthcare.clinic.identity.entity.RefreshToken::getUser)
-                .map(user -> {
-                    UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
-                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                    String newJwt = jwtUtils.generateJwtToken(authentication);
-                    return ResponseEntity.ok(buildJwtResponse(newJwt, tokenStr, user));
-                })
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or expired refresh token"));
+        try {
+            var tokenOpt = refreshTokenService.findByToken(tokenStr);
+            if (tokenOpt.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or expired refresh token");
+            }
+
+            var refreshToken = refreshTokenService.verifyExpiration(tokenOpt.get());
+            var user = refreshToken.getUser();
+            UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+            String newJwt = jwtUtils.generateJwtToken(authentication);
+            return ResponseEntity.ok(buildJwtResponse(newJwt, tokenStr, user));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(e.getMessage() != null ? e.getMessage() : "Invalid or expired refresh token");
+        }
     }
 
     @PostMapping("/{portal}/refresh")
