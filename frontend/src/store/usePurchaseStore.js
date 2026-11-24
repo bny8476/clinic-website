@@ -64,10 +64,15 @@ export const usePurchaseStore = create((set, get) => ({
         signal: ctrl.signal
       });
       
+      const payload = res.data?.data;
+      const list = Array.isArray(payload) ? payload : (Array.isArray(payload?.content) ? payload.content : []);
+      const total = typeof payload?.totalElements === 'number' ? payload.totalElements : list.length;
+      const totalPages = typeof payload?.totalPages === 'number' ? payload.totalPages : Math.ceil(total / 20);
+
       set({ 
-        poList: res.data?.data?.content || [],
-        poTotalElements: res.data?.data?.totalElements || 0,
-        poTotalPages: res.data?.data?.totalPages || 0,
+        poList: list,
+        poTotalElements: total,
+        poTotalPages: totalPages,
         poLoading: false 
       });
     } catch (err) {

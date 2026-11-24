@@ -128,9 +128,13 @@ export const useStockStore = create((set, get) => ({
       };
       const res = await pharmacyService.api.get('/pharmacy/stocks/low-stock', { params });
       
+      const payload = res.data?.data;
+      const items = Array.isArray(payload) ? payload : (Array.isArray(payload?.content) ? payload.content : []);
+      const total = typeof payload?.totalElements === 'number' ? payload.totalElements : items.length;
+      
       set({
-        lowStockItems: res.data?.data?.content || [],
-        lowStockTotalElements: res.data?.data?.totalElements || 0,
+        lowStockItems: items,
+        lowStockTotalElements: total,
         lowStockLoading: false,
         lowStockFetching: false
       });

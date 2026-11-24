@@ -20,8 +20,9 @@ public class RefreshTokenController {
     private final JwtUtils jwtUtils;
     private final UserDetailsService userDetailsService;
 
-    @PostMapping("/refresh")
+    @PostMapping(value = {"/refresh", "/{portal}/refresh"})
     public ResponseEntity<?> refreshtoken(
+            @PathVariable(required = false) String portal,
             @CookieValue(name = "refresh_token", required = false) String cookieRefreshToken,
             @RequestBody(required = false) TokenRefreshRequest bodyRequest) {
 

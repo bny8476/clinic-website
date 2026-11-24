@@ -212,45 +212,6 @@ public class PortalAuthController {
         }
     }
 
-    @PostMapping("/refresh")
-    public ResponseEntity<?> refreshToken(
-            @RequestBody(required = false) RefreshTokenRequest request,
-            @CookieValue(name = "refresh_token", required = false) String cookieRefreshToken,
-            HttpServletRequest httpRequest) {
-        String tokenStr = (request != null && request.getRefreshToken() != null && !request.getRefreshToken().isBlank())
-                ? request.getRefreshToken().trim()
-                : cookieRefreshToken;
-
-        if (tokenStr == null || tokenStr.isBlank()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Refresh token is required");
-        }
-
-        try {
-            var tokenOpt = refreshTokenService.findByToken(tokenStr);
-            if (tokenOpt.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or expired refresh token");
-            }
-
-            var refreshToken = refreshTokenService.verifyExpiration(tokenOpt.get());
-            var user = refreshToken.getUser();
-            UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-            String newJwt = jwtUtils.generateJwtToken(authentication);
-            return ResponseEntity.ok(buildJwtResponse(newJwt, tokenStr, user));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(e.getMessage() != null ? e.getMessage() : "Invalid or expired refresh token");
-        }
-    }
-
-    @PostMapping("/{portal}/refresh")
-    public ResponseEntity<?> refreshPortalToken(
-            @PathVariable String portal,
-            @RequestBody(required = false) RefreshTokenRequest request,
-            @CookieValue(name = "refresh_token", required = false) String cookieRefreshToken,
-            HttpServletRequest httpRequest) {
-        return refreshToken(request, cookieRefreshToken, httpRequest);
-    }
 
     private JwtResponse buildJwtResponse(String jwt, String refreshToken, User user) {
         Set<String> roles = user.getRoles().stream().map(Role::getName).collect(Collectors.toSet());
@@ -279,12 +240,6 @@ public class PortalAuthController {
     }
 }
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-class RefreshTokenRequest {
-    private String refreshToken;
-}
 
 @Data
 class LoginRequest {
