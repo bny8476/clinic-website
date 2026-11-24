@@ -21,6 +21,8 @@ export default function Modal({
   description,
   children,
   size = 'md',
+  maxWidth,
+  footer,
   className = ''
 }) {
   const panelRef = useRef(null);
@@ -92,8 +94,12 @@ export default function Modal({
     md: 'max-w-xl',
     lg: 'max-w-2xl',
     xl: 'max-w-4xl',
+    '2xl': 'max-w-5xl',
+    '3xl': 'max-w-6xl',
     full: 'max-w-[95vw] h-[90vh]'
   };
+
+  const panelWidth = maxWidth || sizes[size] || sizes.md;
 
   return (
     <AnimatePresence>
@@ -121,7 +127,7 @@ export default function Modal({
             initial="hidden"
             animate="visible"
             exit="exit"
-            className={`relative w-full ${sizes[size] || sizes.md} bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-2xl z-10 flex flex-col max-h-[92vh] overflow-hidden ${className}`}
+            className={`relative w-full ${panelWidth} bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-2xl z-10 flex flex-col max-h-[92vh] overflow-hidden ${className}`}
           >
             {/* Visually-hidden description for screen readers */}
             {description && (
@@ -151,6 +157,11 @@ export default function Modal({
             <div className="p-6 overflow-y-auto flex-1">
               {children}
             </div>
+            {footer && (
+              <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 flex items-center justify-end gap-3 shrink-0">
+                {footer}
+              </div>
+            )}
           </motion.div>
         </div>
       )}

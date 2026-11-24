@@ -17,9 +17,15 @@ const CreateRadiologyRequestModal = ({ isOpen, onClose, onSuccess }) => {
   const { data: procedures = [] } = useQuery({
     queryKey: ['radiology-procedures'],
     queryFn: async () => {
-      const res = await axiosPrivate.get('/radiology/procedures');
-      return res.data || [];
-    }
+      try {
+        const res = await axiosPrivate.get('/radiology/procedures');
+        return res.data || [];
+      } catch (err) {
+        if (err.response?.status === 401) return [];
+        throw err;
+      }
+    },
+    retry: (failureCount, error) => error?.response?.status !== 401 && failureCount < 2
   });
 
   const queryClient = useQueryClient();
@@ -121,11 +127,20 @@ const RadiologistDashboard = () => {
   const { data: rawRequests = [], isLoading } = useQuery({
     queryKey: ['radiology-requests-dashboard', filterStatus],
     queryFn: async () => {
-      const endpoint = filterStatus === 'ALL' ? '/radiology/requests' : `/radiology/requests?status=${filterStatus}`;
-      const res = await axiosPrivate.get(endpoint);
-      return res.data || [];
+      try {
+        const endpoint = filterStatus === 'ALL' ? '/radiology/requests' : `/radiology/requests?status=${filterStatus}`;
+        const res = await axiosPrivate.get(endpoint);
+        return res.data || [];
+      } catch (err) {
+        if (err.response?.status === 401) {
+          // Token unauthenticated / session expired: return empty array without spamming errors
+          return [];
+        }
+        throw err;
+      }
     },
-    refetchInterval: 10000 // Realtime 10-second live polling
+    retry: (failureCount, error) => error?.response?.status !== 401 && failureCount < 2,
+    refetchInterval: (query) => query.state.error?.response?.status === 401 ? false : 10000 // Realtime 10-second live polling unless 401
   });
 
   const updateStatusMutation = useMutation({

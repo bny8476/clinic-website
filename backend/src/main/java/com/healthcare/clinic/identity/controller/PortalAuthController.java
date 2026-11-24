@@ -212,6 +212,40 @@ public class PortalAuthController {
         }
     }
 
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refreshToken(
+            @RequestBody(required = false) RefreshTokenRequest request,
+            @CookieValue(name = "refresh_token", required = false) String cookieRefreshToken,
+            HttpServletRequest httpRequest) {
+        String tokenStr = (request != null && request.getRefreshToken() != null && !request.getRefreshToken().isBlank())
+                ? request.getRefreshToken().trim()
+                : cookieRefreshToken;
+
+        if (tokenStr == null || tokenStr.isBlank()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Refresh token is required");
+        }
+
+        return refreshTokenService.findByToken(tokenStr)
+                .map(refreshTokenService::verifyExpiration)
+                .map(com.healthcare.clinic.identity.entity.RefreshToken::getUser)
+                .map(user -> {
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    String newJwt = jwtUtils.generateJwtToken(authentication);
+                    return ResponseEntity.ok(buildJwtResponse(newJwt, tokenStr, user));
+                })
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or expired refresh token"));
+    }
+
+    @PostMapping("/{portal}/refresh")
+    public ResponseEntity<?> refreshPortalToken(
+            @PathVariable String portal,
+            @RequestBody(required = false) RefreshTokenRequest request,
+            @CookieValue(name = "refresh_token", required = false) String cookieRefreshToken,
+            HttpServletRequest httpRequest) {
+        return refreshToken(request, cookieRefreshToken, httpRequest);
+    }
+
     private JwtResponse buildJwtResponse(String jwt, String refreshToken, User user) {
         Set<String> roles = user.getRoles().stream().map(Role::getName).collect(Collectors.toSet());
         Set<String> permissions = new HashSet<>();
@@ -237,6 +271,13 @@ public class PortalAuthController {
         history.setCreatedAt(ZonedDateTime.now());
         loginHistoryRepository.save(history);
     }
+}
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+class RefreshTokenRequest {
+    private String refreshToken;
 }
 
 @Data

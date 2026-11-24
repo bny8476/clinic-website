@@ -29,13 +29,13 @@ public class RadiologyController {
     }
 
     @PostMapping("/procedures")
-    @PreAuthorize("hasRole('RADIOLOGIST') or hasRole('SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('RADIOLOGIST', 'ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<ImagingProcedure> createProcedure(@RequestBody ImagingProcedure procedure) {
         return ResponseEntity.ok(radiologyService.createProcedure(procedure));
     }
 
     @GetMapping("/requests")
-    @PreAuthorize("hasRole('RADIOLOGIST') or hasRole('DOCTOR') or hasRole('SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('RADIOLOGIST', 'DOCTOR', 'ADMIN', 'SUPER_ADMIN', 'TECHNICIAN', 'NURSE', 'STAFF')")
     public ResponseEntity<List<ImagingRequest>> getRequests(@RequestParam(required = false) String status) {
         if (status != null && !status.isEmpty()) {
             return ResponseEntity.ok(radiologyService.getRequestsByStatus(status));
@@ -44,13 +44,13 @@ public class RadiologyController {
     }
 
     @PostMapping("/requests")
-    @PreAuthorize("hasRole('DOCTOR') or hasRole('RADIOLOGIST') or hasRole('SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'RADIOLOGIST', 'ADMIN', 'SUPER_ADMIN', 'TECHNICIAN', 'NURSE')")
     public ResponseEntity<ImagingRequest> createRequest(@RequestBody ImagingRequest request) {
         return ResponseEntity.ok(radiologyService.createRequest(request));
     }
 
     @PatchMapping("/requests/{id}/status")
-    @PreAuthorize("hasRole('RADIOLOGIST') or hasRole('SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('RADIOLOGIST', 'TECHNICIAN', 'ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<ImagingRequest> updateStatus(@PathVariable Long id, @RequestParam String status) {
         return ResponseEntity.ok(radiologyService.updateRequestStatus(id, status));
     }
@@ -63,7 +63,7 @@ public class RadiologyController {
     }
 
     @PostMapping("/requests/{requestId}/report")
-    @PreAuthorize("hasRole('RADIOLOGIST') or hasRole('SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('RADIOLOGIST', 'ADMIN', 'SUPER_ADMIN', 'DOCTOR')")
     public ResponseEntity<RadiologyReport> saveReport(
             @PathVariable Long requestId,
             @RequestBody RadiologyReport report,

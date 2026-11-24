@@ -102,179 +102,292 @@ function SupplierFormModal({ isOpen, onClose, isEditMode, initialData, onSave })
 
   const f = (k) => (e) => setForm(p => ({ ...p, [k]: e.target.value }));
 
-  const inputCls = "w-full px-3 py-2 text-sm border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 bg-white";
-  const labelCls = "text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1";
+  const inputCls = "w-full px-3.5 py-2.5 text-sm font-medium border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white text-slate-800 transition-all shadow-xs";
+  const labelCls = "text-xs font-bold text-slate-600 uppercase tracking-wider block mb-1.5";
 
   const tabs = [
-    { id: TAB_BASIC, label: 'Basic Info', icon: User },
-    { id: TAB_LEGAL, label: 'Legal & Compliance', icon: Shield },
-    { id: TAB_BANK,  label: 'Bank Details', icon: Banknote },
-    { id: TAB_TERMS, label: 'Terms & Notes', icon: FileText },
+    { id: TAB_BASIC, label: 'Basic Info', icon: User, desc: 'Contact & Address' },
+    { id: TAB_LEGAL, label: 'Legal & Compliance', icon: Shield, desc: 'GST & Licenses' },
+    { id: TAB_BANK,  label: 'Bank Details', icon: Banknote, desc: 'Account & IFSC' },
+    { id: TAB_TERMS, label: 'Terms & Notes', icon: FileText, desc: 'Credit & Payment' },
   ];
 
+  const tabOrder = [TAB_BASIC, TAB_LEGAL, TAB_BANK, TAB_TERMS];
+  const tabIndex = tabOrder.indexOf(tab);
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose}
-      title={isEditMode ? 'Edit Supplier' : 'Register New Supplier'}
-      maxWidth="sm:max-w-3xl"
+    <Modal 
+      isOpen={isOpen} 
+      onClose={onClose}
+      title={isEditMode ? 'Edit Supplier Details' : 'Register New Supplier'}
+      description="Add supplier credentials, GSTIN, drug licenses, banking, and payment terms."
+      size="2xl"
+      maxWidth="max-w-4xl"
       footer={
-        <div className="flex w-full gap-3">
-          <button onClick={onClose} className="flex-1 px-4 py-2.5 border border-slate-200 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all">Cancel</button>
-          <button onClick={() => onSave(form)} className="flex-1 px-6 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 transition-all">
-            {isEditMode ? 'Update Supplier' : 'Save Supplier'}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 w-full">
+          <button 
+            type="button"
+            onClick={onClose} 
+            className="w-full sm:w-auto px-5 py-2.5 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+          >
+            Cancel
           </button>
+          
+          <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+            {tabIndex > 0 && (
+              <button 
+                type="button"
+                onClick={() => setTab(tabOrder[tabIndex - 1])}
+                className="px-4 py-2.5 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                ← Back
+              </button>
+            )}
+            {tabIndex < tabOrder.length - 1 ? (
+              <button 
+                type="button"
+                onClick={() => setTab(tabOrder[tabIndex + 1])}
+                className="px-5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-sm font-bold shadow-xs transition-colors cursor-pointer border-none flex items-center gap-1.5"
+              >
+                Next: {tabs[tabIndex + 1].label} →
+              </button>
+            ) : null}
+            <button 
+              type="button"
+              onClick={() => onSave(form)} 
+              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold shadow-md shadow-blue-500/20 transition-all cursor-pointer border-none flex items-center gap-2"
+            >
+              <Save className="w-4 h-4" />
+              {isEditMode ? 'Update Supplier' : 'Save Supplier'}
+            </button>
+          </div>
         </div>
       }
     >
-      {/* Tab bar */}
-      <div className="flex border-b border-slate-100 mb-4 -mx-1">
-        {tabs.map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)}
-            className={`flex items-center gap-1.5 px-3 py-2 text-xs font-bold border-b-2 transition-all whitespace-nowrap ${
-              tab === t.id ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-400 hover:text-slate-600'
-            }`}>
-            <t.icon className="w-3 h-3" />{t.label}
-          </button>
-        ))}
+      {/* Segmented Tab Bar */}
+      <div className="flex items-center gap-2 p-1.5 bg-slate-100 rounded-2xl mb-6 overflow-x-auto no-scrollbar">
+        {tabs.map((t, idx) => {
+          const Icon = t.icon;
+          const isActive = tab === t.id;
+          return (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setTab(t.id)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 cursor-pointer border-none ${
+                isActive 
+                  ? 'bg-white text-blue-600 shadow-xs' 
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+              }`}
+            >
+              <span className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-extrabold ${
+                isActive ? 'bg-blue-50 text-blue-600' : 'bg-slate-200/80 text-slate-500'
+              }`}>
+                {idx + 1}
+              </span>
+              <Icon className="w-3.5 h-3.5" />
+              <span>{t.label}</span>
+            </button>
+          );
+        })}
       </div>
 
-      <div className="space-y-4 p-1 min-h-[280px]">
+      <div className="p-1 min-h-[340px]">
+        {/* ── TAB 1: BASIC INFO ── */}
         {tab === TAB_BASIC && (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="md:col-span-2">
-                <label className={labelCls}>Supplier / Company Name *</label>
-                <input className={inputCls} value={form.name} onChange={f('name')} placeholder="e.g. Acme Pharmaceuticals" />
-              </div>
-              <div>
-                <label className={labelCls}>Supplier Type</label>
-                <select className={inputCls} value={form.supplierType} onChange={f('supplierType')}>
-                  <option value="">Select type</option>
-                  {['MANUFACTURER','DISTRIBUTOR','WHOLESALER','IMPORTER'].map(t => (
-                    <option key={t} value={t}>{t.charAt(0) + t.slice(1).toLowerCase()}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className={labelCls}>Status</label>
-                <select className={inputCls} value={form.status} onChange={f('status')}>
-                  <option value="ACTIVE">Active</option>
-                  <option value="INACTIVE">Inactive</option>
-                  <option value="BLACKLISTED">Blacklisted</option>
-                </select>
-              </div>
-              <div>
-                <label className={labelCls}>Contact Person Name</label>
-                <input className={inputCls} value={form.contactPersonName} onChange={f('contactPersonName')} placeholder="Mr. Ravi Kumar" />
-              </div>
-              <div>
-                <label className={labelCls}>Designation</label>
-                <input className={inputCls} value={form.designation} onChange={f('designation')} placeholder="Sales Manager" />
-              </div>
-              <div>
-                <label className={labelCls}>Mobile Number</label>
-                <input className={inputCls} value={form.mobileNumber} onChange={f('mobileNumber')} placeholder="+91 9876543210" />
-              </div>
-              <div>
-                <label className={labelCls}>Alternate Phone</label>
-                <input className={inputCls} value={form.alternatePhone} onChange={f('alternatePhone')} placeholder="+91 9876543211" />
-              </div>
-              <div className="md:col-span-2">
-                <label className={labelCls}>Email Address</label>
-                <input className={inputCls} type="email" value={form.emailAddress} onChange={f('emailAddress')} placeholder="supplier@example.com" />
-              </div>
-              <div className="md:col-span-2">
-                <label className={labelCls}>Full Address</label>
-                <textarea className={inputCls} rows={2} value={form.address} onChange={f('address')} placeholder="Street / Area / Locality" />
-              </div>
-              <div>
-                <label className={labelCls}>City</label>
-                <input className={inputCls} value={form.city} onChange={f('city')} placeholder="Chennai" />
-              </div>
-              <div>
-                <label className={labelCls}>State</label>
-                <input className={inputCls} value={form.state} onChange={f('state')} placeholder="Tamil Nadu" />
-              </div>
-              <div>
-                <label className={labelCls}>Pincode</label>
-                <input className={inputCls} value={form.pincode} onChange={f('pincode')} placeholder="600001" />
-              </div>
-              <div>
-                <label className={labelCls}>Country</label>
-                <input className={inputCls} value={form.country} onChange={f('country')} placeholder="India" />
+          <div className="space-y-5">
+            {/* Company Info */}
+            <div className="bg-slate-50/80 p-4 sm:p-5 rounded-2xl border border-slate-200/80 space-y-4">
+              <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                <User className="w-4 h-4 text-blue-600" /> Company Profile
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <label className={labelCls}>Supplier / Company Name <span className="text-red-500">*</span></label>
+                  <input className={inputCls} value={form.name} onChange={f('name')} placeholder="e.g. Acme Pharmaceuticals Pvt. Ltd." />
+                </div>
+                <div>
+                  <label className={labelCls}>Supplier Type</label>
+                  <select className={inputCls} value={form.supplierType} onChange={f('supplierType')}>
+                    <option value="">Select Supplier Type</option>
+                    {['MANUFACTURER','DISTRIBUTOR','WHOLESALER','IMPORTER'].map(t => (
+                      <option key={t} value={t}>{t.charAt(0) + t.slice(1).toLowerCase()}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className={labelCls}>Operating Status</label>
+                  <select className={inputCls} value={form.status} onChange={f('status')}>
+                    <option value="ACTIVE">Active</option>
+                    <option value="INACTIVE">Inactive</option>
+                    <option value="BLACKLISTED">Blacklisted</option>
+                  </select>
+                </div>
               </div>
             </div>
-          </>
+
+            {/* Contact Details */}
+            <div className="bg-slate-50/80 p-4 sm:p-5 rounded-2xl border border-slate-200/80 space-y-4">
+              <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                <Phone className="w-4 h-4 text-blue-600" /> Point of Contact
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className={labelCls}>Contact Person Name</label>
+                  <input className={inputCls} value={form.contactPersonName} onChange={f('contactPersonName')} placeholder="e.g. Mr. Ravi Kumar" />
+                </div>
+                <div>
+                  <label className={labelCls}>Designation / Role</label>
+                  <input className={inputCls} value={form.designation} onChange={f('designation')} placeholder="e.g. Key Account Manager" />
+                </div>
+                <div>
+                  <label className={labelCls}>Mobile Number</label>
+                  <input className={inputCls} value={form.mobileNumber} onChange={f('mobileNumber')} placeholder="+91 98765 43210" />
+                </div>
+                <div>
+                  <label className={labelCls}>Alternate Phone / Landline</label>
+                  <input className={inputCls} value={form.alternatePhone} onChange={f('alternatePhone')} placeholder="+91 44 2876 5432" />
+                </div>
+                <div className="md:col-span-2">
+                  <label className={labelCls}>Official Email Address</label>
+                  <input className={inputCls} type="email" value={form.emailAddress} onChange={f('emailAddress')} placeholder="orders@supplier.com" />
+                </div>
+              </div>
+            </div>
+
+            {/* Address */}
+            <div className="bg-slate-50/80 p-4 sm:p-5 rounded-2xl border border-slate-200/80 space-y-4">
+              <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                <Truck className="w-4 h-4 text-blue-600" /> Registered Business Address
+              </h4>
+              <div className="space-y-4">
+                <div>
+                  <label className={labelCls}>Full Street Address</label>
+                  <textarea className={inputCls} rows={2} value={form.address} onChange={f('address')} placeholder="Unit / Door No., Building, Industrial Estate / Street..." />
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div>
+                    <label className={labelCls}>City</label>
+                    <input className={inputCls} value={form.city} onChange={f('city')} placeholder="Chennai" />
+                  </div>
+                  <div>
+                    <label className={labelCls}>State</label>
+                    <input className={inputCls} value={form.state} onChange={f('state')} placeholder="Tamil Nadu" />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Pincode</label>
+                    <input className={inputCls} value={form.pincode} onChange={f('pincode')} placeholder="600001" maxLength={6} />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Country</label>
+                    <input className={inputCls} value={form.country} onChange={f('country')} placeholder="India" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
 
+        {/* ── TAB 2: LEGAL & COMPLIANCE ── */}
         {tab === TAB_LEGAL && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="md:col-span-2">
-              <label className={labelCls}>GSTIN (15-digit)</label>
-              <input className={`${inputCls} font-mono`} value={form.gstin} onChange={f('gstin')} placeholder="22AAAAA0000A1Z5" maxLength={15} />
+          <div className="space-y-5">
+            <div className="bg-slate-50/80 p-4 sm:p-5 rounded-2xl border border-slate-200/80 space-y-4">
+              <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                <Shield className="w-4 h-4 text-blue-600" /> Regulatory Licenses & Tax Identifiers
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <label className={labelCls}>GSTIN (15-character Goods & Services Tax ID)</label>
+                  <input className={`${inputCls} font-mono uppercase tracking-wider`} value={form.gstin} onChange={f('gstin')} placeholder="33AAAAA0000A1Z5" maxLength={15} />
+                  <p className="text-[11px] text-slate-400 mt-1 font-medium">State-specific 15-character GSTIN format.</p>
+                </div>
+                <div>
+                  <label className={labelCls}>Drug License Number</label>
+                  <input className={inputCls} value={form.drugLicenseNumber} onChange={f('drugLicenseNumber')} placeholder="e.g. DL-20B/21B-12345" />
+                </div>
+                <div>
+                  <label className={labelCls}>Drug License Expiry Date</label>
+                  <input className={inputCls} type="date" value={form.drugLicenseExpiry} onChange={f('drugLicenseExpiry')} />
+                </div>
+                <div>
+                  <label className={labelCls}>Permanent Account Number (PAN)</label>
+                  <input className={`${inputCls} font-mono uppercase tracking-wider`} value={form.panNumber} onChange={f('panNumber')} placeholder="ABCDE1234F" maxLength={10} />
+                </div>
+                <div>
+                  <label className={labelCls}>Supplier Code</label>
+                  <input className={`${inputCls} bg-slate-100 text-slate-500 font-mono`} value={form.supplierCode} readOnly placeholder="Auto-assigned upon creation" />
+                </div>
+              </div>
             </div>
-            <div>
-              <label className={labelCls}>Drug License Number</label>
-              <input className={inputCls} value={form.drugLicenseNumber} onChange={f('drugLicenseNumber')} placeholder="DL/2024/012345" />
-            </div>
-            <div>
-              <label className={labelCls}>Drug License Expiry</label>
-              <input className={inputCls} type="date" value={form.drugLicenseExpiry} onChange={f('drugLicenseExpiry')} />
-            </div>
-            <div>
-              <label className={labelCls}>PAN Number</label>
-              <input className={`${inputCls} font-mono uppercase`} value={form.panNumber} onChange={f('panNumber')} placeholder="AAAAA0000A" maxLength={10} />
-            </div>
-            <div>
-              <label className={labelCls}>Supplier Code (auto-generated)</label>
-              <input className={`${inputCls} bg-slate-50 text-slate-400`} value={form.supplierCode} readOnly placeholder="Auto-assigned on save" />
+
+            <div className="p-4 bg-blue-50/60 rounded-xl border border-blue-100 flex items-start gap-3">
+              <Info className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+              <div className="text-xs text-blue-900 leading-relaxed font-medium">
+                Valid Drug Licenses (Form 20B/21B) and GST registration certificates must be maintained on file for statutory pharmacy compliance before processing purchase orders and invoices.
+              </div>
             </div>
           </div>
         )}
 
+        {/* ── TAB 3: BANK DETAILS ── */}
         {tab === TAB_BANK && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="md:col-span-2">
-              <label className={labelCls}>Account Number</label>
-              <input className={`${inputCls} font-mono`} value={form.accountNumber} onChange={f('accountNumber')} placeholder="000123456789" />
-            </div>
-            <div>
-              <label className={labelCls}>Bank Name</label>
-              <input className={inputCls} value={form.bankName} onChange={f('bankName')} placeholder="State Bank of India" />
-            </div>
-            <div>
-              <label className={labelCls}>Branch</label>
-              <input className={inputCls} value={form.branch} onChange={f('branch')} placeholder="Anna Nagar, Chennai" />
-            </div>
-            <div className="md:col-span-2">
-              <label className={labelCls}>IFSC Code</label>
-              <input className={`${inputCls} font-mono uppercase`} value={form.ifscCode} onChange={f('ifscCode')} placeholder="SBIN0001234" maxLength={11} />
+          <div className="space-y-5">
+            <div className="bg-slate-50/80 p-4 sm:p-5 rounded-2xl border border-slate-200/80 space-y-4">
+              <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                <Banknote className="w-4 h-4 text-emerald-600" /> Settlement & Remittance Details
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <label className={labelCls}>Beneficiary Account Number</label>
+                  <input className={`${inputCls} font-mono tracking-wider`} value={form.accountNumber} onChange={f('accountNumber')} placeholder="0000001234567890" />
+                </div>
+                <div>
+                  <label className={labelCls}>Bank Name</label>
+                  <input className={inputCls} value={form.bankName} onChange={f('bankName')} placeholder="e.g. State Bank of India, HDFC Bank" />
+                </div>
+                <div>
+                  <label className={labelCls}>Branch Name</label>
+                  <input className={inputCls} value={form.branch} onChange={f('branch')} placeholder="e.g. Anna Nagar Branch, Chennai" />
+                </div>
+                <div className="md:col-span-2">
+                  <label className={labelCls}>IFSC Code (11-character)</label>
+                  <input className={`${inputCls} font-mono uppercase tracking-wider`} value={form.ifscCode} onChange={f('ifscCode')} placeholder="SBIN0001234" maxLength={11} />
+                </div>
+              </div>
             </div>
           </div>
         )}
 
+        {/* ── TAB 4: TERMS & NOTES ── */}
         {tab === TAB_TERMS && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className={labelCls}>Payment Terms</label>
-              <select className={inputCls} value={form.paymentTerms} onChange={f('paymentTerms')}>
-                {['Net 7','Net 15','Net 30','Net 45','Net 60','Advance','Custom'].map(t => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className={labelCls}>Credit Limit (₹)</label>
-              <input className={inputCls} type="number" value={form.creditLimit} onChange={f('creditLimit')} placeholder="500000" />
-            </div>
-            <div>
-              <label className={labelCls}>Preferred Delivery Days</label>
-              <input className={inputCls} value={form.preferredDeliveryDays} onChange={f('preferredDeliveryDays')} placeholder="Mon, Wed, Fri" />
-            </div>
-            <div />
-            <div className="md:col-span-2">
-              <label className={labelCls}>Internal Notes / Remarks</label>
-              <textarea className={inputCls} rows={4} value={form.notes} onChange={f('notes')}
-                placeholder="Special handling instructions, negotiation history, field rep details..." />
+          <div className="space-y-5">
+            <div className="bg-slate-50/80 p-4 sm:p-5 rounded-2xl border border-slate-200/80 space-y-4">
+              <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                <FileText className="w-4 h-4 text-amber-600" /> Commercial Terms & Credit Limits
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className={labelCls}>Payment Terms</label>
+                  <select className={inputCls} value={form.paymentTerms} onChange={f('paymentTerms')}>
+                    {['Net 7','Net 15','Net 30','Net 45','Net 60','Advance','Custom'].map(t => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className={labelCls}>Credit Limit (₹)</label>
+                  <input className={inputCls} type="number" min="0" value={form.creditLimit} onChange={f('creditLimit')} placeholder="e.g. 500000" />
+                </div>
+                <div className="md:col-span-2">
+                  <label className={labelCls}>Preferred Delivery Schedule / Days</label>
+                  <input className={inputCls} value={form.preferredDeliveryDays} onChange={f('preferredDeliveryDays')} placeholder="e.g. Mon, Wed, Fri (Before 2:00 PM)" />
+                </div>
+                <div className="md:col-span-2">
+                  <label className={labelCls}>Internal Notes & Supplier Instructions</label>
+                  <textarea className={inputCls} rows={4} value={form.notes} onChange={f('notes')}
+                    placeholder="Special delivery instructions, contact history, discount structures, minimum order quantity rules..." />
+                </div>
+              </div>
             </div>
           </div>
         )}

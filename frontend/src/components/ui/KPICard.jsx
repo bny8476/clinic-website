@@ -26,6 +26,7 @@ const renderIcon = (Icon, className) => {
 export default function KPICard({
   icon: IconComponent,
   label,
+  title,
   value,
   trend,
   subtext,
@@ -34,6 +35,7 @@ export default function KPICard({
   className = '',
   onClick
 }) {
+  const displayLabel = label || title;
   const iconColors = {
     navy:    "bg-[var(--color-navy-800)]/10 text-[var(--color-navy-800)] dark:text-[var(--color-navy-600)]",
     success: "bg-[var(--color-success-bg)] text-[var(--color-success)]",
@@ -62,7 +64,7 @@ export default function KPICard({
       <Card.Body className="flex flex-col gap-3">
         <div className="flex items-center justify-between gap-2">
           <span className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)] truncate">
-            {label}
+            {displayLabel}
           </span>
           {IconComponent && (
             <div className={`p-2.5 rounded-sm flex items-center justify-center shrink-0 ${iconColors[colorToken] || iconColors.navy}`}>
