@@ -20,22 +20,22 @@ export default function Sidebar({ items = [], isOpen, setIsOpen }) {
 
       <aside className={cn(
         "flex-shrink-0 bg-white border-r border-slate-200 flex flex-col h-full overflow-y-auto overflow-x-hidden font-sans transition-all duration-300 absolute lg:relative z-30 shadow-xl lg:shadow-none",
-        isOpen ? "translate-x-0 w-64" : "-translate-x-full w-64 lg:translate-x-0 lg:w-0 lg:opacity-0"
+        isOpen ? "translate-x-0 w-72" : "-translate-x-full w-72 lg:translate-x-0 lg:w-0 lg:opacity-0"
       )}>
-        <div className="w-64 px-4 py-6">
+        <div className="w-72 px-4 py-5">
           {/* Logo Section */}
-          <div className="flex items-center justify-between mb-8 px-1">
-            <div className="flex items-center gap-2.5">
+          <div className="flex items-center justify-between mb-6 px-1">
+            <div className="flex items-center gap-2.5 min-w-0">
               <div className="flex items-center justify-center w-9 h-9 bg-[#2563EB] rounded-xl shrink-0 shadow-xs">
                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path>
                 </svg>
               </div>
-              <div className="flex flex-col justify-center">
-                <span className="text-[14px] font-bold text-indigo-900 leading-tight tracking-tight whitespace-nowrap">
+              <div className="flex flex-col justify-center min-w-0">
+                <span className="text-[13px] font-bold text-indigo-950 leading-tight tracking-tight whitespace-nowrap">
                   ELIXIR HEALTH CARE
                 </span>
-                <span className="text-[10px] font-semibold text-slate-400 leading-tight uppercase tracking-widest whitespace-nowrap">
+                <span className="text-[10px] font-semibold text-slate-400 leading-tight uppercase tracking-widest whitespace-nowrap mt-0.5">
                   Pharmacy
                 </span>
               </div>
@@ -43,7 +43,9 @@ export default function Sidebar({ items = [], isOpen, setIsOpen }) {
             
             <button 
               onClick={() => setIsOpen(!isOpen)}
-              className="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-50 transition-colors"
+              className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer shrink-0 ml-auto border-none bg-transparent"
+              title="Toggle Sidebar"
+              aria-label="Toggle Sidebar"
             >
               <Menu className="w-5 h-5" />
             </button>

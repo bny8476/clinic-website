@@ -52,6 +52,29 @@ const ShieldIllustration = () => (
   </svg>
 );
 
+/* ── Demo Roles Specification ───────────────────────────────────────────── */
+const DEMO_ROLES = [
+  // Clinical
+  { label: 'Doctor', role: 'Physician', email: 'doctor@clinic.com', pass: 'Clinic@2026#Doctor', category: 'Clinical', color: 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100' },
+  { label: 'Patient', role: 'Patient User', email: 'patient@clinic.com', pass: 'Clinic@2026#Patient', category: 'Clinical', color: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' },
+  { label: 'Nurse', role: 'Clinical Nurse', email: 'nurse@clinic.com', pass: 'Clinic@2026#Nurse', category: 'Clinical', color: 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100' },
+  { label: 'Lab Tech', role: 'Laboratory', email: 'labtech@clinic.com', pass: 'Clinic@2026#LabTech', category: 'Clinical', color: 'bg-cyan-50 text-cyan-700 border-cyan-200 hover:bg-cyan-100' },
+  { label: 'Radiology', role: 'Radiologist', email: 'radiologist@clinic.com', pass: 'Clinic@2026#Radio', category: 'Clinical', color: 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100' },
+
+  // Operations & Front Desk
+  { label: 'Pharmacist', role: 'Dispenser', email: 'pharmacist@clinic.com', pass: 'Clinic@2026#Pharmacy', category: 'Operations', color: 'bg-sky-50 text-sky-700 border-sky-200 hover:bg-sky-100' },
+  { label: 'Pharma Mgr', role: 'Store Keeper', email: 'pharmacymanager@clinic.com', pass: 'Clinic@2026#PharmMgr', category: 'Operations', color: 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100' },
+  { label: 'Reception', role: 'Front Desk', email: 'receptionist@clinic.com', pass: 'Clinic@2026#Reception', category: 'Operations', color: 'bg-teal-50 text-teal-700 border-teal-200 hover:bg-teal-100' },
+  { label: 'Accountant', role: 'Finance & Billing', email: 'accountant@clinic.com', pass: 'Clinic@2026#Account', category: 'Operations', color: 'bg-lime-50 text-lime-700 border-lime-200 hover:bg-lime-100' },
+  { label: 'Support Desk', role: 'Helpdesk Staff', email: 'staff@clinic.com', pass: 'Clinic@2026#Staff', category: 'Operations', color: 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100' },
+
+  // Management & Administration
+  { label: 'Admin', role: 'Clinic Admin', email: 'admin@clinic.com', pass: 'Clinic@2026#Admin', category: 'Management', color: 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100' },
+  { label: 'Super Admin', role: 'Platform Owner', email: 'superadmin@clinic.com', pass: 'Clinic@2026#Super', category: 'Management', color: 'bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200 hover:bg-fuchsia-100' },
+  { label: 'Branch Mgr', role: 'Branch Admin', email: 'manager@clinic.com', pass: 'Clinic@2026#Manager', category: 'Management', color: 'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100' },
+  { label: 'HR Manager', role: 'HR & Personnel', email: 'hrmanager@clinic.com', pass: 'Clinic@2026#HR', category: 'Management', color: 'bg-violet-50 text-violet-700 border-violet-200 hover:bg-violet-100' },
+];
+
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -65,6 +88,7 @@ export default function Login() {
   const [forgotStep, setForgotStep] = useState(0); // 0 = login, 1 = send email, 2 = reset pass
   const [newPassword, setNewPassword] = useState('');
   const [resetSuccess, setResetSuccess] = useState(false);
+  const [demoCategory, setDemoCategory] = useState('All');
 
   const {
     login: storeLogin,
@@ -535,34 +559,58 @@ export default function Login() {
               {/* Quick Demo Accounts */}
               <div className="pt-3 border-t border-slate-200/80">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                  <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-                    Quick Fill Demo Roles
+                    Quick Fill Demo Roles ({DEMO_ROLES.length})
                   </span>
-                  <span className="text-[10px] text-slate-400">1-click test credentials</span>
+                  <span className="text-[10px] text-slate-400 font-medium">1-click test credentials</span>
                 </div>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { label: 'Patient', email: 'patient@clinic.com', pass: 'Clinic@2026#Patient', color: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' },
-                    { label: 'Doctor', email: 'doctor@clinic.com', pass: 'Clinic@2026#Doctor', color: 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100' },
-                    { label: 'Admin', email: 'admin@clinic.com', pass: 'Clinic@2026#Admin', color: 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100' },
-                    { label: 'Staff', email: 'staff@clinic.com', pass: 'Clinic@2026#Staff', color: 'bg-teal-50 text-teal-700 border-teal-200 hover:bg-teal-100' },
-                    { label: 'Manager', email: 'manager@clinic.com', pass: 'Clinic@2026#Manager', color: 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100' },
-                    { label: 'HR', email: 'hrmanager@clinic.com', pass: 'Clinic@2026#HR', color: 'bg-violet-50 text-violet-700 border-violet-200 hover:bg-violet-100' },
-                  ].map((demo) => (
-                    <button
-                      key={demo.label}
-                      type="button"
-                      onClick={() => {
-                        setEmail(demo.email);
-                        setPassword(demo.pass);
-                        clearError();
-                      }}
-                      className={`py-2 px-2.5 rounded-xl text-xs font-bold border transition text-center cursor-pointer shadow-xs ${demo.color}`}
-                    >
-                      {demo.label}
-                    </button>
-                  ))}
+
+                {/* Category Filter Pills */}
+                <div className="flex items-center gap-1.5 mb-2.5 overflow-x-auto pb-1 scrollbar-none">
+                  {['All', 'Clinical', 'Operations', 'Management'].map((cat) => {
+                    const count = cat === 'All' ? DEMO_ROLES.length : DEMO_ROLES.filter(r => r.category === cat).length;
+                    const isActive = demoCategory === cat;
+                    return (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => setDemoCategory(cat)}
+                        className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full transition-all cursor-pointer border ${
+                          isActive
+                            ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                            : 'bg-slate-100 text-slate-600 border-slate-200/80 hover:bg-slate-200'
+                        }`}
+                      >
+                        {cat} ({count})
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Roles Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5 max-h-[190px] overflow-y-auto pr-1">
+                  {DEMO_ROLES.filter(r => demoCategory === 'All' || r.category === demoCategory).map((demo) => {
+                    const isSelected = email === demo.email;
+                    return (
+                      <button
+                        key={demo.label}
+                        type="button"
+                        onClick={() => {
+                          setEmail(demo.email);
+                          setPassword(demo.pass);
+                          clearError();
+                        }}
+                        className={`py-1.5 px-2 rounded-xl text-xs font-bold border transition text-center cursor-pointer shadow-xs flex flex-col items-center justify-center ${demo.color} ${
+                          isSelected ? 'ring-2 ring-blue-600 ring-offset-1 font-extrabold shadow-sm scale-[1.02]' : ''
+                        }`}
+                        title={`${demo.label} - ${demo.role} (${demo.email})`}
+                      >
+                        <span className="truncate w-full leading-tight">{demo.label}</span>
+                        <span className="text-[9px] font-medium opacity-75 truncate w-full leading-tight mt-0.5">{demo.role}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
