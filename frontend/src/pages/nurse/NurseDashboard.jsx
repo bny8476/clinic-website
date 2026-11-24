@@ -6,6 +6,7 @@ import { axiosPrivate } from '../../api/axios';
 import { 
   Activity, 
   ArrowRight, 
+  BedDouble,
   Calendar as CalendarIcon, 
   ChevronLeft, 
   ChevronRight, 
@@ -423,7 +424,7 @@ const NurseDashboard = () => {
         {[
           { id: 'Dashboard', label: 'Dashboard', icon: LayoutGrid },
           { id: 'OP Queue', label: `OP Queue (${opPatients.length})`, icon: UserPlus },
-          { id: 'IP Wards', label: 'IP Wards', icon: UserCheck },
+          { id: 'IP Wards', label: 'IP Wards', icon: BedDouble },
           { id: 'Inventory', label: 'Inventory', icon: Clipboard }
         ].map(tab => {
           const Icon = tab.icon;
