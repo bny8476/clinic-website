@@ -43,7 +43,7 @@ export default function Sidebar({ items = [], isOpen, setIsOpen }) {
             
             <button 
               onClick={() => setIsOpen(!isOpen)}
-              className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer shrink-0 ml-auto border-none bg-transparent"
+              className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer shrink-0 ml-auto border-none bg-transparent"
               title="Toggle Sidebar"
               aria-label="Toggle Sidebar"
             >

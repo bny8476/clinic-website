@@ -32,7 +32,9 @@ import {
   Building,
   Thermometer,
   Zap,
-  SlidersHorizontal
+  SlidersHorizontal,
+  ShieldCheck,
+  CheckCheck
 } from 'lucide-react';
 
 /* ─────────────────────────────────────────────────────────────
@@ -51,7 +53,7 @@ const INITIAL_WARDS = [
     rooms: [
       {
         id: 101,
-        roomNumber: 'Bay 1 (Critical)',
+        roomNumber: 'Bay 1 (Critical Care Telemetry)',
         beds: [
           {
             id: 1,
@@ -68,8 +70,8 @@ const INITIAL_WARDS = [
               admittedAt: '2026-11-22T08:30:00Z',
               doctor: 'Dr. Arvind Swaminathan, MD',
               department: 'Pulmonology & Critical Care',
-              diagnosis: 'Acute Respiratory Distress Syndrome (ARDS) secondary to severe pneumonia',
-              vitals: { bp: '138/86', pulse: 92, spo2: 96, temp: '100.4°F', resp: 22, pain: '3/10', updated: '10 mins ago' },
+              diagnosis: 'ARDS secondary to severe bilateral lobar pneumonia',
+              vitals: { bp: '138/86', pulse: 92, spo2: 96, temp: '100.4°F', resp: 22, pain: '3/10', updated: '10m ago' },
               nextMedication: 'IV Meropenem 1g at 18:00',
               allergies: 'Penicillin, Sulfa',
               fallRisk: 'HIGH'
@@ -79,7 +81,7 @@ const INITIAL_WARDS = [
             id: 2,
             bedNumber: 'ICU-02',
             status: 'OCCUPIED',
-            type: 'Ventilator Bed',
+            type: 'Ventilator Bed (Continuous EEG)',
             acuity: 'CRITICAL',
             patient: {
               id: 102,
@@ -90,8 +92,8 @@ const INITIAL_WARDS = [
               admittedAt: '2026-11-23T14:15:00Z',
               doctor: 'Dr. Marcus Vance, MD',
               department: 'Neurology / Stroke Care',
-              diagnosis: 'Acute MCA ischemic stroke post-thrombolysis; neurological monitoring',
-              vitals: { bp: '142/90', pulse: 84, spo2: 98, temp: '98.8°F', resp: 18, pain: '2/10', updated: '25 mins ago' },
+              diagnosis: 'Acute MCA ischemic stroke post-thrombolysis; neuro telemetry',
+              vitals: { bp: '142/90', pulse: 84, spo2: 98, temp: '98.8°F', resp: 18, pain: '2/10', updated: '25m ago' },
               nextMedication: 'Aspirin 150mg + Atorvastatin 80mg',
               allergies: 'NKDA',
               fallRisk: 'HIGH'
@@ -112,8 +114,8 @@ const INITIAL_WARDS = [
               admittedAt: '2026-11-21T19:00:00Z',
               doctor: 'Dr. Sarah Jenkins, MD',
               department: 'Cardiology',
-              diagnosis: 'Non-ST-Elevation Myocardial Infarction (NSTEMI) post-PCI stent',
-              vitals: { bp: '124/78', pulse: 72, spo2: 99, temp: '98.4°F', resp: 16, pain: '1/10', updated: '40 mins ago' },
+              diagnosis: 'NSTEMI post-percutaneous coronary intervention (PCI stent)',
+              vitals: { bp: '124/78', pulse: 72, spo2: 99, temp: '98.4°F', resp: 16, pain: '1/10', updated: '40m ago' },
               nextMedication: 'Ticagrelor 90mg PO at 20:00',
               allergies: 'Codeine',
               fallRisk: 'MODERATE'
@@ -123,7 +125,7 @@ const INITIAL_WARDS = [
             id: 4,
             bedNumber: 'ICU-04',
             status: 'AVAILABLE',
-            type: 'Ventilator Bed',
+            type: 'Ventilator Bed (Electric Fowler)',
             acuity: 'NONE',
             patient: null
           }
@@ -131,7 +133,7 @@ const INITIAL_WARDS = [
       },
       {
         id: 102,
-        roomNumber: 'Bay 2 (Isolation)',
+        roomNumber: 'Bay 2 (Negative Pressure Isolation)',
         beds: [
           {
             id: 5,
@@ -140,13 +142,13 @@ const INITIAL_WARDS = [
             type: 'Negative Pressure Isolation Bed',
             acuity: 'NONE',
             patient: null,
-            cleaningEst: 'Ready in 15 mins'
+            cleaningEst: 'Ready in ~15 mins'
           },
           {
             id: 6,
             bedNumber: 'ICU-06',
             status: 'AVAILABLE',
-            type: 'Isolation Bed',
+            type: 'Isolation Bed with HEPA Filtration',
             acuity: 'NONE',
             patient: null
           }
@@ -165,7 +167,7 @@ const INITIAL_WARDS = [
     rooms: [
       {
         id: 201,
-        roomNumber: 'Room 301 (Post-Op General)',
+        roomNumber: 'Room 301 (Post-Op Step-Down)',
         beds: [
           {
             id: 7,
@@ -183,7 +185,7 @@ const INITIAL_WARDS = [
               doctor: 'Dr. James Anderson, MS, FACS',
               department: 'General & Laparoscopic Surgery',
               diagnosis: 'Post-op Day 1 Laparoscopic Cholecystectomy with drain',
-              vitals: { bp: '128/82', pulse: 76, spo2: 98, temp: '99.0°F', resp: 16, pain: '4/10', updated: '1 hr ago' },
+              vitals: { bp: '128/82', pulse: 76, spo2: 98, temp: '99.0°F', resp: 16, pain: '4/10', updated: '1h ago' },
               nextMedication: 'IV Paracetamol 1g + Tramadol SOS',
               allergies: 'NKDA',
               fallRisk: 'MODERATE'
@@ -205,7 +207,7 @@ const INITIAL_WARDS = [
               doctor: 'Dr. James Anderson, MS, FACS',
               department: 'General Surgery',
               diagnosis: 'Post-op Laparoscopic Appendectomy; oral fluids tolerated',
-              vitals: { bp: '118/74', pulse: 70, spo2: 100, temp: '98.6°F', resp: 14, pain: '2/10', updated: '45 mins ago' },
+              vitals: { bp: '118/74', pulse: 70, spo2: 100, temp: '98.6°F', resp: 14, pain: '2/10', updated: '45m ago' },
               nextMedication: 'Oral Cefuroxime 500mg at 19:00',
               allergies: 'Ciprofloxacin',
               fallRisk: 'LOW'
@@ -215,7 +217,7 @@ const INITIAL_WARDS = [
       },
       {
         id: 202,
-        roomNumber: 'Room 302 (Orthopedic & Trauma)',
+        roomNumber: 'Room 302 (Orthopedic & Trauma Care)',
         beds: [
           {
             id: 9,
@@ -232,8 +234,8 @@ const INITIAL_WARDS = [
               admittedAt: '2026-11-20T16:20:00Z',
               doctor: 'Dr. Robert Chen, MS Ortho',
               department: 'Orthopedic Surgery',
-              diagnosis: 'Left Total Hip Arthroplasty (THA); DVT prophylaxis & physiotherapy',
-              vitals: { bp: '132/80', pulse: 74, spo2: 97, temp: '98.5°F', resp: 16, pain: '3/10', updated: '15 mins ago' },
+              diagnosis: 'Left Total Hip Arthroplasty (THA); DVT prophylaxis & physio',
+              vitals: { bp: '132/80', pulse: 74, spo2: 97, temp: '98.5°F', resp: 16, pain: '3/10', updated: '15m ago' },
               nextMedication: 'Enoxaparin 40mg SC at 21:00',
               allergies: 'Ibuprofen (GI bleed)',
               fallRisk: 'HIGH'
@@ -251,7 +253,7 @@ const INITIAL_WARDS = [
       },
       {
         id: 203,
-        roomNumber: 'Room 303 (Private Suite)',
+        roomNumber: 'Room 303 (Private Surgical Suite)',
         beds: [
           {
             id: 11,
@@ -269,7 +271,7 @@ const INITIAL_WARDS = [
               doctor: 'Dr. Nalini Paul, MD',
               department: 'Obstetrics & Gynecology',
               diagnosis: 'Post-cesarean delivery monitoring; baby Rooming-in',
-              vitals: { bp: '116/72', pulse: 68, spo2: 99, temp: '98.4°F', resp: 14, pain: '3/10', updated: '20 mins ago' },
+              vitals: { bp: '116/72', pulse: 68, spo2: 99, temp: '98.4°F', resp: 14, pain: '3/10', updated: '20m ago' },
               nextMedication: 'Oral Iron & Calcium supplements',
               allergies: 'NKDA',
               fallRisk: 'LOW'
@@ -316,8 +318,8 @@ const INITIAL_WARDS = [
               admittedAt: '2026-11-22T17:30:00Z',
               doctor: 'Dr. Sarah Jenkins, MD',
               department: 'Internal Medicine',
-              diagnosis: 'Type 2 Diabetes Mellitus with Diabetic Foot Ulcer; glycemic control',
-              vitals: { bp: '130/84', pulse: 80, spo2: 98, temp: '98.7°F', resp: 16, pain: '2/10', updated: '30 mins ago' },
+              diagnosis: 'Type 2 Diabetes Mellitus with Diabetic Foot Ulcer; glycemic management',
+              vitals: { bp: '130/84', pulse: 80, spo2: 98, temp: '98.7°F', resp: 16, pain: '2/10', updated: '30m ago' },
               nextMedication: 'Insulin Glargine 18 units SC at 22:00',
               allergies: 'Metformin',
               fallRisk: 'MODERATE'
@@ -338,8 +340,8 @@ const INITIAL_WARDS = [
               admittedAt: '2026-11-23T10:15:00Z',
               doctor: 'Dr. Arvind Swaminathan, MD',
               department: 'Internal Medicine',
-              diagnosis: 'Acute bacterial pyelonephritis on IV Ceftriaxone; fever subsiding',
-              vitals: { bp: '122/76', pulse: 74, spo2: 99, temp: '99.2°F', resp: 16, pain: '2/10', updated: '50 mins ago' },
+              diagnosis: 'Acute bacterial pyelonephritis on IV Ceftriaxone; fever resolving',
+              vitals: { bp: '122/76', pulse: 74, spo2: 99, temp: '99.2°F', resp: 16, pain: '2/10', updated: '50m ago' },
               nextMedication: 'IV Ceftriaxone 1g at 20:00',
               allergies: 'Sulfa Drugs',
               fallRisk: 'LOW'
@@ -365,7 +367,7 @@ const INITIAL_WARDS = [
       },
       {
         id: 302,
-        roomNumber: 'Room 202 (Step-down Care)',
+        roomNumber: 'Room 202 (Observation Care)',
         beds: [
           {
             id: 17,
@@ -382,8 +384,8 @@ const INITIAL_WARDS = [
               admittedAt: '2026-11-24T12:00:00Z',
               doctor: 'Dr. Arvind Swaminathan, MD',
               department: 'Pulmonology',
-              diagnosis: 'Atypical interstitial pneumonitis awaiting follow-up HRCT review',
-              vitals: { bp: '126/80', pulse: 76, spo2: 97, temp: '98.6°F', resp: 16, pain: '1/10', updated: '15 mins ago' },
+              diagnosis: 'Atypical interstitial pneumonitis awaiting diagnostic HRCT report',
+              vitals: { bp: '126/80', pulse: 76, spo2: 97, temp: '98.6°F', resp: 16, pain: '1/10', updated: '15m ago' },
               nextMedication: 'Oral Azithromycin 500mg daily',
               allergies: 'Penicillin',
               fallRisk: 'LOW'
@@ -685,31 +687,31 @@ export default function WardManagement() {
   const getAcuityBadge = (acuity) => {
     switch (acuity) {
       case 'CRITICAL':
-        return 'bg-red-50 text-red-700 border-red-200 ring-1 ring-red-500/30 animate-pulse';
+        return 'bg-red-50 text-red-700 border-red-200 ring-1 ring-red-500/30 font-bold';
       case 'MODERATE':
-        return 'bg-amber-50 text-amber-700 border-amber-200';
+        return 'bg-amber-50 text-amber-700 border-amber-200 font-bold';
       case 'STABLE':
-        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200 font-bold';
       default:
-        return 'bg-slate-50 text-slate-500 border-slate-200';
+        return 'bg-slate-50 text-slate-500 border-slate-200 font-medium';
     }
   };
 
   return (
-    <div className="space-y-6 font-sans">
+    <div className="space-y-6 font-sans w-full">
       {/* ── TOP BANNER & ACTION HEADER ── */}
       <div className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center shrink-0 border border-teal-100 shadow-2xs">
-              <BedDouble className="w-5 h-5" />
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-teal-50 text-teal-700 flex items-center justify-center shrink-0 border border-teal-100 shadow-2xs">
+              <BedDouble className="w-6 h-6" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight leading-none">
                   Inpatient Wards & Bed Management
                 </h1>
-                <span className="hidden sm:inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-200">
+                <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-200">
                   Live Census
                 </span>
               </div>
@@ -761,79 +763,89 @@ export default function WardManagement() {
         </div>
       </div>
 
-      {/* ── KPI METRICS CARDS ROW ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3.5">
+      {/* ── KPI METRICS CARDS ROW (Responsive Grid) ── */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
         {/* Total Beds & Occupancy */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider">Total Capacity</span>
-            <Building className="w-4 h-4 text-blue-600" />
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between text-slate-400 mb-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider">Total Capacity</span>
+              <Building className="w-4 h-4 text-blue-600" />
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl sm:text-3xl font-black text-slate-900">{stats.totalBeds}</span>
+              <span className="text-xs font-bold text-slate-500">Beds</span>
+            </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-slate-900">{stats.totalBeds}</span>
-            <span className="text-xs font-bold text-slate-500">Beds</span>
-          </div>
-          <div className="mt-2 text-[11px] font-semibold text-slate-500 flex items-center gap-1.5">
+          <div className="mt-3 text-[11px] font-semibold text-slate-500 space-y-1">
             <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
               <div
                 className="bg-blue-600 h-1.5 rounded-full"
                 style={{ width: `${stats.occupancyRate}%` }}
               />
             </div>
-            <span className="shrink-0">{stats.occupancyRate}% Occupancy</span>
+            <span className="block text-slate-600">{stats.occupancyRate}% Total Occupancy</span>
           </div>
         </div>
 
         {/* Currently Occupied */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider">Occupied Beds</span>
-            <Users className="w-4 h-4 text-indigo-600" />
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between text-slate-400 mb-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider">Occupied Beds</span>
+              <Users className="w-4 h-4 text-indigo-600" />
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl sm:text-3xl font-black text-indigo-950">{stats.occupied}</span>
+              <span className="text-xs font-bold text-indigo-600">Admitted</span>
+            </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-indigo-950">{stats.occupied}</span>
-            <span className="text-xs font-bold text-indigo-600">Admitted</span>
-          </div>
-          <p className="mt-2 text-[11px] font-medium text-slate-400">Under continuous nursing care</p>
+          <p className="mt-3 text-[11px] font-medium text-slate-400">Under bedside care</p>
         </div>
 
         {/* Available for Admission */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider">Available Beds</span>
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between text-slate-400 mb-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider">Available Beds</span>
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl sm:text-3xl font-black text-emerald-600">{stats.available}</span>
+              <span className="text-xs font-bold text-emerald-700">Ready</span>
+            </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-emerald-600">{stats.available}</span>
-            <span className="text-xs font-bold text-emerald-700">Ready</span>
-          </div>
-          <p className="mt-2 text-[11px] font-medium text-emerald-600/80">Immediate patient admissions</p>
+          <p className="mt-3 text-[11px] font-medium text-emerald-600/90 font-semibold">Immediate admissions</p>
         </div>
 
         {/* Critical Acuity (ICU) */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider">High Acuity</span>
-            <Zap className="w-4 h-4 text-red-500" />
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between text-slate-400 mb-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider">High Acuity</span>
+              <Zap className="w-4 h-4 text-red-500" />
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl sm:text-3xl font-black text-red-600">{stats.criticalPatients}</span>
+              <span className="text-xs font-bold text-red-500">ICU</span>
+            </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-red-600">{stats.criticalPatients}</span>
-            <span className="text-xs font-bold text-red-500">ICU / ARDS</span>
-          </div>
-          <p className="mt-2 text-[11px] font-medium text-red-600/80">Continuous vital telemetry</p>
+          <p className="mt-3 text-[11px] font-medium text-red-600/90 font-semibold">Continuous telemetry</p>
         </div>
 
         {/* Cleaning & Maintenance */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs col-span-2 lg:col-span-1">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider">Turnover / Cleaning</span>
-            <Clock className="w-4 h-4 text-amber-500" />
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-xs flex flex-col justify-between col-span-2 sm:col-span-1">
+          <div>
+            <div className="flex items-center justify-between text-slate-400 mb-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider">Turnover / Cleaning</span>
+              <Clock className="w-4 h-4 text-amber-500" />
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl sm:text-3xl font-black text-amber-600">{stats.cleaning + stats.maintenance}</span>
+              <span className="text-xs font-bold text-amber-700">Turnover</span>
+            </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-amber-600">{stats.cleaning + stats.maintenance}</span>
-            <span className="text-xs font-bold text-amber-700">In Turnover</span>
-          </div>
-          <p className="mt-2 text-[11px] font-medium text-slate-400">Sanitizing & inspection</p>
+          <p className="mt-3 text-[11px] font-medium text-slate-400">Sanitizing & inspection</p>
         </div>
       </div>
 
@@ -848,12 +860,12 @@ export default function WardManagement() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search by patient name, MRN, bed #, diagnosis, or doctor..."
-              className="w-full text-xs font-medium pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition"
+              className="w-full text-xs font-medium pl-9 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition"
             />
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs p-0.5"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs p-0.5 cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -925,7 +937,7 @@ export default function WardManagement() {
                   setStatusFilter('ALL');
                   setSearchTerm('');
                 }}
-                className="mt-4 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-xl transition"
+                className="mt-4 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-xl transition cursor-pointer"
               >
                 Reset All Filters
               </button>
@@ -939,7 +951,7 @@ export default function WardManagement() {
                 {/* Ward Header */}
                 <div className="bg-slate-50/80 px-5 py-4 border-b border-slate-200/80 flex flex-wrap items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-teal-100/80 text-teal-800 flex items-center justify-center font-bold text-xs shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-teal-100/90 text-teal-800 flex items-center justify-center font-black text-xs shrink-0 shadow-2xs">
                       {ward.code}
                     </div>
                     <div>
@@ -963,17 +975,22 @@ export default function WardManagement() {
                 </div>
 
                 {/* Rooms and Beds Grid */}
-                <div className="p-5 space-y-6">
+                <div className="p-5 sm:p-6 space-y-6">
                   {ward.rooms.map((room) => (
-                    <div key={room.id} className="space-y-3">
-                      <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider">
-                        <Building className="w-3.5 h-3.5 text-slate-400" />
-                        <span>{room.roomNumber}</span>
-                        <span className="text-slate-300">•</span>
-                        <span className="text-[11px] font-normal lowercase">{room.beds.length} beds assigned</span>
+                    <div key={room.id} className="space-y-3.5">
+                      {/* Room Header Banner */}
+                      <div className="flex items-center justify-between py-1 border-b border-slate-100">
+                        <div className="flex items-center gap-2 text-xs font-bold text-slate-700 uppercase tracking-wider">
+                          <Building className="w-4 h-4 text-teal-600 shrink-0" />
+                          <span>{room.roomNumber}</span>
+                        </div>
+                        <span className="text-[11px] font-semibold text-slate-400">
+                          {room.beds.length} Total Beds
+                        </span>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                      {/* ── CARD GRID: Responsive 1 / 2 / 3 / 4 Columns with Perfect Alignment ── */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-5">
                         {room.beds.map((bed) => {
                           const isOccupied = bed.status === 'OCCUPIED';
                           const isAvailable = bed.status === 'AVAILABLE';
@@ -983,7 +1000,7 @@ export default function WardManagement() {
                           return (
                             <div
                               key={bed.id}
-                              className={`rounded-2xl border transition-all p-4.5 flex flex-col justify-between shadow-2xs ${
+                              className={`rounded-2xl border transition-all p-4 sm:p-5 flex flex-col justify-between h-full min-h-[360px] shadow-xs relative ${
                                 isOccupied
                                   ? bed.acuity === 'CRITICAL'
                                     ? 'bg-gradient-to-b from-white to-red-50/20 border-red-200 hover:border-red-300'
@@ -995,15 +1012,16 @@ export default function WardManagement() {
                                   : 'bg-slate-50 border-slate-200/80'
                               }`}
                             >
-                              {/* Bed Top Strip */}
-                              <div>
-                                <div className="flex items-center justify-between gap-2 mb-2.5">
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-xs font-black font-mono px-2 py-0.5 rounded-md bg-slate-900 text-white tracking-wide">
+                              {/* ── CARD TOP SECTION ── */}
+                              <div className="space-y-3">
+                                {/* Bed Header Badges */}
+                                <div className="flex items-center justify-between gap-2">
+                                  <div className="flex items-center gap-2 min-w-0">
+                                    <span className="text-xs font-black font-mono px-2.5 py-1 rounded-lg bg-slate-900 text-white tracking-wide shrink-0 shadow-xs">
                                       {bed.bedNumber}
                                     </span>
                                     <span
-                                      className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${getStatusBadge(
+                                      className={`px-2 py-0.5 rounded-md text-[10px] font-bold border tracking-wide uppercase shrink-0 ${getStatusBadge(
                                         bed.status
                                       )}`}
                                     >
@@ -1013,21 +1031,27 @@ export default function WardManagement() {
 
                                   {isOccupied && bed.acuity && (
                                     <span
-                                      className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${getAcuityBadge(
+                                      className={`px-2 py-0.5 rounded-md text-[10px] font-bold border shrink-0 tracking-wide uppercase ${getAcuityBadge(
                                         bed.acuity
                                       )}`}
                                     >
                                       {bed.acuity}
                                     </span>
                                   )}
+
+                                  {isAvailable && (
+                                    <span className="text-[10px] font-bold text-emerald-600 bg-emerald-100/60 px-2 py-0.5 rounded-md">
+                                      Ready
+                                    </span>
+                                  )}
                                 </div>
 
-                                {/* Content: Patient Details or Empty Bed State */}
-                                {isOccupied && bed.patient ? (
+                                {/* ── CONTENT: OCCUPIED BED STATE ── */}
+                                {isOccupied && bed.patient && (
                                   <div className="space-y-3">
                                     {/* Patient Demographics */}
                                     <div>
-                                      <div className="flex items-baseline justify-between">
+                                      <div className="flex items-baseline justify-between gap-1">
                                         <h3 className="text-sm font-bold text-slate-900 truncate">
                                           {bed.patient.name}
                                         </h3>
@@ -1035,132 +1059,163 @@ export default function WardManagement() {
                                           {bed.patient.gender[0]} • {bed.patient.age}y
                                         </span>
                                       </div>
-                                      <p className="text-[11px] font-mono text-teal-700 font-semibold">
+                                      <p className="text-[11px] font-mono text-teal-700 font-semibold mt-0.5">
                                         {bed.patient.mrn}
                                       </p>
                                     </div>
 
-                                    {/* Diagnosis & Admitting Doctor */}
-                                    <div className="bg-slate-50/80 p-2.5 rounded-xl border border-slate-100 text-xs space-y-1">
-                                      <div className="text-slate-800 font-medium line-clamp-2">
+                                    {/* Diagnosis & Admitting Doctor (Fixed min-height for row alignment) */}
+                                    <div className="bg-slate-50/90 p-2.5 rounded-xl border border-slate-100 text-xs space-y-1.5 min-h-[68px] flex flex-col justify-between">
+                                      <div className="text-slate-800 font-medium line-clamp-2 leading-snug">
                                         <span className="font-bold text-slate-900">Dx: </span>
                                         {bed.patient.diagnosis}
                                       </div>
-                                      <div className="text-[11px] text-slate-500 flex items-center gap-1 truncate pt-0.5">
-                                        <Stethoscope className="w-3 h-3 text-slate-400 shrink-0" />
+                                      <div className="text-[11px] text-slate-500 flex items-center gap-1.5 truncate pt-0.5 border-t border-slate-200/50">
+                                        <Stethoscope className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                                         <span className="truncate">{bed.patient.doctor}</span>
                                       </div>
                                     </div>
 
                                     {/* Live Vitals Monitor Strip */}
-                                    <div className="grid grid-cols-4 gap-1.5 p-2 bg-slate-900 text-white rounded-xl text-center text-[10px] font-mono">
-                                      <div>
-                                        <span className="text-slate-400 text-[9px] block">BP</span>
-                                        <span className="font-bold text-sky-400">{bed.patient.vitals.bp}</span>
+                                    <div className="grid grid-cols-4 gap-1 p-2 bg-slate-900 text-white rounded-xl text-center font-mono shadow-2xs">
+                                      <div className="min-w-0">
+                                        <span className="text-slate-400 text-[9px] uppercase tracking-wider block">BP</span>
+                                        <span className="font-bold text-sky-400 text-[11px] truncate block">
+                                          {bed.patient.vitals.bp}
+                                        </span>
                                       </div>
-                                      <div>
-                                        <span className="text-slate-400 text-[9px] block">HR</span>
-                                        <span className="font-bold text-emerald-400">{bed.patient.vitals.pulse}</span>
+                                      <div className="min-w-0">
+                                        <span className="text-slate-400 text-[9px] uppercase tracking-wider block">HR</span>
+                                        <span className="font-bold text-emerald-400 text-[11px] truncate block">
+                                          {bed.patient.vitals.pulse}
+                                        </span>
                                       </div>
-                                      <div>
-                                        <span className="text-slate-400 text-[9px] block">SpO2</span>
-                                        <span className="font-bold text-amber-300">{bed.patient.vitals.spo2}%</span>
+                                      <div className="min-w-0">
+                                        <span className="text-slate-400 text-[9px] uppercase tracking-wider block">SpO2</span>
+                                        <span className="font-bold text-amber-300 text-[11px] truncate block">
+                                          {bed.patient.vitals.spo2}%
+                                        </span>
                                       </div>
-                                      <div>
-                                        <span className="text-slate-400 text-[9px] block">Temp</span>
-                                        <span className="font-bold text-slate-200">{bed.patient.vitals.temp}</span>
+                                      <div className="min-w-0">
+                                        <span className="text-slate-400 text-[9px] uppercase tracking-wider block">Temp</span>
+                                        <span className="font-bold text-slate-200 text-[11px] truncate block">
+                                          {bed.patient.vitals.temp}
+                                        </span>
                                       </div>
                                     </div>
 
-                                    {/* Nursing Order Alert */}
-                                    <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
-                                      <span className="flex items-center gap-1 text-slate-600 truncate">
-                                        <Pill className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
-                                        <span className="truncate">{bed.patient.nextMedication}</span>
-                                      </span>
+                                    {/* Next Medication / Nursing Alert */}
+                                    <div className="text-[11px] text-slate-600 flex items-center gap-1.5 truncate pt-0.5">
+                                      <Pill className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+                                      <span className="truncate font-medium">{bed.patient.nextMedication}</span>
                                     </div>
                                   </div>
-                                ) : isAvailable ? (
-                                  <div className="py-6 text-center space-y-2">
-                                    <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
-                                      <Check className="w-5 h-5" />
+                                )}
+
+                                {/* ── CONTENT: AVAILABLE BED STATE ── */}
+                                {isAvailable && (
+                                  <div className="py-6 text-center space-y-3 flex-1 flex flex-col justify-center">
+                                    <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto border border-emerald-100 shadow-2xs">
+                                      <BedDouble className="w-6 h-6" />
                                     </div>
-                                    <h4 className="text-xs font-bold text-emerald-900">Bed Ready for Admission</h4>
-                                    <p className="text-[11px] text-slate-500">{bed.type}</p>
+                                    <div>
+                                      <h4 className="text-sm font-bold text-emerald-950">Ready for Admission</h4>
+                                      <p className="text-xs text-slate-500 mt-0.5">{bed.type}</p>
+                                    </div>
+                                    <div className="bg-emerald-50/60 p-2.5 rounded-xl border border-emerald-100/80 text-[11px] text-emerald-800 font-medium">
+                                      Terminal Disinfection Complete • Oxygen Line Tested
+                                    </div>
                                   </div>
-                                ) : isCleaning ? (
-                                  <div className="py-6 text-center space-y-2">
-                                    <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center mx-auto animate-pulse">
-                                      <Clock className="w-5 h-5" />
+                                )}
+
+                                {/* ── CONTENT: CLEANING BED STATE ── */}
+                                {isCleaning && (
+                                  <div className="py-6 text-center space-y-3 flex-1 flex flex-col justify-center">
+                                    <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto border border-amber-100 shadow-2xs animate-pulse">
+                                      <Clock className="w-6 h-6" />
                                     </div>
-                                    <h4 className="text-xs font-bold text-amber-900">Sanitizing / Turnover</h4>
-                                    <p className="text-[11px] text-slate-500">{bed.cleaningEst || 'Disinfection in progress'}</p>
+                                    <div>
+                                      <h4 className="text-sm font-bold text-amber-950">Turnover Sanitization</h4>
+                                      <p className="text-xs text-slate-500 mt-0.5">{bed.cleaningEst || 'In progress'}</p>
+                                    </div>
+                                    <div className="bg-amber-50/60 p-2.5 rounded-xl border border-amber-100/80 text-[11px] text-amber-800 font-medium">
+                                      Deep UV-C sterilization & linen change in progress
+                                    </div>
                                   </div>
-                                ) : (
-                                  <div className="py-6 text-center space-y-2">
-                                    <div className="w-10 h-10 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center mx-auto">
-                                      <ShieldAlert className="w-5 h-5" />
+                                )}
+
+                                {/* ── CONTENT: MAINTENANCE BED STATE ── */}
+                                {isMaintenance && (
+                                  <div className="py-6 text-center space-y-3 flex-1 flex flex-col justify-center">
+                                    <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-600 flex items-center justify-center mx-auto border border-slate-200">
+                                      <ShieldAlert className="w-6 h-6" />
                                     </div>
-                                    <h4 className="text-xs font-bold text-slate-700">Maintenance & Inspection</h4>
-                                    <p className="text-[11px] text-slate-500">{bed.maintenanceNote || 'Bio-medical sensor check'}</p>
+                                    <div>
+                                      <h4 className="text-sm font-bold text-slate-800">Biomedical Inspection</h4>
+                                      <p className="text-xs text-slate-500 mt-0.5">{bed.maintenanceNote || 'Sensor check'}</p>
+                                    </div>
+                                    <div className="bg-slate-100/80 p-2.5 rounded-xl border border-slate-200 text-[11px] text-slate-600">
+                                      Scheduled calibration by clinical engineering
+                                    </div>
                                   </div>
                                 )}
                               </div>
 
-                              {/* Bed Actions Footer */}
-                              <div className="pt-3.5 mt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                              {/* ── CARD BOTTOM ACTIONS FOOTER (Pinned & Aligned) ── */}
+                              <div className="pt-3.5 mt-3 border-t border-slate-100">
                                 {isOccupied && bed.patient ? (
-                                  <>
+                                  <div className="flex items-center gap-2 w-full">
                                     <button
                                       type="button"
                                       onClick={() => handleOpenVitalsModal(bed.patient, bed.patient.vitals)}
-                                      className="px-2.5 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-700 text-xs font-bold rounded-lg transition flex items-center gap-1 cursor-pointer"
+                                      className="flex-1 py-2 px-2.5 bg-teal-50 hover:bg-teal-100 text-teal-800 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
                                       title="Record bedside vital signs"
                                     >
-                                      <HeartPulse className="w-3.5 h-3.5" />
-                                      <span>Vitals</span>
+                                      <HeartPulse className="w-3.5 h-3.5 text-teal-600" />
+                                      <span>Log Vitals</span>
                                     </button>
 
-                                    <div className="flex items-center gap-1.5">
-                                      <button
-                                        type="button"
-                                        onClick={() => handleOpenTransferModal(bed)}
-                                        className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition flex items-center gap-1 cursor-pointer"
-                                        title="Transfer patient to another bed"
-                                      >
-                                        <ArrowRightLeft className="w-3.5 h-3.5" />
-                                        <span>Transfer</span>
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={() => navigate(`/nurse/workspace?patientId=${bed.patient.id}`)}
-                                        className="p-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg transition cursor-pointer"
-                                        title="Open Patient Clinical Chart"
-                                      >
-                                        <FileText className="w-3.5 h-3.5" />
-                                      </button>
-                                    </div>
-                                  </>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleOpenTransferModal(bed)}
+                                      className="flex-1 py-2 px-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer"
+                                      title="Transfer patient to another bed"
+                                    >
+                                      <ArrowRightLeft className="w-3.5 h-3.5 text-slate-500" />
+                                      <span>Transfer</span>
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      onClick={() => navigate(`/nurse/workspace?patientId=${bed.patient.id}`)}
+                                      className="p-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl transition cursor-pointer shrink-0"
+                                      title="Open Patient Clinical Chart"
+                                    >
+                                      <FileText className="w-4 h-4" />
+                                    </button>
+                                  </div>
+                                ) : isAvailable ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => toast.success(`Bed ${bed.bedNumber} ready for admission booking.`)}
+                                    className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition flex items-center justify-center gap-2 cursor-pointer shadow-xs shadow-emerald-600/20"
+                                  >
+                                    <Plus className="w-4 h-4" />
+                                    <span>Admit Patient Here</span>
+                                  </button>
                                 ) : isCleaning ? (
                                   <button
                                     type="button"
                                     onClick={() => handleMarkCleaned(bed.id)}
-                                    className="w-full py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                                    className="w-full py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs shadow-amber-600/20"
                                   >
-                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                    <CheckCircle2 className="w-4 h-4" />
                                     <span>Mark Cleaned & Available</span>
                                   </button>
-                                ) : isAvailable ? (
-                                  <button
-                                    type="button"
-                                    onClick={() => toast.success(`Bed ${bed.bedNumber} selected for admission.`)}
-                                    className="w-full py-1.5 bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-300 text-xs font-bold rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
-                                  >
-                                    <Plus className="w-3.5 h-3.5" />
-                                    <span>Admit Patient</span>
-                                  </button>
                                 ) : (
-                                  <span className="text-[11px] text-slate-400 mx-auto italic">Bed Inactive</span>
+                                  <div className="w-full py-2 text-center text-xs text-slate-400 font-medium bg-slate-100 rounded-xl">
+                                    Temporarily Out of Service
+                                  </div>
                                 )}
                               </div>
                             </div>
@@ -1179,7 +1234,7 @@ export default function WardManagement() {
       {/* ── LAYOUT 2: INPATIENT DOSSIER ROSTER VIEW ── */}
       {viewLayout === 'roster' && (
         <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
-          <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
+          <div className="px-5 py-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
             <div>
               <h3 className="text-sm font-bold text-slate-900">Admitted Patients Care Roster</h3>
               <p className="text-xs text-slate-500">
@@ -1251,14 +1306,14 @@ export default function WardManagement() {
                       <div className="flex items-center justify-end gap-1.5">
                         <button
                           onClick={() => handleOpenVitalsModal(pt, pt.vitals)}
-                          className="px-2.5 py-1 bg-teal-50 hover:bg-teal-100 text-teal-700 font-bold rounded-lg transition"
+                          className="px-2.5 py-1 bg-teal-50 hover:bg-teal-100 text-teal-700 font-bold rounded-lg transition cursor-pointer"
                           title="Record Vitals"
                         >
                           Log Vitals
                         </button>
                         <button
                           onClick={() => navigate(`/nurse/workspace?patientId=${pt.id}`)}
-                          className="p-1 text-slate-400 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition"
+                          className="p-1 text-slate-400 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition cursor-pointer"
                           title="Open Chart"
                         >
                           <ChevronRight className="w-4 h-4" />
@@ -1284,7 +1339,7 @@ export default function WardManagement() {
               </div>
               <button
                 onClick={() => setVitalsModalPatient(null)}
-                className="text-slate-400 hover:text-slate-600 p-1"
+                className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1375,13 +1430,13 @@ export default function WardManagement() {
                 <button
                   type="button"
                   onClick={() => setVitalsModalPatient(null)}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition"
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-xl transition shadow-xs"
+                  className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-xl transition shadow-xs cursor-pointer"
                 >
                   Save Vitals
                 </button>
@@ -1402,7 +1457,7 @@ export default function WardManagement() {
               </div>
               <button
                 onClick={() => setTransferModalBed(null)}
-                className="text-slate-400 hover:text-slate-600 p-1"
+                className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1425,7 +1480,7 @@ export default function WardManagement() {
                   value={targetBedId}
                   onChange={(e) => setTargetBedId(e.target.value)}
                   required
-                  className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:ring-1 focus:ring-teal-500 outline-none text-xs font-medium"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:ring-1 focus:ring-teal-500 outline-none text-xs font-medium cursor-pointer"
                 >
                   <option value="">-- Choose an available bed --</option>
                   {availableBedsForTransfer.map((b) => (
@@ -1454,13 +1509,13 @@ export default function WardManagement() {
                 <button
                   type="button"
                   onClick={() => setTransferModalBed(null)}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition"
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-xl transition shadow-xs"
+                  className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-xl transition shadow-xs cursor-pointer"
                 >
                   Execute Transfer
                 </button>
