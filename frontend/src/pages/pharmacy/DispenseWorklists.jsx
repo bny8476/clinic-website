@@ -40,7 +40,7 @@ export default function DispenseWorklists() {
     onSuccess: () => {
       toast.success('Medicines dispensed successfully!');
       setIsModalOpen(false);
-      queryClient.invalidateQueries(['dispense-worklists']);
+      queryClient.invalidateQueries({ queryKey: ['dispense-worklists'] });
     },
     onError: (err) => {
       toast.error(err.response?.data?.message || 'Failed to dispense medicines');

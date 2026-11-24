@@ -71,7 +71,7 @@ const LabReports = () => {
     },
     onSuccess: () => {
       toast.success('Sample collection appointment scheduled successfully');
-      queryClient.invalidateQueries(['patient-lab-reports']);
+      queryClient.invalidateQueries({ queryKey: ['patient-lab-reports'] });
       setIsScheduleModalOpen(false);
       setScheduledAt('');
     },

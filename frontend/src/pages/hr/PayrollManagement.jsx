@@ -146,7 +146,7 @@ export default function PayrollManagement() {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['payrolls']);
+      queryClient.invalidateQueries({ queryKey: ['payrolls'] });
       setShowGenerateModal(false);
       setFormData({
         staffId: '',
@@ -169,7 +169,7 @@ export default function PayrollManagement() {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['payrolls']);
+      queryClient.invalidateQueries({ queryKey: ['payrolls'] });
       toast.success('Salary payment processed successfully');
     },
     onError: () => {
@@ -185,7 +185,7 @@ export default function PayrollManagement() {
       })).data;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries(['payrolls']);
+      queryClient.invalidateQueries({ queryKey: ['payrolls'] });
       toast.success(`Processed batch payments for ${data.processedCount || 'all pending'} staff!`);
     },
     onError: () => {

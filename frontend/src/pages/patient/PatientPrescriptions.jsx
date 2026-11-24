@@ -93,7 +93,7 @@ const PatientPrescriptions = () => {
       setRefillModal(null);
       setRefillNotes('');
       refetchRefills();
-      queryClient.invalidateQueries(['patientPrescriptions', user?.id]);
+      queryClient.invalidateQueries({ queryKey: ['patientPrescriptions', user?.id] });
     },
     onError: (error) => {
       logger.error('Failed to request refill', error);

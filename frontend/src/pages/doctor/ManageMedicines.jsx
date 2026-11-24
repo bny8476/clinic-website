@@ -136,8 +136,8 @@ export default function ManageMedicines() {
     },
     onSuccess: () => {
       toast.success(`Medicine ${editingMedicine ? 'updated' : 'added'} successfully`);
-      queryClient.invalidateQueries(['doctorMedicines']);
-      queryClient.invalidateQueries(['publicMedicines']);
+      queryClient.invalidateQueries({ queryKey: ['doctorMedicines'] });
+      queryClient.invalidateQueries({ queryKey: ['publicMedicines'] });
       closeModal();
     },
     onError: (err) => toast.error(err.response?.data?.message || err.message)
@@ -149,7 +149,7 @@ export default function ManageMedicines() {
     },
     onSuccess: () => {
       toast.success('Medicine deactivated successfully');
-      queryClient.invalidateQueries(['doctorMedicines']);
+      queryClient.invalidateQueries({ queryKey: ['doctorMedicines'] });
       setMedicineToDelete(null);
     },
     onError: (err) => {

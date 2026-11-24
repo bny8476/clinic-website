@@ -24,7 +24,7 @@ export const ChecklistsTab = ({ patientId }) => {
       return await axiosPrivate.post('/nursing/escalations/checklists', { patientId, checklistType, itemsJson });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['nursing-checklists', patientId]);
+      queryClient.invalidateQueries({ queryKey: ['nursing-checklists', patientId] });
       toast.success('Checklist created');
     }
   });
@@ -32,7 +32,7 @@ export const ChecklistsTab = ({ patientId }) => {
   const updateChecklistMutation = useMutation({
     mutationFn: async ({ checklistId, status, itemsJson }) => await axiosPrivate.patch(`/nursing/escalations/checklists/${checklistId}`, { status, itemsJson }),
     onSuccess: () => {
-      queryClient.invalidateQueries(['nursing-checklists', patientId]);
+      queryClient.invalidateQueries({ queryKey: ['nursing-checklists', patientId] });
     }
   });
 

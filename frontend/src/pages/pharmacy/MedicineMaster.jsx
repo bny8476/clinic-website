@@ -81,7 +81,7 @@ export default function MedicineMaster() {
     mutationFn: (formData) => pharmacyService.createMedicine(formData),
     onSuccess: () => {
       toast.success('Medicine created successfully!');
-      queryClient.invalidateQueries(['medicines']);
+      queryClient.invalidateQueries({ queryKey: ['medicines'] });
     },
     onError: (err) => toast.error(err.response?.data?.message || 'Error creating medicine')
   });
@@ -90,7 +90,7 @@ export default function MedicineMaster() {
     mutationFn: ({ id, formData }) => pharmacyService.updateMedicine(id, formData),
     onSuccess: () => {
       toast.success('Medicine updated successfully!');
-      queryClient.invalidateQueries(['medicines']);
+      queryClient.invalidateQueries({ queryKey: ['medicines'] });
     },
     onError: (err) => toast.error(err.response?.data?.message || 'Error updating medicine')
   });
@@ -98,7 +98,7 @@ export default function MedicineMaster() {
   const deleteMedicineMutation = useMutation({
     mutationFn: (id) => pharmacyService.deleteMedicine(id),
     onSuccess: () => {
-      queryClient.invalidateQueries(['medicines']);
+      queryClient.invalidateQueries({ queryKey: ['medicines'] });
       toast.success('Medicine deleted successfully!');
     },
     onError: (error) => {

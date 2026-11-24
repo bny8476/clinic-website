@@ -22,7 +22,7 @@ const EngagementDashboard = () => {
     mutationFn: async ({ id, status }) => await axiosPrivate.put(`/engagement/reviews/${id}/moderate?status=${status}&moderatedByUserId=1`),
     onSuccess: () => {
       toast.success('Review moderated');
-      queryClient.invalidateQueries(['admin-reviews']);
+      queryClient.invalidateQueries({ queryKey: ['admin-reviews'] });
     }
   });
 

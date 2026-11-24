@@ -40,8 +40,8 @@ const NursingStationDashboard = () => {
     },
     onSuccess: () => {
       toast.success('Patient transferred successfully');
-      queryClient.invalidateQueries(['admissions']);
-      queryClient.invalidateQueries(['available-beds']);
+      queryClient.invalidateQueries({ queryKey: ['admissions'] });
+      queryClient.invalidateQueries({ queryKey: ['available-beds'] });
       closeModal();
     }
   });
@@ -53,7 +53,7 @@ const NursingStationDashboard = () => {
     },
     onSuccess: () => {
       toast.success('Patient discharged successfully');
-      queryClient.invalidateQueries(['admissions']);
+      queryClient.invalidateQueries({ queryKey: ['admissions'] });
       closeModal();
     }
   });

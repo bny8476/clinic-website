@@ -16,7 +16,7 @@ export const CarePlansTab = ({ patientId }) => {
   const createPlanMutation = useMutation({
     mutationFn: async (planData) => await axiosPrivate.post('/nursing/documentation/care-plans', { ...planData, patientId }),
     onSuccess: () => {
-      queryClient.invalidateQueries(['care-plans', patientId]);
+      queryClient.invalidateQueries({ queryKey: ['care-plans', patientId] });
       setNewPlan({ diagnosis: '', goals: '', interventions: '' });
       toast.success('Care plan created');
     }

@@ -95,7 +95,7 @@ export default function DoctorScheduleSettings() {
       return generateRes.data;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries(['doctorWorkingHours']);
+      queryClient.invalidateQueries({ queryKey: ['doctorWorkingHours'] });
       toast.success(`Schedule saved! Generated ${data.slotsGenerated || 'all'} slots for the next 14 days.`);
     },
     onError: (err) => {
@@ -110,7 +110,7 @@ export default function DoctorScheduleSettings() {
       return { ...generateRes.data, data };
     },
     onSuccess: (res) => {
-      queryClient.invalidateQueries(['doctorWorkingHours']);
+      queryClient.invalidateQueries({ queryKey: ['doctorWorkingHours'] });
       setOverridesList(prev => [...prev.filter(o => o.overrideDate !== res.data.overrideDate), res.data]);
       setShowOverrideForm(false);
       setOverrideForm({
@@ -134,7 +134,7 @@ export default function DoctorScheduleSettings() {
       return date;
     },
     onSuccess: (deletedDate) => {
-      queryClient.invalidateQueries(['doctorWorkingHours']);
+      queryClient.invalidateQueries({ queryKey: ['doctorWorkingHours'] });
       setOverridesList(prev => prev.filter(o => o.overrideDate !== deletedDate));
       toast.success(`Override for ${deletedDate} deleted successfully.`);
     },

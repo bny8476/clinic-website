@@ -46,8 +46,8 @@ export const SupportTicketsWidget = ({ filteredTickets, loadingTickets }) => {
   const sendReply = useMutation({
     mutationFn: async ({ ticketId, message }) => axiosPrivate.post(`/support/tickets/${ticketId}/messages`, { message }),
     onSuccess: () => {
-      queryClient.invalidateQueries(['support-messages', selectedTicket?.id]);
-      queryClient.invalidateQueries(['support-tickets']);
+      queryClient.invalidateQueries({ queryKey: ['support-messages', selectedTicket?.id] });
+      queryClient.invalidateQueries({ queryKey: ['support-tickets'] });
       setReplyMessage('');
       toast.success('Reply sent successfully');
     },
@@ -56,7 +56,7 @@ export const SupportTicketsWidget = ({ filteredTickets, loadingTickets }) => {
   const updateStatus = useMutation({
     mutationFn: async ({ ticketId, status }) => axiosPrivate.patch(`/support/tickets/${ticketId}/status?status=${status}`),
     onSuccess: () => {
-      queryClient.invalidateQueries(['support-tickets']);
+      queryClient.invalidateQueries({ queryKey: ['support-tickets'] });
       if (selectedTicket) setSelectedTicket(null);
       toast.success('Ticket status updated');
     },

@@ -100,7 +100,7 @@ export default function OrderMedicine() {
   // Setup real-time updates
   const handleMedicineFeedUpdate = useCallback(() => {
     toast('Medicine catalog updated!', { icon: '🔄' });
-    queryClient.invalidateQueries(['patientMedicines']);
+    queryClient.invalidateQueries({ queryKey: ['patientMedicines'] });
   }, [queryClient]);
 
   usePatientMedicineFeed(handleMedicineFeedUpdate);

@@ -21,7 +21,7 @@ const WarehousesList = () => {
     mutationFn: async (data) => axiosPrivate.post('/backoffice/inventory/warehouses', data),
     onSuccess: () => {
       toast.success('Warehouse added successfully');
-      queryClient.invalidateQueries(['inventory-warehouses']);
+      queryClient.invalidateQueries({ queryKey: ['inventory-warehouses'] });
       setIsModalOpen(false);
       setFormData({ name: '', code: '', location: '', manager: '', itemsCount: 0 });
     },

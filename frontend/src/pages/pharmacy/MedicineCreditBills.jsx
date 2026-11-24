@@ -40,7 +40,7 @@ export default function MedicineCreditBills() {
     onSuccess: () => {
       toast.success('Payment recorded successfully!');
       setIsModalOpen(false);
-      queryClient.invalidateQueries(['credit-bills']);
+      queryClient.invalidateQueries({ queryKey: ['credit-bills'] });
     },
     onError: (error) => {
       toast.error(error.response?.data?.message || 'Failed to record payment');

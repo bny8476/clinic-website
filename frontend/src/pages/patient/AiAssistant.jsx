@@ -52,7 +52,7 @@ const AiAssistant = () => {
             return { previousMessages };
         },
         onSuccess: () => {
-            queryClient.invalidateQueries(['aiMessages', session?.id]);
+            queryClient.invalidateQueries({ queryKey: ['aiMessages', session?.id] });
         },
         onError: (err, newTodo, context) => {
             queryClient.setQueryData(['aiMessages', session?.id], context.previousMessages);

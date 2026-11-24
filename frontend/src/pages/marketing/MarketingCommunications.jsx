@@ -49,7 +49,7 @@ const MarketingCommunications = () => {
     onSuccess: () => {
       toast.success('Communication sent successfully!');
       setForm({ ...form, subject: '', message: '' });
-      queryClient.invalidateQueries(['communication-history', activePatientId]);
+      queryClient.invalidateQueries({ queryKey: ['communication-history', activePatientId] });
     },
     onError: (error) => {
       toast.error(error.response?.data?.message || 'Failed to send communication');

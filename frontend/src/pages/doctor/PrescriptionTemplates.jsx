@@ -197,7 +197,7 @@ export default function PrescriptionTemplates() {
       return (await axiosPrivate.post('/prescriptions/templates', preset)).data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['prescription-templates']);
+      queryClient.invalidateQueries({ queryKey: ['prescription-templates'] });
       toast.success('Clinical protocol imported successfully!');
     },
     onError: () => {
@@ -838,7 +838,7 @@ export default function PrescriptionTemplates() {
           setIsTemplateModalOpen(false);
           setTemplateToEdit(null);
         }} 
-        onSuccess={() => queryClient.invalidateQueries(['prescription-templates'])}
+        onSuccess={() => queryClient.invalidateQueries({ queryKey: ['prescription-templates'] })}
       />
 
       {/* Delete Confirmation Dialog */}
@@ -850,7 +850,7 @@ export default function PrescriptionTemplates() {
           try {
             await axiosPrivate.delete(`/prescriptions/templates/${confirmDelete.templateId}`);
             toast.success('Template deleted');
-            queryClient.invalidateQueries(['prescription-templates']);
+            queryClient.invalidateQueries({ queryKey: ['prescription-templates'] });
           } catch (e) {
             toast.error('Failed to delete template');
           } finally {

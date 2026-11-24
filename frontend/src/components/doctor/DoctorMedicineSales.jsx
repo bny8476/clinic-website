@@ -127,8 +127,8 @@ export default function DoctorMedicineSales({ patientId, patientName, onOrderCre
     onSuccess: (data) => {
       toast.success(`Medicine Order ${data.orderNumber || ''} created for patient!`);
       setOrderItems([]);
-      queryClient.invalidateQueries(['patient-recommendations']);
-      queryClient.invalidateQueries(['doctor-sales']);
+      queryClient.invalidateQueries({ queryKey: ['patient-recommendations'] });
+      queryClient.invalidateQueries({ queryKey: ['doctor-sales'] });
       if (onOrderCreated) onOrderCreated(data);
     },
     onError: (err) => {

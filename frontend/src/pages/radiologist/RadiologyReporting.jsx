@@ -77,8 +77,8 @@ const RadiologyReporting = () => {
     },
     onSuccess: (data, variables) => {
       toast.success(variables.status === 'FINALIZED' ? 'Report finalized!' : 'Draft saved!');
-      queryClient.invalidateQueries(['radiology-report', requestId]);
-      queryClient.invalidateQueries(['radiology-requests']);
+      queryClient.invalidateQueries({ queryKey: ['radiology-report', requestId] });
+      queryClient.invalidateQueries({ queryKey: ['radiology-requests'] });
       
       if (variables.status === 'FINALIZED') {
         navigate('/radiologist/dashboard');

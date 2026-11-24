@@ -65,7 +65,7 @@ export default function MedicineCreditReturns() {
       toast.success('Credit Return saved successfully!');
       setIsModalOpen(false);
       resetForm();
-      queryClient.invalidateQueries(['credit-returns']);
+      queryClient.invalidateQueries({ queryKey: ['credit-returns'] });
     },
     onError: () => {
       toast.error('Failed to save Credit Return');
@@ -100,7 +100,7 @@ export default function MedicineCreditReturns() {
       toast.success('Return record deleted');
       setIsDeleteModalOpen(false);
       setReturnToDelete(null);
-      queryClient.invalidateQueries(['credit-returns']);
+      queryClient.invalidateQueries({ queryKey: ['credit-returns'] });
     },
     onError: () => toast.error('Failed to delete return record')
   });

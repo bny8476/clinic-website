@@ -55,7 +55,7 @@ export const LabRequestsWidget = ({ requestsList, isLoading, filter }) => {
       setSelectedRequest(null);
       setResultForm({ resultValue: '', referenceRange: '', unit: '', isAbnormal: false });
       setSelectedFile(null);
-      queryClient.invalidateQueries(['labRequests']);
+      queryClient.invalidateQueries({ queryKey: ['labRequests'] });
     },
     onError: () => toast.error('Failed to enter result')
   });
@@ -73,7 +73,7 @@ export const LabRequestsWidget = ({ requestsList, isLoading, filter }) => {
     },
     onSuccess: () => {
       toast.success('Lab request accepted');
-      queryClient.invalidateQueries(['labRequests']);
+      queryClient.invalidateQueries({ queryKey: ['labRequests'] });
     },
     onError: () => toast.error('Failed to accept request')
   });
@@ -85,7 +85,7 @@ export const LabRequestsWidget = ({ requestsList, isLoading, filter }) => {
     },
     onSuccess: () => {
       toast.success('Lab result verified');
-      queryClient.invalidateQueries(['labRequests']);
+      queryClient.invalidateQueries({ queryKey: ['labRequests'] });
     },
     onError: () => toast.error('Failed to verify result')
   });
@@ -97,7 +97,7 @@ export const LabRequestsWidget = ({ requestsList, isLoading, filter }) => {
     },
     onSuccess: () => {
       toast.success('Lab request status updated');
-      queryClient.invalidateQueries(['labRequests']);
+      queryClient.invalidateQueries({ queryKey: ['labRequests'] });
     },
     onError: () => toast.error('Failed to update status')
   });

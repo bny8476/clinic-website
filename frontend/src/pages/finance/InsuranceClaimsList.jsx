@@ -78,8 +78,8 @@ export default function InsuranceClaimsList() {
     },
     onSuccess: (_, variables) => {
       toast.success(`Claim status updated to ${variables.status.replace(/_/g, ' ')}`);
-      queryClient.invalidateQueries(['finance-claims']);
-      queryClient.invalidateQueries(['finance-dashboard']);
+      queryClient.invalidateQueries({ queryKey: ['finance-claims'] });
+      queryClient.invalidateQueries({ queryKey: ['finance-dashboard'] });
     },
     onError: (err) => {
       toast.error(err.response?.data?.message || 'Failed to update claim status');
@@ -105,8 +105,8 @@ export default function InsuranceClaimsList() {
       toast.success('Insurance claim submitted successfully');
       setIsSubmitModalOpen(false);
       setNewClaim({ patientId: '', invoiceId: '', providerName: '', claimNumber: '', claimedAmount: '', notes: '' });
-      queryClient.invalidateQueries(['finance-claims']);
-      queryClient.invalidateQueries(['finance-dashboard']);
+      queryClient.invalidateQueries({ queryKey: ['finance-claims'] });
+      queryClient.invalidateQueries({ queryKey: ['finance-dashboard'] });
     },
     onError: (err) => {
       toast.error(err.response?.data?.message || 'Failed to submit claim');

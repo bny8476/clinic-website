@@ -354,7 +354,7 @@ export default function MedicalRecords() {
       setUploadTitle('');
       setUploadNotes('');
       setUploadDoctorName('');
-      queryClient.invalidateQueries(['patient-documents']);
+      queryClient.invalidateQueries({ queryKey: ['patient-documents'] });
       refetchDocs();
     } catch (err) {
       console.error('Upload failed', err);

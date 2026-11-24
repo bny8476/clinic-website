@@ -2,8 +2,6 @@ import pharmacyService from '../../utils/pharmacy/pharmacyService';
 import { useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { useAuth } from '../../context/pharmacy/AuthContext';
-import { ROLES } from '../../config/pharmacy/roles.config';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, CheckCircle, Info, List, Loader2, PackageCheck, Printer, XCircle } from 'lucide-react';
 import { Badge } from '../../components/ui/Badge';
@@ -11,7 +9,6 @@ import { Badge } from '../../components/ui/Badge';
 export default function PurchaseOrderDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { activeRole } = useAuth();
   const queryClient = useQueryClient();
   
   const { data: po, isLoading, isError } = useQuery({
@@ -35,17 +32,13 @@ export default function PurchaseOrderDetail() {
     try {
       await pharmacyService.api.put(`/pharmacy/purchase-orders/${id}/status`, { status: newStatus });
       toast.success(`Purchase Order marked as ${newStatus}`);
-      queryClient.invalidateQueries(['purchase-order', id]);
+      queryClient.invalidateQueries({ queryKey: ['purchase-order', id] });
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to update status');
     } finally {
       setIsUpdating(false);
     }
   };
-
-  if (activeRole !== ROLES.SYSTEM_ADMIN) {
-    return <div className="p-10 text-center text-red-500 font-bold">Unauthorized Access</div>;
-  }
 
   if (isLoading) {
     return (
@@ -60,7 +53,7 @@ export default function PurchaseOrderDetail() {
     return (
       <div className="p-10 text-center text-red-500">
         <h3 className="text-xl font-bold">Purchase Order Not Found</h3>
-        <button onClick={() => navigate('/purchase-orders')} className="mt-4 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg font-bold">Back to List</button>
+        <button onClick={() => navigate('/pharmacy/purchase-orders')} className="mt-4 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg font-bold">Back to List</button>
       </div>
     );
   }
@@ -72,7 +65,7 @@ export default function PurchaseOrderDetail() {
     <div className="space-y-6 pb-20">
       <div className="flex flex-wrap items-center justify-between gap-4 print:hidden">
         <button 
-          onClick={() => navigate('/purchase-orders')}
+          onClick={() => navigate('/pharmacy/purchase-orders')}
           className="flex items-center gap-2 text-slate-500 hover:text-slate-900 font-bold text-sm bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-100"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Orders

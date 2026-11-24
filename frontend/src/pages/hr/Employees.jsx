@@ -107,8 +107,8 @@ export default function Employees() {
     },
     onSuccess: () => {
       toast.success('Staff member onboarded successfully!');
-      queryClient.invalidateQueries(['hr-employees-list']);
-      queryClient.invalidateQueries(['hr-dashboard-summary']);
+      queryClient.invalidateQueries({ queryKey: ['hr-employees-list'] });
+      queryClient.invalidateQueries({ queryKey: ['hr-dashboard-summary'] });
       setIsModalOpen(false);
       resetForm();
     },

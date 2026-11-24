@@ -230,7 +230,7 @@ export default function BookAppointment() {
           try {
             const data = JSON.parse(event.data);
             if (String(data.doctorId) === String(selectedDoctorId) && selectedDate) {
-              queryClient.invalidateQueries(['availableSlots', selectedDoctorId, selectedDate.toISOString()]);
+              queryClient.invalidateQueries({ queryKey: ['availableSlots', selectedDoctorId, selectedDate.toISOString()] });
             }
           } catch {}
         });
@@ -285,16 +285,16 @@ export default function BookAppointment() {
     },
     retry: false,
     onSuccess: () => {
-      queryClient.invalidateQueries(['patientAppointments']);
-      queryClient.invalidateQueries(['doctor-today-appointments']);
-      queryClient.invalidateQueries(['availableSlots']);
+      queryClient.invalidateQueries({ queryKey: ['patientAppointments'] });
+      queryClient.invalidateQueries({ queryKey: ['doctor-today-appointments'] });
+      queryClient.invalidateQueries({ queryKey: ['availableSlots'] });
       setCurrentStep(5);
     },
     onError: (err) => {
       const serverMsg = err.response?.data?.message || err.response?.data?.error || err.message;
       if (err.response?.status === 409) {
         setError(serverMsg || 'This appointment slot is no longer available. Please select another available time.');
-        queryClient.invalidateQueries(['availableSlots']);
+        queryClient.invalidateQueries({ queryKey: ['availableSlots'] });
         return;
       }
       setError(serverMsg || 'Failed to book appointment. Please try again.');
@@ -322,7 +322,7 @@ export default function BookAppointment() {
       return;
     }
 
-    await queryClient.invalidateQueries(['availableSlots', selectedDoctorId, selectedDate?.toISOString()]);
+    await queryClient.invalidateQueries({ queryKey: ['availableSlots', selectedDoctorId, selectedDate?.toISOString()] });
 
     const fullReason = [reason, symptomsNotes].filter(Boolean).join(' - ') || 'Routine Consultation & Checkup';
     mutation.mutate({ slotId: selectedSlotId, reasonForVisit: fullReason });

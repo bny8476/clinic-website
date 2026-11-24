@@ -47,7 +47,7 @@ export default function Patients() {
     mutationFn: (data) => pharmacyService.createPatient(data),
     onSuccess: () => {
       toast.success('Patient created successfully');
-      queryClient.invalidateQueries(['patients']);
+      queryClient.invalidateQueries({ queryKey: ['patients'] });
       closeModal();
     },
     onError: () => toast.error('Failed to create patient')
@@ -57,7 +57,7 @@ export default function Patients() {
     mutationFn: ({ id, data }) => pharmacyService.updatePatient(id, data),
     onSuccess: () => {
       toast.success('Patient updated successfully');
-      queryClient.invalidateQueries(['patients']);
+      queryClient.invalidateQueries({ queryKey: ['patients'] });
       closeModal();
     },
     onError: () => toast.error('Failed to update patient')
@@ -67,7 +67,7 @@ export default function Patients() {
     mutationFn: (id) => pharmacyService.deletePatient(id),
     onSuccess: () => {
       toast.success('Patient deleted successfully');
-      queryClient.invalidateQueries(['patients']);
+      queryClient.invalidateQueries({ queryKey: ['patients'] });
     },
     onError: () => toast.error('Failed to delete patient')
   });

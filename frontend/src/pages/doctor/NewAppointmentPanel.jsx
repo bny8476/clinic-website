@@ -105,7 +105,7 @@ const NewAppointmentPanel = ({ onClose }) => {
       return res.data;
     },
     onSuccess: (encounter) => {
-      queryClient.invalidateQueries(['doctorAllAppointments']);
+      queryClient.invalidateQueries({ queryKey: ['doctorAllAppointments'] });
       navigate(`/doctor/consultation/${encounter.id}`);
     },
     onError: (err) => {
@@ -189,8 +189,8 @@ const NewAppointmentPanel = ({ onClose }) => {
 
       await axiosPrivate.post('/appointments', payload);
       toast.success('Appointment scheduled successfully!');
-      queryClient.invalidateQueries(['doctorAllAppointments']);
-      queryClient.invalidateQueries(['doctor-today-appointments']);
+      queryClient.invalidateQueries({ queryKey: ['doctorAllAppointments'] });
+      queryClient.invalidateQueries({ queryKey: ['doctor-today-appointments'] });
       setIsFormOpen(false);
       
       // Reset form

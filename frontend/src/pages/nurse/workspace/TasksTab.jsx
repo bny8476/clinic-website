@@ -16,7 +16,7 @@ export const TasksTab = ({ patientId }) => {
   const createTaskMutation = useMutation({
     mutationFn: async (taskData) => await axiosPrivate.post('/nursing/tasks', { ...taskData, patientId, dueTime: new Date(taskData.dueTime).toISOString() }),
     onSuccess: () => {
-      queryClient.invalidateQueries(['nursing-tasks']);
+      queryClient.invalidateQueries({ queryKey: ['nursing-tasks'] });
       setNewTask({ taskType: 'OBSERVATION', description: '', dueTime: '' });
       toast.success('Task created');
     }
@@ -25,7 +25,7 @@ export const TasksTab = ({ patientId }) => {
   const updateStatusMutation = useMutation({
     mutationFn: async ({taskId, status}) => await axiosPrivate.patch(`/nursing/tasks/${taskId}/status`, { status }),
     onSuccess: () => {
-      queryClient.invalidateQueries(['nursing-tasks']);
+      queryClient.invalidateQueries({ queryKey: ['nursing-tasks'] });
       toast.success('Task updated');
     }
   });

@@ -55,8 +55,8 @@ const AdmissionWorkflow = () => {
     },
     onSuccess: () => {
       toast.success('Patient admitted successfully');
-      queryClient.invalidateQueries(['beds']);
-      queryClient.invalidateQueries(['admissions']);
+      queryClient.invalidateQueries({ queryKey: ['beds'] });
+      queryClient.invalidateQueries({ queryKey: ['admissions'] });
       setStep(5); // Success step
     },
     onError: (err) => {

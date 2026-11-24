@@ -22,7 +22,7 @@ const CarePlan = ({ patientId }) => {
       toast.success('Care Plan assigned successfully!');
       setIsAdding(false);
       setFormData({ title: '', description: '', status: 'ACTIVE' });
-      queryClient.invalidateQueries(['carePlans', patientId]);
+      queryClient.invalidateQueries({ queryKey: ['carePlans', patientId] });
     },
     onError: (err) => {
       toast.error(err.response?.data?.message || 'Failed to assign Care Plan');

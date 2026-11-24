@@ -18,7 +18,7 @@ const PatientReminders = () => {
     mutationFn: async (id) => await axiosPrivate.put(`/engagement/reminders/${id}/dismiss`),
     onSuccess: () => {
       toast.success('Reminder dismissed');
-      queryClient.invalidateQueries(['patient-reminders', patientId]);
+      queryClient.invalidateQueries({ queryKey: ['patient-reminders', patientId] });
     }
   });
 
@@ -26,7 +26,7 @@ const PatientReminders = () => {
     mutationFn: async (id) => await axiosPrivate.put(`/engagement/reminders/${id}/complete`),
     onSuccess: () => {
       toast.success('Reminder completed');
-      queryClient.invalidateQueries(['patient-reminders', patientId]);
+      queryClient.invalidateQueries({ queryKey: ['patient-reminders', patientId] });
     }
   });
 

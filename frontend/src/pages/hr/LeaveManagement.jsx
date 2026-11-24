@@ -141,8 +141,8 @@ export default function LeaveManagement() {
     },
     onSuccess: (_, vars) => {
       toast.success(`Leave request ${vars.status === 'APPROVED' ? 'Approved' : 'Rejected'} successfully!`);
-      queryClient.invalidateQueries(['hr-leave-requests']);
-      queryClient.invalidateQueries(['hr-dashboard-summary']);
+      queryClient.invalidateQueries({ queryKey: ['hr-leave-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['hr-dashboard-summary'] });
     },
     onError: () => {
       toast.error('Failed to update leave request status');
@@ -156,7 +156,7 @@ export default function LeaveManagement() {
     },
     onSuccess: () => {
       toast.success('Leave application submitted successfully!');
-      queryClient.invalidateQueries(['hr-leave-requests']);
+      queryClient.invalidateQueries({ queryKey: ['hr-leave-requests'] });
       setIsApplyModalOpen(false);
       setLeaveForm({
         employeeId: '',

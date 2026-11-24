@@ -59,7 +59,7 @@ export default function DrugInteractions() {
       } else {
         toast.success('No drug interactions detected for this combination.');
       }
-      queryClient.invalidateQueries(['interaction-logs']);
+      queryClient.invalidateQueries({ queryKey: ['interaction-logs'] });
     },
     onError: () => {
       toast.error('Failed to perform drug interaction check');
@@ -206,7 +206,7 @@ export default function DrugInteractions() {
         <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden flex flex-col shadow-sm">
           <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
             <h3 className="text-base font-bold text-slate-900">Interaction Log</h3>
-            <button onClick={() => queryClient.invalidateQueries(['interaction-logs'])} disabled={loadingLogs} 
+            <button onClick={() => queryClient.invalidateQueries({ queryKey: ['interaction-logs'] })} disabled={loadingLogs} 
               className="p-1.5 border border-slate-200 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors">
               <RefreshCw className={`w-4 h-4 ${loadingLogs ? 'animate-spin' : ''}`} />
             </button>

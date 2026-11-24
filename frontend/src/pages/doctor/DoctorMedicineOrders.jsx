@@ -29,7 +29,7 @@ export default function DoctorMedicineOrders() {
     },
     onSuccess: (data) => {
       toast.success(`Order status updated to ${data.status || 'new status'}`);
-      queryClient.invalidateQueries(['doctorOrders']);
+      queryClient.invalidateQueries({ queryKey: ['doctorOrders'] });
       if (selectedOrder) {
         setSelectedOrder(prev => ({ ...prev, status: data.status }));
       }

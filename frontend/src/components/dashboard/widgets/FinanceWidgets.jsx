@@ -30,7 +30,7 @@ export const FinanceTablesWidget = ({ activeTab, payments, expenses, claims }) =
 
   const updateClaim = useMutation({
     mutationFn: async ({ id, status }) => axiosPrivate.patch(`/finance/claims/${id}/status?status=${status}`),
-    onSuccess: () => queryClient.invalidateQueries(['finance-claims']),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['finance-claims'] }),
   });
 
   return (

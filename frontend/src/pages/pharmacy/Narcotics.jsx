@@ -61,8 +61,8 @@ export default function Narcotics() {
   });
 
   const loadRegister = () => {
-    queryClient.invalidateQueries(['narcotic-register', selectedMedId]);
-    queryClient.invalidateQueries(['narcotic-reconciliation', selectedMedId, month, year]);
+    queryClient.invalidateQueries({ queryKey: ['narcotic-register', selectedMedId] });
+    queryClient.invalidateQueries({ queryKey: ['narcotic-reconciliation', selectedMedId, month, year] });
   };
 
   const reconcileMutation = useMutation({

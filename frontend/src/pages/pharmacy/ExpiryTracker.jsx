@@ -43,9 +43,9 @@ export default function ExpiryTracker() {
     mutationFn: (data) => pharmacyService.initiateExpiryReturn(data),
     onSuccess: () => {
       toast.success('Return workflow initiated successfully');
-      queryClient.invalidateQueries(['expiry-batches']);
-      queryClient.invalidateQueries(['expiry-summary']);
-      queryClient.invalidateQueries(['expiry-returns']);
+      queryClient.invalidateQueries({ queryKey: ['expiry-batches'] });
+      queryClient.invalidateQueries({ queryKey: ['expiry-summary'] });
+      queryClient.invalidateQueries({ queryKey: ['expiry-returns'] });
       setSelectedBatch(null);
       setReturnQty('');
       setRemarks('');
@@ -117,9 +117,9 @@ export default function ExpiryTracker() {
           <p className="text-sm text-slate-400">Track drug expiries, near-expiry alerts, and supplier return workflows.</p>
         </div>
         <button onClick={() => {
-          queryClient.invalidateQueries(['expiry-batches']);
-          queryClient.invalidateQueries(['expiry-summary']);
-          queryClient.invalidateQueries(['expiry-returns']);
+          queryClient.invalidateQueries({ queryKey: ['expiry-batches'] });
+          queryClient.invalidateQueries({ queryKey: ['expiry-summary'] });
+          queryClient.invalidateQueries({ queryKey: ['expiry-returns'] });
         }} disabled={loading} className="p-2 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">
           <RefreshCw className={`w-4 h-4 text-slate-600 ${loading ? 'animate-spin' : ''}`} />
         </button>

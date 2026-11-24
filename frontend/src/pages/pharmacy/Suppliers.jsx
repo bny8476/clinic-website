@@ -463,7 +463,7 @@ export default function Suppliers() {
     mutationFn: (data) => pharmacyService.createSupplier(data),
     onSuccess: () => {
       toast.success('Supplier created successfully');
-      queryClient.invalidateQueries(['suppliers']);
+      queryClient.invalidateQueries({ queryKey: ['suppliers'] });
     },
     onError: () => toast.error('Failed to create supplier')
   });
@@ -472,7 +472,7 @@ export default function Suppliers() {
     mutationFn: ({id, data}) => pharmacyService.updateSupplier(id, data),
     onSuccess: () => {
       toast.success('Supplier updated successfully');
-      queryClient.invalidateQueries(['suppliers']);
+      queryClient.invalidateQueries({ queryKey: ['suppliers'] });
     },
     onError: () => toast.error('Failed to update supplier')
   });
@@ -481,7 +481,7 @@ export default function Suppliers() {
     mutationFn: (id) => pharmacyService.deleteSupplier(id),
     onSuccess: () => {
       toast.success('Supplier deleted successfully');
-      queryClient.invalidateQueries(['suppliers']);
+      queryClient.invalidateQueries({ queryKey: ['suppliers'] });
     },
     onError: () => toast.error('Failed to delete supplier')
   });

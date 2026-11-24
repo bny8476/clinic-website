@@ -48,7 +48,7 @@ const InvoicesList = () => {
     mutationFn: async (data) => axiosPrivate.post('/billing/invoices', data),
     onSuccess: () => {
       toast.success('Invoice created successfully');
-      queryClient.invalidateQueries(['billing-invoices']);
+      queryClient.invalidateQueries({ queryKey: ['billing-invoices'] });
       setIsModalOpen(false);
       resetForm();
     },

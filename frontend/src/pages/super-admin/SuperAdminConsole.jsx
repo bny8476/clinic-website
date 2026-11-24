@@ -132,7 +132,7 @@ const SuperAdminConsole = ({ defaultTab = 'health' }) => {
     },
     onSuccess: () => {
       toast.success('User session revoked successfully');
-      queryClient.invalidateQueries(['super-admin-sessions']);
+      queryClient.invalidateQueries({ queryKey: ['super-admin-sessions'] });
     },
   });
 

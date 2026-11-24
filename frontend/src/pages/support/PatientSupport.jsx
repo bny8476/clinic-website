@@ -33,7 +33,7 @@ export default function PatientSupport() {
             return res.data;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries(['patientTickets']);
+            queryClient.invalidateQueries({ queryKey: ['patientTickets'] });
             setIsCreating(false);
             setNewTicket({ subject: '', description: '', category: 'GENERAL' });
         }

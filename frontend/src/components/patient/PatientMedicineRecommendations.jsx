@@ -25,8 +25,8 @@ export default function PatientMedicineRecommendations() {
     },
     onSuccess: (data) => {
       toast.success(`Order ${data.orderNumber} added to Cart!`);
-      queryClient.invalidateQueries(['patient-recommendations']);
-      queryClient.invalidateQueries(['patient-cart']);
+      queryClient.invalidateQueries({ queryKey: ['patient-recommendations'] });
+      queryClient.invalidateQueries({ queryKey: ['patient-cart'] });
     },
     onError: (err) => {
       toast.error(err.response?.data?.message || err.message || 'Failed to add order to cart');
@@ -41,7 +41,7 @@ export default function PatientMedicineRecommendations() {
     },
     onSuccess: (data) => {
       toast.success(`Order ${data.orderNumber} checked out! Proceed to payment.`);
-      queryClient.invalidateQueries(['patient-recommendations']);
+      queryClient.invalidateQueries({ queryKey: ['patient-recommendations'] });
     },
     onError: (err) => {
       toast.error(err.response?.data?.message || err.message || 'Checkout failed');
@@ -57,8 +57,8 @@ export default function PatientMedicineRecommendations() {
     },
     onSuccess: (data) => {
       toast.success(`Payment successful for Order ${data.orderNumber}! Pharmacy is now processing your order.`);
-      queryClient.invalidateQueries(['patient-recommendations']);
-      queryClient.invalidateQueries(['patientOrders']);
+      queryClient.invalidateQueries({ queryKey: ['patient-recommendations'] });
+      queryClient.invalidateQueries({ queryKey: ['patientOrders'] });
       setProcessingOrderId(null);
     },
     onError: (err) => {

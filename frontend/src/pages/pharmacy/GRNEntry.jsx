@@ -88,7 +88,7 @@ export default function GRNEntry({ onBack }) {
       } else {
         toast.success('GRN saved as draft');
       }
-      queryClient.invalidateQueries(['goods-receipts']);
+      queryClient.invalidateQueries({ queryKey: ['goods-receipts'] });
       onBack();
     },
     onError: (err) => {

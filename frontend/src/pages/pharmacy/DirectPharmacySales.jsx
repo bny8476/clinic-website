@@ -69,7 +69,7 @@ export default function DirectPharmacySales() {
         toast.success('OTC Sale completed!');
         setIsModalOpen(false);
         posStore.resetForm();
-        queryClient.invalidateQueries(['sales']);
+        queryClient.invalidateQueries({ queryKey: ['sales'] });
         
         // Pass print flag through a local variable if needed or handle directly where called.
       }
@@ -114,7 +114,7 @@ export default function DirectPharmacySales() {
         toast.success('Sale cancelled and stock reverted');
         setIsDeleteModalOpen(false);
         setBillToDelete(null);
-        queryClient.invalidateQueries(['sales']);
+        queryClient.invalidateQueries({ queryKey: ['sales'] });
       }
     },
     onError: () => {

@@ -146,7 +146,7 @@ const PatientList = ({ onPatientClick }) => {
     },
     onSuccess: () => {
       toast.success('Patient profile updated successfully');
-      queryClient.invalidateQueries(['doctor-patients']);
+      queryClient.invalidateQueries({ queryKey: ['doctor-patients'] });
       setEditPatient(null);
     },
     onError: (err) => toast.error(err?.response?.data?.message || 'Update failed'),
@@ -158,7 +158,7 @@ const PatientList = ({ onPatientClick }) => {
     },
     onSuccess: () => {
       toast.success('Patient deleted successfully');
-      queryClient.invalidateQueries(['doctor-patients']);
+      queryClient.invalidateQueries({ queryKey: ['doctor-patients'] });
     },
     onError: (err) => toast.error(err?.response?.data?.message || 'Delete failed'),
   });

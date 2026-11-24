@@ -24,7 +24,7 @@ const ClinicalNotes = () => {
   const saveNote = useMutation({
     mutationFn: async () => axiosPrivate.post(`/medical-records/patient/${patientId}/clinical-notes`, note),
     onSuccess: () => {
-      queryClient.invalidateQueries(['patient-notes', patientId]);
+      queryClient.invalidateQueries({ queryKey: ['patient-notes', patientId] });
       setNote({ subjective: '', objective: '', assessment: '', plan: '' });
     },
   });

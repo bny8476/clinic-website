@@ -38,8 +38,8 @@ const InpatientDashboard = () => {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['beds']);
-      queryClient.invalidateQueries(['activeAdmissions']);
+      queryClient.invalidateQueries({ queryKey: ['beds'] });
+      queryClient.invalidateQueries({ queryKey: ['activeAdmissions'] });
       setShowAdmitModal(false);
       setPatientId('');
       setNotes('');
@@ -54,8 +54,8 @@ const InpatientDashboard = () => {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['beds']);
-      queryClient.invalidateQueries(['activeAdmissions']);
+      queryClient.invalidateQueries({ queryKey: ['beds'] });
+      queryClient.invalidateQueries({ queryKey: ['activeAdmissions'] });
     }
   });
 
@@ -67,7 +67,7 @@ const InpatientDashboard = () => {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['beds']);
+      queryClient.invalidateQueries({ queryKey: ['beds'] });
     }
   });
 

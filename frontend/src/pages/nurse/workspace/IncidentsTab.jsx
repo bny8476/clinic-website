@@ -15,7 +15,7 @@ export const IncidentsTab = ({ patientId }) => {
   const createIncidentMutation = useMutation({
     mutationFn: async (incidentData) => await axiosPrivate.post('/nursing/tasks/incidents', { ...incidentData, patientId, incidentTime: new Date(incidentData.incidentTime).toISOString() }),
     onSuccess: () => {
-      queryClient.invalidateQueries(['medication-incidents', patientId]);
+      queryClient.invalidateQueries({ queryKey: ['medication-incidents', patientId] });
       setNewIncident({ medicationName: '', incidentType: 'WRONG_DOSE', description: '', actionTaken: '', doctorNotified: false, incidentTime: '' });
       toast.success('Incident reported');
     }

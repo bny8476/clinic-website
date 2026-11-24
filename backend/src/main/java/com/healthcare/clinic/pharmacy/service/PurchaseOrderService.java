@@ -103,6 +103,42 @@ public class PurchaseOrderService {
         return poRepository.save(po);
     }
 
+    @Transactional
+    public PurchaseOrder updateStatus(String poId, String newStatus, Long userId, String reason) {
+        PurchaseOrder po = getPoById(poId);
+        String s = newStatus != null ? newStatus.trim().toLowerCase() : "";
+        switch (s) {
+            case "approved" -> {
+                po.setStatus("approved");
+                po.setApprovedBy(userId != null ? userId : 1L);
+                po.setApprovedAt(LocalDateTime.now());
+            }
+            case "cancelled" -> {
+                po.setStatus("cancelled");
+                po.setCancellationReason(reason != null ? reason : "Cancelled by user");
+                po.setCancelledBy(userId != null ? userId : 1L);
+                po.setUpdatedAt(LocalDateTime.now());
+            }
+            case "received", "completed" -> {
+                po.setStatus("completed");
+                po.setUpdatedAt(LocalDateTime.now());
+            }
+            case "submitted" -> {
+                po.setStatus("submitted");
+                po.setSubmittedAt(LocalDateTime.now());
+            }
+            case "sent" -> {
+                po.setStatus("sent");
+                po.setSentAt(LocalDateTime.now());
+            }
+            default -> {
+                po.setStatus(s.isBlank() ? "draft" : s);
+                po.setUpdatedAt(LocalDateTime.now());
+            }
+        }
+        return poRepository.save(po);
+    }
+
     public void deletePO(String poId) {
         PurchaseOrder po = getPoById(poId);
         poRepository.delete(po);

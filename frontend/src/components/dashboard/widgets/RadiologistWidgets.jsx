@@ -42,7 +42,7 @@ export const RadiologistWorkstationWidget = ({ requests, isLoading }) => {
     mutationFn: async ({ requestId, payload }) => axiosPrivate.post(`/radiology/requests/${requestId}/report`, payload),
     onSuccess: () => {
       toast.success('Radiology report saved successfully');
-      queryClient.invalidateQueries(['radiology-requests']);
+      queryClient.invalidateQueries({ queryKey: ['radiology-requests'] });
       setSelectedRequest(null);
       setFindings('');
       setImpression('');
@@ -55,7 +55,7 @@ export const RadiologistWorkstationWidget = ({ requests, isLoading }) => {
     mutationFn: async ({ requestId, status }) => axiosPrivate.patch(`/radiology/requests/${requestId}/status?status=${status}`),
     onSuccess: () => {
       toast.success('Procedure status updated');
-      queryClient.invalidateQueries(['radiology-requests']);
+      queryClient.invalidateQueries({ queryKey: ['radiology-requests'] });
     },
     onError: () => toast.error('Failed to update status')
   });

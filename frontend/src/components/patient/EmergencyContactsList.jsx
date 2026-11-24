@@ -26,7 +26,7 @@ const EmergencyContactsList = () => {
       await axiosPrivate.post('/v1/patient/settings/emergency-contacts', data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['emergency-contacts']);
+      queryClient.invalidateQueries({ queryKey: ['emergency-contacts'] });
       setIsAdding(false);
       setFormData({ name: '', relationship: '', primaryPhone: '', alternatePhone: '', isPrimary: false, address: '' });
       toast.success('Emergency contact added.');
@@ -41,7 +41,7 @@ const EmergencyContactsList = () => {
       await axiosPrivate.delete(`/api/v1/patient/settings/emergency-contacts/${id}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['emergency-contacts']);
+      queryClient.invalidateQueries({ queryKey: ['emergency-contacts'] });
       setContactToDelete(null);
       toast.success('Contact removed successfully.');
     },

@@ -45,7 +45,7 @@ export default function PharmacyAdvances() {
         setPatientId(null);
         setPatientSearchResults([]);
         setAmount('');
-        queryClient.invalidateQueries(['advances']);
+        queryClient.invalidateQueries({ queryKey: ['advances'] });
       }
     },
     onError: () => toast.error('Failed to save advance')

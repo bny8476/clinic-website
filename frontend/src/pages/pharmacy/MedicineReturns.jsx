@@ -66,7 +66,7 @@ export default function MedicineReturns() {
     onSuccess: () => {
       toast.success('Return initiated and pending approval');
       setIsModalOpen(false);
-      queryClient.invalidateQueries(['returns']);
+      queryClient.invalidateQueries({ queryKey: ['returns'] });
     },
     onError: (error) => toast.error(error.response?.data?.message || 'Failed to initiate return')
   });
@@ -91,7 +91,7 @@ export default function MedicineReturns() {
     mutationFn: (id) => pharmacyService.approveReturn(id),
     onSuccess: () => {
       toast.success('Return approved');
-      queryClient.invalidateQueries(['returns']);
+      queryClient.invalidateQueries({ queryKey: ['returns'] });
     },
     onError: () => toast.error('Failed to approve return')
   });

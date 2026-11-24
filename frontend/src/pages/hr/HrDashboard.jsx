@@ -143,8 +143,8 @@ export default function HrDashboard() {
     },
     onSuccess: (_, vars) => {
       toast.success(`Leave request ${vars.status === 'APPROVED' ? 'Approved' : 'Rejected'} successfully!`);
-      queryClient.invalidateQueries(['hr-leaves-list']);
-      queryClient.invalidateQueries(['hr-dashboard-summary']);
+      queryClient.invalidateQueries({ queryKey: ['hr-leaves-list'] });
+      queryClient.invalidateQueries({ queryKey: ['hr-dashboard-summary'] });
     },
     onError: () => {
       toast.error('Failed to update leave status');
@@ -158,8 +158,8 @@ export default function HrDashboard() {
     },
     onSuccess: () => {
       toast.success('Staff member onboarded successfully!');
-      queryClient.invalidateQueries(['hr-employees-list']);
-      queryClient.invalidateQueries(['hr-dashboard-summary']);
+      queryClient.invalidateQueries({ queryKey: ['hr-employees-list'] });
+      queryClient.invalidateQueries({ queryKey: ['hr-dashboard-summary'] });
       setIsOnboardModalOpen(false);
       setSelectedUser(null);
       setUserSearchQuery('');
@@ -298,8 +298,8 @@ export default function HrDashboard() {
           <button
             onClick={() => {
               refetchDashboard();
-              queryClient.invalidateQueries(['hr-employees-list']);
-              queryClient.invalidateQueries(['hr-leaves-list']);
+              queryClient.invalidateQueries({ queryKey: ['hr-employees-list'] });
+              queryClient.invalidateQueries({ queryKey: ['hr-leaves-list'] });
               toast.success('Workforce data refreshed');
             }}
             title="Refresh All HR Metrics"

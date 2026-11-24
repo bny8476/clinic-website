@@ -24,8 +24,8 @@ const HistorySection = ({ patientId, title, endpoint, icon: Icon, columns, formF
       return await axiosPrivate.post(`/emr/${endpoint}`, payload);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries([title, patientId]);
-      queryClient.invalidateQueries(['chartSummary', patientId]);
+      queryClient.invalidateQueries({ queryKey: [title, patientId] });
+      queryClient.invalidateQueries({ queryKey: ['chartSummary', patientId] });
       toast.success(`${title} added successfully!`);
       setIsAdding(false);
       setFormData({});

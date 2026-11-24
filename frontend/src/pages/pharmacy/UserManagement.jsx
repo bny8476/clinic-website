@@ -38,7 +38,7 @@ export default function UserManagement() {
     mutationFn: (formData) => api.post('/auth/users', formData),
     onSuccess: (res, formData) => {
       toast.success('User created successfully');
-      queryClient.invalidateQueries(['users']);
+      queryClient.invalidateQueries({ queryKey: ['users'] });
       setCreatedUser({ ...res.data.data, password: formData.password });
       setIsResetMode(false);
       setIsCredentialModalOpen(true);
@@ -51,7 +51,7 @@ export default function UserManagement() {
     mutationFn: ({ id, formData }) => api.put(`/auth/users/${id}`, formData),
     onSuccess: () => {
       toast.success('User updated successfully');
-      queryClient.invalidateQueries(['users']);
+      queryClient.invalidateQueries({ queryKey: ['users'] });
       closeModal();
     },
     onError: (err) => toast.error(err.response?.data?.message || 'Failed to update user')
@@ -61,7 +61,7 @@ export default function UserManagement() {
     mutationFn: (user) => api.put(`/auth/users/${user.id}/status`),
     onSuccess: () => {
       toast.success('User status updated');
-      queryClient.invalidateQueries(['users']);
+      queryClient.invalidateQueries({ queryKey: ['users'] });
     },
     onError: () => toast.error('Failed to update status')
   });

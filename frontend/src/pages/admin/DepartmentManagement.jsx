@@ -72,7 +72,7 @@ const DepartmentManagement = () => {
         },
         onSuccess: () => {
             toast.success(editingDept ? 'Department updated successfully' : 'Department created successfully');
-            queryClient.invalidateQueries(['admin-departments']);
+            queryClient.invalidateQueries({ queryKey: ['admin-departments'] });
             closeModal();
         },
         onError: (err) => {
@@ -85,7 +85,7 @@ const DepartmentManagement = () => {
         mutationFn: async (id) => axiosPrivate.delete(`/departments/${id}`),
         onSuccess: () => {
             toast.success('Department deleted successfully');
-            queryClient.invalidateQueries(['admin-departments']);
+            queryClient.invalidateQueries({ queryKey: ['admin-departments'] });
             setIsDeleteDialogOpen(false);
             setDepartmentToDelete(null);
         },

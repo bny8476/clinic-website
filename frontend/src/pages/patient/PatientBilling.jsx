@@ -81,7 +81,7 @@ const PatientBilling = () => {
     },
     onSuccess: () => {
       toast.success('Payment settled successfully');
-      queryClient.invalidateQueries(['patientInvoices', user?.id]);
+      queryClient.invalidateQueries({ queryKey: ['patientInvoices', user?.id] });
       setConfirmDialog({ isOpen: false, invoice: null });
     },
     onError: () => {

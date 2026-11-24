@@ -57,8 +57,8 @@ export const AmbulanceTablesWidget = ({ activeTab, requests, fleet, loadingReque
     mutationFn: async ({ requestId, ambulanceId }) => axiosPrivate.patch(`/ambulance/requests/${requestId}/dispatch?ambulanceId=${ambulanceId}`),
     onSuccess: () => {
       toast.success('Ambulance unit dispatched!');
-      queryClient.invalidateQueries(['ambulance-requests']);
-      queryClient.invalidateQueries(['ambulance-fleet']);
+      queryClient.invalidateQueries({ queryKey: ['ambulance-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['ambulance-fleet'] });
       setSelectedRequest(null);
     },
     onError: () => toast.error('Failed to dispatch unit')
@@ -68,8 +68,8 @@ export const AmbulanceTablesWidget = ({ activeTab, requests, fleet, loadingReque
     mutationFn: async ({ id, status }) => axiosPrivate.patch(`/ambulance/requests/${id}/status?status=${status}`),
     onSuccess: () => {
       toast.success('Emergency request updated');
-      queryClient.invalidateQueries(['ambulance-requests']);
-      queryClient.invalidateQueries(['ambulance-fleet']);
+      queryClient.invalidateQueries({ queryKey: ['ambulance-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['ambulance-fleet'] });
     },
     onError: () => toast.error('Failed to update status')
   });
@@ -171,7 +171,7 @@ export const AmbulanceNewRequestWidget = ({ showNewRequest, setShowNewRequest })
     mutationFn: async (payload) => axiosPrivate.post('/ambulance/requests', payload),
     onSuccess: () => {
       toast.success('New emergency request registered');
-      queryClient.invalidateQueries(['ambulance-requests']);
+      queryClient.invalidateQueries({ queryKey: ['ambulance-requests'] });
       setShowNewRequest(false);
       setNewReq({ pickupAddress: '', emergencyType: 'CARDIAC', priority: 'CRITICAL' });
     },

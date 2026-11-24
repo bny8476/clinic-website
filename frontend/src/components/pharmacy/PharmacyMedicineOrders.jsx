@@ -29,8 +29,8 @@ export default function PharmacyMedicineOrders() {
     },
     onSuccess: (data) => {
       toast.success(`Order ${data.orderNumber} status updated to ${data.status}! Stock deducted.`);
-      queryClient.invalidateQueries(['pharmacy-medicine-orders']);
-      queryClient.invalidateQueries(['pharmacy-inventory']);
+      queryClient.invalidateQueries({ queryKey: ['pharmacy-medicine-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['pharmacy-inventory'] });
     },
     onError: (err) => {
       toast.error(err.response?.data?.message || err.message || 'Failed to update order status');

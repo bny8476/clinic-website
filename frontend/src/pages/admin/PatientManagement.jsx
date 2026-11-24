@@ -72,7 +72,7 @@ export default function PatientManagement() {
     mutationFn: (body) => axiosPrivate.post('/patients/register', body),
     onSuccess: () => {
       toast.success('Patient registered successfully!');
-      queryClient.invalidateQueries(['admin-patients']);
+      queryClient.invalidateQueries({ queryKey: ['admin-patients'] });
       setIsCreateOpen(false);
       setFormData(emptyForm);
     },
@@ -84,7 +84,7 @@ export default function PatientManagement() {
     mutationFn: ({ id, body }) => axiosPrivate.put(`/patients/${id}`, body),
     onSuccess: () => {
       toast.success('Patient updated successfully!');
-      queryClient.invalidateQueries(['admin-patients']);
+      queryClient.invalidateQueries({ queryKey: ['admin-patients'] });
       setEditingPatient(null);
     },
     onError: (err) => toast.error(err.response?.data?.message || 'Failed to update patient')

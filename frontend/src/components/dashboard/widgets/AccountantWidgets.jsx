@@ -46,7 +46,7 @@ export const AccountantInvoicesWidget = ({ filteredInvoices, isLoading }) => {
     mutationFn: async ({ id, method }) => axiosPrivate.patch(`/billing/invoices/${id}/mark-paid?paymentMethod=${method}`),
     onSuccess: () => {
       toast.success('Invoice marked as paid');
-      queryClient.invalidateQueries(['allInvoices']);
+      queryClient.invalidateQueries({ queryKey: ['allInvoices'] });
     },
     onError: () => toast.error('Failed to update invoice status')
   });

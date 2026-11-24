@@ -29,7 +29,7 @@ export default function ProductCatalog() {
     },
     onSuccess: () => {
       toast.success('Added to cart');
-      queryClient.invalidateQueries(['ecommerce-cart']);
+      queryClient.invalidateQueries({ queryKey: ['ecommerce-cart'] });
     },
     onError: () => {
       toast.error('Failed to add to cart');

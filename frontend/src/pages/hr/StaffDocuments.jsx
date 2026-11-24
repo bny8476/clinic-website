@@ -169,7 +169,7 @@ export default function StaffDocuments() {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['staffDocuments', selectedStaff]);
+      queryClient.invalidateQueries({ queryKey: ['staffDocuments', selectedStaff] });
       setIsUploadModalOpen(false);
       setUploadForm(prev => ({ ...prev, file: null, documentType: 'CONTRACT' }));
       toast.success('Document uploaded and indexed successfully!');
@@ -185,7 +185,7 @@ export default function StaffDocuments() {
       await axiosPrivate.delete(`/hr/documents/${documentId}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['staffDocuments', selectedStaff]);
+      queryClient.invalidateQueries({ queryKey: ['staffDocuments', selectedStaff] });
       toast.success('Document deleted successfully');
       setConfirmDelete({ isOpen: false, docId: null, filename: '' });
     },

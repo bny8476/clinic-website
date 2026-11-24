@@ -96,9 +96,9 @@ const FinanceDailyCash = () => {
       toast.success('Till session opened successfully');
       setIsModalOpen(false);
       setAmount('');
-      queryClient.invalidateQueries(['cashier-current-session']);
-      queryClient.invalidateQueries(['cashier-sessions']);
-      queryClient.invalidateQueries(['finance-dashboard']);
+      queryClient.invalidateQueries({ queryKey: ['cashier-current-session'] });
+      queryClient.invalidateQueries({ queryKey: ['cashier-sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['finance-dashboard'] });
     },
     onError: (error) => {
       toast.error(error.response?.data?.message || 'Failed to open till session');
@@ -116,9 +116,9 @@ const FinanceDailyCash = () => {
       toast.success('Till session closed and balanced');
       setIsModalOpen(false);
       setAmount('');
-      queryClient.invalidateQueries(['cashier-current-session']);
-      queryClient.invalidateQueries(['cashier-sessions']);
-      queryClient.invalidateQueries(['finance-dashboard']);
+      queryClient.invalidateQueries({ queryKey: ['cashier-current-session'] });
+      queryClient.invalidateQueries({ queryKey: ['cashier-sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['finance-dashboard'] });
     },
     onError: (error) => {
       toast.error(error.response?.data?.message || 'Failed to close till session');

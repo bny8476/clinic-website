@@ -43,23 +43,27 @@ public class FinanceController {
 
     @PostMapping("/expenses/{id}/approve")
     @PreAuthorize("hasRole('ADMIN') or hasRole('FINANCE') or hasRole('ACCOUNTANT')")
-    public ResponseEntity<Expense> approveExpense(@PathVariable Long id, @RequestParam Long approverId) {
-        return ResponseEntity.ok(financeService.approveExpense(id, approverId));
+    public ResponseEntity<Expense> approveExpense(@PathVariable Long id,
+                                                  @AuthenticationPrincipal UserPrincipal user) {
+        // Approver identity always comes from the authenticated user, never from the client
+        return ResponseEntity.ok(financeService.approveExpense(id, user.getUserId()));
     }
 
     @PostMapping("/expenses/{id}/reject")
     @PreAuthorize("hasRole('ADMIN') or hasRole('FINANCE') or hasRole('ACCOUNTANT')")
     public ResponseEntity<Expense> rejectExpense(
-            @PathVariable Long id, 
-            @RequestParam Long approverId,
-            @RequestBody java.util.Map<String, String> request) {
-        return ResponseEntity.ok(financeService.rejectExpense(id, approverId, request.get("reason")));
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal user,
+            @RequestBody(required = false) java.util.Map<String, String> request) {
+        String reason = request != null ? request.get("reason") : null;
+        return ResponseEntity.ok(financeService.rejectExpense(id, user.getUserId(), reason));
     }
     
     @PostMapping("/expenses/{id}/pay")
     @PreAuthorize("hasRole('ADMIN') or hasRole('FINANCE') or hasRole('ACCOUNTANT')")
-    public ResponseEntity<Expense> payExpense(@PathVariable Long id, @RequestParam Long payerId) {
-        return ResponseEntity.ok(financeService.payExpense(id, payerId));
+    public ResponseEntity<Expense> payExpense(@PathVariable Long id,
+                                              @AuthenticationPrincipal UserPrincipal user) {
+        return ResponseEntity.ok(financeService.payExpense(id, user.getUserId()));
     }
 
     @GetMapping("/claims")

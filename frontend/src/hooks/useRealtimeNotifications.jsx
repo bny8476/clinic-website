@@ -70,10 +70,10 @@ export function useRealtimeNotifications() {
               </div>
             ), { duration: 6000 });
 
-            queryClient.invalidateQueries(['notifications']);
-            queryClient.invalidateQueries(['unreadNotificationCount']);
-            queryClient.invalidateQueries(['doctorOrders']);
-            queryClient.invalidateQueries(['patientOrders']);
+            queryClient.invalidateQueries({ queryKey: ['notifications'] });
+            queryClient.invalidateQueries({ queryKey: ['unreadNotificationCount'] });
+            queryClient.invalidateQueries({ queryKey: ['doctorOrders'] });
+            queryClient.invalidateQueries({ queryKey: ['patientOrders'] });
           } catch (err) {
             console.error("Error parsing SSE notification:", err);
           }

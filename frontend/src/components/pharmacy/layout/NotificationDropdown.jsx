@@ -20,12 +20,12 @@ export default function NotificationDropdown() {
 
   const markAllMutation = useMutation({
     mutationFn: async () => axiosPrivate.patch('/notifications/mark-all-read'),
-    onSuccess: () => queryClient.invalidateQueries(['notifications'])
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] })
   });
 
   const markReadMutation = useMutation({
     mutationFn: async (id) => axiosPrivate.patch(`/notifications/${id}/read`),
-    onSuccess: () => queryClient.invalidateQueries(['notifications'])
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] })
   });
 
   const notifications = notificationsData || [];

@@ -83,7 +83,7 @@ const DoctorAppointments = () => {
     },
     retry: false, // Prevents automatic retrying of 409 Conflict requests
     onSuccess: (resData) => {
-      queryClient.invalidateQueries(['doctorAllAppointments']);
+      queryClient.invalidateQueries({ queryKey: ['doctorAllAppointments'] });
       const encounterId = resData?.data?.encounterId || resData?.encounterId;
       if (encounterId) {
         navigate(`/doctor/consultation/${encounterId}`);
@@ -92,7 +92,7 @@ const DoctorAppointments = () => {
       }
     },
     onError: (err) => {
-      queryClient.invalidateQueries(['doctorAllAppointments']);
+      queryClient.invalidateQueries({ queryKey: ['doctorAllAppointments'] });
       const message = err.response?.data?.message || 'Unable to start consultation. Please try again.';
       toast.error(message);
     }

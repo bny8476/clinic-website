@@ -33,7 +33,7 @@ export const AssessmentsTab = ({ patientId }) => {
       patientId, score: parseInt(fallScore), notes: fallNotes
     }),
     onSuccess: () => {
-      queryClient.invalidateQueries(['fall-assessments']);
+      queryClient.invalidateQueries({ queryKey: ['fall-assessments'] });
       setFallScore(''); setFallNotes('');
       toast.success('Fall risk assessment saved');
     }
@@ -44,7 +44,7 @@ export const AssessmentsTab = ({ patientId }) => {
       patientId, painScore: parseInt(painScore), painLocation, painCharacteristics: painChars, interventions: painInterventions
     }),
     onSuccess: () => {
-      queryClient.invalidateQueries(['pain-assessments']);
+      queryClient.invalidateQueries({ queryKey: ['pain-assessments'] });
       setPainScore(''); setPainLocation(''); setPainChars(''); setPainInterventions('');
       toast.success('Pain assessment saved');
     }

@@ -28,7 +28,7 @@ const PatientSettings = () => {
       const res = await axiosPrivate.put(`/v1/patient/settings/notifications/${category}`, pref);
       return res.data;
     },
-    onSuccess: () => queryClient.invalidateQueries(['notification-preferences'])
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notification-preferences'] })
   });
 
   const handleToggle = (category, type, currentValue) => {

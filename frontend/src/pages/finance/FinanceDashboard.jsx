@@ -115,49 +115,49 @@ export default function FinanceDashboard() {
   // Mutations
   const approveMutation = useMutation({
     mutationFn: async (id) => {
-      const userStr = localStorage.getItem('user');
-      const userId = userStr ? JSON.parse(userStr).id : 1;
-      return await axiosPrivate.post(`/finance/expenses/${id}/approve?approverId=${userId}`);
+      return await axiosPrivate.post(`/finance/expenses/${id}/approve`);
     },
     onSuccess: () => {
       toast.success('Expense approved successfully');
-      queryClient.invalidateQueries(['finance-expenses']);
-      queryClient.invalidateQueries(['finance-dashboard']);
+      queryClient.invalidateQueries({ queryKey: ['finance-expenses'] });
+      queryClient.invalidateQueries({ queryKey: ['finance-dashboard'] });
     },
     onError: (err) => {
       toast.error(err.response?.data?.message || 'Failed to approve expense');
+      queryClient.invalidateQueries({ queryKey: ['finance-expenses'] });
+      queryClient.invalidateQueries({ queryKey: ['finance-dashboard'] });
     }
   });
 
   const payMutation = useMutation({
     mutationFn: async (id) => {
-      const userStr = localStorage.getItem('user');
-      const userId = userStr ? JSON.parse(userStr).id : 1;
-      return await axiosPrivate.post(`/finance/expenses/${id}/pay?payerId=${userId}`);
+      return await axiosPrivate.post(`/finance/expenses/${id}/pay`);
     },
     onSuccess: () => {
       toast.success('Expense marked as Paid & posted to General Ledger');
-      queryClient.invalidateQueries(['finance-expenses']);
-      queryClient.invalidateQueries(['finance-dashboard']);
+      queryClient.invalidateQueries({ queryKey: ['finance-expenses'] });
+      queryClient.invalidateQueries({ queryKey: ['finance-dashboard'] });
     },
     onError: (err) => {
       toast.error(err.response?.data?.message || 'Failed to process payment');
+      queryClient.invalidateQueries({ queryKey: ['finance-expenses'] });
+      queryClient.invalidateQueries({ queryKey: ['finance-dashboard'] });
     }
   });
 
   const rejectMutation = useMutation({
     mutationFn: async ({ id, reason }) => {
-      const userStr = localStorage.getItem('user');
-      const userId = userStr ? JSON.parse(userStr).id : 1;
-      return await axiosPrivate.post(`/finance/expenses/${id}/reject?approverId=${userId}`, { reason: reason || 'Not approved' });
+      return await axiosPrivate.post(`/finance/expenses/${id}/reject`, { reason: reason || 'Not approved' });
     },
     onSuccess: () => {
       toast.success('Expense rejected');
-      queryClient.invalidateQueries(['finance-expenses']);
-      queryClient.invalidateQueries(['finance-dashboard']);
+      queryClient.invalidateQueries({ queryKey: ['finance-expenses'] });
+      queryClient.invalidateQueries({ queryKey: ['finance-dashboard'] });
     },
     onError: (err) => {
       toast.error(err.response?.data?.message || 'Failed to reject expense');
+      queryClient.invalidateQueries({ queryKey: ['finance-expenses'] });
+      queryClient.invalidateQueries({ queryKey: ['finance-dashboard'] });
     }
   });
 
@@ -167,8 +167,8 @@ export default function FinanceDashboard() {
     },
     onSuccess: () => {
       toast.success('Expense recorded successfully');
-      queryClient.invalidateQueries(['finance-expenses']);
-      queryClient.invalidateQueries(['finance-dashboard']);
+      queryClient.invalidateQueries({ queryKey: ['finance-expenses'] });
+      queryClient.invalidateQueries({ queryKey: ['finance-dashboard'] });
       setIsExpenseModalOpen(false);
       setNewExpense({ category: '', description: '', amount: '', incurredOn: new Date().toISOString().split('T')[0] });
     },
@@ -176,6 +176,8 @@ export default function FinanceDashboard() {
       toast.error(err.response?.data?.message || 'Failed to record expense');
     }
   });
+
+  const expenseActionBusy = approveMutation.isPending || rejectMutation.isPending || payMutation.isPending;
 
   const handleRefreshAll = () => {
     refetchDashboard();
@@ -565,12 +567,13 @@ export default function FinanceDashboard() {
                           <>
                             <button 
                               onClick={() => approveMutation.mutate(expense.id)}
-                              disabled={approveMutation.isPending}
+                              disabled={expenseActionBusy}
                               className="text-xs font-bold bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg transition border border-blue-200"
                             >
                               Approve
                             </button>
                             <button
+                              disabled={expenseActionBusy}
                               onClick={() => {
                                 const reason = prompt('Reason for rejection:');
                                 if (reason !== null) {
@@ -586,7 +589,7 @@ export default function FinanceDashboard() {
                         {expense.status === 'APPROVED' && (
                           <button 
                             onClick={() => payMutation.mutate(expense.id)}
-                            disabled={payMutation.isPending}
+                            disabled={expenseActionBusy}
                             className="text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg transition shadow-2xs flex items-center gap-1"
                           >
                             <CheckCircle2 className="w-3.5 h-3.5" /> Mark Paid & Post GL

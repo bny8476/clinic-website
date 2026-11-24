@@ -24,7 +24,7 @@ const HomeVisit = () => {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['myHomeVisits']);
+      queryClient.invalidateQueries({ queryKey: ['myHomeVisits'] });
       setAddress('');
       setNotes('');
       setRequestDate('');

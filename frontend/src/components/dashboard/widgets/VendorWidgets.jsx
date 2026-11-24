@@ -38,14 +38,14 @@ export const VendorTablesWidget = ({ activeTab, purchaseOrders, deliveries, load
 
   const acknowledgePo = useMutation({
     mutationFn: async (poId) => axiosPrivate.patch(`/vendor/purchase-orders/${poId}/acknowledge`),
-    onSuccess: () => queryClient.invalidateQueries(['vendor-purchase-orders']),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['vendor-purchase-orders'] }),
   });
 
   const dispatchDelivery = useMutation({
     mutationFn: async ({ poId, payload }) => axiosPrivate.post(`/vendor/purchase-orders/${poId}/dispatch`, payload),
     onSuccess: () => {
-      queryClient.invalidateQueries(['vendor-purchase-orders']);
-      queryClient.invalidateQueries(['vendor-deliveries']);
+      queryClient.invalidateQueries({ queryKey: ['vendor-purchase-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['vendor-deliveries'] });
       setSelectedPo(null);
       setTrackingNumber('');
       setNotes('');

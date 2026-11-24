@@ -40,7 +40,7 @@ const EcommerceDashboard = () => {
   const createProduct = useMutation({
     mutationFn: async (payload) => axiosPrivate.post('/ecommerce/products', payload),
     onSuccess: () => {
-      queryClient.invalidateQueries(['ecommerce-products']);
+      queryClient.invalidateQueries({ queryKey: ['ecommerce-products'] });
       setTitle('');
       setPrice('');
       setStockQuantity('');
@@ -52,7 +52,7 @@ const EcommerceDashboard = () => {
     mutationFn: async ({ orderId, status, trackingNumber }) =>
       axiosPrivate.patch(`/ecommerce/orders/${orderId}/shipping?status=${status}&trackingNumber=${trackingNumber || ''}`),
     onSuccess: () => {
-      queryClient.invalidateQueries(['ecommerce-orders']);
+      queryClient.invalidateQueries({ queryKey: ['ecommerce-orders'] });
       setSelectedOrder(null);
       setTrackingNo('');
     },

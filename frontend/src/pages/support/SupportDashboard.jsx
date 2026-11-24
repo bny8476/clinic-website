@@ -291,7 +291,7 @@ const SupportDashboard = () => {
       }
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries(['support-tickets']);
+      queryClient.invalidateQueries({ queryKey: ['support-tickets'] });
       if (selectedTicket) {
         setSelectedTicket({ ...selectedTicket, status: variables.status });
       }
@@ -310,7 +310,7 @@ const SupportDashboard = () => {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['ticket-messages', selectedTicket?.id]);
+      queryClient.invalidateQueries({ queryKey: ['ticket-messages', selectedTicket?.id] });
       setReplyMessage('');
       toast.success('Support message sent successfully');
     },
@@ -334,7 +334,7 @@ const SupportDashboard = () => {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['support-tickets']);
+      queryClient.invalidateQueries({ queryKey: ['support-tickets'] });
       toast.success('Support ticket created successfully!');
       setIsCreateModalOpen(false);
       setNewTicketForm({

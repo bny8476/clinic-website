@@ -82,9 +82,9 @@ export function useBookAppointment() {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['patientAppointments']);
-      queryClient.invalidateQueries(['availableSlots']);
-      queryClient.invalidateQueries(['appointmentQueue']);
+      queryClient.invalidateQueries({ queryKey: ['patientAppointments'] });
+      queryClient.invalidateQueries({ queryKey: ['availableSlots'] });
+      queryClient.invalidateQueries({ queryKey: ['appointmentQueue'] });
     },
   });
 }
@@ -104,10 +104,10 @@ export function useUpdateAppointmentStatus() {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['patientAppointments']);
-      queryClient.invalidateQueries(['doctorTodayAppointments']);
-      queryClient.invalidateQueries(['appointmentQueue']);
-      queryClient.invalidateQueries(['availableSlots']);
+      queryClient.invalidateQueries({ queryKey: ['patientAppointments'] });
+      queryClient.invalidateQueries({ queryKey: ['doctorTodayAppointments'] });
+      queryClient.invalidateQueries({ queryKey: ['appointmentQueue'] });
+      queryClient.invalidateQueries({ queryKey: ['availableSlots'] });
     },
   });
 }
@@ -121,9 +121,9 @@ export function useRescheduleAppointment() {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['patientAppointments']);
-      queryClient.invalidateQueries(['availableSlots']);
-      queryClient.invalidateQueries(['appointmentQueue']);
+      queryClient.invalidateQueries({ queryKey: ['patientAppointments'] });
+      queryClient.invalidateQueries({ queryKey: ['availableSlots'] });
+      queryClient.invalidateQueries({ queryKey: ['appointmentQueue'] });
     },
   });
 }

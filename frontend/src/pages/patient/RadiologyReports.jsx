@@ -191,7 +191,7 @@ export default function RadiologyReports() {
       setIsScheduleModalOpen(false);
       setScheduledAt('');
       setSchedulingRequestId(null);
-      queryClient.invalidateQueries(['patient-radiology-reports']);
+      queryClient.invalidateQueries({ queryKey: ['patient-radiology-reports'] });
       refetch();
     },
     onError: (err) => {
@@ -232,7 +232,7 @@ export default function RadiologyReports() {
       setUploadFile(null);
       setUploadTitle('');
       setUploadNotes('');
-      queryClient.invalidateQueries(['patient-radiology-reports']);
+      queryClient.invalidateQueries({ queryKey: ['patient-radiology-reports'] });
       refetch();
     } catch (err) {
       console.error('Scan upload failed', err);

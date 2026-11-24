@@ -144,10 +144,10 @@ const DoctorDashboard = () => {
     };
 
     const invalidateAllFeeds = () => {
-      queryClient.invalidateQueries(['doctor-today-appointments']);
-      queryClient.invalidateQueries(['doctorAllAppointments', user?.id]);
-      queryClient.invalidateQueries(['doctor-queue']);
-      queryClient.invalidateQueries(['doctorLabRequests']);
+      queryClient.invalidateQueries({ queryKey: ['doctor-today-appointments'] });
+      queryClient.invalidateQueries({ queryKey: ['doctorAllAppointments', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['doctor-queue'] });
+      queryClient.invalidateQueries({ queryKey: ['doctorLabRequests'] });
     };
 
     const connectSSE = async () => {

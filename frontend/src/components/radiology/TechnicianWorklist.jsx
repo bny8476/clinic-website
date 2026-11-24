@@ -33,10 +33,10 @@ export default function TechnicianWorklist({ requests = [] }) {
       if (selectedRequest && (selectedRequest.status === 'SCHEDULED' || selectedRequest.status === 'ORDERED')) {
         axiosPrivate.patch(`/radiology/requests/${selectedRequest.id}/status?status=REPORTING`)
           .then(() => {
-            queryClient.invalidateQueries(['radiology-requests-dashboard']);
+            queryClient.invalidateQueries({ queryKey: ['radiology-requests-dashboard'] });
           });
       } else {
-        queryClient.invalidateQueries(['radiology-requests-dashboard']);
+        queryClient.invalidateQueries({ queryKey: ['radiology-requests-dashboard'] });
       }
       
       setIsUploadModalOpen(false);

@@ -65,37 +65,48 @@ public class PurchaseOrderController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyAuthority('ROLE_SYSTEM_ADMIN','ROLE_STOREKEEPER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_SUPER_ADMIN','ROLE_SYSTEM_ADMIN','ROLE_STOREKEEPER','ROLE_PHARMACIST','ROLE_PHARMACY_STAFF','ROLE_PHARMACY_MANAGER')")
     public ResponseEntity<ApiResponse<PurchaseOrder>> create(@Valid @RequestBody PurchaseOrder po) {
         return ResponseEntity.ok(ApiResponse.success(service.createPO(po), "PO created successfully"));
     }
 
     @PutMapping("/{id}/submit")
-    @PreAuthorize("hasAnyAuthority('ROLE_SYSTEM_ADMIN','ROLE_STOREKEEPER')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_SUPER_ADMIN','ROLE_SYSTEM_ADMIN','ROLE_STOREKEEPER','ROLE_PHARMACIST','ROLE_PHARMACY_STAFF','ROLE_PHARMACY_MANAGER')")
     public ResponseEntity<ApiResponse<PurchaseOrder>> submit(@PathVariable String id) {
         return ResponseEntity.ok(ApiResponse.success(service.submitForApproval(id), "PO submitted"));
     }
 
     @PutMapping("/{id}/approve")
-    @PreAuthorize("hasAnyAuthority('ROLE_SYSTEM_ADMIN','ROLE_SUPERVISOR','ROLE_STOREKEEPER')")
-    public ResponseEntity<ApiResponse<PurchaseOrder>> approve(@PathVariable String id, @RequestParam Long userId) {
-        return ResponseEntity.ok(ApiResponse.success(service.approvePO(id, userId), "PO approved"));
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_SUPER_ADMIN','ROLE_SYSTEM_ADMIN','ROLE_SUPERVISOR','ROLE_STOREKEEPER','ROLE_PHARMACIST','ROLE_PHARMACY_MANAGER')")
+    public ResponseEntity<ApiResponse<PurchaseOrder>> approve(@PathVariable String id, @RequestParam(required = false) Long userId) {
+        return ResponseEntity.ok(ApiResponse.success(service.approvePO(id, userId != null ? userId : 1L), "PO approved"));
     }
 
     @PutMapping("/{id}/send")
-    @PreAuthorize("hasAnyAuthority('ROLE_SYSTEM_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_SUPER_ADMIN','ROLE_SYSTEM_ADMIN','ROLE_STOREKEEPER','ROLE_PHARMACIST','ROLE_PHARMACY_MANAGER')")
     public ResponseEntity<ApiResponse<PurchaseOrder>> send(@PathVariable String id) {
         return ResponseEntity.ok(ApiResponse.success(service.sendToSupplier(id), "PO sent to supplier"));
     }
 
     @PutMapping("/{id}/cancel")
-    @PreAuthorize("hasAnyAuthority('ROLE_SYSTEM_ADMIN','ROLE_PURCHASE_MANAGER')")
-    public ResponseEntity<ApiResponse<PurchaseOrder>> cancel(@PathVariable String id, @RequestParam String reason, @RequestParam Long userId) {
-        return ResponseEntity.ok(ApiResponse.success(service.cancelPO(id, reason, userId), "PO cancelled"));
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_SUPER_ADMIN','ROLE_SYSTEM_ADMIN','ROLE_PURCHASE_MANAGER','ROLE_SUPERVISOR','ROLE_STOREKEEPER','ROLE_PHARMACIST')")
+    public ResponseEntity<ApiResponse<PurchaseOrder>> cancel(@PathVariable String id, @RequestParam(required = false) String reason, @RequestParam(required = false) Long userId) {
+        return ResponseEntity.ok(ApiResponse.success(service.cancelPO(id, reason != null ? reason : "Cancelled by user", userId != null ? userId : 1L), "PO cancelled"));
+    }
+
+    @PutMapping("/{id}/status")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_SUPER_ADMIN','ROLE_SYSTEM_ADMIN','ROLE_SUPERVISOR','ROLE_STOREKEEPER','ROLE_PHARMACIST','ROLE_PHARMACY_STAFF','ROLE_PHARMACY_MANAGER')")
+    public ResponseEntity<ApiResponse<PurchaseOrder>> updateStatus(
+            @PathVariable String id,
+            @RequestBody Map<String, Object> body) {
+        String status = (String) body.get("status");
+        Long userId = body.get("userId") != null ? Long.valueOf(body.get("userId").toString()) : null;
+        String reason = (String) body.get("reason");
+        return ResponseEntity.ok(ApiResponse.success(service.updateStatus(id, status, userId, reason), "PO status updated"));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('ROLE_SYSTEM_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_SUPER_ADMIN','ROLE_SYSTEM_ADMIN','ROLE_STOREKEEPER')")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
         service.deletePO(id);
         return ResponseEntity.ok(ApiResponse.success(null, "PO deleted successfully"));

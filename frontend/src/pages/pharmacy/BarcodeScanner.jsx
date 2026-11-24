@@ -22,7 +22,7 @@ export default function BarcodeScanner() {
         toast.success(`Barcode detected: "${term}" (${res.data?.medicineName || 'Scanned Logged'})`);
         setScans(prev => [res.data || res, ...prev]);
         setBarcodeValue('');
-        queryClient.invalidateQueries(['stocks']);
+        queryClient.invalidateQueries({ queryKey: ['stocks'] });
       } else {
         toast.error('Barcode lookup failed');
       }

@@ -31,7 +31,7 @@ const QueueManagement = () => {
     },
     onSuccess: () => {
       toast.success('Queue token updated successfully');
-      queryClient.invalidateQueries(['queueTokens', branchId]);
+      queryClient.invalidateQueries({ queryKey: ['queueTokens', branchId] });
     },
     onError: () => {
       toast.error('Failed to update token status');

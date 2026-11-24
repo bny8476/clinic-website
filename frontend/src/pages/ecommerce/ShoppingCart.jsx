@@ -31,7 +31,7 @@ export default function ShoppingCart() {
         cartType: 'CART'
       });
     },
-    onSuccess: () => queryClient.invalidateQueries(['ecommerce-cart']),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['ecommerce-cart'] }),
     onError: () => toast.error('Failed to update quantity')
   });
 
@@ -48,7 +48,7 @@ export default function ShoppingCart() {
     },
     onSuccess: () => {
       toast.success('Item removed');
-      queryClient.invalidateQueries(['ecommerce-cart']);
+      queryClient.invalidateQueries({ queryKey: ['ecommerce-cart'] });
     },
     onError: () => toast.error('Failed to remove item')
   });

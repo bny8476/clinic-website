@@ -77,7 +77,7 @@ const BranchManagement = () => {
             }
         },
         onSuccess: (data) => {
-            queryClient.invalidateQueries(['branches']);
+            queryClient.invalidateQueries({ queryKey: ['branches'] });
             toast.success(currentBranch ? 'Branch updated successfully!' : 'Branch created successfully!');
             setIsModalOpen(false);
             setCurrentBranch(null);

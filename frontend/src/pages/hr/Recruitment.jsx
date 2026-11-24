@@ -70,7 +70,7 @@ export default function Recruitment() {
     },
     onSuccess: () => {
       toast.success('Job requisition posted successfully!');
-      queryClient.invalidateQueries(['jobRequisitions']);
+      queryClient.invalidateQueries({ queryKey: ['jobRequisitions'] });
       setIsModalOpen(false);
       setFormData({
         title: '',

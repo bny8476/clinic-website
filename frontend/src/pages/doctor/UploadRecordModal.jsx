@@ -37,7 +37,7 @@ const UploadRecordModal = ({ isOpen, onClose, patientId }) => {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['patientRecords', patientId]);
+      queryClient.invalidateQueries({ queryKey: ['patientRecords', patientId] });
       setFormData({ title: '', recordType: 'CONSULTATION_NOTE', notes: '' });
       onClose();
     }

@@ -43,7 +43,7 @@ export const InsuranceAdjudicationWidget = ({ activeTab, claims, preAuths }) => 
         notes: notes || ''
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries(['insurance-claims']);
+      queryClient.invalidateQueries({ queryKey: ['insurance-claims'] });
       setSelectedClaim(null);
       setApprovedAmount('');
       setNotes('');
@@ -52,7 +52,7 @@ export const InsuranceAdjudicationWidget = ({ activeTab, claims, preAuths }) => 
 
   const adjudicatePreAuth = useMutation({
     mutationFn: async ({ id, status }) => axiosPrivate.patch(`/insurance/pre-auths/${id}/adjudicate?status=${status}`),
-    onSuccess: () => queryClient.invalidateQueries(['insurance-preauths']),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['insurance-preauths'] }),
   });
 
   return (

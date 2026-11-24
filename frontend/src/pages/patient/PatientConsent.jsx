@@ -26,14 +26,14 @@ const PatientConsent = () => {
     mutationFn: async (consentType) => {
       await axiosPrivate.post(`/v1/patient/settings/consents/${consentType}`);
     },
-    onSuccess: () => queryClient.invalidateQueries(['patient-consents'])
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['patient-consents'] })
   });
 
   const revokeMutation = useMutation({
     mutationFn: async (consentType) => {
       await axiosPrivate.delete(`/v1/patient/settings/consents/${consentType}`);
     },
-    onSuccess: () => queryClient.invalidateQueries(['patient-consents'])
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['patient-consents'] })
   });
 
   const isGranted = (consentType) => {

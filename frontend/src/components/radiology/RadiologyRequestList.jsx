@@ -59,7 +59,7 @@ const RadiologyRequestList = ({ filter = 'ALL' }) => {
     },
     onSuccess: () => {
       toast.success('Status updated');
-      queryClient.invalidateQueries(['radiology-requests']);
+      queryClient.invalidateQueries({ queryKey: ['radiology-requests'] });
     },
     onError: () => toast.error('Failed to update status')
   });
@@ -71,7 +71,7 @@ const RadiologyRequestList = ({ filter = 'ALL' }) => {
     },
     onSuccess: () => {
       toast.success('Mock DICOM study acquired');
-      queryClient.invalidateQueries(['radiology-requests']);
+      queryClient.invalidateQueries({ queryKey: ['radiology-requests'] });
     },
     onError: () => toast.error('Failed to acquire mock study')
   });

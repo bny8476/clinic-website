@@ -45,7 +45,7 @@ export default function TemperatureLogs() {
     mutationFn: (payload) => pharmacyService.createStorageUnit(payload),
     onSuccess: () => {
       toast.success('Storage unit created successfully');
-      queryClient.invalidateQueries(['storageUnits']);
+      queryClient.invalidateQueries({ queryKey: ['storageUnits'] });
     },
     onError: () => toast.error('Failed to create storage unit')
   });
@@ -56,7 +56,7 @@ export default function TemperatureLogs() {
       toast.success('Temperature recorded successfully');
       if (res && res.isBreach) {
         toast.error('WARNING: Thermal breach detected!', { duration: 5000 });
-        queryClient.invalidateQueries(['temperatureBreaches']);
+        queryClient.invalidateQueries({ queryKey: ['temperatureBreaches'] });
       }
     },
     onError: () => toast.error('Failed to record temperature')
@@ -66,14 +66,14 @@ export default function TemperatureLogs() {
     mutationFn: ({ logId, action }) => pharmacyService.resolveBreachAction(logId, action),
     onSuccess: () => {
       toast.success('Corrective action logged');
-      queryClient.invalidateQueries(['temperatureBreaches']);
+      queryClient.invalidateQueries({ queryKey: ['temperatureBreaches'] });
     },
     onError: () => toast.error('Failed to log corrective action')
   });
 
   const fetchAll = () => {
-    queryClient.invalidateQueries(['storageUnits']);
-    queryClient.invalidateQueries(['temperatureBreaches']);
+    queryClient.invalidateQueries({ queryKey: ['storageUnits'] });
+    queryClient.invalidateQueries({ queryKey: ['temperatureBreaches'] });
   };
 
   const handleCreateUnit = (e) => {

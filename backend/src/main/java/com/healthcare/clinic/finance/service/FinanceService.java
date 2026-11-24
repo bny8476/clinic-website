@@ -6,6 +6,7 @@ import com.healthcare.clinic.finance.entity.Payment;
 import com.healthcare.clinic.finance.repository.ExpenseRepository;
 import com.healthcare.clinic.finance.repository.InsuranceClaimRepository;
 import com.healthcare.clinic.finance.repository.PaymentRepository;
+import com.healthcare.clinic.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,9 +62,10 @@ public class FinanceService {
 
     @Transactional
     public Expense approveExpense(Long expenseId, Long approverId) {
-        Expense expense = expenseRepository.findById(expenseId).orElseThrow();
+        Expense expense = expenseRepository.findById(expenseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Expense not found: " + expenseId));
         if (expense.getStatus() != com.healthcare.clinic.finance.entity.ExpenseStatus.PENDING_APPROVAL) {
-            throw new IllegalStateException("Only pending expenses can be approved");
+            throw new IllegalStateException("Only pending expenses can be approved (current status: " + expense.getStatus() + ")");
         }
         expense.setStatus(com.healthcare.clinic.finance.entity.ExpenseStatus.APPROVED);
         expense.setApprovedBy(approverId);
@@ -88,9 +90,10 @@ public class FinanceService {
 
     @Transactional
     public Expense rejectExpense(Long expenseId, Long approverId, String reason) {
-        Expense expense = expenseRepository.findById(expenseId).orElseThrow();
+        Expense expense = expenseRepository.findById(expenseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Expense not found: " + expenseId));
         if (expense.getStatus() != com.healthcare.clinic.finance.entity.ExpenseStatus.PENDING_APPROVAL) {
-            throw new IllegalStateException("Only pending expenses can be rejected");
+            throw new IllegalStateException("Only pending expenses can be rejected (current status: " + expense.getStatus() + ")");
         }
         expense.setStatus(com.healthcare.clinic.finance.entity.ExpenseStatus.REJECTED);
         expense.setApprovedBy(approverId);
@@ -101,9 +104,10 @@ public class FinanceService {
     
     @Transactional
     public Expense payExpense(Long expenseId, Long payerId) {
-        Expense expense = expenseRepository.findById(expenseId).orElseThrow();
+        Expense expense = expenseRepository.findById(expenseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Expense not found: " + expenseId));
         if (expense.getStatus() != com.healthcare.clinic.finance.entity.ExpenseStatus.APPROVED) {
-            throw new IllegalStateException("Only approved expenses can be paid");
+            throw new IllegalStateException("Only approved expenses can be paid (current status: " + expense.getStatus() + ")");
         }
         expense.setStatus(com.healthcare.clinic.finance.entity.ExpenseStatus.PAID);
         

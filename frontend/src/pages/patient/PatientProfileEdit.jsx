@@ -58,7 +58,7 @@ const PatientProfileEdit = () => {
         },
         onSuccess: () => {
             toast.success('Profile updated successfully!');
-            queryClient.invalidateQueries(['patientProfile', user?.id]);
+            queryClient.invalidateQueries({ queryKey: ['patientProfile', user?.id] });
             navigate('/patient/dashboard');
         },
         onError: (err) => {

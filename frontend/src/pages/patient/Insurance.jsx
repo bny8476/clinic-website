@@ -441,7 +441,7 @@ export default function Insurance() {
         accountHolderName: user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : '',
         agreeDeclaration: true
       });
-      queryClient.invalidateQueries(['insuranceClaims']);
+      queryClient.invalidateQueries({ queryKey: ['insuranceClaims'] });
       refetch();
     },
     onError: (err) => {

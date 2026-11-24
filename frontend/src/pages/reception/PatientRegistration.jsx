@@ -24,7 +24,7 @@ const PatientRegistration = () => {
     onSuccess: (data) => {
       toast.success(`Patient registered successfully! OP Number: ${data.data.opNumber}`);
       setPatient({ firstName: '', lastName: '', age: '', gender: 'Male', phone: '', email: '', address: '', bloodGroup: 'O+', emergencyContact: '', reasonForVisit: '' });
-      queryClient.invalidateQueries(['doctor-patients']);
+      queryClient.invalidateQueries({ queryKey: ['doctor-patients'] });
       navigate(returnPath);
     },
     onError: (err) => {

@@ -446,7 +446,7 @@ const NewPrescription = () => {
     onSuccess: () => {
       toast.success("Patient details updated");
       setIsEditModalOpen(false);
-      queryClient.invalidateQueries(['patient-profile', patientId]);
+      queryClient.invalidateQueries({ queryKey: ['patient-profile', patientId] });
     },
     onError: () => toast.error("Failed to update patient details")
   });
@@ -454,8 +454,8 @@ const NewPrescription = () => {
   const saveVitalsMutation = useMutation({
     mutationFn: async (data) => axiosPrivate.post(`/patients/${patientId}/vitals/record`, data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['vitals-latest', patientId]);
-      queryClient.invalidateQueries(['vitals-history', patientId]);
+      queryClient.invalidateQueries({ queryKey: ['vitals-latest', patientId] });
+      queryClient.invalidateQueries({ queryKey: ['vitals-history', patientId] });
     }
   });
 
@@ -542,9 +542,9 @@ const NewPrescription = () => {
       if (newId) setPrescriptionId(newId);
       setPrescriptionStatus('SENT');
       setSentAt(new Date());
-      queryClient.invalidateQueries(['patientPrescriptions', patientId]);
-      queryClient.invalidateQueries(['pending-prescriptions']);
-      queryClient.invalidateQueries(['prescriptions']);
+      queryClient.invalidateQueries({ queryKey: ['patientPrescriptions', patientId] });
+      queryClient.invalidateQueries({ queryKey: ['pending-prescriptions'] });
+      queryClient.invalidateQueries({ queryKey: ['prescriptions'] });
       toast.success('Prescription dispatched to pharmacy successfully!');
       setIsPharmacyModalOpen(false);
     },
@@ -556,7 +556,7 @@ const NewPrescription = () => {
     onSuccess: (res) => {
       setPrescriptionId(res.data.id);
       setPrescriptionStatus('DRAFT');
-      queryClient.invalidateQueries(['patientPrescriptions', patientId]);
+      queryClient.invalidateQueries({ queryKey: ['patientPrescriptions', patientId] });
       toast.success('Draft saved successfully');
     },
     onError: handleMutationError
@@ -575,7 +575,7 @@ const NewPrescription = () => {
       setPrescriptionStatus('SENT');
       setSentAt(new Date());
       setIsPreview(true);
-      queryClient.invalidateQueries(['patientPrescriptions', patientId]);
+      queryClient.invalidateQueries({ queryKey: ['patientPrescriptions', patientId] });
       toast.success('Prescription sent successfully');
     },
     onError: handleMutationError

@@ -38,17 +38,17 @@ export const MarketingTablesWidget = ({ activeTab, campaigns, coupons, referrals
 
   const createCampaign = useMutation({
     mutationFn: async (payload) => axiosPrivate.post('/marketing/campaigns', payload),
-    onSuccess: () => { queryClient.invalidateQueries(['marketing-campaigns']); setNewTitle(''); setNewContent(''); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['marketing-campaigns'] }); setNewTitle(''); setNewContent(''); },
   });
 
   const sendCampaign = useMutation({
     mutationFn: async (id) => axiosPrivate.post(`/marketing/campaigns/${id}/send`),
-    onSuccess: () => queryClient.invalidateQueries(['marketing-campaigns']),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['marketing-campaigns'] }),
   });
 
   const createCoupon = useMutation({
     mutationFn: async (payload) => axiosPrivate.post('/marketing/coupons', payload),
-    onSuccess: () => { queryClient.invalidateQueries(['marketing-coupons']); setCouponCode(''); setDiscountVal(''); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['marketing-coupons'] }); setCouponCode(''); setDiscountVal(''); },
   });
 
   const campaignColumns = [

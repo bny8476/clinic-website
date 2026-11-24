@@ -33,7 +33,7 @@ export const HrTablesWidget = ({ activeTab, employees, attendance, leaves, loadi
     mutationFn: async ({ id, status }) => axiosPrivate.patch(`/hr/leaves/${id}/status?status=${status}`),
     onSuccess: () => {
       toast.success('Leave status updated');
-      queryClient.invalidateQueries(['hr-leaves']);
+      queryClient.invalidateQueries({ queryKey: ['hr-leaves'] });
     },
     onError: () => toast.error('Failed to update leave status')
   });

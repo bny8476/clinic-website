@@ -61,16 +61,16 @@ const NotificationBell = () => {
   const markAllRead = useMutation({
     mutationFn: async () => axiosPrivate.patch('/notifications/mark-all-read'),
     onSuccess: () => {
-      queryClient.invalidateQueries(['notifications']);
-      queryClient.invalidateQueries(['notificationCount']);
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['notificationCount'] });
     },
   });
 
   const markRead = useMutation({
     mutationFn: async (id) => axiosPrivate.patch(`/notifications/${id}/read`),
     onSuccess: () => {
-      queryClient.invalidateQueries(['notifications']);
-      queryClient.invalidateQueries(['notificationCount']);
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['notificationCount'] });
     },
   });
 

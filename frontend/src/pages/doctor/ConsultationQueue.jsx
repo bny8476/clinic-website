@@ -48,7 +48,7 @@ const ConsultationQueue = () => {
         evtSource = new EventSource(`${BASE_URL.replace('/api', '')}/api/sse/appointments?ticket=${ticket}`);
         
         evtSource.onmessage = () => {
-          queryClient.invalidateQueries(['doctor-queue']);
+          queryClient.invalidateQueries({ queryKey: ['doctor-queue'] });
         };
         evtSource.onerror = () => {
           if (evtSource) {
@@ -149,7 +149,7 @@ const ConsultationQueue = () => {
 
   const callNext = useMutation({
     mutationFn: async (appointmentId) => axiosPrivate.patch(`/appointments/${appointmentId}/status?status=IN_PROGRESS`),
-    onSuccess: () => queryClient.invalidateQueries(['doctor-queue']),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['doctor-queue'] }),
   });
 
   const rawQueue = (Array.isArray(queue) ? queue : (Array.isArray(queue?.data) ? queue.data : [])).map(item => ({
@@ -244,7 +244,7 @@ const ConsultationQueue = () => {
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
            <h3 className="text-[16px] font-extrabold text-slate-900">Waiting Queue ({waiting.length})</h3>
            <button 
-             onClick={() => queryClient.invalidateQueries(['doctor-queue'])}
+             onClick={() => queryClient.invalidateQueries({ queryKey: ['doctor-queue'] })}
              disabled={isFetching}
              className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] font-bold text-[#2160FF] hover:bg-[#EFF4FF] transition-colors disabled:opacity-50"
            >

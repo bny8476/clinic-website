@@ -63,9 +63,9 @@ export const useAiChat = () => {
       setLocalMessages(prev => [...prev, assistantMsg]);
 
       if (isAuthenticated) {
-        queryClient.invalidateQueries(['aiConversations']);
+        queryClient.invalidateQueries({ queryKey: ['aiConversations'] });
         if (data.conversationId) {
-          queryClient.invalidateQueries(['aiMessages', data.conversationId]);
+          queryClient.invalidateQueries({ queryKey: ['aiMessages', data.conversationId] });
         }
       }
     },
@@ -102,7 +102,7 @@ export const useAiChat = () => {
       if (activeConversationId === conversationId) {
         startNewChat();
       }
-      queryClient.invalidateQueries(['aiConversations']);
+      queryClient.invalidateQueries({ queryKey: ['aiConversations'] });
     }
   });
 
@@ -111,7 +111,7 @@ export const useAiChat = () => {
     onSuccess: () => {
       setLocalMessages([]);
       if (activeConversationId) {
-        queryClient.invalidateQueries(['aiMessages', activeConversationId]);
+        queryClient.invalidateQueries({ queryKey: ['aiMessages', activeConversationId] });
       }
     }
   });

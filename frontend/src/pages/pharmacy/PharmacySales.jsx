@@ -136,7 +136,7 @@ export default function PharmacySales() {
     if (posStore.patientMode === 'new') {
       const success = await posStore.createAndSelectPatient();
       if (!success) return;
-      queryClient.invalidateQueries(['patients']);
+      queryClient.invalidateQueries({ queryKey: ['patients'] });
     }
 
     if (!posStore.patientName) { toast.error('Please enter patient name'); return; }

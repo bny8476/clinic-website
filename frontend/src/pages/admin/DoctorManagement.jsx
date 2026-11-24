@@ -89,7 +89,7 @@ export default function DoctorManagement() {
     mutationFn: (body) => axiosPrivate.post('/doctors', body),
     onSuccess: () => {
       toast.success('Doctor added successfully!');
-      queryClient.invalidateQueries(['admin-doctors-full']);
+      queryClient.invalidateQueries({ queryKey: ['admin-doctors-full'] });
       setIsCreateOpen(false);
       setFormData(emptyForm);
     },
@@ -101,7 +101,7 @@ export default function DoctorManagement() {
     mutationFn: ({ id, body }) => axiosPrivate.put(`/doctors/${id}`, body),
     onSuccess: () => {
       toast.success('Doctor updated successfully!');
-      queryClient.invalidateQueries(['admin-doctors-full']);
+      queryClient.invalidateQueries({ queryKey: ['admin-doctors-full'] });
       setEditingDoctor(null);
     },
     onError: (err) => toast.error(err.response?.data?.message || 'Failed to update doctor')
@@ -112,7 +112,7 @@ export default function DoctorManagement() {
     mutationFn: ({ id, isActive }) => axiosPrivate.patch(`/doctors/${id}/status`, { isActive }),
     onSuccess: (_, { isActive }) => {
       toast.success(`Doctor ${isActive ? 'activated' : 'deactivated'} successfully`);
-      queryClient.invalidateQueries(['admin-doctors-full']);
+      queryClient.invalidateQueries({ queryKey: ['admin-doctors-full'] });
     },
     onError: () => toast.error('Failed to update doctor status')
   });

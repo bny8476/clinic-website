@@ -28,7 +28,7 @@ const MembershipPlans = () => {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['myMembership']);
+      queryClient.invalidateQueries({ queryKey: ['myMembership'] });
       toast.success('Successfully subscribed to membership plan!');
     },
     onError: () => {

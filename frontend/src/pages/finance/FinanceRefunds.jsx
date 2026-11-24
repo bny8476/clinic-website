@@ -83,8 +83,8 @@ const FinanceRefunds = () => {
       toast.success('Refund request initiated successfully');
       setIsModalOpen(false);
       setFormData({ paymentId: '', amount: '', reason: '' });
-      queryClient.invalidateQueries(['finance-refunds']);
-      queryClient.invalidateQueries(['finance-dashboard']);
+      queryClient.invalidateQueries({ queryKey: ['finance-refunds'] });
+      queryClient.invalidateQueries({ queryKey: ['finance-dashboard'] });
     },
     onError: (error) => {
       toast.error(error.response?.data?.message || 'Failed to initiate refund');
@@ -99,8 +99,8 @@ const FinanceRefunds = () => {
     },
     onSuccess: () => {
       toast.success('Refund approved successfully');
-      queryClient.invalidateQueries(['finance-refunds']);
-      queryClient.invalidateQueries(['finance-dashboard']);
+      queryClient.invalidateQueries({ queryKey: ['finance-refunds'] });
+      queryClient.invalidateQueries({ queryKey: ['finance-dashboard'] });
     },
     onError: () => toast.error('Failed to approve refund')
   });
@@ -112,8 +112,8 @@ const FinanceRefunds = () => {
     },
     onSuccess: () => {
       toast.success('Refund processed & credited');
-      queryClient.invalidateQueries(['finance-refunds']);
-      queryClient.invalidateQueries(['finance-dashboard']);
+      queryClient.invalidateQueries({ queryKey: ['finance-refunds'] });
+      queryClient.invalidateQueries({ queryKey: ['finance-dashboard'] });
     },
     onError: () => toast.error('Failed to process refund')
   });

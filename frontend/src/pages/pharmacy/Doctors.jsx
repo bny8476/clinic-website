@@ -82,7 +82,7 @@ export default function Doctors() {
     mutationFn: (data) => doctorService.createDoctor(data),
     onSuccess: () => {
       toast.success('Doctor created successfully');
-      queryClient.invalidateQueries(['doctors']);
+      queryClient.invalidateQueries({ queryKey: ['doctors'] });
     },
     onError: () => toast.error('Failed to create doctor')
   });
@@ -91,7 +91,7 @@ export default function Doctors() {
     mutationFn: ({id, data}) => doctorService.updateDoctor(id, data),
     onSuccess: () => {
       toast.success('Doctor updated successfully');
-      queryClient.invalidateQueries(['doctors']);
+      queryClient.invalidateQueries({ queryKey: ['doctors'] });
     },
     onError: () => toast.error('Failed to update doctor')
   });
@@ -100,7 +100,7 @@ export default function Doctors() {
     mutationFn: (id) => doctorService.deleteDoctor(id),
     onSuccess: () => {
       toast.success('Doctor deleted successfully');
-      queryClient.invalidateQueries(['doctors']);
+      queryClient.invalidateQueries({ queryKey: ['doctors'] });
     },
     onError: () => toast.error('Failed to delete doctor')
   });

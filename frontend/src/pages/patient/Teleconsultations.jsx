@@ -156,7 +156,7 @@ export default function Teleconsultations() {
         languagePreference: 'English',
         agreeConsent: true
       });
-      queryClient.invalidateQueries(['patient-teleconsults']);
+      queryClient.invalidateQueries({ queryKey: ['patient-teleconsults'] });
     },
     onError: (error) => {
       toast.error(error.response?.data?.message || 'Failed to submit teleconsultation request');
@@ -172,7 +172,7 @@ export default function Teleconsultations() {
     onSuccess: () => {
       toast.success('Teleconsultation request cancelled');
       setSessionToCancel(null);
-      queryClient.invalidateQueries(['patient-teleconsults']);
+      queryClient.invalidateQueries({ queryKey: ['patient-teleconsults'] });
     },
     onError: (error) => {
       toast.error(error.response?.data?.message || 'Failed to cancel teleconsultation');

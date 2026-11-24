@@ -69,8 +69,8 @@ const AppointmentHistory = () => {
     },
     onSuccess: () => {
       toast.success('Appointment cancelled successfully');
-      queryClient.invalidateQueries(['patientAppointments', user?.id]);
-      queryClient.invalidateQueries(['patientDashboardTimeline', user?.id]);
+      queryClient.invalidateQueries({ queryKey: ['patientAppointments', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['patientDashboardTimeline', user?.id] });
       setCancelModalAppointment(null);
     },
     onError: (err) => {

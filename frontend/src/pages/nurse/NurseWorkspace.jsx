@@ -38,7 +38,7 @@ const NurseWorkspace = () => {
       content: note
     }),
     onSuccess: () => {
-      queryClient.invalidateQueries(['nursing-notes', patientId]);
+      queryClient.invalidateQueries({ queryKey: ['nursing-notes', patientId] });
       setNewNote('');
       toast.success('Nursing note added successfully');
     }

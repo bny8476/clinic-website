@@ -87,8 +87,8 @@ export default function InsuranceClaims() {
         preAuthApproved: false,
         remarks: ''
       });
-      queryClient.invalidateQueries(['insurance-claims']);
-      queryClient.invalidateQueries(['insurance-providers']);
+      queryClient.invalidateQueries({ queryKey: ['insurance-claims'] });
+      queryClient.invalidateQueries({ queryKey: ['insurance-providers'] });
     },
     onError: () => {
       toast.error('Error filing insurance claim');
@@ -108,7 +108,7 @@ export default function InsuranceClaims() {
     mutationFn: ({ id, status }) => pharmacyService.updateInsuranceClaimStatus(id, status),
     onSuccess: (res, variables) => {
       toast.success(`Claim status updated to ${variables.status}`);
-      queryClient.invalidateQueries(['insurance-claims']);
+      queryClient.invalidateQueries({ queryKey: ['insurance-claims'] });
     },
     onError: () => {
       toast.error('Failed to update claim status');
@@ -154,8 +154,8 @@ export default function InsuranceClaims() {
             <Plus className="w-4 h-4" /> File Insurance Claim
           </button>
           <button onClick={() => {
-            queryClient.invalidateQueries(['insurance-claims']);
-            queryClient.invalidateQueries(['insurance-providers']);
+            queryClient.invalidateQueries({ queryKey: ['insurance-claims'] });
+            queryClient.invalidateQueries({ queryKey: ['insurance-providers'] });
           }} disabled={loading} className="p-2.5 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors bg-white shadow-sm">
             <RefreshCw className={`w-4 h-4 text-slate-600 ${loading ? 'animate-spin' : ''}`} />
           </button>

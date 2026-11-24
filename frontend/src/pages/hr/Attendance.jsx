@@ -65,7 +65,7 @@ const Attendance = () => {
     },
     onSuccess: () => {
       toast.success('Staff clocked in successfully!');
-      queryClient.invalidateQueries(['hr-attendance']);
+      queryClient.invalidateQueries({ queryKey: ['hr-attendance'] });
       refetch();
     },
     onError: (err) => {
@@ -80,7 +80,7 @@ const Attendance = () => {
     },
     onSuccess: () => {
       toast.success('Staff clocked out successfully!');
-      queryClient.invalidateQueries(['hr-attendance']);
+      queryClient.invalidateQueries({ queryKey: ['hr-attendance'] });
       refetch();
     },
     onError: (err) => {

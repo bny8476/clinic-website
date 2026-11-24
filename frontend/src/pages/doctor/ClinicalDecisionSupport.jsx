@@ -19,7 +19,7 @@ export default function ClinicalDecisionSupport() {
   const acknowledgeMutation = useMutation({
     mutationFn: ({ id, overrideReason }) => axiosPrivate.post(`/cds/alerts/${id}/acknowledge`, { overrideReason }),
     onSuccess: () => {
-      queryClient.invalidateQueries(['cds-alerts', 'pending']);
+      queryClient.invalidateQueries({ queryKey: ['cds-alerts', 'pending'] });
     }
   });
 

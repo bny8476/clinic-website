@@ -13,14 +13,13 @@ import { toast } from 'react-hot-toast';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { usePurchaseStore } from '../../store/usePurchaseStore';
 import { useAuth } from '../../context/pharmacy/AuthContext';
-import { ROLES } from '../../config/pharmacy/roles.config';
 import { Check, Eye, FileText, Loader2, Plus, Search, Trash2 } from 'lucide-react';
 import { Badge } from '../../components/ui/Badge';
 
 export default function PurchaseOrders() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { activeRole, user } = useAuth();
+  const { user } = useAuth();
   
   const {
     poList,
@@ -191,7 +190,7 @@ export default function PurchaseOrders() {
         <div className="flex items-center gap-2">
           <button 
             title="View Details"
-            onClick={() => navigate(`/purchase-orders/${row.poId || row.id}`)} 
+            onClick={() => navigate(`/pharmacy/purchase-orders/${row.poId || row.id}`)} 
             className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg"
           >
             <Eye className="w-4 h-4" />
@@ -207,10 +206,6 @@ export default function PurchaseOrders() {
       )
     },
   ];
-
-  if (activeRole !== ROLES.SYSTEM_ADMIN) {
-    return <div className="p-10 text-center text-red-500 font-bold">Unauthorized Access</div>;
-  }
 
   return (
     

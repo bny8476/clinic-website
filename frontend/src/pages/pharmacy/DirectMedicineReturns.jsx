@@ -60,7 +60,7 @@ export default function DirectMedicineReturns() {
       toast.success('Return processed successfully');
       setIsModalOpen(false);
       resetForm();
-      queryClient.invalidateQueries(['returns']);
+      queryClient.invalidateQueries({ queryKey: ['returns'] });
     },
     onError: (error) => {
       toast.error(error.response?.data?.message || 'Failed to save return');
