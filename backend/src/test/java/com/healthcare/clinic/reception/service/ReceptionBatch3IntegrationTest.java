@@ -49,15 +49,16 @@ class ReceptionBatch3IntegrationTest {
 
     @BeforeEach
     void setUp() {
+        String suffix = "_" + System.nanoTime();
         testPatient = new User();
-        testPatient.setEmail("patient3@test.com");
+        testPatient.setEmail("patient3" + suffix + "@test.com");
         testPatient.setFirstName("Jane");
         testPatient.setLastName("Smith");
         testPatient.setPasswordHash("hash");
         testPatient = userRepository.save(testPatient);
 
         testReceptionist = new User();
-        testReceptionist.setEmail("reception3@test.com");
+        testReceptionist.setEmail("reception3" + suffix + "@test.com");
         testReceptionist.setFirstName("Rec");
         testReceptionist.setLastName("Three");
         testReceptionist.setPasswordHash("hash");

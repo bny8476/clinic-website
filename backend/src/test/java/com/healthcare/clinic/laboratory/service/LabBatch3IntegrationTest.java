@@ -17,6 +17,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
+@ActiveProfiles("test")
 @Transactional
 public class LabBatch3IntegrationTest {
 
@@ -64,41 +66,48 @@ public class LabBatch3IntegrationTest {
 
     @BeforeEach
     public void setup() {
+        String suffix = "_" + System.nanoTime();
+
         // Branch
-        Branch branch = new Branch();
-        branch.setName("Test Branch Batch 3");
-        branch.setAddress("123 Main St");
-        branch.setCity("Test City");
-        branch.setState("TS");
-        branch.setCountry("USA");
-        branch.setPostalCode("12345");
-        branch.setPhoneNumber("+11234567890");
-        branch.setEmail("branch3@test.com");
-        branch.setTimezone("UTC");
-        branchRepository.save(branch);
+        Branch branch = branchRepository.findAll().stream().findFirst().orElseGet(() -> {
+            Branch b = new Branch();
+            b.setName("Test Branch Batch 3");
+            b.setAddress("123 Main St");
+            b.setCity("Test City");
+            b.setState("TS");
+            b.setCountry("USA");
+            b.setPostalCode("12345");
+            b.setPhoneNumber("+11234567890");
+            b.setEmail("branch3_" + suffix + "@test.com");
+            b.setTimezone("UTC");
+            return branchRepository.save(b);
+        });
 
         // Lab Tech
         labTech = new User();
-        labTech.setEmail("labtech3@test.com");
+        labTech.setEmail("labtech3" + suffix + "@test.com");
         labTech.setPasswordHash("password");
         labTech.setFirstName("Lab");
         labTech.setLastName("Tech");
+        labTech.setBranchId(branch.getId());
         userRepository.save(labTech);
 
         // Pathologist
         pathologist = new User();
-        pathologist.setEmail("pathologist3@test.com");
+        pathologist.setEmail("pathologist3" + suffix + "@test.com");
         pathologist.setPasswordHash("password");
         pathologist.setFirstName("Path");
         pathologist.setLastName("Ologist");
+        pathologist.setBranchId(branch.getId());
         userRepository.save(pathologist);
 
         // Patient User
         User patientUser = new User();
-        patientUser.setEmail("patient3@test.com");
+        patientUser.setEmail("patient3" + suffix + "@test.com");
         patientUser.setPasswordHash("password");
         patientUser.setFirstName("Patient");
         patientUser.setLastName("Three");
+        patientUser.setBranchId(branch.getId());
         userRepository.save(patientUser);
 
         // Patient Profile
@@ -109,7 +118,7 @@ public class LabBatch3IntegrationTest {
 
         // Catalog Item
         LabTestCatalog catalog = new LabTestCatalog();
-        catalog.setTestCode("CBC");
+        catalog.setTestCode("CBC3" + suffix);
         catalog.setTestName("Complete Blood Count");
         catalog.setReferenceRange("12.0 - 16.0");
         catalog.setUnit("g/dL");

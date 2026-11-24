@@ -17,6 +17,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
@@ -24,6 +25,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
+@ActiveProfiles("test")
 @Transactional
 public class LabBatch2IntegrationTest {
 
@@ -57,31 +59,37 @@ public class LabBatch2IntegrationTest {
 
     @BeforeEach
     void setUp() {
+        String suffix = "_" + System.nanoTime();
+
+        Branch branch = branchRepository.findAll().stream().findFirst().orElseGet(() -> {
+            Branch b = new Branch();
+            b.setName("Test Branch Lab 2");
+            b.setAddress("123 Main St");
+            b.setCity("Test City");
+            b.setState("TS");
+            b.setCountry("USA");
+            b.setPostalCode("12345");
+            b.setPhoneNumber("+11234567890");
+            b.setEmail("branch2_" + suffix + "@test.com");
+            b.setTimezone("UTC");
+            return branchRepository.save(b);
+        });
+
         labTech = new User();
-        labTech.setEmail("labtech2@test.com");
+        labTech.setEmail("labtech2" + suffix + "@test.com");
         labTech.setPasswordHash("pass");
         labTech.setFirstName("Lab");
         labTech.setLastName("Tech");
+        labTech.setBranchId(branch.getId());
         userRepository.save(labTech);
 
         User patientUser = new User();
-        patientUser.setEmail("patient2@test.com");
+        patientUser.setEmail("patient2" + suffix + "@test.com");
         patientUser.setPasswordHash("pass");
         patientUser.setFirstName("Patient");
         patientUser.setLastName("Two");
+        patientUser.setBranchId(branch.getId());
         userRepository.save(patientUser);
-
-        Branch branch = new Branch();
-        branch.setName("Main Branch");
-        branch.setAddress("123 Main St");
-        branch.setCity("Test City");
-        branch.setState("TS");
-        branch.setCountry("USA");
-        branch.setPostalCode("12345");
-        branch.setPhoneNumber("+11234567890");
-        branch.setEmail("branch@test.com");
-        branch.setTimezone("UTC");
-        branchRepository.save(branch);
 
         PatientProfile patient = new PatientProfile();
         patient.setUserId(patientUser.getId());
@@ -89,7 +97,7 @@ public class LabBatch2IntegrationTest {
         patientProfileRepository.save(patient);
 
         LabTestCatalog catalog = new LabTestCatalog();
-        catalog.setTestCode("GLU");
+        catalog.setTestCode("GLU" + suffix);
         catalog.setTestName("Glucose");
         catalog.setReferenceRange("70 - 99");
         catalog.setUnit("mg/dL");

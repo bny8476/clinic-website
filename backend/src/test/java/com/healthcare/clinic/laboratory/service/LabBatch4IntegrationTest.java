@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
@@ -22,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
+@ActiveProfiles("test")
 @Transactional
 public class LabBatch4IntegrationTest {
 
@@ -52,38 +54,47 @@ public class LabBatch4IntegrationTest {
 
     @BeforeEach
     public void setup() {
-        Branch branch = new Branch();
-        branch.setName("Test Branch Batch 4");
-        branch.setAddress("123 Main St");
-        branch.setCity("Test City");
-        branch.setState("TS");
-        branch.setCountry("USA");
-        branch.setPostalCode("12345");
-        branch.setPhoneNumber("+11234567890");
-        branch.setEmail("branch4@test.com");
-        branch.setTimezone("UTC");
-        branchRepository.save(branch);
+        String suffix = "_" + System.nanoTime();
+
+        Branch branch = branchRepository.findAll().stream().findFirst().orElseGet(() -> {
+            Branch b = new Branch();
+            b.setName("Test Branch Batch 4");
+            b.setAddress("123 Main St");
+            b.setCity("Test City");
+            b.setState("TS");
+            b.setCountry("USA");
+            b.setPostalCode("12345");
+            b.setPhoneNumber("+11234567890");
+            b.setEmail("branch4_" + suffix + "@test.com");
+            b.setTimezone("UTC");
+            return branchRepository.save(b);
+        });
 
         labTech = new User();
-        labTech.setEmail("labtech4@test.com");
+        labTech.setEmail("labtech4" + suffix + "@test.com");
         labTech.setPasswordHash("password");
         labTech.setFirstName("Lab");
         labTech.setLastName("Tech");
+        labTech.setBranchId(branch.getId());
         userRepository.save(labTech);
 
         catalog = new LabTestCatalog();
-        catalog.setTestCode("CBC");
+        catalog.setTestCode("CBC4" + suffix);
         catalog.setTestName("Complete Blood Count");
         catalog.setPrice(java.math.BigDecimal.valueOf(50.00));
         catalog.setBranch(branch);
         catalogRepository.save(catalog);
 
-        LabInventoryItem item = new LabInventoryItem();
-        item.setItemName("CBC Reagent");
-        item.setSku("REAG-CBC-01");
+        LabInventoryItem item = inventoryRepository.findBySku("REAG-CBC-01").orElseGet(() -> {
+            LabInventoryItem i = new LabInventoryItem();
+            i.setItemName("CBC Reagent");
+            i.setSku("REAG-CBC-01");
+            i.setMinimumThreshold(10);
+            i.setUnit("mL");
+            i.setBranch(branch);
+            return i;
+        });
         item.setQuantity(50);
-        item.setMinimumThreshold(10);
-        item.setUnit("mL");
         item.setBranch(branch);
         inventoryRepository.save(item);
     }

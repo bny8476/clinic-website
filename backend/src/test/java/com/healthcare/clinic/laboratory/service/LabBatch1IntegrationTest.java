@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -22,6 +23,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
+@ActiveProfiles("test")
 @Transactional
 public class LabBatch1IntegrationTest {
 
@@ -63,7 +65,8 @@ public class LabBatch1IntegrationTest {
                 .build();
         patient = patientRepository.save(patient);
 
-        test1 = LabTestCatalog.builder()
+        test1 = catalogRepository.findByTestCode("CBC").orElseGet(() -> {
+            LabTestCatalog c = LabTestCatalog.builder()
                 .testName("Complete Blood Count")
                 .testCode("CBC")
                 .price(new BigDecimal("25.00"))
@@ -72,9 +75,11 @@ public class LabBatch1IntegrationTest {
                 .containerType("EDTA Tube")
                 .isActive(true)
                 .build();
-        catalogRepository.save(test1);
+            return catalogRepository.save(c);
+        });
 
-        test2 = LabTestCatalog.builder()
+        test2 = catalogRepository.findByTestCode("FBS").orElseGet(() -> {
+            LabTestCatalog c = LabTestCatalog.builder()
                 .testName("Fasting Blood Sugar")
                 .testCode("FBS")
                 .price(new BigDecimal("15.00"))
@@ -83,7 +88,8 @@ public class LabBatch1IntegrationTest {
                 .containerType("Fluoride Tube")
                 .isActive(true)
                 .build();
-        catalogRepository.save(test2);
+            return catalogRepository.save(c);
+        });
 
         req1 = LabTestRequest.builder()
                 .patient(patient)
