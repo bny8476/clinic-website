@@ -17,7 +17,6 @@ const QUICK_ACTIONS = [
   { label: 'Insurance\nVerify', icon: Shield, path: '/reception/insurance' },
   { label: 'Document\nScanning', icon: FileText, path: '/reception/documents' },
   { label: 'Kiosk\nCheck-In', icon: Monitor, path: '/reception/kiosk' },
-  { label: 'Customer\nSupport', icon: LifeBuoy, path: '/reception/support' },
 ];
 
 const StatCard = ({ label, value, icon: Icon, isLoading }) => (
