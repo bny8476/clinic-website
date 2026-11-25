@@ -146,6 +146,9 @@ public class ReceptionPatientService {
         if (u != null) {
             map.put("firstName", u.getFirstName());
             map.put("lastName", u.getLastName());
+            String fullName = ((u.getFirstName() != null ? u.getFirstName() : "") + " " + (u.getLastName() != null ? u.getLastName() : "")).trim();
+            map.put("name", fullName);
+            map.put("fullName", fullName);
             map.put("phone", u.getPhoneNumber());
             map.put("email", u.getEmail());
         }

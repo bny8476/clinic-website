@@ -9,6 +9,8 @@ import com.healthcare.clinic.branch.repository.BranchRepository;
 import com.healthcare.clinic.exception.ResourceNotFoundException;
 import com.healthcare.clinic.identity.repository.UserRepository;
 import com.healthcare.clinic.notification.event.InvoiceCreatedEvent;
+import com.healthcare.clinic.patient.entity.PatientProfile;
+import com.healthcare.clinic.patient.repository.PatientProfileRepository;
 import com.healthcare.clinic.security.SecurityUtils;
 import com.lowagie.text.*;
 import com.lowagie.text.Font;
@@ -30,6 +32,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,6 +43,7 @@ public class BillingService {
     private final InvoiceItemRepository invoiceItemRepository;
     private final UserRepository userRepository;
     private final BranchRepository branchRepository;
+    private final PatientProfileRepository patientProfileRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final PlatformTransactionManager transactionManager;
 
@@ -47,8 +51,17 @@ public class BillingService {
 
     @Transactional(readOnly = true)
     public List<InvoiceResponse> getInvoicesForPatient(Long patientId) {
-        return invoiceRepository.findByPatientIdOrderByCreatedAtDesc(patientId)
-                .stream().map(this::mapToResponse).collect(Collectors.toList());
+        Long resolvedUserId = patientId;
+        Optional<PatientProfile> profileOpt = patientProfileRepository.findById(patientId);
+        if (profileOpt.isPresent() && profileOpt.get().getUserId() != null) {
+            resolvedUserId = profileOpt.get().getUserId();
+        }
+
+        List<Invoice> list = invoiceRepository.findByPatientIdOrderByCreatedAtDesc(resolvedUserId);
+        if (list.isEmpty() && !resolvedUserId.equals(patientId)) {
+            list = invoiceRepository.findByPatientIdOrderByCreatedAtDesc(patientId);
+        }
+        return list.stream().map(this::mapToResponse).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -73,13 +86,33 @@ public class BillingService {
 
     @Transactional
     public InvoiceResponse createInvoice(InvoiceRequest request) {
-        if (!userRepository.existsById(request.getPatientId())) {
-            throw new ResourceNotFoundException("Patient not found: " + request.getPatientId());
+        Long rawPatientId = request.getPatientId();
+        Long resolvedUserId = null;
+        PatientProfile patientProfile = null;
+
+        // Support both PatientProfile.id and User.id seamlessly
+        Optional<PatientProfile> profileOpt = patientProfileRepository.findById(rawPatientId);
+        if (profileOpt.isPresent() && profileOpt.get().getUserId() != null && userRepository.existsById(profileOpt.get().getUserId())) {
+            patientProfile = profileOpt.get();
+            resolvedUserId = patientProfile.getUserId();
+        } else if (userRepository.existsById(rawPatientId)) {
+            resolvedUserId = rawPatientId;
+            patientProfile = patientProfileRepository.findByUserId(resolvedUserId).orElse(null);
+        } else {
+            profileOpt = patientProfileRepository.findByUserId(rawPatientId);
+            if (profileOpt.isPresent()) {
+                patientProfile = profileOpt.get();
+                resolvedUserId = patientProfile.getUserId() != null ? patientProfile.getUserId() : rawPatientId;
+            } else {
+                throw new ResourceNotFoundException("Patient not found: " + rawPatientId);
+            }
         }
 
         final Branch finalBranch;
         if (request.getBranchId() != null) {
             finalBranch = branchRepository.findById(request.getBranchId()).orElse(null);
+        } else if (patientProfile != null && patientProfile.getBranchId() != null) {
+            finalBranch = branchRepository.findById(patientProfile.getBranchId()).orElse(null);
         } else {
             finalBranch = null;
         }
@@ -122,7 +155,8 @@ public class BillingService {
                 
                 Invoice invoice = Invoice.builder()
                         .invoiceNumber(invoiceNumber)
-                        .patientId(request.getPatientId())
+                        .patientId(resolvedUserId)
+                        .patientProfile(patientProfile)
                         .appointmentId(request.getAppointmentId())
                         .branch(finalBranch)
                         .amount(subtotal)
@@ -154,19 +188,24 @@ public class BillingService {
         saved.setItems(items);
 
         // Publish event for notifications
-        String patientEmail = userRepository.findById(request.getPatientId())
+        final Long notificationUserId = resolvedUserId;
+        String patientEmail = userRepository.findById(notificationUserId)
                 .map(u -> u.getEmail()).orElse(null);
-        String patientName = userRepository.findById(request.getPatientId())
-                .map(u -> u.getFirstName() + " " + u.getLastName()).orElse("Patient");
-        eventPublisher.publishEvent(InvoiceCreatedEvent.builder()
-                .invoiceId(saved.getId())
-                .patientId(request.getPatientId())
-                .patientEmail(patientEmail)
-                .patientName(patientName)
-                .invoiceNumber(invoiceNumber)
-                .totalAmount(total)
-                .dueDate(request.getDueDate())
-                .build());
+        String patientName = userRepository.findById(notificationUserId)
+                .map(u -> (u.getFirstName() != null ? u.getFirstName() : "") + " " + (u.getLastName() != null ? u.getLastName() : ""))
+                .filter(s -> !s.trim().isEmpty())
+                .orElse("Patient");
+        try {
+            eventPublisher.publishEvent(InvoiceCreatedEvent.builder()
+                    .invoiceId(saved.getId())
+                    .patientId(notificationUserId)
+                    .patientEmail(patientEmail)
+                    .patientName(patientName)
+                    .invoiceNumber(invoiceNumber)
+                    .totalAmount(total)
+                    .dueDate(request.getDueDate())
+                    .build());
+        } catch (Exception ignored) {}
 
         return mapToResponse(saved);
     }
@@ -258,9 +297,7 @@ public class BillingService {
         Invoice invoice = invoiceRepository.findById(invoiceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Invoice not found: " + invoiceId));
 
-        String patientName = userRepository.findById(invoice.getPatientId())
-                .map(u -> u.getFirstName() + " " + u.getLastName())
-                .orElse("Unknown Patient");
+        String patientName = resolvePatientName(invoice);
 
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             Document doc = new Document(PageSize.A4, 40, 40, 60, 40);
@@ -412,10 +449,37 @@ public class BillingService {
 
     // ─── Mapping ──────────────────────────────────────────────────────────────
 
+    private String resolvePatientName(Invoice invoice) {
+        if (invoice == null) return "Unknown Patient";
+        if (invoice.getPatientId() != null) {
+            String name = userRepository.findById(invoice.getPatientId())
+                    .map(u -> (u.getFirstName() != null ? u.getFirstName() : "") + " " + (u.getLastName() != null ? u.getLastName() : ""))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .orElse(null);
+            if (name != null) return name;
+        }
+        if (invoice.getPatientProfile() != null && invoice.getPatientProfile().getUserId() != null) {
+            String name = userRepository.findById(invoice.getPatientProfile().getUserId())
+                    .map(u -> (u.getFirstName() != null ? u.getFirstName() : "") + " " + (u.getLastName() != null ? u.getLastName() : ""))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .orElse(null);
+            if (name != null) return name;
+        }
+        if (invoice.getPatientId() != null) {
+            return patientProfileRepository.findById(invoice.getPatientId())
+                    .flatMap(p -> userRepository.findById(p.getUserId()))
+                    .map(u -> (u.getFirstName() != null ? u.getFirstName() : "") + " " + (u.getLastName() != null ? u.getLastName() : ""))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .orElse("Patient");
+        }
+        return "Patient";
+    }
+
     private InvoiceResponse mapToResponse(Invoice invoice) {
-        String patientName = userRepository.findById(invoice.getPatientId())
-                .map(u -> u.getFirstName() + " " + u.getLastName())
-                .orElse("Unknown Patient");
+        String patientName = resolvePatientName(invoice);
 
         List<InvoiceItemResponse> itemResponses = invoice.getItems() == null ? List.of() :
                 invoice.getItems().stream().map(i -> InvoiceItemResponse.builder()

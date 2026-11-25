@@ -27,10 +27,11 @@ const ReceptionBilling = () => {
   });
 
   const { data: invoices = [], isLoading: isLoadingInvoices } = useQuery({
-    queryKey: ['patient-invoices', selectedPatient?.id],
+    queryKey: ['patient-invoices', selectedPatient?.patientId || selectedPatient?.userId || selectedPatient?.id],
     queryFn: async () => {
       if (!selectedPatient) return [];
-      const res = await axiosPrivate.get(`/billing/patient/${selectedPatient.id}`);
+      const pid = selectedPatient.patientId || selectedPatient.userId || selectedPatient.id;
+      const res = await axiosPrivate.get(`/billing/patient/${pid}`);
       return res.data;
     },
     enabled: !!selectedPatient,
@@ -38,8 +39,9 @@ const ReceptionBilling = () => {
 
   const createInvoice = useMutation({
     mutationFn: async (data) => {
+      const patientUserId = selectedPatient.patientId || selectedPatient.userId || selectedPatient.id;
       const payload = {
-        patientId: selectedPatient.id,
+        patientId: patientUserId,
         description: data.description,
         dueDate: data.dueDate ? data.dueDate + 'T23:59:59' : new Date().toISOString(),
         items: data.items
@@ -51,7 +53,7 @@ const ReceptionBilling = () => {
       toast.success('Invoice created successfully');
       setIsCreating(false);
       setNewInvoice({ description: '', dueDate: '', items: [{ description: '', unitPrice: 0, quantity: 1 }] });
-      queryClient.invalidateQueries({ queryKey: ['patient-invoices', selectedPatient?.id] });
+      queryClient.invalidateQueries({ queryKey: ['patient-invoices', selectedPatient?.patientId || selectedPatient?.userId || selectedPatient?.id] });
     },
     onError: (err) => {
       toast.error(err.response?.data?.message || 'Failed to create invoice');
@@ -192,8 +194,8 @@ const ReceptionBilling = () => {
                                 <User className="w-6 h-6" />
                               </div>
                               <div>
-                                <p className="font-extrabold text-slate-900 text-[15px]">{p.name}</p>
-                                <p className="text-xs font-semibold text-gray-500 mt-1">ID: {p.id} • {p.phone}</p>
+                                <p className="font-extrabold text-slate-900 text-[15px]">{p.name || p.fullName || `${p.firstName || ''} ${p.lastName || ''}`.trim() || 'Patient'}</p>
+                                <p className="text-xs font-semibold text-gray-500 mt-1">ID: {p.opNumber || p.patientId || p.id} • {p.phone || ''}</p>
                               </div>
                             </div>
                           ))}
@@ -216,8 +218,8 @@ const ReceptionBilling = () => {
                    </div>
                    <div>
                      <p className="text-[11px] font-extrabold text-emerald-500 uppercase tracking-widest mb-1">Selected Patient</p>
-                     <h2 className="text-xl font-black text-slate-900">{selectedPatient.name}</h2>
-                     <p className="text-sm font-semibold text-gray-500">ID: {selectedPatient.id} • {selectedPatient.phone}</p>
+                     <h2 className="text-xl font-black text-slate-900">{selectedPatient.name || selectedPatient.fullName || `${selectedPatient.firstName || ''} ${selectedPatient.lastName || ''}`.trim() || 'Patient'}</h2>
+                     <p className="text-sm font-semibold text-gray-500">ID: {selectedPatient.opNumber || selectedPatient.patientId || selectedPatient.id} • {selectedPatient.phone || ''}</p>
                    </div>
                 </div>
                 <button 

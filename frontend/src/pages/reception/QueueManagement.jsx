@@ -26,7 +26,7 @@ const QueueManagement = () => {
 
   const updateStatus = useMutation({
     mutationFn: async ({ tokenId, status }) => {
-      const res = await axiosPrivate.put(`/reception/queue/${tokenId}/status?status=${status}`);
+      const res = await axiosPrivate.put(`/reception/queue/${tokenId}/status?status=${status}`, { status });
       return res.data;
     },
     onSuccess: () => {

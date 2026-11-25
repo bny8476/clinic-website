@@ -44,14 +44,14 @@ public class BillingController {
     // ─── Admin / Accountant endpoints ─────────────────────────────────────────
 
     @GetMapping("/invoices")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_ACCOUNTANT') or hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_FINANCE')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_ACCOUNTANT') or hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_FINANCE') or hasAuthority('ROLE_RECEPTION')")
     public ResponseEntity<List<InvoiceResponse>> getAllInvoices() {
         return ResponseEntity.ok(billingService.getAllInvoices());
     }
 
     @GetMapping("/invoices/{id}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_ACCOUNTANT') or hasAuthority('ROLE_SUPER_ADMIN') " +
-                  "or hasAuthority('ROLE_PATIENT') or hasAuthority('ROLE_FINANCE')")
+                  "or hasAuthority('ROLE_PATIENT') or hasAuthority('ROLE_FINANCE') or hasAuthority('ROLE_RECEPTION')")
     public ResponseEntity<InvoiceResponse> getInvoice(@PathVariable Long id) {
         InvoiceResponse response = billingService.getInvoice(id);
         assertCanAccessInvoice(response.getPatientId());
@@ -59,19 +59,19 @@ public class BillingController {
     }
 
     @GetMapping("/invoices/status/{status}")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_ACCOUNTANT') or hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_FINANCE')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_ACCOUNTANT') or hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_FINANCE') or hasAuthority('ROLE_RECEPTION')")
     public ResponseEntity<List<InvoiceResponse>> getInvoicesByStatus(@PathVariable String status) {
         return ResponseEntity.ok(billingService.getInvoicesByStatus(status));
     }
 
     @PostMapping("/invoices")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_BRANCH_ADMIN') or hasAuthority('ROLE_ACCOUNTANT') or hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_FINANCE')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_BRANCH_ADMIN') or hasAuthority('ROLE_ACCOUNTANT') or hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_FINANCE') or hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_DOCTOR')")
     public ResponseEntity<InvoiceResponse> createInvoice(@Valid @RequestBody InvoiceRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(billingService.createInvoice(request));
     }
 
     @PostMapping("/invoices/{id}/items")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_ACCOUNTANT') or hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_FINANCE')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_ACCOUNTANT') or hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_FINANCE') or hasAuthority('ROLE_RECEPTION')")
     public ResponseEntity<InvoiceResponse> addItem(@PathVariable Long id,
                                                     @Valid @RequestBody InvoiceItemRequest request) {
         return ResponseEntity.ok(billingService.addItem(id, request));

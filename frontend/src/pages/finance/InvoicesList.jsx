@@ -67,9 +67,10 @@ const InvoicesList = () => {
       toast.error('Please search for and select a patient.');
       return;
     }
+    const patientUserId = selectedPatient.patientId || selectedPatient.userId || selectedPatient.id;
     mutation.mutate({
-      patientId: selectedPatient.id,
-      description: `${selectedPatient.fullName} - Consultation`,
+      patientId: patientUserId,
+      description: `${selectedPatient.fullName || selectedPatient.name || `${selectedPatient.firstName || ''} ${selectedPatient.lastName || ''}`.trim() || 'Patient'} - Consultation`,
       dueDate: new Date().toISOString(),
       amount: formData.amount,
       taxAmount: formData.tax
@@ -202,8 +203,8 @@ const InvoicesList = () => {
                       <button key={p.id} type="button"
                         className="w-full text-left px-4 py-3 text-sm hover:bg-[var(--color-surface-alt)] flex flex-col transition-colors border-b border-[var(--color-border)] last:border-0"
                         onClick={() => { setSelectedPatient(p); setPatientDropdownOpen(false); setPatientSearch(''); }}>
-                        <span className="font-bold text-[var(--color-text)]">{p.fullName}</span>
-                        <span className="text-xs text-[var(--color-text-muted)]">{p.uhid}</span>
+                        <span className="font-bold text-[var(--color-text)]">{p.fullName || p.name || `${p.firstName || ''} ${p.lastName || ''}`.trim() || 'Patient'}</span>
+                        <span className="text-xs text-[var(--color-text-muted)]">{p.uhid || p.opNumber || `ID: ${p.id}`}</span>
                       </button>
                     ))}
                     {!patientSearchLoading && patientResults.length === 0 && debouncedPatientSearch.length >= 2 && (

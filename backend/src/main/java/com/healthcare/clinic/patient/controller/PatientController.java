@@ -178,6 +178,9 @@ public class PatientController {
                     map.put("patientId", p.getUserId());
                     map.put("firstName", u.getFirstName() != null ? u.getFirstName() : "");
                     map.put("lastName", u.getLastName() != null ? u.getLastName() : "");
+                    String fullName = ((u.getFirstName() != null ? u.getFirstName() : "") + " " + (u.getLastName() != null ? u.getLastName() : "")).trim();
+                    map.put("fullName", fullName);
+                    map.put("name", fullName);
                     map.put("phone", u.getPhoneNumber() != null ? u.getPhoneNumber() : "");
                     map.put("gender", p.getGender());
                     result.add(map);
