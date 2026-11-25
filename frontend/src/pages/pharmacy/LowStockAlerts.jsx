@@ -269,15 +269,15 @@ export default function LowStockAlerts() {
 
       {/* ── Search and Filter Controls ────────────────────────────────────────── */}
       <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs space-y-3.5">
-        <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+        <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center justify-between">
           {/* Search bar */}
-          <div className="flex-1 relative min-w-[260px]">
+          <div className="flex-1 relative min-w-[200px]">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input 
               value={searchTerm} 
               onChange={e => setSearchTerm(e.target.value)}
               placeholder="Search medicine name, generic salt, or supplier…"
-              className="w-full pl-10 pr-9 py-2.5 text-sm font-medium border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none placeholder:text-slate-400 transition-all"
+              className="w-full pl-10 pr-9 py-2 text-sm font-medium border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none placeholder:text-slate-400 transition-all"
             />
             {searchTerm && (
               <button 
@@ -289,12 +289,12 @@ export default function LowStockAlerts() {
             )}
           </div>
 
-          {/* Category Filter Dropdown */}
-          <div className="flex items-center gap-2">
+          {/* Category Filter Dropdown (compact width) */}
+          <div className="flex items-center gap-2 shrink-0">
             <select
               value={categoryFilter}
               onChange={e => setCategoryFilter(e.target.value)}
-              className="px-3.5 py-2.5 text-xs font-semibold border border-slate-200 rounded-xl bg-white text-slate-700 outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 cursor-pointer"
+              className="w-36 sm:w-40 md:w-44 px-2.5 py-2 text-xs font-semibold border border-slate-200 rounded-xl bg-white text-slate-700 outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 cursor-pointer truncate"
             >
               <option value="ALL">All Categories ({categories.length})</option>
               {categories.map(cat => (
@@ -303,8 +303,8 @@ export default function LowStockAlerts() {
             </select>
           </div>
 
-          {/* Severity Filter Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
+          {/* Severity Filter Pills (scrollbar hidden) */}
+          <div className="flex items-center gap-1.5 shrink-0 overflow-x-auto scrollbar-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <button
               onClick={() => setSeverityFilter('ALL')}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
