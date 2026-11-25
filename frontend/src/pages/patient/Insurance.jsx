@@ -618,10 +618,6 @@ export default function Insurance() {
                 <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
                   Health Insurance Claims & Pre-Auth
                 </h1>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs">
-                  <ShieldCheck size={14} className="text-emerald-600" />
-                  Cashless & TPA Empanelled
-                </span>
               </div>
               <p className="text-sm font-medium text-slate-500 mt-1">
                 Manage your health insurance policies, pre-authorizations, and cashless reimbursements with automated TPA adjudication.
@@ -694,10 +690,6 @@ export default function Insurance() {
                   <p className="text-[11px] font-medium text-slate-300">Star Health & Allied Insurance</p>
                 </div>
               </div>
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
-                <ShieldCheck size={12} />
-                CASHLESS EMPANELLED
-              </span>
             </div>
 
             {/* Card Middle: Policy & Holder */}
