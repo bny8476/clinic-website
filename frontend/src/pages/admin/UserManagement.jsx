@@ -46,7 +46,9 @@ import {
     ArrowLeft,
     RefreshCw,
     GraduationCap,
-    Clock
+    Clock,
+    Copy,
+    Send
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -80,7 +82,14 @@ const UserManagement = () => {
     const [editingUser, setEditingUser] = useState(null);
     const [viewingUser, setViewingUser] = useState(null);
     const [resetPasswordUser, setResetPasswordUser] = useState(null);
-    const [newPassword, setNewPassword] = useState('');
+    const [resetMode, setResetMode] = useState('auto'); // 'auto' | 'manual'
+    const [generatedPassword, setGeneratedPassword] = useState('');
+    const [manualPassword, setManualPassword] = useState('');
+    const [notifyUserByEmail, setNotifyUserByEmail] = useState(true);
+    const [forcePasswordChange, setForcePasswordChange] = useState(true);
+    const [showResetPassword, setShowResetPassword] = useState(true);
+    const [isPasswordCopied, setIsPasswordCopied] = useState(false);
+    const [resetSuccessData, setResetSuccessData] = useState(null);
     const [activeStep, setActiveStep] = useState(1);
     const [showPassword, setShowPassword] = useState(false);
 
@@ -271,15 +280,60 @@ const DEFAULT_ROLES = [
         }
     });
 
+    const generateSecurePass = useCallback(() => {
+        const upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+        const lower = "abcdefghjkmnpqrstuvwxyz";
+        const digits = "23456789";
+        const special = "!@#$%^&*";
+        const all = upper + lower + digits + special;
+        const getRandom = (chars) => chars[Math.floor(Math.random() * chars.length)];
+        let res = [
+            getRandom(upper),
+            getRandom(lower),
+            getRandom(digits),
+            getRandom(special)
+        ];
+        for (let i = 4; i < 12; i++) {
+            res.push(getRandom(all));
+        }
+        return res.sort(() => Math.random() - 0.5).join('');
+    }, []);
+
+    const handleOpenResetModal = (user) => {
+        setResetPasswordUser(user);
+        const pass = generateSecurePass();
+        setGeneratedPassword(pass);
+        setManualPassword('');
+        setResetMode('auto');
+        setNotifyUserByEmail(true);
+        setForcePasswordChange(true);
+        setShowResetPassword(true);
+        setIsPasswordCopied(false);
+        setResetSuccessData(null);
+    };
+
+    const handleCopyPassword = (pass) => {
+        if (!pass) return;
+        navigator.clipboard.writeText(pass);
+        setIsPasswordCopied(true);
+        toast.success('Password copied to clipboard!');
+        setTimeout(() => setIsPasswordCopied(false), 2500);
+    };
+
     // Reset Password Mutation
     const resetPasswordMutation = useMutation({
-        mutationFn: async ({ id, newPassword }) => {
-            await axiosPrivate.post(`/users/${id}/reset-password`, { newPassword });
+        mutationFn: async ({ id, newPassword, notifyUser, mustChangePassword }) => {
+            const res = await axiosPrivate.post(`/users/${id}/reset-password`, { 
+                newPassword, 
+                notifyUser, 
+                mustChangePassword 
+            });
+            return res.data;
         },
-        onSuccess: () => {
-            toast.success('Password reset successfully');
-            setResetPasswordUser(null);
-            setNewPassword('');
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: ['users'] });
+            setResetSuccessData(data);
+            toast.success(data?.message || 'Password reset successfully');
         },
         onError: (err) => {
             const msg = err.response?.data?.message || err.response?.data?.error || err.message || 'Failed to reset password';
@@ -430,18 +484,25 @@ const DEFAULT_ROLES = [
             key: 'enabled',
             title: 'Account Status',
             render: (val, row) => (
-                <button
-                    onClick={() => toggleStatusMutation.mutate(row.id)}
-                    disabled={toggleStatusMutation.isPending}
-                    className={`px-3 py-1 text-xs font-semibold rounded-full flex items-center gap-1.5 border transition-all cursor-pointer ${
-                        val !== false 
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 hover:bg-emerald-100' 
-                            : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-400 hover:bg-rose-100'
-                    }`}
-                >
-                    <div className={`w-1.5 h-1.5 rounded-full ${val !== false ? 'bg-emerald-500' : 'bg-rose-500'}`} />
-                    {val !== false ? 'Active' : 'Inactive'}
-                </button>
+                <div className="flex flex-col gap-1 items-start">
+                    <button
+                        onClick={() => toggleStatusMutation.mutate(row.id)}
+                        disabled={toggleStatusMutation.isPending}
+                        className={`px-3 py-1 text-xs font-semibold rounded-full flex items-center gap-1.5 border transition-all cursor-pointer ${
+                            val !== false 
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 hover:bg-emerald-100' 
+                                : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-400 hover:bg-rose-100'
+                        }`}
+                    >
+                        <div className={`w-1.5 h-1.5 rounded-full ${val !== false ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                        {val !== false ? 'Active' : 'Inactive'}
+                    </button>
+                    {row.mustChangePassword && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-md bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800" title="User must update temporary password on first login">
+                            <KeyRound size={10} /> Reset Pending
+                        </span>
+                    )}
+                </div>
             )
         },
         {
@@ -474,10 +535,7 @@ const DEFAULT_ROLES = [
                         <Edit3 size={16} />
                     </button>
                     <button
-                        onClick={() => {
-                            setResetPasswordUser(row);
-                            setNewPassword('');
-                        }}
+                        onClick={() => handleOpenResetModal(row)}
                         title="Reset Password"
                         className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/30 rounded-lg transition-colors cursor-pointer"
                     >
@@ -1412,61 +1470,271 @@ const DEFAULT_ROLES = [
             {/* Reset Password Modal */}
             <Modal
                 isOpen={!!resetPasswordUser}
-                onClose={() => setResetPasswordUser(null)}
-                size="sm"
+                onClose={() => {
+                    setResetPasswordUser(null);
+                    setResetSuccessData(null);
+                }}
+                size="md"
             >
                 {resetPasswordUser && (
-                    <form 
-                        onSubmit={(e) => {
-                            e.preventDefault();
-                            resetPasswordMutation.mutate({ id: resetPasswordUser.id, newPassword });
-                        }}
-                        className="space-y-4"
-                    >
-                        <div className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
-                            <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
-                                <KeyRound size={20} />
-                            </div>
-                            <div>
-                                <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 m-0">
-                                    Reset Password
-                                </h3>
-                                <p className="text-xs text-slate-500 m-0">For {resetPasswordUser.firstName} ({resetPasswordUser.email})</p>
+                    <div className="space-y-5">
+                        {/* Header */}
+                        <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+                            <div className="flex items-center gap-3">
+                                <div className="w-11 h-11 rounded-2xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800 flex items-center justify-center font-bold shadow-xs">
+                                    <KeyRound size={22} />
+                                </div>
+                                <div>
+                                    <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 m-0">
+                                        Reset User Password
+                                    </h3>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 m-0 mt-0.5">
+                                        For <strong className="text-slate-800 dark:text-slate-200">{resetPasswordUser.firstName} {resetPasswordUser.lastName}</strong> ({resetPasswordUser.email})
+                                    </p>
+                                </div>
                             </div>
                         </div>
 
-                        <div>
-                            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                                New Temporary Password <span className="text-rose-500">*</span>
-                            </label>
-                            <input 
-                                type="password"
-                                value={newPassword}
-                                onChange={(e) => setNewPassword(e.target.value)}
-                                required
-                                minLength={8}
-                                placeholder="Min 8 characters..."
-                                className="w-full px-3.5 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 font-mono focus:outline-none focus:ring-2 focus:ring-[#2160FF]"
-                            />
-                        </div>
+                        {resetSuccessData ? (
+                            /* Success State Screen */
+                            <div className="space-y-4 py-2">
+                                <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex items-start gap-3">
+                                    <CheckCircle2 size={24} className="text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                                    <div className="space-y-1">
+                                        <h4 className="text-sm font-bold text-emerald-900 dark:text-emerald-200 m-0">
+                                            Password Reset Successfully
+                                        </h4>
+                                        <p className="text-xs text-emerald-700 dark:text-emerald-300 m-0 leading-relaxed">
+                                            {resetSuccessData.message}
+                                        </p>
+                                    </div>
+                                </div>
 
-                        <div className="flex justify-end gap-2 pt-2">
-                            <button
-                                type="button"
-                                onClick={() => setResetPasswordUser(null)}
-                                className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-900 border-0 bg-transparent cursor-pointer"
+                                <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-2">
+                                    <div className="flex items-center justify-between text-xs text-slate-500 font-semibold">
+                                        <span>Active Temporary Password</span>
+                                        <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400">Ready to use</span>
+                                    </div>
+                                    <div className="flex items-center justify-between gap-3 bg-white dark:bg-slate-900 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700">
+                                        <span className="font-mono text-base font-bold tracking-wider text-slate-900 dark:text-slate-100 select-all">
+                                            {resetSuccessData.temporaryPassword}
+                                        </span>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleCopyPassword(resetSuccessData.temporaryPassword)}
+                                            className="px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center gap-1.5 transition cursor-pointer border-0"
+                                        >
+                                            {isPasswordCopied ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
+                                            {isPasswordCopied ? 'Copied' : 'Copy'}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2 text-xs text-slate-600 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800 pt-3">
+                                    <div className="flex items-center gap-2">
+                                        <div className={`w-2 h-2 rounded-full ${resetSuccessData.emailSent ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+                                        <span>Email Notification: <strong>{resetSuccessData.emailSent ? `Dispatched to ${resetPasswordUser.email}` : 'Not sent (disabled)'}</strong></span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <div className={`w-2 h-2 rounded-full ${resetSuccessData.mustChangePassword ? 'bg-amber-500' : 'bg-slate-400'}`} />
+                                        <span>First Login Requirement: <strong>{resetSuccessData.mustChangePassword ? 'Mandatory password change enforced' : 'Optional'}</strong></span>
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-end pt-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setResetPasswordUser(null);
+                                            setResetSuccessData(null);
+                                        }}
+                                        className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-white text-white dark:text-slate-900 rounded-xl font-bold text-xs shadow-xs transition cursor-pointer border-0"
+                                    >
+                                        Done
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            /* Form State */
+                            <form
+                                onSubmit={(e) => {
+                                    e.preventDefault();
+                                    const passwordToSend = resetMode === 'auto' ? generatedPassword : manualPassword;
+                                    if (!passwordToSend || passwordToSend.length < 8) {
+                                        toast.error('Password must be at least 8 characters long');
+                                        return;
+                                    }
+                                    resetPasswordMutation.mutate({
+                                        id: resetPasswordUser.id,
+                                        newPassword: passwordToSend,
+                                        notifyUser: notifyUserByEmail,
+                                        mustChangePassword: forcePasswordChange
+                                    });
+                                }}
+                                className="space-y-4"
                             >
-                                Cancel
-                            </button>
-                            <button
-                                type="submit"
-                                disabled={resetPasswordMutation.isPending}
-                                className="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold text-xs shadow transition cursor-pointer border-0"
-                            >
-                                {resetPasswordMutation.isPending ? 'Resetting...' : 'Set New Password'}
-                            </button>
-                        </div>
-                    </form>
+                                {/* Mode Selector */}
+                                <div className="grid grid-cols-2 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-xl gap-1">
+                                    <button
+                                        type="button"
+                                        onClick={() => setResetMode('auto')}
+                                        className={`py-2 px-3 text-xs font-bold rounded-lg transition-all cursor-pointer border-0 ${
+                                            resetMode === 'auto'
+                                                ? 'bg-white dark:bg-slate-900 text-[#2160FF] shadow-xs'
+                                                : 'bg-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                                        }`}
+                                    >
+                                        Auto-Generate (Recommended)
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setResetMode('manual')}
+                                        className={`py-2 px-3 text-xs font-bold rounded-lg transition-all cursor-pointer border-0 ${
+                                            resetMode === 'manual'
+                                                ? 'bg-white dark:bg-slate-900 text-[#2160FF] shadow-xs'
+                                                : 'bg-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                                        }`}
+                                    >
+                                        Custom Password
+                                    </button>
+                                </div>
+
+                                {resetMode === 'auto' ? (
+                                    /* Auto-Generate Mode View */
+                                    <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-2.5">
+                                        <div className="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                            <span>Cryptographic Temporary Password</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    const newPass = generateSecurePass();
+                                                    setGeneratedPassword(newPass);
+                                                    toast.success('Generated new secure password');
+                                                }}
+                                                className="text-xs font-bold text-[#2160FF] hover:text-blue-700 flex items-center gap-1 cursor-pointer bg-transparent border-0"
+                                            >
+                                                <RefreshCw size={12} /> Regenerate
+                                            </button>
+                                        </div>
+
+                                        <div className="flex items-center justify-between gap-3 bg-white dark:bg-slate-900 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700">
+                                            <span className="font-mono text-base font-bold tracking-wider text-slate-900 dark:text-slate-100 select-all">
+                                                {showResetPassword ? generatedPassword : '••••••••••••'}
+                                            </span>
+                                            <div className="flex items-center gap-1.5">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowResetPassword(!showResetPassword)}
+                                                    className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg transition cursor-pointer bg-transparent border-0"
+                                                    title={showResetPassword ? 'Hide password' : 'Show password'}
+                                                >
+                                                    {showResetPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleCopyPassword(generatedPassword)}
+                                                    className="px-2.5 py-1.5 text-xs font-bold rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center gap-1 transition cursor-pointer border-0"
+                                                >
+                                                    {isPasswordCopied ? <Check size={13} className="text-emerald-600" /> : <Copy size={13} />}
+                                                    {isPasswordCopied ? 'Copied' : 'Copy'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    /* Manual Input Mode View */
+                                    <div className="space-y-1.5">
+                                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                            Custom Temporary Password <span className="text-rose-500">*</span>
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                type={showResetPassword ? "text" : "password"}
+                                                value={manualPassword}
+                                                onChange={(e) => setManualPassword(e.target.value)}
+                                                required={resetMode === 'manual'}
+                                                minLength={8}
+                                                placeholder="Enter temporary password (min 8 characters)..."
+                                                className="w-full pl-3.5 pr-10 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 font-mono focus:outline-none focus:ring-2 focus:ring-[#2160FF]"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowResetPassword(!showResetPassword)}
+                                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer bg-transparent border-0"
+                                            >
+                                                {showResetPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Policy & Notification Options */}
+                                <div className="space-y-2.5 pt-1">
+                                    <label className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-700/80 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={notifyUserByEmail}
+                                            onChange={(e) => setNotifyUserByEmail(e.target.checked)}
+                                            className="mt-0.5 rounded border-slate-300 text-[#2160FF] focus:ring-[#2160FF]"
+                                        />
+                                        <div className="text-xs">
+                                            <span className="font-bold text-slate-800 dark:text-slate-200 block">
+                                                Send credentials via email
+                                            </span>
+                                            <span className="text-slate-500 dark:text-slate-400 block mt-0.5">
+                                                Dispatches an automated email to <strong>{resetPasswordUser.email}</strong> with login link and credentials.
+                                            </span>
+                                        </div>
+                                    </label>
+
+                                    <label className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-700/80 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={forcePasswordChange}
+                                            onChange={(e) => setForcePasswordChange(e.target.checked)}
+                                            className="mt-0.5 rounded border-slate-300 text-[#2160FF] focus:ring-[#2160FF]"
+                                        />
+                                        <div className="text-xs">
+                                            <span className="font-bold text-slate-800 dark:text-slate-200 block">
+                                                Enforce password change on next login
+                                            </span>
+                                            <span className="text-slate-500 dark:text-slate-400 block mt-0.5">
+                                                Forces the user to select their own private permanent password before accessing their portal.
+                                            </span>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                {/* Modal Actions */}
+                                <div className="flex justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+                                    <button
+                                        type="button"
+                                        onClick={() => setResetPasswordUser(null)}
+                                        className="px-4 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 border-0 bg-transparent cursor-pointer"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={resetPasswordMutation.isPending}
+                                        className="px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold text-xs shadow-md hover:shadow-lg transition flex items-center gap-2 cursor-pointer border-0 disabled:opacity-50"
+                                    >
+                                        {resetPasswordMutation.isPending ? (
+                                            <>
+                                                <RefreshCw size={14} className="animate-spin" />
+                                                <span>Processing Reset...</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <KeyRound size={14} />
+                                                <span>Apply & Reset Password</span>
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                            </form>
+                        )}
+                    </div>
                 )}
             </Modal>
         </motion.div>

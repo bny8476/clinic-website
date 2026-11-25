@@ -66,7 +66,14 @@ public class RefreshTokenController {
                                 r.getPermissions().forEach(p -> permissions.add(p.getName()));
                             }
                         });
-                        UserDto userDto = new UserDto(user.getId(), user.getFirstName() + " " + user.getLastName(), user.getEmail(), user.getFirstName(), user.getLastName());
+                        UserDto userDto = new UserDto(
+                                user.getId(), 
+                                user.getFirstName() + " " + user.getLastName(), 
+                                user.getEmail(), 
+                                user.getFirstName(), 
+                                user.getLastName(),
+                                user.isMustChangePassword()
+                        );
 
                         return ResponseEntity.ok()
                                 .header(org.springframework.http.HttpHeaders.SET_COOKIE, refreshCookie.toString())

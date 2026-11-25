@@ -184,7 +184,14 @@ public class PortalAuthController {
                 r.getPermissions().forEach(p -> permissions.add(p.getName()));
             }
         });
-        UserDto userDto = new UserDto(user.getId(), user.getFirstName() + " " + user.getLastName(), user.getEmail(), user.getFirstName(), user.getLastName());
+        UserDto userDto = new UserDto(
+                user.getId(), 
+                user.getFirstName() + " " + user.getLastName(), 
+                user.getEmail(), 
+                user.getFirstName(), 
+                user.getLastName(),
+                user.isMustChangePassword()
+        );
         return ResponseEntity.ok(new UserProfileResponse(userDto, roles, permissions));
     }
 
@@ -221,7 +228,14 @@ public class PortalAuthController {
                 r.getPermissions().forEach(p -> permissions.add(p.getName()));
             }
         });
-        UserDto userDto = new UserDto(user.getId(), user.getFirstName() + " " + user.getLastName(), user.getEmail(), user.getFirstName(), user.getLastName());
+        UserDto userDto = new UserDto(
+                user.getId(), 
+                user.getFirstName() + " " + user.getLastName(), 
+                user.getEmail(), 
+                user.getFirstName(), 
+                user.getLastName(),
+                user.isMustChangePassword()
+        );
         return new JwtResponse(jwt, refreshToken, 900L, userDto, roles, permissions);
     }
 
@@ -302,6 +316,11 @@ class UserDto {
     private String email;
     private String firstName;
     private String lastName;
+    private boolean mustChangePassword;
+
+    public UserDto(Long id, String name, String email, String firstName, String lastName) {
+        this(id, name, email, firstName, lastName, false);
+    }
 }
 
 @Data

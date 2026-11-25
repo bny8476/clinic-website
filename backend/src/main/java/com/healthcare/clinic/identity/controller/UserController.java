@@ -1,6 +1,8 @@
 package com.healthcare.clinic.identity.controller;
 
 import com.healthcare.clinic.identity.dto.PasswordResetDto;
+import com.healthcare.clinic.identity.dto.PasswordResetResponseDto;
+import com.healthcare.clinic.identity.dto.ChangePasswordDto;
 import com.healthcare.clinic.identity.dto.UserCreateDto;
 import com.healthcare.clinic.identity.dto.UserStatsDto;
 import com.healthcare.clinic.identity.dto.UserSummaryDto;
@@ -89,11 +91,27 @@ public class UserController {
 
     @PostMapping("/{id}/reset-password")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_SUPER_ADMIN')")
-    public ResponseEntity<Void> resetPassword(
+    public ResponseEntity<PasswordResetResponseDto> resetPassword(
             @PathVariable Long id,
             @Valid @RequestBody PasswordResetDto passwordResetDto) {
-        userService.resetPassword(id, passwordResetDto.getNewPassword());
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(userService.resetPassword(
+                id,
+                passwordResetDto.getNewPassword(),
+                passwordResetDto.getNotifyUser(),
+                passwordResetDto.getMustChangePassword()
+        ));
+    }
+
+    @PostMapping("/change-password")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> changePassword(
+            @Valid @RequestBody ChangePasswordDto changePasswordDto,
+            @org.springframework.security.core.annotation.AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        }
+        userService.changeOwnPassword(userDetails.getUsername(), changePasswordDto.getNewPassword());
+        return ResponseEntity.ok(java.util.Map.of("message", "Password changed successfully"));
     }
 
     @GetMapping("/{id}")

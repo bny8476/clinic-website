@@ -96,6 +96,34 @@ public class EmailNotificationService {
         sendHtmlEmail(event.getPatientEmail(), subject, body);
     }
 
+    // ─── Admin Password Reset Notification ────────────────────────────────────
+
+    public void sendAdminPasswordResetNotification(String toEmail, String recipientName, String temporaryPassword, boolean mustChangePassword) {
+        if (!StringUtils.hasText(toEmail)) return;
+        String subject = "🔐 Security Notice: Your Account Password Has Been Reset";
+        String changeNotice = mustChangePassword 
+            ? "<p style=\"color:#92400e;background:#fef3c7;border:1px solid #fde68a;padding:12px;border-radius:8px;font-size:0.875rem;margin:16px 0;\"><strong>⚠️ Important Security Requirement:</strong> You will be prompted to choose a new permanent password immediately upon your next login.</p>"
+            : "";
+        String body = buildHtml(
+            "Account Credentials Updated",
+            String.format(
+                "Dear %s,<br><br>" +
+                "An authorized system administrator has reset your clinic account credentials.<br><br>" +
+                "Your new temporary password is:<br>" +
+                "<div style=\"margin:16px 0;padding:14px 24px;background:#f8fafc;border:2px dashed #94a3b8;border-radius:8px;font-family:monospace;font-size:1.2rem;font-weight:bold;color:#0f172a;letter-spacing:1.5px;display:inline-block;\">%s</div><br>" +
+                "%s" +
+                "Please sign in to your assigned healthcare portal using this temporary password.<br><br>" +
+                "<div style=\"margin:20px 0;\"><a href=\"http://localhost:5173/login\" style=\"background:#2563eb;color:#ffffff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block;font-size:0.95rem;\">Sign In to Healthcare Portal</a></div><br>" +
+                "<hr style=\"border:none;border-top:1px solid #e2e8f0;margin:24px 0;\">" +
+                "<small style=\"color:#64748b;line-height:1.5;display:block;\">If you did not request this reset or were not expecting this notification, please contact your Clinic Administrator or IT Security Desk immediately.</small>",
+                recipientName != null && !recipientName.isBlank() ? recipientName : "Healthcare Staff",
+                temporaryPassword,
+                changeNotice
+            )
+        );
+        sendHtmlEmail(toEmail, subject, body);
+    }
+
     // ─── Helpers ──────────────────────────────────────────────────────────────
 
     private void sendHtmlEmail(String to, String subject, String htmlBody) {

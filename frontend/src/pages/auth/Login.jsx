@@ -90,6 +90,13 @@ export default function Login() {
   const [resetSuccess, setResetSuccess] = useState(false);
   const [demoCategory, setDemoCategory] = useState('All');
 
+  const [showMustChangePassword, setShowMustChangePassword] = useState(false);
+  const [forcedNewPassword, setForcedNewPassword] = useState('');
+  const [forcedConfirmPassword, setForcedConfirmPassword] = useState('');
+  const [showForcedPass, setShowForcedPass] = useState(false);
+  const [forcedPassLoading, setForcedPassLoading] = useState(false);
+  const [forcedPassError, setForcedPassError] = useState('');
+
   const {
     login: storeLogin,
     verifyMfa,
@@ -100,6 +107,7 @@ export default function Login() {
     clearError,
     token,
     roles,
+    user,
     sessionExpiredNotice,
     forgotPassword,
     resetPassword,
@@ -134,16 +142,24 @@ export default function Login() {
 
   useEffect(() => {
     if (isTokenValid(token) && roles && roles.length > 0) {
+      if (user?.mustChangePassword) {
+        setShowMustChangePassword(true);
+        return;
+      }
       const target = getReturnTo(roles) || getDefaultDashboardRoute(roles);
       navigate(target, { replace: true });
     }
-  }, [token, roles, navigate]);
+  }, [token, roles, user?.mustChangePassword, navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     clearError();
     const res = await storeLogin(email.trim(), password, rememberMe);
     if (res.success) {
+      if (res.user?.mustChangePassword) {
+        setShowMustChangePassword(true);
+        return;
+      }
       const target = getReturnTo(res.roles) || getDefaultDashboardRoute(res.roles);
       navigate(target, { replace: true });
     }
@@ -154,8 +170,49 @@ export default function Login() {
     clearError();
     const res = await verifyMfa(mfaEmail, otp.trim());
     if (res.success) {
+      if (res.user?.mustChangePassword) {
+        setShowMustChangePassword(true);
+        return;
+      }
       const target = getReturnTo(res.roles) || getDefaultDashboardRoute(res.roles);
       navigate(target, { replace: true });
+    }
+  };
+
+  const handleForcedPasswordSubmit = async (e) => {
+    e.preventDefault();
+    setForcedPassError('');
+    if (forcedNewPassword.length < 8) {
+      setForcedPassError('Password must be at least 8 characters long');
+      return;
+    }
+    const complexRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+    if (!complexRegex.test(forcedNewPassword)) {
+      setForcedPassError('Password must contain at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character');
+      return;
+    }
+    if (forcedNewPassword !== forcedConfirmPassword) {
+      setForcedPassError('Passwords do not match');
+      return;
+    }
+
+    setForcedPassLoading(true);
+    try {
+      const { axiosPrivate } = await import('../../api/axios');
+      await axiosPrivate.post('/users/change-password', { newPassword: forcedNewPassword });
+      
+      useAuthStore.setState((state) => ({
+        user: state.user ? { ...state.user, mustChangePassword: false } : null
+      }));
+
+      setShowMustChangePassword(false);
+      const target = getReturnTo(roles) || getDefaultDashboardRoute(roles);
+      navigate(target, { replace: true });
+    } catch (err) {
+      const msg = err.response?.data?.message || err.response?.data?.error || err.message || 'Failed to update password';
+      setForcedPassError(msg);
+    } finally {
+      setForcedPassLoading(false);
     }
   };
 
@@ -289,8 +346,92 @@ export default function Login() {
             )}
           </AnimatePresence>
 
-          {/* ── MFA FORM ─────────────────────────────────────────────────── */}
-          {mfaPending ? (
+          {/* ── MANDATORY PASSWORD CHANGE FORM ─────────────────────────── */}
+          {showMustChangePassword ? (
+            <motion.form
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              onSubmit={handleForcedPasswordSubmit}
+              className="space-y-5"
+            >
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold mb-3">
+                  <ShieldAlert className="w-3.5 h-3.5" />
+                  <span>Mandatory Security Update</span>
+                </div>
+                <h2 className="text-2xl font-black text-slate-900 tracking-tight">Set Permanent Password</h2>
+                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                  Your administrator has reset your account with a temporary password. For your security, you must create a new permanent password to continue.
+                </p>
+              </div>
+
+              {forcedPassError && (
+                <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-start gap-2.5">
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>{forcedPassError}</span>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                  New Password <span className="text-rose-500">*</span>
+                </label>
+                <div className="relative">
+                  <Lock className="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
+                  <input
+                    type={showForcedPass ? 'text' : 'password'}
+                    required
+                    minLength={8}
+                    value={forcedNewPassword}
+                    onChange={(e) => setForcedNewPassword(e.target.value)}
+                    placeholder="Min 8 chars, 1 uppercase, 1 number, 1 symbol"
+                    className="w-full pl-12 pr-12 py-3 rounded-2xl bg-white border border-slate-200 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition shadow-xs"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowForcedPass(!showForcedPass)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 bg-transparent border-0 cursor-pointer"
+                  >
+                    {showForcedPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                  Confirm New Password <span className="text-rose-500">*</span>
+                </label>
+                <div className="relative">
+                  <Lock className="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
+                  <input
+                    type={showForcedPass ? 'text' : 'password'}
+                    required
+                    minLength={8}
+                    value={forcedConfirmPassword}
+                    onChange={(e) => setForcedConfirmPassword(e.target.value)}
+                    placeholder="Re-enter your new permanent password"
+                    className="w-full pl-12 pr-4 py-3 rounded-2xl bg-white border border-slate-200 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition shadow-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/60 text-[11px] text-slate-500 space-y-1">
+                <p className="font-semibold text-slate-700 m-0">Password must include:</p>
+                <p className="m-0">• At least 8 characters</p>
+                <p className="m-0">• Uppercase & lowercase letters</p>
+                <p className="m-0">• At least 1 number & 1 special character (!@#$%^&*)</p>
+              </div>
+
+              <button
+                type="submit"
+                disabled={forcedPassLoading}
+                style={{ background: BLUE }}
+                className="w-full py-3.5 rounded-2xl text-white font-bold text-sm shadow-lg shadow-blue-500/25 hover:opacity-95 active:scale-[0.99] transition disabled:opacity-50 cursor-pointer border-0 flex items-center justify-center gap-2"
+              >
+                {forcedPassLoading ? 'Updating Password...' : 'Save Password & Enter Portal'}
+              </button>
+            </motion.form>
+          ) : mfaPending ? (
             <motion.form
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}

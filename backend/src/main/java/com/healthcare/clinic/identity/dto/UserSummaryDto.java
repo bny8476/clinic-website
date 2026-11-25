@@ -36,4 +36,5 @@ public class UserSummaryDto {
     private java.time.ZonedDateTime createdAt;
     private java.time.ZonedDateTime lastLogin;
     private List<String> permissions;
+    private boolean mustChangePassword;
 }

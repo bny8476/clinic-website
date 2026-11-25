@@ -12,6 +12,8 @@ import com.healthcare.clinic.exception.ResourceNotFoundException;
 import com.healthcare.clinic.identity.dto.UserCreateDto;
 import com.healthcare.clinic.identity.dto.UserStatsDto;
 import com.healthcare.clinic.identity.dto.UserSummaryDto;
+import com.healthcare.clinic.identity.dto.PasswordResetResponseDto;
+import com.healthcare.clinic.notification.service.EmailNotificationService;
 import com.healthcare.clinic.identity.entity.Permission;
 import com.healthcare.clinic.identity.entity.Role;
 import com.healthcare.clinic.identity.entity.User;
@@ -44,6 +46,7 @@ public class UserService {
     private final DoctorProfileRepository doctorProfileRepository;
     private final AuditTrailService auditTrailService;
     private final PasswordEncoder passwordEncoder;
+    private final EmailNotificationService emailNotificationService;
 
     @Transactional(readOnly = true)
     public List<String> getAllRoles() {
@@ -244,7 +247,12 @@ public class UserService {
     }
 
     @Transactional
-    public void resetPassword(Long userId, String newPassword) {
+    public PasswordResetResponseDto resetPassword(Long userId, String newPassword) {
+        return resetPassword(userId, newPassword, false, true);
+    }
+
+    @Transactional
+    public PasswordResetResponseDto resetPassword(Long userId, String newPassword, Boolean notifyUser, Boolean mustChangePassword) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
 
@@ -255,10 +263,78 @@ public class UserService {
             throw new AccessDeniedException("Only a SUPER_ADMIN can reset password for a SUPER_ADMIN user");
         }
 
-        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        String finalPassword = (newPassword != null && !newPassword.trim().isEmpty())
+                ? newPassword.trim()
+                : generateSecureTemporaryPassword();
+
+        user.setPasswordHash(passwordEncoder.encode(finalPassword));
+        boolean forceChange = mustChangePassword != null ? mustChangePassword : true;
+        user.setMustChangePassword(forceChange);
+        user.setFailedLoginAttempts(0);
+        user.setLockedUntil(null);
         userRepository.save(user);
 
-        logUserAction("PASSWORD_RESET_COMPLETED", user.getId(), "Reset password for user " + user.getEmail());
+        boolean emailSent = false;
+        if (Boolean.TRUE.equals(notifyUser)) {
+            try {
+                emailNotificationService.sendAdminPasswordResetNotification(
+                        user.getEmail(),
+                        user.getFirstName(),
+                        finalPassword,
+                        forceChange
+                );
+                emailSent = true;
+            } catch (Exception e) {
+                log.warn("Failed to dispatch password reset notification email to {}: {}", user.getEmail(), e.getMessage());
+            }
+        }
+
+        logUserAction("PASSWORD_RESET_COMPLETED", user.getId(),
+                "Reset password for user " + user.getEmail() + " (notified=" + emailSent + ", forceChange=" + forceChange + ")");
+
+        return PasswordResetResponseDto.builder()
+                .message("Password reset successfully." + (emailSent ? " Notification email dispatched to user." : ""))
+                .temporaryPassword(finalPassword)
+                .emailSent(emailSent)
+                .mustChangePassword(forceChange)
+                .build();
+    }
+
+    @Transactional
+    public void changeOwnPassword(String email, String newPassword) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        user.setMustChangePassword(false);
+        user.setFailedLoginAttempts(0);
+        user.setLockedUntil(null);
+        userRepository.save(user);
+        logUserAction("USER_PASSWORD_CHANGED", user.getId(), "User changed own password for " + email);
+    }
+
+    public static String generateSecureTemporaryPassword() {
+        String upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+        String lower = "abcdefghjkmnpqrstuvwxyz";
+        String digits = "23456789";
+        String special = "!@#$%^&*";
+        String all = upper + lower + digits + special;
+        java.security.SecureRandom random = new java.security.SecureRandom();
+        StringBuilder sb = new StringBuilder();
+        sb.append(upper.charAt(random.nextInt(upper.length())));
+        sb.append(lower.charAt(random.nextInt(lower.length())));
+        sb.append(digits.charAt(random.nextInt(digits.length())));
+        sb.append(special.charAt(random.nextInt(special.length())));
+        for (int i = 4; i < 12; i++) {
+            sb.append(all.charAt(random.nextInt(all.length())));
+        }
+        char[] chars = sb.toString().toCharArray();
+        for (int i = chars.length - 1; i > 0; i--) {
+            int j = random.nextInt(i + 1);
+            char temp = chars[i];
+            chars[i] = chars[j];
+            chars[j] = temp;
+        }
+        return new String(chars);
     }
 
     private void validateStatusToggleSelfProtection(User targetUser) {
@@ -405,6 +481,7 @@ public class UserService {
                 .createdAt(user.getCreatedAt())
                 .lastLogin(user.getLastLogin())
                 .permissions(permissions)
+                .mustChangePassword(user.isMustChangePassword())
                 .build();
     }
 }
