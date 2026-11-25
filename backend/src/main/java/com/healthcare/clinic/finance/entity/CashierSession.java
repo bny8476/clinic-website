@@ -14,6 +14,7 @@ import java.time.ZonedDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class CashierSession {
 
     @Id
@@ -22,6 +23,7 @@ public class CashierSession {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "branch_id", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"operatingHours", "staffAssignments", "tenant", "hibernateLazyInitializer", "handler"})
     private Branch branch;
 
     @Column(name = "cashier_id", nullable = false)

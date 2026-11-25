@@ -143,11 +143,16 @@ public class ClinicDatabaseConfig {
 
     private DataSource createH2FallbackDataSource() {
         com.zaxxer.hikari.HikariDataSource fallback = new com.zaxxer.hikari.HikariDataSource();
-        fallback.setJdbcUrl("jdbc:h2:mem:clinicdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;NON_KEYWORDS=VALUE;MODE=PostgreSQL");
+        fallback.setJdbcUrl("jdbc:h2:mem:clinicdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;NON_KEYWORDS=VALUE;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE");
         fallback.setUsername("sa");
         fallback.setPassword("");
         fallback.setDriverClassName("org.h2.Driver");
-        fallback.setMaximumPoolSize(5);
+        fallback.setMaximumPoolSize(10);
+        fallback.setMinimumIdle(2);
+        fallback.setIdleTimeout(600000L);
+        fallback.setMaxLifetime(1800000L);
+        fallback.setConnectionTimeout(30000L);
+        fallback.setConnectionTestQuery("SELECT 1");
         return fallback;
     }
 
@@ -168,11 +173,22 @@ public class ClinicDatabaseConfig {
         java.util.HashMap<String, Object> properties = new java.util.HashMap<>();
         String url = env.getProperty("app.datasource.clinic.url", "");
         String driver = env.getProperty("app.datasource.clinic.driver-class-name", "");
-        boolean isH2 = url.contains("jdbc:h2") || url.isEmpty();
-        String dialect = (isH2 || driver.contains("h2")) ? "org.hibernate.dialect.H2Dialect" : (driver.contains("mysql") ? "org.hibernate.dialect.MySQLDialect" : "org.hibernate.dialect.PostgreSQLDialect");
 
-        
-        String ddlAuto = env.getProperty("spring.jpa.hibernate.ddl-auto", "validate");
+        // Determine if H2 based on the actual DataSource URL rather than unparsed properties
+        if (dataSource instanceof com.zaxxer.hikari.HikariDataSource) {
+            String actualUrl = ((com.zaxxer.hikari.HikariDataSource) dataSource).getJdbcUrl();
+            if (actualUrl != null && !actualUrl.isEmpty()) {
+                url = actualUrl;
+            }
+        }
+
+        boolean isH2 = url.contains("jdbc:h2") || url.isEmpty();
+        String dialect = (isH2 || (driver != null && driver.contains("h2"))) 
+                ? "org.hibernate.dialect.H2Dialect" 
+                : ((driver != null && driver.contains("mysql")) ? "org.hibernate.dialect.MySQLDialect" : "org.hibernate.dialect.PostgreSQLDialect");
+
+        String defaultDdlAuto = isH2 ? "update" : "validate";
+        String ddlAuto = env.getProperty("spring.jpa.hibernate.ddl-auto", defaultDdlAuto);
         properties.put("hibernate.dialect", dialect);
         properties.put("hibernate.hbm2ddl.auto", ddlAuto);
         properties.put("hibernate.physical_naming_strategy", "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy");

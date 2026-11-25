@@ -51,7 +51,8 @@ const FinanceDailyCash = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const cashierId = user?.userId || 1;
+  const cashierId = user?.userId || user?.id || 1;
+  const branchId = user?.branchId || 1;
 
   // Realtime Active Session Query
   const { data: currentSession, isLoading: sessionLoading, isRefetching: isRefetchingSession, refetch: refetchSession } = useQuery({
@@ -85,7 +86,7 @@ const FinanceDailyCash = () => {
   const openSessionMutation = useMutation({
     mutationFn: async (openingFloat) => {
       const payload = {
-        branchId: 1,
+        branchId,
         cashierId,
         openingFloat
       };

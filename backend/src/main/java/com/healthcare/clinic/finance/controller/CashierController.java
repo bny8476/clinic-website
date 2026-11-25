@@ -34,9 +34,20 @@ public class CashierController {
     @PostMapping("/session/open")
     @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'ACCOUNTANT', 'SUPER_ADMIN', 'CASHIER', 'RECEPTIONIST')")
     public ResponseEntity<CashierSession> openSession(@RequestBody Map<String, Object> request) {
-        Long branchId = Long.valueOf(request.get("branchId").toString());
-        Long cashierId = Long.valueOf(request.get("cashierId").toString());
-        BigDecimal openingFloat = new BigDecimal(request.get("openingFloat").toString());
+        Object branchIdObj = request.get("branchId");
+        Long branchId = (branchIdObj != null && !branchIdObj.toString().trim().isEmpty())
+                ? Long.valueOf(branchIdObj.toString().trim())
+                : 1L;
+
+        Object cashierIdObj = request.get("cashierId");
+        Long cashierId = (cashierIdObj != null && !cashierIdObj.toString().trim().isEmpty())
+                ? Long.valueOf(cashierIdObj.toString().trim())
+                : 1L;
+
+        Object openingFloatObj = request.get("openingFloat");
+        BigDecimal openingFloat = (openingFloatObj != null && !openingFloatObj.toString().trim().isEmpty())
+                ? new BigDecimal(openingFloatObj.toString().trim())
+                : BigDecimal.ZERO;
 
         CashierSession session = cashierService.openSession(branchId, cashierId, openingFloat);
         return ResponseEntity.ok(session);
