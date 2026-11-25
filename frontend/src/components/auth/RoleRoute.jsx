@@ -25,15 +25,21 @@ export default function RoleRoute({ portalSlug, allowedRoles, children }) {
     // Normalise role matching (support both ROLE_ADMIN and ADMIN strings)
     const normalizedUserRoles = userRoles.map(r => r.toUpperCase().replace(/^ROLE_/, ''));
 
-    const isGlobalAdmin =
-        userRoles.includes('ROLE_ADMIN') ||
+    const isSuperAdmin =
         userRoles.includes('ROLE_SUPER_ADMIN') ||
-        userRoles.includes('ROLE_SYSTEM_ADMIN') ||
-        normalizedUserRoles.includes('ADMIN') ||
-        normalizedUserRoles.includes('SUPER_ADMIN') ||
-        normalizedUserRoles.includes('SYSTEM_ADMIN');
+        normalizedUserRoles.includes('SUPER_ADMIN');
+
+    // Super admin can access everything; admin can access all operational portals except super-admin
+    const isGlobalAdmin =
+        portalSlug !== 'super-admin' && (
+            userRoles.includes('ROLE_ADMIN') ||
+            userRoles.includes('ROLE_SYSTEM_ADMIN') ||
+            normalizedUserRoles.includes('ADMIN') ||
+            normalizedUserRoles.includes('SYSTEM_ADMIN')
+        );
 
     const hasPermission =
+        isSuperAdmin ||
         isGlobalAdmin ||
         targetRoles.length === 0 ||
         targetRoles.some(r => {

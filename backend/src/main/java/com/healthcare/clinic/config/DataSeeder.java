@@ -83,7 +83,7 @@ public class DataSeeder implements CommandLineRunner {
         // Always seed Core Admin users first with highest priority
         try {
             Set<String> coreAdminRoleNames = Set.of(
-                "ROLE_ADMIN", "ROLE_SUPER_ADMIN", "ROLE_SYSTEM_ADMIN", "ROLE_BRANCH_ADMIN"
+                "ROLE_ADMIN", "ROLE_SYSTEM_ADMIN", "ROLE_BRANCH_ADMIN"
             );
             seedUser("admin@clinic.com", "Clinic@2026#Admin", "Admin", "User", coreAdminRoleNames);
             log.info("DataSeeder: successfully ensured admin@clinic.com account.");
@@ -267,7 +267,8 @@ public class DataSeeder implements CommandLineRunner {
         return switch (roleName) {
             case "ROLE_PATIENT" -> "patient";
             case "ROLE_DOCTOR" -> "doctor";
-            case "ROLE_ADMIN", "ROLE_SYSTEM_ADMIN", "ROLE_SUPER_ADMIN" -> "admin";
+            case "ROLE_SUPER_ADMIN" -> "super-admin";
+            case "ROLE_ADMIN", "ROLE_SYSTEM_ADMIN" -> "admin";
             case "ROLE_BRANCH_ADMIN" -> "branch-admin";
             case "ROLE_NURSE" -> "nurse";
             case "ROLE_RECEPTION" -> "reception";
