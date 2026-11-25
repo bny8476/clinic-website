@@ -69,7 +69,6 @@ const DEMO_ROLES = [
   { label: 'Support Desk', role: 'Helpdesk Staff', email: 'staff@clinic.com', pass: 'Clinic@2026#Staff', category: 'Operations', color: 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100' },
 
   // Management & Administration
-  { label: 'Admin', role: 'Clinic Admin', email: 'admin@clinic.com', pass: 'Clinic@2026#Admin', category: 'Management', color: 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100' },
   { label: 'Super Admin', role: 'Platform Owner', email: 'superadmin@clinic.com', pass: 'Clinic@2026#Super', category: 'Management', color: 'bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200 hover:bg-fuchsia-100' },
   { label: 'Branch Mgr', role: 'Branch Admin', email: 'manager@clinic.com', pass: 'Clinic@2026#Manager', category: 'Management', color: 'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100' },
   { label: 'HR Manager', role: 'HR & Personnel', email: 'hrmanager@clinic.com', pass: 'Clinic@2026#HR', category: 'Management', color: 'bg-violet-50 text-violet-700 border-violet-200 hover:bg-violet-100' },
