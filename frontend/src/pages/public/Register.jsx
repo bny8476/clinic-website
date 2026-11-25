@@ -12,7 +12,7 @@ const BG   = '#EEF2FB';
 const CARD = '#FFFFFF';
 
 /* ─── Shared sub-components (same as PortalLoginPage) ───────────────────── */
-const MedviceLogo = () => (
+const ElixirLogo = () => (
   <div className="flex items-center gap-2.5">
     <div
       style={{ background: BLUE }}
@@ -25,7 +25,7 @@ const MedviceLogo = () => (
       </svg>
     </div>
     <div>
-      <p className="font-bold text-[15px] leading-none text-gray-900">Medvice</p>
+      <p className="font-bold text-[15px] leading-none text-gray-900">Elixir Health Care</p>
       <p className="text-[10px] text-gray-500 leading-tight">Medical Clinic</p>
     </div>
   </div>
@@ -264,7 +264,7 @@ const Register = () => {
 
         {/* ── LEFT PANE ───────────────────────────────────────────────── */}
         <div className="hidden lg:flex lg:w-[44%] flex-col p-10" style={{ background: BG }}>
-          <MedviceLogo />
+          <ElixirLogo />
 
           <div className="mt-10">
             <h1 className="text-[26px] font-bold text-gray-900 leading-tight">
@@ -295,14 +295,14 @@ const Register = () => {
 
           {/* Mobile logo */}
           <div className="flex lg:hidden mb-6">
-            <MedviceLogo />
+            <ElixirLogo />
           </div>
 
           {/* Heading */}
           <h2 className="text-[22px] font-bold text-gray-900 mb-0.5">
             Create <span style={{ color: BLUE }}>Your Account</span>
           </h2>
-          <p className="text-[12px] text-gray-500 mb-5">Sign up to get started with Medvice</p>
+          <p className="text-[12px] text-gray-500 mb-5">Sign up to get started with Elixir Health Care</p>
 
           {/* Alerts */}
           <AnimatePresence>
@@ -378,7 +378,7 @@ const Register = () => {
                 className="w-4 h-4 mt-0.5 rounded border-gray-300 accent-[#2B4AFE]"
               />
               <span className="text-[12px] text-gray-500 leading-tight">
-                I agree to Medvice's <a href="#" style={{ color: BLUE }} className="hover:underline">Terms of Service</a> and <a href="#" style={{ color: BLUE }} className="hover:underline">Privacy Policy</a>
+                I agree to Elixir Health Care's <a href="#" style={{ color: BLUE }} className="hover:underline">Terms of Service</a> and <a href="#" style={{ color: BLUE }} className="hover:underline">Privacy Policy</a>
               </span>
             </motion.div>
 

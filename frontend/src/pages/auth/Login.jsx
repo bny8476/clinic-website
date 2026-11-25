@@ -9,8 +9,8 @@ const BLUE = '#2B4AFE';
 const BG = 'linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)';
 const CARD_BG = 'rgba(255, 255, 255, 0.55)';
 
-/* ── Medvice Logo ───────────────────────────────────────────────────────── */
-const MedviceLogo = () => (
+/* ── Elixir Health Care Logo ─────────────────────────────────────────────── */
+const ElixirLogo = () => (
   <div className="flex items-center gap-3">
     <div
       style={{ background: BLUE }}
@@ -23,7 +23,7 @@ const MedviceLogo = () => (
       </svg>
     </div>
     <div>
-      <p className="font-extrabold text-lg leading-none text-slate-900 tracking-tight">Medvice</p>
+      <p className="font-extrabold text-lg leading-none text-slate-900 tracking-tight">Elixir Health Care</p>
       <p className="text-xs text-slate-500 font-medium leading-tight">Healthcare Platform</p>
     </div>
   </div>
@@ -256,7 +256,7 @@ export default function Login() {
         {/* ── LEFT HERO PANE ───────────────────────────────────────────── */}
         <div className="hidden lg:flex lg:w-[44%] flex-col p-10 bg-white/40 backdrop-blur-md justify-between border-r border-white/40">
           <div>
-            <MedviceLogo />
+            <ElixirLogo />
             <div className="mt-12">
               <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">
                 Unified Portal <br />
@@ -289,7 +289,7 @@ export default function Login() {
         {/* ── RIGHT FORM PANE ──────────────────────────────────────────── */}
         <div className="w-full lg:w-[56%] flex flex-col justify-center p-8 sm:p-12 bg-white/50">
           <div className="flex lg:hidden mb-8 justify-between items-center">
-            <MedviceLogo />
+            <ElixirLogo />
             <Link to="/register" style={{ color: BLUE }} className="text-xs font-bold hover:underline">
               Register
             </Link>
