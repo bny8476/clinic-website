@@ -379,7 +379,30 @@ public class UserService {
         dp.setSpecialty(createDto.getSpecialty() != null && !createDto.getSpecialty().isBlank() ? createDto.getSpecialty() : "General Medicine");
         dp.setQualifications(createDto.getQualifications() != null && !createDto.getQualifications().isBlank() ? createDto.getQualifications() : "MBBS");
         dp.setConsultationFee(createDto.getConsultationFee() != null ? createDto.getConsultationFee() : BigDecimal.valueOf(500));
-        dp.setRegistrationNumber(createDto.getRegistrationNumber() != null && !createDto.getRegistrationNumber().isBlank() ? createDto.getRegistrationNumber() : "REG-" + user.getId());
+        
+        String regNumber = createDto.getRegistrationNumber() != null && !createDto.getRegistrationNumber().isBlank()
+                ? createDto.getRegistrationNumber().trim()
+                : null;
+
+        if (regNumber == null || regNumber.isEmpty()) {
+            int year = java.time.Year.now().getValue();
+            java.security.SecureRandom random = new java.security.SecureRandom();
+            int attempts = 0;
+            do {
+                int code = 10000 + random.nextInt(90000);
+                regNumber = String.format("MCI-%d-%d", year, code);
+                attempts++;
+            } while (doctorProfileRepository.existsByRegistrationNumber(regNumber) && attempts < 100);
+        } else {
+            // Check if duplicate for a different doctor
+            Optional<DoctorProfile> existingWithReg = doctorProfileRepository.findByRegistrationNumber(regNumber);
+            if (existingWithReg.isPresent() && !existingWithReg.get().getUserId().equals(user.getId())) {
+                java.security.SecureRandom random = new java.security.SecureRandom();
+                regNumber = String.format("%s-%d", regNumber, 100 + random.nextInt(900));
+            }
+        }
+
+        dp.setRegistrationNumber(regNumber);
         dp.setExperienceYears(createDto.getExperienceYears() != null ? createDto.getExperienceYears() : 5);
         dp.setIsActive(user.getEnabled() != null ? user.getEnabled() : true);
 

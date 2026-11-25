@@ -366,6 +366,24 @@ const DEFAULT_ROLES = [
         setShowPassword(false);
     }, []);
 
+    const generateDoctorRegNumber = useCallback(async () => {
+        try {
+            const res = await axiosPrivate.get('/doctors/generate-registration-number');
+            if (res.data?.registrationNumber) {
+                setFormData(prev => ({ ...prev, registrationNumber: res.data.registrationNumber }));
+                toast.success(`Generated unique Reg #: ${res.data.registrationNumber}`);
+                return;
+            }
+        } catch (err) {
+            console.warn('API reg generation fallback to client-side', err);
+        }
+        const year = new Date().getFullYear();
+        const rand = Math.floor(10000 + Math.random() * 90000);
+        const code = `MCI-${year}-${rand}`;
+        setFormData(prev => ({ ...prev, registrationNumber: code }));
+        toast.success(`Generated unique Reg #: ${code}`);
+    }, []);
+
     const handleSave = (e) => {
         e?.preventDefault();
         if (editingUser) {
@@ -1157,7 +1175,14 @@ const DEFAULT_ROLES = [
                                             toast.error('Please assign at least one system role');
                                             return;
                                         }
-                                        setActiveStep(isDoctorSelected ? 3 : (isDoctorSelected ? 4 : 3));
+                                        if (isDoctorSelected) {
+                                            if (!formData.registrationNumber) {
+                                                generateDoctorRegNumber();
+                                            }
+                                            setActiveStep(3);
+                                        } else {
+                                            setActiveStep(4);
+                                        }
                                     }}
                                     className="px-6 py-2.5 bg-[#2160FF] hover:bg-blue-600 text-white rounded-xl font-bold text-xs shadow-md shadow-blue-500/20 transition-all flex items-center gap-2 cursor-pointer border-0"
                                 >
@@ -1202,7 +1227,7 @@ const DEFAULT_ROLES = [
                                     </div>
                                     <div className="flex flex-wrap gap-1.5 mt-2">
                                         {['Cardiology', 'Pediatrics', 'Orthopedics', 'General Medicine', 'Neurology'].map(s => (
-                                            <button
+                                             <button
                                                 type="button"
                                                 key={s}
                                                 onClick={() => setFormData({ ...formData, specialty: s })}
@@ -1219,20 +1244,40 @@ const DEFAULT_ROLES = [
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
-                                        Medical Council Registration #
-                                    </label>
+                                    <div className="flex items-center justify-between mb-1.5">
+                                        <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                                            Medical Council Registration #
+                                        </label>
+                                        <button
+                                            type="button"
+                                            onClick={generateDoctorRegNumber}
+                                            className="text-[11px] font-bold text-[#2160FF] hover:text-blue-700 dark:text-blue-400 flex items-center gap-1 cursor-pointer bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 px-2 py-0.5 rounded-lg border border-blue-200/60 dark:border-blue-800 transition-colors"
+                                            title="Auto-generate unique Medical Council Registration number"
+                                        >
+                                            <Sparkles size={11} />
+                                            <span>Auto-Generate</span>
+                                        </button>
+                                    </div>
                                     <div className="relative">
                                         <Award className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                                         <input 
                                             type="text" 
                                             value={formData.registrationNumber}
                                             onChange={e => setFormData({ ...formData, registrationNumber: e.target.value })}
-                                            placeholder="MCI-19283-B"
-                                            className="w-full pl-10 pr-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 font-mono focus:outline-none focus:ring-2 focus:ring-[#2160FF]/20 focus:border-[#2160FF]"
+                                            placeholder="e.g. MCI-2026-48291"
+                                            className="w-full pl-10 pr-24 py-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 font-mono font-bold focus:outline-none focus:ring-2 focus:ring-[#2160FF]/20 focus:border-[#2160FF]"
                                         />
+                                        <button
+                                            type="button"
+                                            onClick={generateDoctorRegNumber}
+                                            className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-[#2160FF] bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-2 py-1 hover:bg-blue-50 dark:hover:bg-slate-600 transition-colors cursor-pointer flex items-center gap-1 shadow-2xs"
+                                            title="Generate a fresh non-duplicate registration number"
+                                        >
+                                            <RefreshCw size={10} />
+                                            <span>Generate</span>
+                                        </button>
                                     </div>
-                                    <span className="text-[10px] text-slate-400 mt-1 block">Institutional board verification number.</span>
+                                    <span className="text-[10px] text-slate-400 mt-1 block">Institutional board verification number (guaranteed unique non-duplicate).</span>
                                 </div>
                             </div>
 

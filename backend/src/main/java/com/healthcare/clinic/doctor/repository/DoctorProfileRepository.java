@@ -13,6 +13,8 @@ public interface DoctorProfileRepository extends JpaRepository<DoctorProfile, Lo
     Optional<DoctorProfile> findByUserId(Long userId);
     List<DoctorProfile> findByIsActiveTrue();
     long countByIsActiveTrue();
+    boolean existsByRegistrationNumber(String registrationNumber);
+    Optional<DoctorProfile> findByRegistrationNumber(String registrationNumber);
 
     @Query("SELECT new com.healthcare.clinic.doctor.dto.DoctorProfileWithNameDto(dp, u.firstName, u.lastName) FROM DoctorProfile dp JOIN User u ON dp.userId = u.id WHERE dp.isActive = true")
     List<com.healthcare.clinic.doctor.dto.DoctorProfileWithNameDto> findActiveDoctorsWithNames();

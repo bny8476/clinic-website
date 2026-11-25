@@ -29,6 +29,22 @@ public class DoctorController {
         return ResponseEntity.ok(doctorRepository.findActiveDoctorsWithNames());
     }
 
+    @GetMapping("/generate-registration-number")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_DOCTOR')")
+    public ResponseEntity<java.util.Map<String, String>> generateRegistrationNumber() {
+        int year = java.time.Year.now().getValue();
+        String regNumber;
+        int attempts = 0;
+        java.security.SecureRandom random = new java.security.SecureRandom();
+        do {
+            int code = 10000 + random.nextInt(90000);
+            regNumber = String.format("MCI-%d-%d", year, code);
+            attempts++;
+        } while (doctorRepository.existsByRegistrationNumber(regNumber) && attempts < 100);
+        
+        return ResponseEntity.ok(java.util.Map.of("registrationNumber", regNumber));
+    }
+
 
     @GetMapping("/{userId}/full-profile")
     @PreAuthorize("hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
