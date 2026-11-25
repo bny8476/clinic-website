@@ -158,6 +158,9 @@ const ProductCatalog = lazy(() => import('./pages/ecommerce/ProductCatalog'));
 const ShoppingCart = lazy(() => import('./pages/ecommerce/ShoppingCart'));
 const CheckoutPage = lazy(() => import('./pages/ecommerce/CheckoutPage'));
 const SupportDashboard = lazy(() => import('./pages/support/SupportDashboard'));
+const ReceptionSupport = lazy(() => import('./pages/reception/ReceptionSupport'));
+const DoctorSupport = lazy(() => import('./pages/doctor/DoctorSupport'));
+const InsuranceSupport = lazy(() => import('./pages/insurance/InsuranceSupport'));
 const VendorDashboard = lazy(() => import('./pages/vendor/VendorDashboard'));
 const InsuranceDashboard = lazy(() => import('./pages/insurance/InsuranceDashboard'));
 const AmbulanceDashboard = lazy(() => import('./pages/ambulance/AmbulanceDashboard'));
@@ -440,6 +443,7 @@ function App() {
             <Route path="manage-medicines" element={<ManageMedicines />} />
             <Route path="orders" element={<DoctorMedicineOrders />} />
             <Route path="orders/:orderId" element={<DoctorMedicineOrders />} />
+            <Route path="support" element={<DoctorSupport />} />
           </Route>
 
           {/* ── Nurse Routes ────────────────────────────────────────────── */}
@@ -494,6 +498,7 @@ function App() {
             {/* Previously missing reception routes */}
             <Route path="book" element={<DoctorList />} />
             <Route path="book/:doctorId" element={<BookAppointment />} />
+            <Route path="support" element={<ReceptionSupport />} />
           </Route>
 
           {/* ── Pharmacist Routes ───────────────────────────────────────── */}
@@ -825,6 +830,7 @@ function App() {
           >
             <Route index element={<Navigate to="/insurance/dashboard" replace />} />
             <Route path="dashboard" element={<InsuranceDashboard />} />
+            <Route path="support" element={<InsuranceSupport />} />
           </Route>
 
           <Route path="/unauthorized" element={

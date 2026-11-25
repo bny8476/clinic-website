@@ -98,21 +98,16 @@ export default function PatientSupport() {
     contactPhone: ''
   });
 
-  // Query: Patient tickets
+  // Query: Patient tickets (Unified Support Desk)
   const { data: tickets = [], isLoading: loadingTickets } = useQuery({
     queryKey: ['patientTickets'],
     queryFn: async () => {
       try {
-        const res = await axiosPrivate.get('/v1/patient/support/tickets');
+        const res = await axiosPrivate.get('/support/my-tickets');
         return Array.isArray(res.data) ? res.data : [];
       } catch (err) {
-        console.warn('Failed to load tickets from /v1/patient/support/tickets, falling back to /support/my-tickets', err);
-        try {
-          const fallbackRes = await axiosPrivate.get('/support/my-tickets');
-          return Array.isArray(fallbackRes.data) ? fallbackRes.data : [];
-        } catch {
-          return [];
-        }
+        console.warn('Failed to load tickets from /support/my-tickets', err);
+        return [];
       }
     }
   });
@@ -195,25 +190,22 @@ export default function PatientSupport() {
     enabled: !!selectedTicket?.id
   });
 
-  // Mutation: Create Ticket
+  // Mutation: Create Ticket (Unified Support Desk)
   const createMutation = useMutation({
     mutationFn: async (data) => {
-      try {
-        const res = await axiosPrivate.post('/v1/patient/support/tickets', data);
-        return res.data;
-      } catch (err) {
-        console.warn('Failed /v1/patient/support/tickets, trying /support/tickets', err);
-        const res = await axiosPrivate.post('/support/tickets', {
-          subject: data.subject,
-          category: data.category,
-          priority: data.priority,
-          initialMessage: data.description
-        });
-        return res.data;
-      }
+      const res = await axiosPrivate.post('/support/tickets', {
+        subject: data.subject,
+        category: data.category,
+        priority: data.priority,
+        description: data.description
+      }, {
+        params: { initialMessage: data.description }
+      });
+      return res.data;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['patientTickets'] });
+      queryClient.invalidateQueries({ queryKey: ['support-tickets'] });
       setIsCreating(false);
       setNewTicket({
         subject: '',

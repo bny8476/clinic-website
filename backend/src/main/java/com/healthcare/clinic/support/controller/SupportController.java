@@ -45,11 +45,15 @@ public class SupportController {
             @RequestParam(required = false) String initialMessage,
             @AuthenticationPrincipal UserPrincipal user) {
 
+        String msg = (initialMessage != null && !initialMessage.isEmpty())
+                ? initialMessage
+                : ticket.getDescription();
+
         return ResponseEntity.ok(
                 supportService.createTicket(
                         ticket,
                         user,
-                        initialMessage
+                        msg
                 )
         );
     }

@@ -2,7 +2,7 @@ import useAuthStore from '../../store/authStore';
 import { useQuery } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { useNavigate } from 'react-router-dom';
-import { AlertCircle, ArrowRight, Check, ClipboardList, DollarSign, FileText, Loader2, Monitor, RefreshCw, Shield, Ticket, TrendingUp, UserCheck, UserPlus, Users } from 'lucide-react';
+import { AlertCircle, ArrowRight, Check, ClipboardList, DollarSign, FileText, LifeBuoy, Loader2, Monitor, RefreshCw, Shield, Ticket, TrendingUp, UserCheck, UserPlus, Users } from 'lucide-react';
 import { fadeIn, staggerContainer } from '../../components/ui/motion';
 import { motion } from 'framer-motion';
 
@@ -17,6 +17,7 @@ const QUICK_ACTIONS = [
   { label: 'Insurance\nVerify', icon: Shield, path: '/reception/insurance' },
   { label: 'Document\nScanning', icon: FileText, path: '/reception/documents' },
   { label: 'Kiosk\nCheck-In', icon: Monitor, path: '/reception/kiosk' },
+  { label: 'Customer\nSupport', icon: LifeBuoy, path: '/reception/support' },
 ];
 
 const StatCard = ({ label, value, icon: Icon, isLoading }) => (
@@ -94,13 +95,22 @@ const ReceptionDashboard = () => {
               Welcome back, {user?.firstName || 'Staff'}.
             </p>
           </div>
-          <button
-            onClick={() => refetch()}
-            className="flex items-center gap-2 text-[13px] font-bold text-[var(--color-navy-800)] hover:text-white hover:bg-[var(--color-navy-800)] bg-white px-4 py-2 rounded-lg border border-[var(--color-border)] shadow-sm transition-colors"
-          >
-            <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
-            Refresh
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate('/reception/support')}
+              className="flex items-center gap-2 text-[13px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-600 hover:text-white px-4 py-2 rounded-lg border border-blue-200 shadow-2xs transition-colors cursor-pointer"
+            >
+              <LifeBuoy className="w-4 h-4" />
+              Support & Grievances
+            </button>
+            <button
+              onClick={() => refetch()}
+              className="flex items-center gap-2 text-[13px] font-bold text-[var(--color-navy-800)] hover:text-white hover:bg-[var(--color-navy-800)] bg-white px-4 py-2 rounded-lg border border-[var(--color-border)] shadow-sm transition-colors cursor-pointer"
+            >
+              <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
+          </div>
         </div>
 
         {/* Live Stats */}

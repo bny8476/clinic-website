@@ -311,6 +311,7 @@ const SupportDashboard = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ticket-messages', selectedTicket?.id] });
+      queryClient.invalidateQueries({ queryKey: ['support-tickets'] });
       setReplyMessage('');
       toast.success('Support message sent successfully');
     },

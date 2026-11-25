@@ -24,12 +24,30 @@ public class SupportService {
 
     @Transactional(readOnly = true)
     public List<SupportTicket> getAllTickets() {
-        return ticketRepository.findAllByOrderByCreatedAtDesc();
+        List<SupportTicket> list = ticketRepository.findAllByOrderByCreatedAtDesc();
+        populateDescriptions(list);
+        return list;
     }
 
     @Transactional(readOnly = true)
     public List<SupportTicket> getUserTickets(Long userId) {
-        return ticketRepository.findByUserId(userId);
+        if (userId == null) return List.of();
+        List<SupportTicket> list = new java.util.ArrayList<>(ticketRepository.findByUserId(userId));
+        list.sort((a, b) -> {
+            if (a.getCreatedAt() == null || b.getCreatedAt() == null) return 0;
+            return b.getCreatedAt().compareTo(a.getCreatedAt());
+        });
+        populateDescriptions(list);
+        return list;
+    }
+
+    private void populateDescriptions(List<SupportTicket> tickets) {
+        for (SupportTicket t : tickets) {
+            List<SupportMessage> msgs = messageRepository.findByTicketIdOrderByCreatedAtAsc(t.getId());
+            if (!msgs.isEmpty()) {
+                t.setDescription(msgs.get(0).getMessage());
+            }
+        }
     }
 
     @Transactional
@@ -39,17 +57,26 @@ public class SupportService {
                 : null;
 
         ticket.setUser(user);
-        ticket.setTicketNumber("TICK-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
-        ticket.setStatus("OPEN");
+        if (ticket.getTicketNumber() == null || ticket.getTicketNumber().isEmpty()) {
+            ticket.setTicketNumber("TICK-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+        }
+        if (ticket.getStatus() == null || ticket.getStatus().isEmpty()) {
+            ticket.setStatus("OPEN");
+        }
         SupportTicket savedTicket = ticketRepository.save(ticket);
 
-        if (initialMessage != null && !initialMessage.isEmpty()) {
+        String msg = (initialMessage != null && !initialMessage.isEmpty())
+                ? initialMessage
+                : ticket.getDescription();
+
+        if (msg != null && !msg.isEmpty()) {
             messageRepository.save(SupportMessage.builder()
                     .ticket(savedTicket)
                     .sender(user)
-                    .message(initialMessage)
+                    .message(msg)
                     .isAgentResponse(false)
                     .build());
+            savedTicket.setDescription(msg);
         }
         return savedTicket;
     }

@@ -37,7 +37,8 @@ export const PORTAL_CONFIGS = [
       { label: 'Medicine Sales', path: '/doctor/manage-medicines', icon: 'ShoppingBag', description: 'Medicine Sales & Catalog' },
       { label: 'Lab Reports', path: '/doctor/lab-reports', icon: 'FlaskConical', description: 'View lab reports' },
       { label: 'Certificates', path: '/doctor/medical-certificate', icon: 'FileText', description: 'Medical certificates' },
-      { label: 'Settings', path: '/doctor/schedule-settings', icon: 'Settings', description: 'Schedule settings' }
+      { label: 'Settings', path: '/doctor/schedule-settings', icon: 'Settings', description: 'Schedule settings' },
+      { label: 'Provider Support', path: '/doctor/support', icon: 'LifeBuoy', description: 'Clinical IT & pharmacy escalation' }
     ],
   },
 
@@ -102,6 +103,7 @@ export const PORTAL_CONFIGS = [
       { label: 'Billing', path: '/reception/billing',   icon: 'Receipt', description: 'Manage and view billing' },
       { label: 'Check-in / Out', path: '/reception/checkin',   icon: 'CheckSquare', description: 'Manage and view check-in / out' },
       { label: 'Patient Search', path: '/reception/search',    icon: 'Search', description: 'Manage and view patient search' },
+      { label: 'Support Desk', path: '/reception/support',    icon: 'LifeBuoy', description: 'Patient grievances & counter IT' },
     ],
   },
 
@@ -590,6 +592,7 @@ export const PORTAL_CONFIGS = [
     },
     dashboardTiles: [
       { label: 'Dashboard', path: '/insurance/dashboard', icon: 'LayoutDashboard', description: 'Insurance Overview' },
+      { label: 'Claims Helpdesk', path: '/insurance/support', icon: 'LifeBuoy', description: 'TPA claim disputes & pre-auth' },
     ],
   }
 ];
