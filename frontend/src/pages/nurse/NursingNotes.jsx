@@ -111,12 +111,6 @@ const NursingNotes = () => {
                   <Users className="w-5 h-5 text-[#2160FF]" strokeWidth={2.5} />
                   <h3 className="text-[15px] font-bold text-slate-800">Assigned Patients</h3>
                 </div>
-                <button
-                  onClick={() => setShowPicker(true)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-[#2160FF] hover:bg-blue-700 text-white text-[12px] font-bold rounded-lg transition-colors"
-                >
-                  <UserSearch className="w-3.5 h-3.5" strokeWidth={2.5} /> Find Patient
-                </button>
               </div>
               <div className="w-10 h-0.5 bg-[#2160FF] rounded-t-full"></div>
             </div>
@@ -132,7 +126,7 @@ const NursingNotes = () => {
                     <Users className="w-10 h-10 text-[#2160FF]" strokeWidth={2.5} />
                   </div>
                   <h3 className="text-[15px] font-bold text-slate-800 mb-1.5">No assigned patients</h3>
-                  <p className="text-[13px] text-gray-500 font-medium leading-relaxed mb-5">Use "Find Patient" to search and select any patient.</p>
+                  <p className="text-[13px] text-gray-500 font-medium leading-relaxed mb-5">Select a patient from your assigned list to view and document notes.</p>
                   <button
                     onClick={() => setShowPicker(true)}
                     className="flex items-center gap-2 px-5 py-2.5 bg-[#2160FF] hover:bg-blue-700 text-white font-bold text-[13px] rounded-xl shadow-md shadow-blue-500/20 transition-colors"

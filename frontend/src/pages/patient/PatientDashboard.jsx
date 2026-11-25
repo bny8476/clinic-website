@@ -35,7 +35,9 @@ import {
   AlertCircle,
   CheckCircle2,
   Clock,
-  X
+  X,
+  LifeBuoy,
+  Headphones
 } from 'lucide-react';
 import { fadeUp, listStagger, pageTransition } from '../../components/ui/motion';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -54,7 +56,8 @@ export default function PatientDashboard() {
     { label: 'Prescriptions', icon: FileText, path: '/patient/prescriptions' },
     { label: 'Lab Reports', icon: FlaskConical, path: '/patient/lab-reports' },
     { label: 'Invoices', icon: ClipboardList, path: '/patient/billing' },
-    { label: 'Health Summary', icon: Stethoscope, path: '/patient/records' }
+    { label: 'Health Summary', icon: Stethoscope, path: '/patient/records' },
+    { label: 'Help & Support', icon: LifeBuoy, path: '/patient/support' }
   ];
 
   const topActions = [
@@ -65,7 +68,8 @@ export default function PatientDashboard() {
     { icon: Laptop, label: 'Tele\nConsult', path: '/patient/teleconsultations' },
     { icon: FileText, label: 'Medical\nRecords', path: '/patient/records' },
     { icon: Scan, label: 'Radiology', path: '/patient/radiology' },
-    { icon: Shield, label: 'Insurance', path: '/patient/insurance' }
+    { icon: Shield, label: 'Insurance', path: '/patient/insurance' },
+    { icon: LifeBuoy, label: 'Help &\nSupport', path: '/patient/support' }
   ];
 
   /* ── API Queries ─────────────────────────────────────────────────── */
@@ -421,8 +425,8 @@ export default function PatientDashboard() {
       animate="visible"
       className="min-h-screen bg-[#f8fafc] font-sans pb-16 pt-3 px-4 sm:px-6 lg:px-8 text-slate-800 space-y-5"
     >
-      {/* ── Top Action Cards Grid (8 Cards) ─────────────────────────────────── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+      {/* ── Top Action Cards Grid (9 Cards) ─────────────────────────────────── */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-3">
         {topActions.map((action, idx) => (
           <button
             key={idx}
@@ -775,6 +779,35 @@ export default function PatientDashboard() {
                 {labReports.length > 0 ? 'Diagnostic test results ready for review.' : 'Your recent lab results will appear here.'}
               </p>
             </div>
+          </div>
+
+          {/* Card 3: Help & Support Center */}
+          <div className="bg-gradient-to-br from-indigo-50/90 via-blue-50/50 to-white rounded-2xl p-5 border border-indigo-100/90 shadow-sm space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-xs">
+                  <Headphones className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-slate-900">Patient Support</h3>
+                  <p className="text-[11px] text-slate-500">24/7 Concierge Desk</p>
+                </div>
+              </div>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">
+                Online
+              </span>
+            </div>
+            <p className="text-xs text-slate-600 leading-relaxed text-left">
+              Have questions regarding appointments, medical records, or bills? Reach our care desk anytime.
+            </p>
+            <button
+              onClick={() => navigate('/patient/support')}
+              className="w-full py-2.5 px-3 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white text-xs font-bold rounded-xl transition shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <LifeBuoy className="w-4 h-4" />
+              <span>Help & Support Center</span>
+              <ArrowRight className="w-3.5 h-3.5 ml-auto" />
+            </button>
           </div>
         </div>
       </div>

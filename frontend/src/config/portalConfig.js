@@ -73,6 +73,7 @@ export const PORTAL_CONFIGS = [
       { label: 'Health Timeline', path: '/patient/timeline',       icon: 'Activity', description: 'Manage and view health timeline' },
       { label: 'Orders', path: '/patient/orders',         icon: 'ShoppingCart', description: 'Manage and view orders' },
       { label: 'AI Assistant', path: '/patient/ai-assistant',   icon: 'Bot', description: 'Manage and view ai assistant' },
+      { label: 'Help & Support', path: '/patient/support',      icon: 'LifeBuoy', description: 'Patient care support & tickets' },
     ],
   },
 
