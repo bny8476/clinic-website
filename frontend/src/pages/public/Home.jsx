@@ -3,7 +3,7 @@ import Card from '../../components/ui/Card';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion, useInView, useReducedMotion, useScroll, useTransform } from 'framer-motion';
-import { Activity, ArrowLeft, ArrowRight, BadgeCheck, Bell, Bone, Box, Brain, Calendar, CalendarCheck, CheckCircle2, ChevronDown, ChevronRight, Circle, Clock, FlaskConical, Headphones, Heart, HeartPulse, HomeIcon, Image, Info, Mail, MapPin, Menu, MessageCircle, MessageSquare, Monitor, Phone, PhoneCall, Pill, Play, Plus, Printer, Quote, ShieldCheck, Star, Stethoscope, Target, TestTube, ThumbsUp, User, UserCheck, Users, Video } from 'lucide-react';
+import { Activity, ArrowLeft, ArrowRight, BadgeCheck, Bell, Bone, Box, Brain, Calendar, CalendarCheck, CheckCircle2, ChevronDown, ChevronRight, Circle, Clock, FlaskConical, Headphones, Heart, HeartPulse, HomeIcon, Image, Info, Mail, MapPin, Menu, MessageCircle, MessageSquare, Monitor, Phone, PhoneCall, Pill, Play, Plus, Printer, Quote, ShieldCheck, Star, Stethoscope, Target, TestTube, ThumbsUp, User, UserCheck, Users, Video, X } from 'lucide-react';
 import { usePublicDepartments, usePublicDoctors } from '../../api/publicApi';
 import useAuthStore, { getDefaultDashboardRoute, isTokenValid } from '../../store/authStore';
 import QuickBookingModal from '../../components/public/QuickBookingModal';
@@ -303,43 +303,45 @@ const Home = () => {
           variants={navSequence}
           initial="hidden"
           animate="show"
-          className="flex items-center justify-between mb-8 px-3 py-3 bg-white/70 backdrop-blur-xl border border-white/50 rounded-[32px] shadow-[0_8px_32px_rgba(0,0,0,0.04)]"
+          className="relative flex items-center justify-between mb-8 px-3 py-3 bg-white/70 backdrop-blur-xl border border-white/50 rounded-[32px] shadow-[0_8px_32px_rgba(0,0,0,0.04)] z-50"
         >
-          {/* Left Side: Logo & Menu */}
-          <div className="flex items-center gap-4">
-            {/* Logo */}
-            <motion.div variants={navItem} className="flex items-center gap-3 cursor-pointer select-none pl-1" onClick={() => scrollTo('hero')}>
-              <div className="w-12 h-12 rounded-[16px] bg-blue-600 flex items-center justify-center text-white shadow-md">
-                <HeartPulse size={24} strokeWidth={2.5} />
-              </div>
-              <span className="font-bold text-gray-900 text-[18px] tracking-tight">Elixir Health Care</span>
-            </motion.div>
-            
-            {/* Hamburger */}
-            <button className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center hover:bg-gray-50 transition-colors text-gray-700 ml-2 border border-gray-100">
-              <Menu size={22} strokeWidth={2} />
-            </button>
-          </div>
+          {/* Left Side: Logo */}
+          <motion.div variants={navItem} className="flex items-center gap-2.5 sm:gap-3 cursor-pointer select-none pl-1" onClick={() => scrollTo('hero')}>
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-[16px] bg-blue-600 flex items-center justify-center text-white shadow-md shrink-0">
+              <HeartPulse size={22} className="sm:w-6 sm:h-6" strokeWidth={2.5} />
+            </div>
+            <span className="font-bold text-gray-900 text-sm sm:text-base md:text-[18px] tracking-tight whitespace-nowrap">
+              Elixir Health Care
+            </span>
+          </motion.div>
 
-          {/* Center Pill Nav */}
+          {/* Backdrop overlay for Mobile Menu */}
+          {mobileMenuOpen && (
+            <div 
+              className="fixed inset-0 bg-slate-900/30 backdrop-blur-xs z-40 transition-opacity"
+              onClick={() => setMobileMenuOpen(false)}
+            />
+          )}
+
+          {/* Center Pill Nav (Desktop Only: hidden on mobile, visible on lg:flex) */}
           <motion.div variants={navItem} className="hidden lg:flex items-center bg-white/50 border border-white/60 rounded-full px-8 py-3.5 gap-8">
-            <button onClick={() => scrollTo('about')} className="text-[14px] font-semibold text-gray-600 hover:text-gray-900 transition-colors">
+            <button onClick={() => scrollTo('about')} className="text-[14px] font-semibold text-gray-600 hover:text-gray-900 transition-colors cursor-pointer">
               About Us
             </button>
-            <button onClick={() => scrollTo('services')} className="text-[14px] font-semibold text-gray-600 hover:text-gray-900 transition-colors">
+            <button onClick={() => scrollTo('services')} className="text-[14px] font-semibold text-gray-600 hover:text-gray-900 transition-colors cursor-pointer">
               Services
             </button>
-            <button onClick={() => scrollTo('doctors')} className="text-[14px] font-semibold text-blue-600 relative group">
+            <button onClick={() => scrollTo('doctors')} className="text-[14px] font-semibold text-blue-600 relative group cursor-pointer">
               Doctors
               <span className="absolute -bottom-3.5 left-0 w-full h-[3px] bg-blue-600 rounded-t-full"></span>
             </button>
-            <button onClick={() => scrollTo('contact')} className="text-[14px] font-semibold text-gray-600 hover:text-gray-900 transition-colors">
+            <button onClick={() => scrollTo('contact')} className="text-[14px] font-semibold text-gray-600 hover:text-gray-900 transition-colors cursor-pointer">
               Contact
             </button>
           </motion.div>
 
-          {/* Right Actions */}
-          <motion.div variants={navItem} className="flex items-center gap-6 pr-1">
+          {/* Right Actions: Phone, Bell, Profile (Desktop Only: hidden on mobile, visible on lg:flex) */}
+          <motion.div variants={navItem} className="hidden lg:flex items-center gap-6 pr-1">
             <div className="hidden xl:flex items-center gap-3 text-gray-600">
               <MapPin size={20} className="text-gray-500" strokeWidth={1.5} />
               <div className="leading-tight text-[12px] font-medium">
@@ -350,7 +352,13 @@ const Home = () => {
             
             <div className="flex items-center gap-2">
               {/* Phone Button */}
-              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-12 h-12 rounded-[16px] bg-white text-gray-700 flex items-center justify-center shadow-sm border border-gray-100 hover:shadow transition-shadow">
+              <motion.button 
+                whileHover={{ scale: 1.05 }} 
+                whileTap={{ scale: 0.95 }} 
+                onClick={() => scrollTo('contact')}
+                className="w-12 h-12 rounded-[16px] bg-white text-gray-700 flex items-center justify-center shadow-sm border border-gray-100 hover:shadow transition-shadow cursor-pointer"
+                title="Contact Support"
+              >
                 <Phone size={18} strokeWidth={2} />
               </motion.button>
               
@@ -366,7 +374,8 @@ const Home = () => {
                        navigate('/login');
                      }
                    }}
-                   className="w-12 h-12 rounded-[16px] bg-blue-50 text-blue-600 flex items-center justify-center shadow-sm border border-white hover:bg-blue-100 transition-colors"
+                   className="w-12 h-12 rounded-[16px] bg-blue-50 text-blue-600 flex items-center justify-center shadow-sm border border-white hover:bg-blue-100 transition-colors cursor-pointer"
+                   title="Notifications"
                  >
                    <Bell size={18} strokeWidth={2} />
                  </motion.button>
@@ -378,13 +387,157 @@ const Home = () => {
                 whileHover={{ scale: 1.05 }} 
                 whileTap={{ scale: 0.95 }} 
                 onClick={handleUserIconClick} 
-                className="w-12 h-12 rounded-[16px] bg-blue-600 text-white flex items-center justify-center shadow-md hover:bg-blue-700 transition-colors"
+                className="w-12 h-12 rounded-[16px] bg-blue-600 text-white flex items-center justify-center shadow-md hover:bg-blue-700 transition-colors cursor-pointer"
                 title={isTokenValid(token) ? "Go to Dashboard" : "Sign In"}
               >
                 <User size={18} strokeWidth={2} />
               </motion.button>
             </div>
           </motion.div>
+
+          {/* Right Side: Hamburger Button (Mobile Only: visible on mobile, hidden on lg:hidden) */}
+          <div className="flex lg:hidden items-center pr-1">
+            <button 
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+              aria-expanded={mobileMenuOpen}
+              className={`w-11 h-11 rounded-[16px] border-2 ${
+                mobileMenuOpen 
+                  ? 'border-blue-600 bg-blue-50 text-blue-600 shadow-md ring-2 ring-blue-100' 
+                  : 'border-blue-600 hover:border-blue-700 bg-white text-gray-800 shadow-xs hover:bg-blue-50/50'
+              } flex items-center justify-center transition-all cursor-pointer`}
+              title={mobileMenuOpen ? "Close Menu" : "Navigation Menu"}
+            >
+              {mobileMenuOpen ? <X size={20} strokeWidth={2.5} /> : <Menu size={20} strokeWidth={2.5} />}
+            </button>
+          </div>
+
+          {/* Animated Dropdown Menu for Hamburger Button */}
+          <AnimatePresence>
+            {mobileMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -10, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="absolute top-[calc(100%+12px)] left-0 right-0 z-50 bg-white/95 backdrop-blur-2xl border border-slate-200/90 rounded-[28px] p-4 sm:p-6 shadow-[0_20px_50px_rgba(15,23,42,0.15)] flex flex-col gap-4 overflow-hidden"
+              >
+                <div className="flex items-center justify-between px-2 pb-2 border-b border-slate-100">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse"></span>
+                    <span className="text-xs font-black text-slate-800 uppercase tracking-widest">Navigation Menu</span>
+                  </div>
+                  <button 
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                    title="Close"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+
+                {/* Primary Nav Options Requested by User */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <button
+                    onClick={() => scrollTo('about')}
+                    className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50/80 hover:bg-blue-50/80 hover:text-blue-600 text-slate-800 transition-all text-left group cursor-pointer border border-transparent hover:border-blue-100"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-white shadow-xs border border-slate-100 flex items-center justify-center text-slate-600 group-hover:text-blue-600 group-hover:bg-blue-100/50 transition-colors">
+                        <Info size={18} />
+                      </div>
+                      <div>
+                        <p className="font-bold text-[15px] leading-tight group-hover:text-blue-600 transition-colors">About Us</p>
+                        <p className="text-[11px] text-slate-400 font-medium mt-0.5">Clinic mission & facilities</p>
+                      </div>
+                    </div>
+                    <ChevronRight size={16} className="text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all" />
+                  </button>
+
+                  <button
+                    onClick={() => scrollTo('services')}
+                    className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50/80 hover:bg-blue-50/80 hover:text-blue-600 text-slate-800 transition-all text-left group cursor-pointer border border-transparent hover:border-blue-100"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-white shadow-xs border border-slate-100 flex items-center justify-center text-slate-600 group-hover:text-blue-600 group-hover:bg-blue-100/50 transition-colors">
+                        <Activity size={18} />
+                      </div>
+                      <div>
+                        <p className="font-bold text-[15px] leading-tight group-hover:text-blue-600 transition-colors">Services</p>
+                        <p className="text-[11px] text-slate-400 font-medium mt-0.5">Medical departments & treatments</p>
+                      </div>
+                    </div>
+                    <ChevronRight size={16} className="text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all" />
+                  </button>
+
+                  <button
+                    onClick={() => scrollTo('doctors')}
+                    className="flex items-center justify-between p-3.5 rounded-2xl bg-blue-50/70 border border-blue-200/80 text-blue-900 transition-all text-left group cursor-pointer relative overflow-hidden"
+                  >
+                    <div className="flex items-center gap-3 relative z-10">
+                      <div className="w-10 h-10 rounded-xl bg-blue-600 text-white shadow-xs flex items-center justify-center">
+                        <UserCheck size={18} />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="font-black text-[15px] leading-tight text-blue-900">Doctors</p>
+                          <span className="text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-blue-600 text-white tracking-wider">Top Specialists</span>
+                        </div>
+                        <p className="text-[11px] text-blue-700/80 font-medium mt-0.5">Experienced physician team</p>
+                      </div>
+                    </div>
+                    <ChevronRight size={16} className="text-blue-600 group-hover:translate-x-0.5 transition-all relative z-10" />
+                  </button>
+
+                  <button
+                    onClick={() => scrollTo('contact')}
+                    className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50/80 hover:bg-blue-50/80 hover:text-blue-600 text-slate-800 transition-all text-left group cursor-pointer border border-transparent hover:border-blue-100"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-white shadow-xs border border-slate-100 flex items-center justify-center text-slate-600 group-hover:text-blue-600 group-hover:bg-blue-100/50 transition-colors">
+                        <PhoneCall size={18} />
+                      </div>
+                      <div>
+                        <p className="font-bold text-[15px] leading-tight group-hover:text-blue-600 transition-colors">Contact</p>
+                        <p className="text-[11px] text-slate-400 font-medium mt-0.5">Address, phone & working hours</p>
+                      </div>
+                    </div>
+                    <ChevronRight size={16} className="text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all" />
+                  </button>
+                </div>
+
+                {/* Bottom Quick Action Strip */}
+                <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5 text-slate-600 text-xs w-full sm:w-auto">
+                    <MapPin size={16} className="text-blue-600 shrink-0" />
+                    <span className="font-medium truncate">Medychinyi Avenue, 8-A, Lviv</span>
+                  </div>
+
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <button
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        handleFindDoctors();
+                      }}
+                      className="flex-1 sm:flex-none px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      Find Doctor <ArrowRight size={14} />
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        handleUserIconClick();
+                      }}
+                      className="flex-1 sm:flex-none px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      {isTokenValid(token) ? 'Go to Dashboard' : 'Sign In'}
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.header>
 
         {/* HERO CONTAINER */}
@@ -980,7 +1133,7 @@ const Home = () => {
       </section>
 
       {/* Our Doctors Section */}
-      <section className="py-24 px-4 bg-[#F8FAFC] max-w-[1600px] mx-auto mb-12 rounded-[40px]">
+      <section id="doctors" className="py-24 px-4 bg-[#F8FAFC] max-w-[1600px] mx-auto mb-12 rounded-[40px]">
          <div className="flex flex-col lg:flex-row gap-12 lg:gap-20">
             {/* Left Content */}
             <div className="w-full lg:w-[35%] flex flex-col justify-center px-4 lg:pl-12">
