@@ -170,8 +170,8 @@ export default function LowStockAlerts() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* ── Page Header ──────────────────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
+        <div className="flex items-center gap-3 min-w-0">
           <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold flex-shrink-0 border border-amber-100">
             <AlertTriangle className="w-6 h-6" />
           </div>
@@ -183,9 +183,9 @@ export default function LowStockAlerts() {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-3 flex-nowrap shrink-0 overflow-x-auto">
           {/* Last updated badge */}
-          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200/70 px-3.5 py-2 rounded-xl text-xs text-slate-500 font-medium">
+          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200/70 px-3.5 py-2 rounded-xl text-xs text-slate-500 font-medium whitespace-nowrap">
             <Clock className="w-3.5 h-3.5 text-slate-400" />
             <span>Updated: <strong className="text-slate-700">{lastUpdated.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</strong></span>
           </div>
@@ -193,7 +193,7 @@ export default function LowStockAlerts() {
           <button 
             onClick={handleManualRefresh} 
             disabled={isFetching}
-            className="flex items-center gap-2 px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-xl transition-all border border-slate-200/80 cursor-pointer shadow-xs disabled:opacity-50"
+            className="flex items-center gap-2 px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-xl transition-all border border-slate-200/80 cursor-pointer shadow-xs disabled:opacity-50 whitespace-nowrap"
             title="Refresh stock levels"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? 'animate-spin text-amber-600' : ''}`} />
@@ -202,7 +202,7 @@ export default function LowStockAlerts() {
 
           <button
             onClick={() => navigate('/pharmacy/purchase-orders')}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-blue-500/20 cursor-pointer border-none"
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-blue-500/20 cursor-pointer border-none whitespace-nowrap"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Create Purchase Order</span>
