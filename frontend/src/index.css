@@ -58,6 +58,23 @@
     .animate-fade-in-up {
         animation: fadeInUp 1s ease-out forwards;
     }
+    
+    /* Scrollbar hiding utilities */
+    .no-scrollbar::-webkit-scrollbar,
+    .scrollbar-none::-webkit-scrollbar,
+    .hide-scrollbar::-webkit-scrollbar,
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+    }
+    .no-scrollbar,
+    .scrollbar-none,
+    .hide-scrollbar,
+    .scrollbar-hide {
+        -ms-overflow-style: none !important;
+        scrollbar-width: none !important;
+    }
 }
 
 @keyframes fadeInUp {

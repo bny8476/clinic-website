@@ -183,7 +183,7 @@ export default function LowStockAlerts() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 flex-nowrap shrink-0 overflow-x-auto">
+        <div className="flex items-center gap-2.5 sm:gap-3 flex-nowrap shrink-0">
           {/* Last updated badge */}
           <div className="flex items-center gap-2 bg-slate-50 border border-slate-200/70 px-3.5 py-2 rounded-xl text-xs text-slate-500 font-medium whitespace-nowrap">
             <Clock className="w-3.5 h-3.5 text-slate-400" />
@@ -294,7 +294,7 @@ export default function LowStockAlerts() {
             <select
               value={categoryFilter}
               onChange={e => setCategoryFilter(e.target.value)}
-              className="w-36 sm:w-40 md:w-44 px-2.5 py-2 text-xs font-semibold border border-slate-200 rounded-xl bg-white text-slate-700 outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 cursor-pointer truncate"
+              className="w-28 sm:w-32 md:w-36 px-2.5 py-1.5 text-xs font-semibold border border-slate-200 rounded-xl bg-white text-slate-700 outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 cursor-pointer truncate"
             >
               <option value="ALL">All Categories ({categories.length})</option>
               {categories.map(cat => (
@@ -303,8 +303,11 @@ export default function LowStockAlerts() {
             </select>
           </div>
 
-          {/* Severity Filter Pills (scrollbar hidden) */}
-          <div className="flex items-center gap-1.5 shrink-0 overflow-x-auto scrollbar-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {/* Severity Filter Pills (scrollbar completely hidden) */}
+          <div 
+            className="flex items-center gap-1.5 shrink-0 overflow-x-auto no-scrollbar scrollbar-none"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
             <button
               onClick={() => setSeverityFilter('ALL')}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
