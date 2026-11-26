@@ -608,11 +608,18 @@ const PatientPrescriptions = () => {
                         )}
 
                         <button
-                          onClick={() => navigate('/patient/order-medicine')}
+                          onClick={() => {
+                            navigate('/patient/order-medicine', {
+                              state: {
+                                selectedPrescription: prescription,
+                                autoOpenCart: true
+                              }
+                            });
+                          }}
                           className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black shadow-xs transition cursor-pointer border-none"
                         >
                           <ShoppingBag className="w-3.5 h-3.5" />
-                          <span>Order From Pharmacy</span>
+                          <span>Order Medicines with this Rx</span>
                         </button>
                       </div>
                     </div>
@@ -697,6 +704,19 @@ const PatientPrescriptions = () => {
                 <p className="text-xs text-slate-400 font-medium">Rx #{viewPrescription.id} • Issued by Licensed Medical Practitioner</p>
               </div>
               <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => {
+                    navigate('/patient/order-medicine', {
+                      state: {
+                        selectedPrescription: viewPrescription,
+                        autoOpenCart: true
+                      }
+                    });
+                  }}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black transition flex items-center gap-2 shadow-2xs border-none cursor-pointer"
+                >
+                  <ShoppingBag className="w-4 h-4" /> Order Medicines with this Rx
+                </button>
                 <button 
                   onClick={() => window.print()}
                   className="px-4 py-2 bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-2xs border-none cursor-pointer"

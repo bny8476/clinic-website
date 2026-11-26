@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
@@ -26,6 +26,11 @@ import {
 export default function DoctorSupport() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const [ticketFilter, setTicketFilter] = useState('ALL'); // ALL | OPEN | RESOLVED
   const [searchQuery, setSearchQuery] = useState('');
@@ -373,9 +378,15 @@ export default function DoctorSupport() {
         </div>
 
         {/* Modal: Create Doctor Ticket */}
-        {isCreating && typeof document !== 'undefined' && createPortal(
-          <div className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/70 backdrop-blur-xs p-4 overflow-y-auto">
-            <div className="relative z-[9999] bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-lg p-6 sm:p-7 space-y-4">
+        {mounted && isCreating && typeof document !== 'undefined' && Boolean(document?.body) && createPortal(
+          <div
+            className="fixed inset-0 z-[99998] flex items-center justify-center bg-black/75 backdrop-blur-xs p-4 overflow-y-auto"
+            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99998, backgroundColor: 'rgba(0, 0, 0, 0.72)' }}
+          >
+            <div
+              className="relative z-[99999] bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-lg p-6 sm:p-7 space-y-4"
+              style={{ position: 'relative', zIndex: 99999 }}
+            >
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-2.5">
                   <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
@@ -479,9 +490,15 @@ export default function DoctorSupport() {
         )}
 
         {/* Modal: View Thread */}
-        {selectedTicket && typeof document !== 'undefined' && createPortal(
-          <div className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/70 backdrop-blur-xs p-4 overflow-y-auto">
-            <div className="relative z-[9999] bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-xl max-h-[85vh] flex flex-col overflow-hidden">
+        {mounted && selectedTicket && typeof document !== 'undefined' && Boolean(document?.body) && createPortal(
+          <div
+            className="fixed inset-0 z-[99998] flex items-center justify-center bg-black/75 backdrop-blur-xs p-4 overflow-y-auto"
+            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99998, backgroundColor: 'rgba(0, 0, 0, 0.72)' }}
+          >
+            <div
+              className="relative z-[99999] bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-xl max-h-[85vh] flex flex-col overflow-hidden"
+              style={{ position: 'relative', zIndex: 99999 }}
+            >
               <div className="p-5 border-b border-slate-100 bg-slate-50/50 flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-2 mb-1">

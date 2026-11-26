@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { useNavigate } from 'react-router-dom';
@@ -78,6 +79,12 @@ export default function PatientSupport() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
+  // Mount guard for React Portals
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // Local state
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFaqCategory, setSelectedFaqCategory] = useState('All');
@@ -88,6 +95,18 @@ export default function PatientSupport() {
   const [isCreating, setIsCreating] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [replyText, setReplyText] = useState('');
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (isCreating || selectedTicket) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isCreating, selectedTicket]);
 
   // New ticket form data
   const [newTicket, setNewTicket] = useState({
@@ -667,9 +686,16 @@ export default function PatientSupport() {
         </div>
 
         {/* ── 6. Create Support Ticket Modal ────────────────────────────────── */}
-        {isCreating && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto">
-            <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-xl p-6 sm:p-8 space-y-5 animate-in fade-in duration-200">
+        {mounted && isCreating && typeof document !== 'undefined' && Boolean(document?.body) && createPortal(
+          <div className="fixed inset-0 z-[9998] flex items-center justify-center p-4 overflow-y-auto">
+            {/* Fullscreen Backdrop overlay */}
+            <div
+              className="fixed inset-0 bg-black/70 backdrop-blur-xs transition-opacity"
+              onClick={() => setIsCreating(false)}
+            />
+
+            {/* Modal Dialog */}
+            <div className="relative z-[9999] bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-xl p-6 sm:p-8 space-y-5 animate-in fade-in duration-200 my-auto">
               <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                 <div className="flex items-center gap-2.5">
                   <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
@@ -795,13 +821,21 @@ export default function PatientSupport() {
                 </div>
               </form>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
 
         {/* ── 7. Ticket Details & Discussion Thread Modal ───────────────────── */}
-        {selectedTicket && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto">
-            <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in duration-200">
+        {mounted && selectedTicket && typeof document !== 'undefined' && Boolean(document?.body) && createPortal(
+          <div className="fixed inset-0 z-[9998] flex items-center justify-center p-4 overflow-y-auto">
+            {/* Fullscreen Backdrop overlay */}
+            <div
+              className="fixed inset-0 bg-black/70 backdrop-blur-xs transition-opacity"
+              onClick={() => setSelectedTicket(null)}
+            />
+
+            {/* Modal Dialog */}
+            <div className="relative z-[9999] bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in duration-200 my-auto">
               {/* Modal Header */}
               <div className="p-5 sm:p-6 border-b border-slate-100 bg-slate-50/50 flex items-start justify-between gap-4">
                 <div className="space-y-1.5">
@@ -917,7 +951,8 @@ export default function PatientSupport() {
                 </div>
               </form>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
 
       </div>

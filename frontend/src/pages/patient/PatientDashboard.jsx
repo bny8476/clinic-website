@@ -37,23 +37,39 @@ import {
   Clock,
   X,
   LifeBuoy,
-  Headphones
+  Headphones,
+  ShoppingBag,
+  Truck,
+  Package,
+  MapPin,
+  ShieldCheck,
+  LayoutGrid
 } from 'lucide-react';
 import { fadeUp, listStagger, pageTransition } from '../../components/ui/motion';
 import { AnimatePresence, motion } from 'framer-motion';
+import MedicineOrderInvoiceModal from '../../components/patient/MedicineOrderInvoiceModal';
 
 export default function PatientDashboard() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('Dashboard');
+  const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState(null);
   const [medicationTaken, setMedicationTaken] = useState(false);
   const [selectedDate, setSelectedDate] = useState(() => new Date());
   const [timelineView, setTimelineView] = useState('Day'); // 'Day' | 'Week' | 'Month'
+  const [storageTick, setStorageTick] = useState(0);
+
+  React.useEffect(() => {
+    const handleStorage = () => setStorageTick((t) => t + 1);
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
 
   const tabs = [
-    { label: 'Dashboard', icon: LayoutGridIcon, path: '/patient/dashboard' },
+    { label: 'Dashboard', icon: LayoutGrid, path: '/patient/dashboard' },
     { label: 'Appointments', icon: CalendarIcon, path: '/patient/appointments' },
     { label: 'Prescriptions', icon: FileText, path: '/patient/prescriptions' },
+    { label: 'Orders & Tracking', icon: ShoppingBag, path: '/patient/orders' },
     { label: 'Lab Reports', icon: FlaskConical, path: '/patient/lab-reports' },
     { label: 'Invoices', icon: ClipboardList, path: '/patient/billing' },
     { label: 'Health Summary', icon: Stethoscope, path: '/patient/records' },
@@ -142,6 +158,53 @@ export default function PatientDashboard() {
     },
     enabled: !!user?.id
   });
+
+  // Realtime Live Medicine Orders (polling every 3 seconds for instant pharmacy fulfillment updates)
+  const { data: rawMedicineOrders = [] } = useQuery({
+    queryKey: ['patientMedicineOrdersLive', user?.id],
+    queryFn: async () => {
+      try {
+        const res = await axiosPrivate.get('/patient/medicines/my-orders');
+        return Array.isArray(res.data) ? res.data : (res.data?.content || []);
+      } catch (err) {
+        try {
+          const fallbackRes = await axiosPrivate.get('/patient/medicine-orders');
+          return Array.isArray(fallbackRes.data) ? fallbackRes.data : (fallbackRes.data?.content || []);
+        } catch {
+          return [];
+        }
+      }
+    },
+    enabled: !!user?.id,
+    refetchInterval: 3000,
+    staleTime: 1000
+  });
+
+  const activeMedicineOrder = useMemo(() => {
+    if (Array.isArray(rawMedicineOrders) && rawMedicineOrders.length) {
+      const active = rawMedicineOrders.find((o) =>
+        !['DELIVERED', 'COMPLETED', 'CANCELLED'].includes((o.orderStatus || o.status || '').toUpperCase())
+      );
+      return active || rawMedicineOrders[0];
+    }
+    try {
+      const saved = localStorage.getItem('latest_patient_medicine_order');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    try {
+      const listRaw = localStorage.getItem('clinic_patient_medicine_orders');
+      if (listRaw) {
+        const list = JSON.parse(listRaw);
+        if (Array.isArray(list) && list.length > 0) {
+          const active = list.find((o) =>
+            !['DELIVERED', 'COMPLETED', 'CANCELLED'].includes((o.orderStatus || o.status || '').toUpperCase())
+          );
+          return active || list[0];
+        }
+      }
+    } catch {}
+    return null;
+  }, [rawMedicineOrders, storageTick]);
 
   const appointments = useMemo(() => (Array.isArray(rawAppointments) ? rawAppointments : []), [rawAppointments]);
   const prescriptions = useMemo(() => (Array.isArray(rawPrescriptions) ? rawPrescriptions : []), [rawPrescriptions]);
@@ -474,6 +537,156 @@ export default function PatientDashboard() {
           );
         })}
       </div>
+
+      {/* ── Realtime Active Medicine Order Live Tracker ───────────────────────── */}
+      {activeMedicineOrder ? (
+        (() => {
+          const status = (activeMedicineOrder.orderStatus || activeMedicineOrder.status || 'PAID').toUpperCase();
+          let step = 1;
+          let stepTitle = 'Order Placed';
+          let stepDesc = 'Payment confirmed. Sent to clinic pharmacy.';
+          
+          if (['PHARMACY_PROCESSING', 'PROCESSING', 'VERIFIED', 'PACKED', 'CONFIRMED'].includes(status)) {
+            step = 2;
+            stepTitle = 'Pharmacy Verification & Packaging';
+            stepDesc = 'Pharmacist is assembling your prescription medicines.';
+          } else if (['DISPATCHED', 'OUT_FOR_DELIVERY', 'READY_FOR_PICKUP', 'SHIPPED'].includes(status)) {
+            step = 3;
+            stepTitle = status === 'READY_FOR_PICKUP' ? 'Ready for Pharmacy Pickup' : 'Out for Delivery';
+            stepDesc = status === 'READY_FOR_PICKUP' ? 'Package is waiting at the clinic pharmacy counter.' : 'Courier is on the way to your address.';
+          } else if (['DELIVERED', 'COMPLETED'].includes(status)) {
+            step = 4;
+            stepTitle = 'Delivered & Completed';
+            stepDesc = 'Medicines delivered safely to your location.';
+          }
+
+          const steps = [
+            { num: 1, label: 'Order Placed' },
+            { num: 2, label: 'Rx Verified & Packed' },
+            { num: 3, label: 'Dispatched' },
+            { num: 4, label: 'Delivered' }
+          ];
+
+          return (
+            <div className="bg-gradient-to-r from-emerald-500/10 via-teal-500/5 to-blue-500/10 rounded-2xl p-5 border border-emerald-200/80 shadow-xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+                    <ShoppingBag className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-slate-900 text-sm">Active Medicine Order</span>
+                      <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                        {activeMedicineOrder.orderNumber || activeMedicineOrder.orderId || `ORD-${activeMedicineOrder.id}`}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      {stepDesc} • Total ₹{(activeMedicineOrder.totalAmount || activeMedicineOrder.grandTotal || activeMedicineOrder.total || 0).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => setSelectedInvoiceOrder(activeMedicineOrder)}
+                    className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs flex items-center gap-1.5 transition cursor-pointer"
+                  >
+                    <FileText className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>View Invoice</span>
+                  </button>
+                  <button
+                    onClick={() => navigate('/patient/orders')}
+                    className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs flex items-center gap-1.5 transition cursor-pointer"
+                  >
+                    <span>Track Full Order</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
+                  </button>
+                  <button
+                    onClick={() => navigate('/patient/order-medicine')}
+                    className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs flex items-center gap-1.5 transition cursor-pointer"
+                  >
+                    <Pill className="w-3.5 h-3.5" />
+                    <span>Order More</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Stepper Progress */}
+              <div className="bg-white/80 backdrop-blur-xs rounded-xl p-4 border border-emerald-100/80">
+                <div className="grid grid-cols-4 gap-2 relative">
+                  {steps.map((s) => {
+                    const isDone = s.num <= step;
+                    const isCurrent = s.num === step;
+                    return (
+                      <div key={s.num} className="flex flex-col items-center text-center space-y-1.5 relative z-10">
+                        <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                          isCurrent
+                            ? 'bg-emerald-600 text-white ring-4 ring-emerald-100'
+                            : isDone
+                            ? 'bg-emerald-500 text-white'
+                            : 'bg-slate-100 text-slate-400'
+                        }`}>
+                          {isDone ? <Check className="w-3.5 h-3.5" /> : s.num}
+                        </div>
+                        <span className={`text-[11px] font-bold ${isCurrent ? 'text-emerald-700' : isDone ? 'text-slate-800' : 'text-slate-400'}`}>
+                          {s.label}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mt-3">
+                  <div
+                    className="bg-emerald-500 h-full transition-all duration-500 rounded-full"
+                    style={{ width: `${Math.max(10, ((step - 1) / 3) * 100)}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          );
+        })()
+      ) : (
+        <div className="bg-gradient-to-r from-blue-50/70 via-slate-50 to-emerald-50/50 rounded-2xl p-4 sm:p-5 border border-slate-200/80 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-blue-100 text-[#2864FF] flex items-center justify-center shrink-0">
+              <ShoppingBag className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-slate-900 text-sm">Pharmacy Order Live Tracker</span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white text-slate-600 border border-slate-200">
+                  Ready for Orders
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-white text-emerald-700 border border-emerald-200">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  Pharmacy Sync Connected
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Order medicines prescribed by your doctor or browse clinic pharmacy. Live tracking and digital tax invoice will display here.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => navigate('/patient/orders')}
+              className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs flex items-center gap-1.5 transition cursor-pointer"
+            >
+              <span>View Orders</span>
+              <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
+            </button>
+            <button
+              onClick={() => navigate('/patient/order-medicine')}
+              className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs flex items-center gap-1.5 transition cursor-pointer"
+            >
+              <Pill className="w-3.5 h-3.5" />
+              <span>Order Medicine</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── Main Dashboard 3-Column Content Layout ────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
@@ -811,6 +1024,14 @@ export default function PatientDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Official Pharmacy Tax Invoice Modal */}
+      {selectedInvoiceOrder && (
+        <MedicineOrderInvoiceModal
+          order={selectedInvoiceOrder}
+          onClose={() => setSelectedInvoiceOrder(null)}
+        />
+      )}
     </motion.div>
   );
 }

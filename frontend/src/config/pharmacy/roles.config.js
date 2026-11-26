@@ -128,6 +128,7 @@ export const getBaseRoleForUI = (role) => {
 export const NAV_BY_ROLE = {
   SYSTEM_ADMIN: [
     { label: 'Admin Dashboard', path: '/pharmacy/admin-dashboard', icon: LayoutDashboard, description: 'View Admin Dashboard' },
+    { label: 'Patient Medicine Orders', path: '/pharmacy/patient-orders', icon: ShoppingBag, description: 'Fulfill & dispense patient medicine orders' },
     { label: 'Billing Dashboard', path: '/pharmacy/billing-dashboard', icon: LayoutDashboard, description: 'View Billing Dashboard' },
     { label: 'Dashboard', path: '/pharmacy/dashboard', icon: LayoutDashboard, description: 'View Dashboard' },
     { label: 'Medicine Master', path: '/pharmacy/medicine-master', icon: Pill, description: 'Manage medicine master' },
@@ -173,6 +174,7 @@ export const NAV_BY_ROLE = {
   ],
   PHARMACY_STAFF: [
     { label: 'Pharmacy Dashboard', path: '/pharmacy/dashboard', icon: LayoutDashboard, description: 'View pharmacy metrics' },
+    { label: 'Patient Medicine Orders', path: '/pharmacy/patient-orders', icon: ShoppingBag, description: 'Fulfill & dispense patient medicine orders' },
     { label: 'Pharmacy Sales', path: '/pharmacy/pharmacy-sales', icon: ShoppingCart, description: 'Manage pharmacy sales' },
     { label: 'Medicine Returns', path: '/pharmacy/medicine-returns', icon: RotateCcw, description: 'Manage medicine returns' },
     { label: 'Medicine Master', path: '/pharmacy/medicine-master', icon: Pill, description: 'Manage medicine master' },
@@ -213,6 +215,7 @@ export const NAV_BY_ROLE = {
   ],
   SUPERVISOR: [
     { label: 'Supervisor Dashboard', path: '/pharmacy/supervisor-dashboard', icon: LayoutDashboard, description: 'View pharmacy metrics' },
+    { label: 'Patient Medicine Orders', path: '/pharmacy/patient-orders', icon: ShoppingBag, description: 'Fulfill & dispense patient medicine orders' },
     { label: 'Return Worklists', path: '/pharmacy/return-worklists', icon: ClipboardList, description: 'Manage return worklists' },
     { label: 'Analytics Dashboard', path: '/pharmacy/analytics/analytics-dashboard', icon: TrendingUp, description: 'Manage analytics' },
     { label: 'Reports', path: '/pharmacy/reports', icon: BarChart2, description: 'Manage reports' },

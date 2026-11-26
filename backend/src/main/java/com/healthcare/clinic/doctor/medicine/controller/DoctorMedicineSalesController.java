@@ -85,44 +85,44 @@ public class DoctorMedicineSalesController {
         return ResponseEntity.ok(salesService.getPatientRecommendations(patientUserId));
     }
 
-    @GetMapping("/api/patient/medicine-orders")
-    @PreAuthorize("hasAuthority('ROLE_PATIENT') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
+    @GetMapping({"/api/patient/medicine-orders", "/api/patient/medicines/my-orders"})
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<MedicineOrderResponseDto>> getPatientMedicineOrders() {
         Long patientUserId = SecurityUtils.getCurrentUserId();
-        return ResponseEntity.ok(salesService.getPatientRecommendations(patientUserId));
+        return ResponseEntity.ok(salesService.getPatientMedicineOrders(patientUserId));
     }
 
     @PostMapping("/api/patient/medicine-orders/{id}/cart")
-    @PreAuthorize("hasAuthority('ROLE_PATIENT') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<MedicineOrderResponseDto> addRecommendationToCart(@PathVariable Long id) {
         Long patientUserId = SecurityUtils.getCurrentUserId();
         return ResponseEntity.ok(salesService.addRecommendationToCart(id, patientUserId));
     }
 
     @PostMapping("/api/medicine-orders/{id}/checkout")
-    @PreAuthorize("hasAuthority('ROLE_PATIENT') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<MedicineOrderResponseDto> checkoutOrder(@PathVariable Long id) {
         Long patientUserId = SecurityUtils.getCurrentUserId();
         return ResponseEntity.ok(salesService.checkoutOrder(id, patientUserId));
     }
 
     @PostMapping("/api/medicine-orders/{id}/payment")
-    @PreAuthorize("hasAuthority('ROLE_PATIENT') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<MedicineOrderResponseDto> processPayment(@PathVariable Long id) {
         Long patientUserId = SecurityUtils.getCurrentUserId();
         return ResponseEntity.ok(salesService.processPayment(id, patientUserId));
     }
 
     // ── Pharmacy Fulfillment Endpoints ─────────────────────────────────────────
-    @GetMapping("/api/pharmacy/medicine-orders")
-    @PreAuthorize("hasAuthority('ROLE_PHARMACIST') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_DOCTOR')")
+    @GetMapping({"/api/pharmacy/medicine-orders", "/api/pharmacy/orders"})
+    @PreAuthorize("hasAnyAuthority('ROLE_PHARMACIST','PHARMACIST','ROLE_PHARMACY_STAFF','PHARMACY_STAFF','ROLE_SUPERVISOR','SUPERVISOR','ROLE_SYSTEM_ADMIN','SYSTEM_ADMIN','ROLE_ADMIN','ADMIN','ROLE_SUPER_ADMIN','SUPER_ADMIN','ROLE_DOCTOR','DOCTOR','ROLE_STOREKEEPER')")
     public ResponseEntity<List<MedicineOrderResponseDto>> getPharmacyMedicineOrders(
             @RequestParam(required = false) String status) {
         return ResponseEntity.ok(salesService.getPharmacyOrders(status));
     }
 
-    @PutMapping("/api/pharmacy/medicine-orders/{id}/status")
-    @PreAuthorize("hasAuthority('ROLE_PHARMACIST') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
+    @PutMapping({"/api/pharmacy/medicine-orders/{id}/status", "/api/pharmacy/orders/{id}/status"})
+    @PreAuthorize("hasAnyAuthority('ROLE_PHARMACIST','PHARMACIST','ROLE_PHARMACY_STAFF','PHARMACY_STAFF','ROLE_SUPERVISOR','SUPERVISOR','ROLE_SYSTEM_ADMIN','SYSTEM_ADMIN','ROLE_ADMIN','ADMIN','ROLE_SUPER_ADMIN','SUPER_ADMIN','ROLE_DOCTOR','DOCTOR','ROLE_STOREKEEPER')")
     public ResponseEntity<MedicineOrderResponseDto> updatePharmacyOrderStatus(
             @PathVariable Long id,
             @RequestBody Map<String, String> payload) {

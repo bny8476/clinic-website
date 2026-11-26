@@ -25,6 +25,7 @@ const MedicineMaster = lazy(() => import('./MedicineMaster'));
 const MedicineReturns = lazy(() => import('./MedicineReturns'));
 const MedicineStock = lazy(() => import('./MedicineStock'));
 const Narcotics = lazy(() => import('./Narcotics'));
+const PatientMedicineOrdersPage = lazy(() => import('./PatientMedicineOrdersPage'));
 const Patients = lazy(() => import('./Patients'));
 const PendingIndentPrescriptions = lazy(() => import('./PendingIndentPrescriptions'));
 const PendingPharmacyReplacement = lazy(() => import('./PendingPharmacyReplacement'));
@@ -83,6 +84,8 @@ export const PharmacyRoutes = [
   <Route key="MedicineReturns" path="medicine-returns" element={<Suspense fallback={<LoadingFallback />}><MedicineReturns /></Suspense>} />,
   <Route key="MedicineStock" path="medicine-stock" element={<Suspense fallback={<LoadingFallback />}><MedicineStock /></Suspense>} />,
   <Route key="Narcotics" path="narcotics" element={<Suspense fallback={<LoadingFallback />}><Narcotics /></Suspense>} />,
+  <Route key="PatientMedicineOrdersPage" path="patient-orders" element={<Suspense fallback={<LoadingFallback />}><PatientMedicineOrdersPage /></Suspense>} />,
+  <Route key="PatientMedicineOrdersPage-orders" path="orders" element={<Suspense fallback={<LoadingFallback />}><PatientMedicineOrdersPage /></Suspense>} />,
   <Route key="Patients" path="patients" element={<Suspense fallback={<LoadingFallback />}><Patients /></Suspense>} />,
   <Route key="PendingIndentPrescriptions" path="pending-indent-prescriptions" element={<Suspense fallback={<LoadingFallback />}><PendingIndentPrescriptions /></Suspense>} />,
   <Route key="PendingPharmacyReplacement" path="pending-pharmacy-replacement" element={<Suspense fallback={<LoadingFallback />}><PendingPharmacyReplacement /></Suspense>} />,

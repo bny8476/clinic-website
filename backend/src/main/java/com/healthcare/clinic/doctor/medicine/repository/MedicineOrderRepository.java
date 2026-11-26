@@ -15,5 +15,6 @@ public interface MedicineOrderRepository extends JpaRepository<MedicineOrder, Lo
     List<MedicineOrder> findByPatient_UserIdOrderByCreatedAtDesc(Long userId);
     List<MedicineOrder> findByDoctor_UserIdOrderByCreatedAtDesc(Long userId);
     List<MedicineOrder> findByStatusOrderByCreatedAtDesc(com.healthcare.clinic.doctor.medicine.entity.MedicineOrderStatus status);
+    List<MedicineOrder> findByStatusInOrderByCreatedAtDesc(java.util.Collection<com.healthcare.clinic.doctor.medicine.entity.MedicineOrderStatus> statuses);
     List<MedicineOrder> findAllByOrderByCreatedAtDesc();
 }

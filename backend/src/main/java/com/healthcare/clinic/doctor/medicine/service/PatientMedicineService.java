@@ -87,10 +87,14 @@ public class PatientMedicineService {
         if (patientProfileId != null) {
             patient = patientProfileRepository.findById(patientProfileId).orElse(null);
         }
+        if (patient == null && patientProfileId != null) {
+            patient = patientProfileRepository.findByUserId(patientProfileId).orElse(null);
+        }
         if (patient == null) {
             patient = patientProfileRepository.findAll().stream().findFirst().orElse(null);
             if (patient == null) {
-                patient = patientProfileRepository.save(PatientProfile.builder().build());
+                Long safeUserId = patientProfileId != null ? patientProfileId : 1L;
+                patient = patientProfileRepository.save(PatientProfile.builder().userId(safeUserId).build());
             }
         }
 

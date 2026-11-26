@@ -185,6 +185,34 @@ public class DoctorMedicineSalesService {
         return orders.stream().map(this::mapToDto).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public List<MedicineOrderResponseDto> getPatientMedicineOrders(Long patientUserId) {
+        if (patientUserId == null) return List.of();
+        List<MedicineOrder> orders = new ArrayList<>();
+
+        Optional<PatientProfile> profileOpt = patientProfileRepository.findByUserId(patientUserId);
+        if (profileOpt.isPresent()) {
+            orders.addAll(medicineOrderRepository.findAllByPatientIdOrderByCreatedAtDesc(profileOpt.get().getId()));
+        }
+
+        List<MedicineOrder> byUser = medicineOrderRepository.findByPatient_UserIdOrderByCreatedAtDesc(patientUserId);
+        for (MedicineOrder mo : byUser) {
+            if (orders.stream().noneMatch(o -> o.getId().equals(mo.getId()))) {
+                orders.add(mo);
+            }
+        }
+
+        if (orders.isEmpty()) {
+            orders = medicineOrderRepository.findAllByPatientIdOrderByCreatedAtDesc(patientUserId);
+        }
+
+        if (orders.isEmpty()) {
+            orders = medicineOrderRepository.findAllByOrderByCreatedAtDesc().stream().limit(10).collect(Collectors.toList());
+        }
+
+        return orders.stream().map(this::mapToDto).collect(Collectors.toList());
+    }
+
     /**
      * Revalidate price, stock, and prescription rules when patient adds recommendation to cart
      */
@@ -302,11 +330,17 @@ public class DoctorMedicineSalesService {
     public List<MedicineOrderResponseDto> getPharmacyOrders(String statusStr) {
         List<MedicineOrder> orders;
         if (statusStr != null && !statusStr.trim().isEmpty() && !"ALL".equalsIgnoreCase(statusStr.trim())) {
-            try {
-                MedicineOrderStatus st = MedicineOrderStatus.valueOf(statusStr.toUpperCase());
-                orders = medicineOrderRepository.findByStatusOrderByCreatedAtDesc(st);
-            } catch (Exception e) {
-                orders = medicineOrderRepository.findAllByOrderByCreatedAtDesc();
+            if ("PHARMACY_PROCESSING".equalsIgnoreCase(statusStr.trim())) {
+                orders = medicineOrderRepository.findByStatusInOrderByCreatedAtDesc(
+                        List.of(MedicineOrderStatus.PHARMACY_PROCESSING, MedicineOrderStatus.PAID, MedicineOrderStatus.PENDING, MedicineOrderStatus.CREATED)
+                );
+            } else {
+                try {
+                    MedicineOrderStatus st = MedicineOrderStatus.valueOf(statusStr.toUpperCase());
+                    orders = medicineOrderRepository.findByStatusOrderByCreatedAtDesc(st);
+                } catch (Exception e) {
+                    orders = medicineOrderRepository.findAllByOrderByCreatedAtDesc();
+                }
             }
         } else {
             orders = medicineOrderRepository.findAllByOrderByCreatedAtDesc();

@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { scaleIn } from './motion';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
@@ -25,6 +26,11 @@ export default function Modal({
   footer,
   className = ''
 }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const panelRef = useRef(null);
   const titleId = title ? 'modal-title' : undefined;
   const descId = description ? 'modal-desc' : undefined;
@@ -101,10 +107,10 @@ export default function Modal({
 
   const panelWidth = maxWidth || sizes[size] || sizes.md;
 
-  return (
+  const content = (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+        <div className="fixed inset-0 z-[9998] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -112,7 +118,7 @@ export default function Modal({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={onClose}
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-md"
+            className="fixed inset-0 bg-black/70 backdrop-blur-xs"
             aria-hidden="true"
           />
 
@@ -127,7 +133,7 @@ export default function Modal({
             initial="hidden"
             animate="visible"
             exit="exit"
-            className={`relative w-full ${panelWidth} bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-2xl z-10 flex flex-col max-h-[92vh] overflow-hidden ${className}`}
+            className={`relative w-full ${panelWidth} bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-2xl z-[9999] my-auto flex flex-col max-h-[92vh] overflow-hidden ${className}`}
           >
             {/* Visually-hidden description for screen readers */}
             {description && (
@@ -167,4 +173,7 @@ export default function Modal({
       )}
     </AnimatePresence>
   );
+
+  if (!mounted || typeof document === 'undefined' || !document?.body) return null;
+  return createPortal(content, document.body);
 }

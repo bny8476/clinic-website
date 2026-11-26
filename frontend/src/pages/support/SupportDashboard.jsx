@@ -409,33 +409,31 @@ const SupportDashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#fafbfc] p-6 lg:p-10 font-sans">
+    <div className="min-h-screen bg-[#fafbfc] p-4 sm:p-6 lg:p-8 font-sans max-w-[1440px] mx-auto space-y-6">
       
-      {/* ── Top Status Filter Tabs ──────────────────────────────────── */}
-      <div className="max-w-[1400px] mx-auto mb-8 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2.5">
-          {TABS.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setFilterStatus(tab.id)}
-              className={`px-6 py-2.5 rounded-xl text-[13px] font-bold tracking-wide transition-all shadow-2xs cursor-pointer flex items-center gap-2 ${
-                filterStatus === tab.id 
-                  ? 'bg-white text-[#2864FF] border-2 border-[#2864FF]' 
-                  : 'bg-white text-slate-600 border-2 border-transparent hover:bg-slate-50 hover:text-slate-900'
-              }`}
-            >
-              <span>{tab.label}</span>
-              <span className={`px-2 py-0.5 rounded-full text-[11px] font-extrabold ${
-                filterStatus === tab.id ? 'bg-blue-100 text-[#2864FF]' : 'bg-slate-100 text-slate-600'
-              }`}>
-                {tab.count}
+      {/* ── Top Header Area ─────────────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-blue-50 text-[#2864FF] flex items-center justify-center shrink-0 border border-blue-100 shadow-2xs">
+            <Headset className="w-6 h-6 text-[#2864FF]" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2.5">
+              <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight leading-none">
+                Customer Support & Ticket Desk
+              </h1>
+              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-[#2864FF] border border-blue-200">
+                Support Portal
               </span>
-            </button>
-          ))}
+            </div>
+            <p className="text-xs text-slate-500 font-medium mt-1">
+              Manage patient inquiries, support tickets, and chat threads in real time.
+            </p>
+          </div>
         </div>
 
-        {/* Refresh & Reset Actions */}
-        <div className="flex items-center gap-2">
+        {/* Top Header Actions */}
+        <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
           {(activeAdvancedFilterCount > 0 || searchQuery || filterStatus !== 'ALL') && (
             <button
               onClick={handleResetFilters}
@@ -457,473 +455,444 @@ const SupportDashboard = () => {
           >
             <RotateCw size={15} className={isFetching ? 'animate-spin text-[#2864FF]' : ''} />
           </button>
+
+          <button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="flex items-center gap-2 px-5 py-2.5 bg-[#2864FF] hover:bg-blue-600 text-white rounded-xl font-bold text-xs transition shadow-xs cursor-pointer border-none"
+          >
+            <Plus size={16} />
+            <span>New Support Ticket</span>
+          </button>
         </div>
       </div>
 
-      <div className="max-w-[1400px] mx-auto flex flex-col xl:flex-row gap-8">
+      {/* ── Status Metric Cards Row (4 Interactive KPI Cards) ────────── */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {/* All Tickets */}
+        <div
+          onClick={() => setFilterStatus('ALL')}
+          className={`bg-white rounded-2xl p-4 shadow-2xs border transition cursor-pointer relative overflow-hidden ${
+            filterStatus === 'ALL'
+              ? 'border-[#2864FF] ring-2 ring-[#2864FF]/20 bg-blue-50/15'
+              : 'border-slate-200/80 hover:border-slate-300'
+          }`}
+        >
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-xs font-bold text-slate-600">All Tickets</span>
+            <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center">
+              <Headset size={16} />
+            </div>
+          </div>
+          <div className="text-2xl font-black text-slate-900">{totalCount}</div>
+          <div className="text-[11px] text-slate-400 font-medium mt-0.5">Total tickets logged</div>
+          <div className={`absolute bottom-0 left-0 right-0 h-1 bg-[#2864FF] ${filterStatus === 'ALL' ? 'opacity-100' : 'opacity-0'} transition-opacity`}></div>
+        </div>
+
+        {/* Open */}
+        <div
+          onClick={() => setFilterStatus('OPEN')}
+          className={`bg-white rounded-2xl p-4 shadow-2xs border transition cursor-pointer relative overflow-hidden ${
+            filterStatus === 'OPEN'
+              ? 'border-[#2864FF] ring-2 ring-[#2864FF]/20 bg-blue-50/15'
+              : 'border-slate-200/80 hover:border-slate-300'
+          }`}
+        >
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-xs font-bold text-blue-700">Open</span>
+            <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#2864FF] flex items-center justify-center">
+              <HelpCircle size={16} />
+            </div>
+          </div>
+          <div className="text-2xl font-black text-[#2864FF]">{openTicketsCount}</div>
+          <div className="text-[11px] text-slate-400 font-medium mt-0.5">Awaiting agent response</div>
+          <div className={`absolute bottom-0 left-0 right-0 h-1 bg-[#2864FF] ${filterStatus === 'OPEN' ? 'opacity-100' : 'opacity-0'} transition-opacity`}></div>
+        </div>
+
+        {/* In Progress */}
+        <div
+          onClick={() => setFilterStatus('IN_PROGRESS')}
+          className={`bg-white rounded-2xl p-4 shadow-2xs border transition cursor-pointer relative overflow-hidden ${
+            filterStatus === 'IN_PROGRESS'
+              ? 'border-amber-500 ring-2 ring-amber-500/20 bg-amber-50/15'
+              : 'border-slate-200/80 hover:border-slate-300'
+          }`}
+        >
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-xs font-bold text-amber-700">In Progress</span>
+            <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center">
+              <Clock size={16} />
+            </div>
+          </div>
+          <div className="text-2xl font-black text-amber-500">{inProgressCount}</div>
+          <div className="text-[11px] text-slate-400 font-medium mt-0.5">Currently being investigated</div>
+          <div className={`absolute bottom-0 left-0 right-0 h-1 bg-amber-500 ${filterStatus === 'IN_PROGRESS' ? 'opacity-100' : 'opacity-0'} transition-opacity`}></div>
+        </div>
+
+        {/* Resolved */}
+        <div
+          onClick={() => setFilterStatus('RESOLVED')}
+          className={`bg-white rounded-2xl p-4 shadow-2xs border transition cursor-pointer relative overflow-hidden ${
+            filterStatus === 'RESOLVED'
+              ? 'border-emerald-500 ring-2 ring-emerald-500/20 bg-emerald-50/15'
+              : 'border-slate-200/80 hover:border-slate-300'
+          }`}
+        >
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-xs font-bold text-emerald-700">Resolved</span>
+            <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center">
+              <CheckCircle2 size={16} />
+            </div>
+          </div>
+          <div className="text-2xl font-black text-emerald-500">{resolvedCount}</div>
+          <div className="text-[11px] text-slate-400 font-medium mt-0.5">Closed & verified solutions</div>
+          <div className={`absolute bottom-0 left-0 right-0 h-1 bg-emerald-500 ${filterStatus === 'RESOLVED' ? 'opacity-100' : 'opacity-0'} transition-opacity`}></div>
+        </div>
+      </div>
+
+      {/* ── Main Tickets Ledger Card (Full Width with min-w-0) ──────── */}
+      <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-6 sm:p-7 space-y-6">
         
-        {/* ── Left Column: Metrics & Help Desk Card ─────────────────── */}
-        <div className="w-full xl:w-[400px] shrink-0 space-y-6">
+        {/* Top Search & Filter Toolbar */}
+        <div className="flex flex-col sm:flex-row items-center gap-3 relative z-30">
           
-          {/* Header Area */}
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-14 h-14 rounded-[14px] bg-[#F0F5FF] flex items-center justify-center shrink-0 shadow-sm border border-blue-50">
-              <Headset className="w-6 h-6 text-[#2864FF]" />
-            </div>
-            <div>
-              <h1 className="text-[22px] font-extrabold text-slate-900 mb-0.5 tracking-tight">
-                Customer Support & Ticket Desk
-              </h1>
-              <p className="text-[13.5px] font-medium text-slate-500 leading-tight">
-                Manage patient inquiries, support tickets, and chat threads.
-              </p>
-            </div>
+          {/* Search Box */}
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input 
+              type="text" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search tickets by ID, subject, requester, category..." 
+              className="w-full bg-[#F8FAFC] border border-slate-200 rounded-xl pl-11 pr-10 py-2.5 text-xs font-medium focus:ring-2 focus:ring-[#2864FF]/20 focus:outline-none placeholder:text-slate-400 transition"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer border-none bg-transparent"
+              >
+                <X size={15} />
+              </button>
+            )}
           </div>
 
-          {/* Metric Cards Row */}
-          <div className="grid grid-cols-3 gap-4">
-            {/* Open */}
-            <div 
-              onClick={() => setFilterStatus('OPEN')}
-              className={`bg-white rounded-[16px] p-4 shadow-sm border transition cursor-pointer relative overflow-hidden ${
-                filterStatus === 'OPEN' ? 'border-[#2864FF] ring-2 ring-[#2864FF]/20' : 'border-slate-100 hover:border-slate-200'
+          {/* Filter Dropdown Container */}
+          <div className="relative w-full sm:w-auto" ref={filterRef}>
+            <button 
+              type="button"
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
+              className={`flex items-center gap-2 px-4 py-2.5 border rounded-xl font-bold text-xs transition-all w-full sm:w-auto justify-center cursor-pointer shadow-2xs ${
+                activeAdvancedFilterCount > 0 || isFilterOpen
+                  ? 'bg-blue-50 border-[#2864FF] text-[#2864FF] ring-2 ring-[#2864FF]/15'
+                  : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
               }`}
             >
-              <div className="flex justify-between items-start mb-4">
-                <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center">
-                  <HelpCircle size={16} className="text-[#2864FF]" />
-                </div>
-                <span className="text-[8px] font-bold text-slate-400 mt-1 uppercase tracking-wider">Open</span>
-              </div>
-              <div className="text-[26px] font-black text-[#2864FF]">{openTicketsCount}</div>
-              <div className="absolute bottom-4 left-4 right-4 h-[3px] bg-[#2864FF] rounded-full opacity-50"></div>
-            </div>
+              <Filter className="w-3.5 h-3.5" />
+              <span>Filter</span>
+              {activeAdvancedFilterCount > 0 && (
+                <span className="w-4 h-4 rounded-full bg-[#2864FF] text-white text-[10px] font-black flex items-center justify-center">
+                  {activeAdvancedFilterCount}
+                </span>
+              )}
+              <ChevronDown size={14} className={`transition-transform duration-200 ${isFilterOpen ? 'rotate-180' : ''}`} />
+            </button>
 
-            {/* In Progress */}
-            <div 
-              onClick={() => setFilterStatus('IN_PROGRESS')}
-              className={`bg-white rounded-[16px] p-4 shadow-sm border transition cursor-pointer relative overflow-hidden ${
-                filterStatus === 'IN_PROGRESS' ? 'border-amber-500 ring-2 ring-amber-500/20' : 'border-slate-100 hover:border-slate-200'
-              }`}
-            >
-              <div className="flex justify-between items-start mb-4">
-                <div className="w-8 h-8 rounded-full bg-amber-50 flex items-center justify-center">
-                  <Clock size={16} className="text-amber-500" />
+            {/* ── Floating Filter Popover ─────────────────────────── */}
+            {isFilterOpen && (
+              <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-xl border border-slate-200 p-5 z-50 animate-in fade-in zoom-in-95 duration-150">
+                
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+                  <div className="flex items-center gap-2">
+                    <SlidersHorizontal size={16} className="text-[#2864FF]" />
+                    <h4 className="text-sm font-black text-slate-900">Filter Tickets</h4>
+                  </div>
+                  <button
+                    onClick={handleResetFilters}
+                    className="text-xs font-bold text-slate-400 hover:text-rose-600 transition cursor-pointer border-none bg-transparent"
+                  >
+                    Reset All
+                  </button>
                 </div>
-                <span className="text-[8px] font-bold text-slate-400 mt-1 uppercase tracking-wider">In Progress</span>
-              </div>
-              <div className="text-[26px] font-black text-amber-500">{inProgressCount}</div>
-              <div className="absolute bottom-4 left-4 right-4 h-[3px] bg-amber-500 rounded-full opacity-50"></div>
-            </div>
 
-            {/* Resolved */}
-            <div 
-              onClick={() => setFilterStatus('RESOLVED')}
-              className={`bg-white rounded-[16px] p-4 shadow-sm border transition cursor-pointer relative overflow-hidden ${
-                filterStatus === 'RESOLVED' ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-slate-100 hover:border-slate-200'
-              }`}
-            >
-              <div className="flex justify-between items-start mb-4">
-                <div className="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center">
-                  <CheckCircle2 size={16} className="text-emerald-500" />
+                <div className="space-y-4">
+                  {/* Priority Filter */}
+                  <div>
+                    <label className="block text-[11px] font-black uppercase tracking-wider text-slate-500 mb-1.5">
+                      Priority
+                    </label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {['ALL', 'URGENT', 'HIGH', 'MEDIUM', 'LOW'].map(p => (
+                        <button
+                          key={p}
+                          type="button"
+                          onClick={() => setFilterPriority(p)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer border ${
+                            filterPriority === p
+                              ? 'bg-[#2864FF] text-white border-[#2864FF] shadow-2xs'
+                              : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                          }`}
+                        >
+                          {p}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Category Filter */}
+                  <div>
+                    <label className="block text-[11px] font-black uppercase tracking-wider text-slate-500 mb-1.5">
+                      Category
+                    </label>
+                    <select
+                      value={filterCategory}
+                      onChange={(e) => setFilterCategory(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-[#2864FF]/20"
+                    >
+                      <option value="ALL">All Categories</option>
+                      <option value="GENERAL">General Support</option>
+                      <option value="BILLING">Billing & Insurance</option>
+                      <option value="TECHNICAL">Technical & Audio/Video</option>
+                      <option value="APPOINTMENT">Appointments & Booking</option>
+                      <option value="PHARMACY">Pharmacy & Refills</option>
+                      <option value="LABORATORY">Lab Reports & Scans</option>
+                    </select>
+                  </div>
+
+                  {/* Sort Order */}
+                  <div>
+                    <label className="block text-[11px] font-black uppercase tracking-wider text-slate-500 mb-1.5">
+                      Sort Order
+                    </label>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {[
+                        { id: 'newest', label: 'Newest First' },
+                        { id: 'oldest', label: 'Oldest First' },
+                        { id: 'priority-high', label: 'Priority: High' },
+                        { id: 'priority-low', label: 'Priority: Low' }
+                      ].map(s => (
+                        <button
+                          key={s.id}
+                          type="button"
+                          onClick={() => setSortBy(s.id)}
+                          className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition text-center cursor-pointer border ${
+                            sortBy === s.id
+                              ? 'bg-blue-50 text-[#2864FF] border-[#2864FF]'
+                              : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                          }`}
+                        >
+                          {s.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-                <span className="text-[8px] font-bold text-slate-400 mt-1 uppercase tracking-wider">Resolved</span>
+
+                <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-slate-500">
+                    {filteredTickets.length} matching tickets
+                  </span>
+                  <button
+                    onClick={() => setIsFilterOpen(false)}
+                    className="px-4 py-2 rounded-xl bg-[#2864FF] hover:bg-blue-600 text-white text-xs font-bold transition cursor-pointer border-none shadow-2xs"
+                  >
+                    Apply Filters
+                  </button>
+                </div>
+
               </div>
-              <div className="text-[26px] font-black text-emerald-500">{resolvedCount}</div>
-              <div className="absolute bottom-4 left-4 right-4 h-[3px] bg-emerald-500 rounded-full opacity-50"></div>
-            </div>
+            )}
           </div>
 
-          {/* Help Card */}
-          <div className="bg-[#F5F8FF] rounded-[24px] p-8 relative overflow-hidden border border-[#D0E2FF]/30">
-            <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#E8F0FE] rounded-full opacity-60"></div>
-            <div className="absolute top-20 left-10 w-4 h-4 border-2 border-[#D0E2FF] rounded-full"></div>
-            <div className="absolute bottom-20 right-10 w-3 h-3 bg-[#D0E2FF] rounded-full"></div>
-            <div className="absolute top-10 left-5 w-2 h-2 bg-[#D0E2FF] rounded-full"></div>
+          {/* Quick Create CTA inside Toolbar */}
+          <button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="flex items-center gap-1.5 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold text-xs transition-all shadow-2xs cursor-pointer border-none w-full sm:w-auto justify-center shrink-0"
+          >
+            <Plus size={15} />
+            <span>New Ticket</span>
+          </button>
 
-            <div className="relative z-10 flex flex-col items-start">
-              {/* Headset Illustration SVG */}
-              <div className="w-[120px] h-[100px] mb-6 relative ml-4 mt-2">
-                <svg width="120" height="100" viewBox="0 0 120 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M 30 60 C 30 20 90 20 90 60" stroke="#2864FF" strokeWidth="10" strokeLinecap="round" />
-                  <path d="M 30 60 C 30 20 90 20 90 60" stroke="#5C8BFF" strokeWidth="5" strokeLinecap="round" />
-                  <rect x="23" y="50" width="14" height="28" rx="7" fill="#2864FF" />
-                  <rect x="25" y="54" width="5" height="20" rx="2.5" fill="#D0E2FF" />
-                  <rect x="83" y="50" width="14" height="28" rx="7" fill="#2864FF" />
-                  <rect x="89" y="54" width="5" height="20" rx="2.5" fill="#D0E2FF" />
-                  <path d="M 30 75 C 30 85 45 90 55 90" stroke="#5C8BFF" strokeWidth="4" strokeLinecap="round" fill="none" />
-                  <circle cx="55" cy="90" r="3.5" fill="#2864FF" />
-                  <path d="M 85 35 C 85 20 120 20 120 35 C 120 50 85 50 85 50 L 95 35 Z" fill="white" stroke="#E8F0FE" strokeWidth="2" />
-                  <circle cx="95" cy="35" r="2.5" fill="#2864FF" />
-                  <circle cx="102" cy="35" r="2.5" fill="#2864FF" />
-                  <circle cx="109" cy="35" r="2.5" fill="#2864FF" />
+        </div>
+
+        {/* ── Active Filter Chips Row ─────────────────────────────── */}
+        {(activeAdvancedFilterCount > 0 || filterStatus !== 'ALL' || searchQuery) && (
+          <div className="flex items-center gap-2 flex-wrap pb-2 border-b border-slate-100">
+            <span className="text-xs font-bold text-slate-400">Active Filters:</span>
+            
+            {filterStatus !== 'ALL' && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-extrabold bg-blue-50 text-[#2864FF] border border-blue-200">
+                Status: {filterStatus}
+                <button onClick={() => setFilterStatus('ALL')} className="hover:text-blue-800 border-none bg-transparent cursor-pointer p-0">
+                  <X size={12} />
+                </button>
+              </span>
+            )}
+
+            {filterPriority !== 'ALL' && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-extrabold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                Priority: {filterPriority}
+                <button onClick={() => setFilterPriority('ALL')} className="hover:text-indigo-900 border-none bg-transparent cursor-pointer p-0">
+                  <X size={12} />
+                </button>
+              </span>
+            )}
+
+            {filterCategory !== 'ALL' && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-extrabold bg-purple-50 text-purple-700 border border-purple-200">
+                Category: {filterCategory}
+                <button onClick={() => setFilterCategory('ALL')} className="hover:text-purple-900 border-none bg-transparent cursor-pointer p-0">
+                  <X size={12} />
+                </button>
+              </span>
+            )}
+
+            {searchQuery && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-extrabold bg-slate-100 text-slate-700 border border-slate-200">
+                Query: "{searchQuery}"
+                <button onClick={() => setSearchQuery('')} className="hover:text-slate-900 border-none bg-transparent cursor-pointer p-0">
+                  <X size={12} />
+                </button>
+              </span>
+            )}
+
+            <button
+              onClick={handleResetFilters}
+              className="text-xs font-bold text-slate-500 hover:text-rose-600 ml-auto cursor-pointer border-none bg-transparent"
+            >
+              Clear All
+            </button>
+          </div>
+        )}
+
+        {/* ── Empty State ─────────────────────────────────────────── */}
+        {filteredTickets.length === 0 ? (
+          <div className="flex-1 flex flex-col items-center justify-center relative py-12">
+            <div className="relative z-10 flex flex-col items-center text-center max-w-sm">
+              
+              {/* Empty Inbox Illustration */}
+              <div className="relative w-[160px] h-[160px] mb-5 flex items-center justify-center">
+                <div className="absolute inset-0 bg-[#F5F8FF] rounded-full scale-[0.85]"></div>
+                <svg width="100" height="100" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
+                  <path d="M25 45L35 70H85L95 45H25Z" fill="#D0E2FF" stroke="#2864FF" strokeWidth="3" strokeLinejoin="round" />
+                  <path d="M40 70V55C40 52 42 50 45 50H75C78 50 80 52 80 55V70" fill="white" stroke="#2864FF" strokeWidth="3" strokeLinejoin="round" />
+                  <path d="M50 58H70" stroke="#A6C8FF" strokeWidth="2.5" strokeLinecap="round" />
+                  <path d="M50 64H65" stroke="#A6C8FF" strokeWidth="2.5" strokeLinecap="round" />
+                  <path d="M35 70H85C87.7614 70 90 72.2386 90 75V85C90 87.7614 87.7614 90 85 90H35C32.2386 90 30 87.7614 30 85V75C30 72.2386 32.2386 70 35 70Z" fill="#E8F0FE" stroke="#2864FF" strokeWidth="3" strokeLinejoin="round" />
+                  <path d="M50 70C50 75 55 78 60 78C65 78 70 75 70 70" stroke="#2864FF" strokeWidth="3" strokeLinecap="round" />
                 </svg>
               </div>
 
-              <h3 className="text-[17px] font-extrabold text-slate-900 mb-2">We're here to help</h3>
-              <p className="text-[12.5px] font-medium text-slate-500 mb-6 leading-relaxed max-w-[250px]">
-                Create a new ticket, track updates, and resolve patient queries rapidly.
+              <h2 className="text-[19px] font-extrabold text-slate-900 mb-1.5 tracking-tight">
+                {searchQuery || activeAdvancedFilterCount > 0 ? 'No matching tickets found' : 'No tickets on record'}
+              </h2>
+              <p className="text-[13px] text-slate-500 mb-6 font-medium leading-relaxed">
+                {searchQuery || activeAdvancedFilterCount > 0 
+                  ? 'Try clearing your search query or adjusting your priority and category filters.'
+                  : 'There are no active support entries assigned at this time.'}
               </p>
-              
-              <button 
-                onClick={() => setIsCreateModalOpen(true)}
-                className="bg-white border border-[#D0E2FF] text-[#2864FF] hover:bg-[#F0F5FF] hover:border-[#A6C8FF] px-6 py-2.5 rounded-[12px] font-bold text-[13px] flex items-center gap-2 transition-all shadow-xs cursor-pointer"
-              >
-                <Plus className="w-4 h-4" /> New Support Ticket
-              </button>
-            </div>
-          </div>
 
-        </div>
-
-        {/* ── Right Column: Search, Filter Controls & Tickets Ledger ── */}
-        <div className="flex-1">
-          <div className="bg-white rounded-[24px] border border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.03)] p-6 md:p-8 min-h-[700px] flex flex-col relative">
-            
-            {/* Top Toolbar: Search + Interactive Filter Dropdown Button */}
-            <div className="flex flex-col sm:flex-row items-center gap-3 mb-6 relative z-30">
-              
-              {/* Search Box */}
-              <div className="relative flex-1 w-full">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input 
-                  type="text" 
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search tickets by ID, subject, requester, category..." 
-                  className="w-full bg-[#F8FAFC] border border-slate-200 rounded-[12px] pl-11 pr-10 py-3 text-[14px] font-medium focus:ring-2 focus:ring-[#2864FF]/20 focus:outline-none placeholder:text-slate-400 transition"
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery('')}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer border-none bg-transparent"
+              <div className="flex items-center gap-3">
+                {(searchQuery || activeAdvancedFilterCount > 0) ? (
+                  <button 
+                    onClick={handleResetFilters}
+                    className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-6 py-2.5 rounded-xl font-bold text-xs transition cursor-pointer"
                   >
-                    <X size={15} />
+                    Reset Filters
                   </button>
-                )}
-              </div>
-
-              {/* Filter Dropdown Container */}
-              <div className="relative w-full sm:w-auto" ref={filterRef}>
+                ) : null}
+                
                 <button 
-                  type="button"
-                  onClick={() => setIsFilterOpen(!isFilterOpen)}
-                  className={`flex items-center gap-2 px-5 py-3 border rounded-[12px] font-bold text-[13.5px] transition-all w-full sm:w-auto justify-center cursor-pointer shadow-2xs ${
-                    activeAdvancedFilterCount > 0 || isFilterOpen
-                      ? 'bg-blue-50 border-[#2864FF] text-[#2864FF] ring-2 ring-[#2864FF]/15'
-                      : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
-                  }`}
+                  onClick={() => setIsCreateModalOpen(true)}
+                  className="bg-[#2864FF] hover:bg-blue-600 text-white px-6 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 transition shadow-md cursor-pointer border-none"
                 >
-                  <Filter className="w-4 h-4" />
-                  <span>Filter</span>
-                  {activeAdvancedFilterCount > 0 && (
-                    <span className="w-5 h-5 rounded-full bg-[#2864FF] text-white text-[11px] font-black flex items-center justify-center">
-                      {activeAdvancedFilterCount}
-                    </span>
-                  )}
-                  <ChevronDown size={14} className={`transition-transform duration-200 ${isFilterOpen ? 'rotate-180' : ''}`} />
+                  <Plus className="w-4 h-4" /> Create New Ticket
                 </button>
-
-                {/* ── Floating Filter Popover ─────────────────────────── */}
-                {isFilterOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-xl border border-slate-200 p-5 z-50 animate-in fade-in zoom-in-95 duration-150">
-                    
-                    <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-                      <div className="flex items-center gap-2">
-                        <SlidersHorizontal size={16} className="text-[#2864FF]" />
-                        <h4 className="text-sm font-black text-slate-900">Filter Tickets</h4>
-                      </div>
-                      <button
-                        onClick={handleResetFilters}
-                        className="text-xs font-bold text-slate-400 hover:text-rose-600 transition cursor-pointer border-none bg-transparent"
-                      >
-                        Reset All
-                      </button>
-                    </div>
-
-                    <div className="space-y-4">
-                      {/* Priority Filter */}
-                      <div>
-                        <label className="block text-[11px] font-black uppercase tracking-wider text-slate-500 mb-1.5">
-                          Priority
-                        </label>
-                        <div className="flex flex-wrap gap-1.5">
-                          {['ALL', 'URGENT', 'HIGH', 'MEDIUM', 'LOW'].map(p => (
-                            <button
-                              key={p}
-                              type="button"
-                              onClick={() => setFilterPriority(p)}
-                              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer border ${
-                                filterPriority === p
-                                  ? 'bg-[#2864FF] text-white border-[#2864FF] shadow-2xs'
-                                  : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
-                              }`}
-                            >
-                              {p}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Category Filter */}
-                      <div>
-                        <label className="block text-[11px] font-black uppercase tracking-wider text-slate-500 mb-1.5">
-                          Category
-                        </label>
-                        <select
-                          value={filterCategory}
-                          onChange={(e) => setFilterCategory(e.target.value)}
-                          className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-[#2864FF]/20"
-                        >
-                          <option value="ALL">All Categories</option>
-                          <option value="GENERAL">General Support</option>
-                          <option value="BILLING">Billing & Insurance</option>
-                          <option value="TECHNICAL">Technical & Audio/Video</option>
-                          <option value="APPOINTMENT">Appointments & Booking</option>
-                          <option value="PHARMACY">Pharmacy & Refills</option>
-                          <option value="LABORATORY">Lab Reports & Scans</option>
-                        </select>
-                      </div>
-
-                      {/* Sort Order */}
-                      <div>
-                        <label className="block text-[11px] font-black uppercase tracking-wider text-slate-500 mb-1.5">
-                          Sort Order
-                        </label>
-                        <div className="grid grid-cols-2 gap-1.5">
-                          {[
-                            { id: 'newest', label: 'Newest First' },
-                            { id: 'oldest', label: 'Oldest First' },
-                            { id: 'priority-high', label: 'Priority: High' },
-                            { id: 'priority-low', label: 'Priority: Low' }
-                          ].map(s => (
-                            <button
-                              key={s.id}
-                              type="button"
-                              onClick={() => setSortBy(s.id)}
-                              className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition text-center cursor-pointer border ${
-                                sortBy === s.id
-                                  ? 'bg-blue-50 text-[#2864FF] border-[#2864FF]'
-                                  : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
-                              }`}
-                            >
-                              {s.label}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-slate-500">
-                        {filteredTickets.length} matching tickets
-                      </span>
-                      <button
-                        onClick={() => setIsFilterOpen(false)}
-                        className="px-4 py-2 rounded-xl bg-[#2864FF] hover:bg-blue-600 text-white text-xs font-bold transition cursor-pointer border-none shadow-2xs"
-                      >
-                        Apply Filters
-                      </button>
-                    </div>
-
-                  </div>
-                )}
               </div>
-
-              {/* Create Ticket CTA */}
-              <button
-                onClick={() => setIsCreateModalOpen(true)}
-                className="flex items-center gap-2 px-5 py-3 bg-[#2864FF] hover:bg-blue-600 text-white rounded-[12px] font-bold text-[13.5px] transition-all shadow-md cursor-pointer border-none w-full sm:w-auto justify-center shrink-0"
-              >
-                <Plus size={16} />
-                <span>New Ticket</span>
-              </button>
 
             </div>
-
-            {/* ── Active Filter Chips Row ─────────────────────────────── */}
-            {(activeAdvancedFilterCount > 0 || filterStatus !== 'ALL' || searchQuery) && (
-              <div className="flex items-center gap-2 flex-wrap mb-4 pb-2 border-b border-slate-100">
-                <span className="text-xs font-bold text-slate-400">Active Filters:</span>
-                
-                {filterStatus !== 'ALL' && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-extrabold bg-blue-50 text-[#2864FF] border border-blue-200">
-                    Status: {filterStatus}
-                    <button onClick={() => setFilterStatus('ALL')} className="hover:text-blue-800 border-none bg-transparent cursor-pointer p-0">
-                      <X size={12} />
-                    </button>
-                  </span>
-                )}
-
-                {filterPriority !== 'ALL' && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-extrabold bg-indigo-50 text-indigo-700 border border-indigo-200">
-                    Priority: {filterPriority}
-                    <button onClick={() => setFilterPriority('ALL')} className="hover:text-indigo-900 border-none bg-transparent cursor-pointer p-0">
-                      <X size={12} />
-                    </button>
-                  </span>
-                )}
-
-                {filterCategory !== 'ALL' && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-extrabold bg-purple-50 text-purple-700 border border-purple-200">
-                    Category: {filterCategory}
-                    <button onClick={() => setFilterCategory('ALL')} className="hover:text-purple-900 border-none bg-transparent cursor-pointer p-0">
-                      <X size={12} />
-                    </button>
-                  </span>
-                )}
-
-                {searchQuery && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-extrabold bg-slate-100 text-slate-700 border border-slate-200">
-                    Query: "{searchQuery}"
-                    <button onClick={() => setSearchQuery('')} className="hover:text-slate-900 border-none bg-transparent cursor-pointer p-0">
-                      <X size={12} />
-                    </button>
-                  </span>
-                )}
-
-                <button
-                  onClick={handleResetFilters}
-                  className="text-xs font-bold text-slate-500 hover:text-rose-600 ml-auto cursor-pointer border-none bg-transparent"
-                >
-                  Clear All
-                </button>
-              </div>
-            )}
-
-            {/* ── Empty State ─────────────────────────────────────────── */}
-            {filteredTickets.length === 0 ? (
-              <div className="flex-1 flex flex-col items-center justify-center relative py-12">
-                <div className="relative z-10 flex flex-col items-center text-center max-w-sm">
-                  
-                  {/* Empty Inbox Illustration */}
-                  <div className="relative w-[160px] h-[160px] mb-5 flex items-center justify-center">
-                    <div className="absolute inset-0 bg-[#F5F8FF] rounded-full scale-[0.85]"></div>
-                    <svg width="100" height="100" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
-                      <path d="M25 45L35 70H85L95 45H25Z" fill="#D0E2FF" stroke="#2864FF" strokeWidth="3" strokeLinejoin="round" />
-                      <path d="M40 70V55C40 52 42 50 45 50H75C78 50 80 52 80 55V70" fill="white" stroke="#2864FF" strokeWidth="3" strokeLinejoin="round" />
-                      <path d="M50 58H70" stroke="#A6C8FF" strokeWidth="2.5" strokeLinecap="round" />
-                      <path d="M50 64H65" stroke="#A6C8FF" strokeWidth="2.5" strokeLinecap="round" />
-                      <path d="M35 70H85C87.7614 70 90 72.2386 90 75V85C90 87.7614 87.7614 90 85 90H35C32.2386 90 30 87.7614 30 85V75C30 72.2386 32.2386 70 35 70Z" fill="#E8F0FE" stroke="#2864FF" strokeWidth="3" strokeLinejoin="round" />
-                      <path d="M50 70C50 75 55 78 60 78C65 78 70 75 70 70" stroke="#2864FF" strokeWidth="3" strokeLinecap="round" />
-                    </svg>
-                  </div>
-
-                  <h2 className="text-[19px] font-extrabold text-slate-900 mb-1.5 tracking-tight">
-                    {searchQuery || activeAdvancedFilterCount > 0 ? 'No matching tickets found' : 'No tickets on record'}
-                  </h2>
-                  <p className="text-[13px] text-slate-500 mb-6 font-medium leading-relaxed">
-                    {searchQuery || activeAdvancedFilterCount > 0 
-                      ? 'Try clearing your search query or adjusting your priority and category filters.'
-                      : 'There are no active support entries assigned at this time.'}
-                  </p>
-
-                  <div className="flex items-center gap-3">
-                    {(searchQuery || activeAdvancedFilterCount > 0) ? (
-                      <button 
-                        onClick={handleResetFilters}
-                        className="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-6 py-2.5 rounded-[12px] font-bold text-[13px] transition cursor-pointer"
-                      >
-                        Reset Filters
-                      </button>
-                    ) : null}
-                    
-                    <button 
-                      onClick={() => setIsCreateModalOpen(true)}
-                      className="bg-[#2864FF] hover:bg-blue-600 text-white px-6 py-2.5 rounded-[12px] font-bold text-[13px] flex items-center gap-2 transition shadow-md cursor-pointer border-none"
-                    >
-                      <Plus className="w-4 h-4" /> Create New Ticket
-                    </button>
-                  </div>
-
-                </div>
-              </div>
-            ) : (
-              /* ── Tickets Data Table ─────────────────────────────────── */
-              <div className="flex-1 overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-black uppercase tracking-wider text-slate-400">
-                      <th className="px-5 py-3.5">Ticket ID</th>
-                      <th className="px-5 py-3.5">Requester</th>
-                      <th className="px-5 py-3.5">Subject & Category</th>
-                      <th className="px-5 py-3.5">Priority</th>
-                      <th className="px-5 py-3.5">Status</th>
-                      <th className="px-5 py-3.5">Created Date</th>
-                      <th className="px-5 py-3.5 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 text-xs">
-                    {filteredTickets.map(ticket => {
-                      const requester = ticket.requesterName || 
-                        (ticket.user?.firstName ? `${ticket.user.firstName} ${ticket.user.lastName || ''}`.trim() : null) || 
-                        ticket.guestEmail || 
-                        'Patient';
-
-                      return (
-                        <tr 
-                          key={ticket.id} 
-                          className="hover:bg-blue-50/30 transition-colors group cursor-pointer"
-                          onClick={() => setSelectedTicket(ticket)}
-                        >
-                          <td className="px-5 py-4 font-mono font-bold text-slate-500 whitespace-nowrap">
-                            #{ticket.ticketNumber || ticket.id}
-                          </td>
-                          <td className="px-5 py-4">
-                            <p className="font-extrabold text-slate-900 flex items-center gap-1.5">
-                              <User size={13} className="text-slate-400" />
-                              <span>{requester}</span>
-                            </p>
-                            {ticket.requesterEmail && (
-                              <p className="text-[11px] text-slate-400 font-mono mt-0.5">{ticket.requesterEmail}</p>
-                            )}
-                          </td>
-                          <td className="px-5 py-4 max-w-sm">
-                            <p className="font-bold text-slate-800 line-clamp-1 group-hover:text-[#2864FF] transition">
-                              {ticket.subject}
-                            </p>
-                            <span className="inline-block mt-1 text-[10px] font-extrabold px-2 py-0.5 rounded bg-slate-100 text-slate-600">
-                              {ticket.category || 'GENERAL'}
-                            </span>
-                          </td>
-                          <td className="px-5 py-4 whitespace-nowrap">
-                            {renderPriorityBadge(ticket.priority)}
-                          </td>
-                          <td className="px-5 py-4 whitespace-nowrap">
-                            {renderStatusBadge(ticket.status)}
-                          </td>
-                          <td className="px-5 py-4 whitespace-nowrap text-slate-500 font-medium">
-                            {ticket.createdAt ? new Date(ticket.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recent'}
-                          </td>
-                          <td className="px-5 py-4 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                            <div className="flex items-center justify-end gap-2">
-                              <button
-                                onClick={() => setSelectedTicket(ticket)}
-                                className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-blue-50 hover:border-blue-200 text-[#2864FF] text-xs font-bold transition cursor-pointer"
-                              >
-                                View / Chat
-                              </button>
-                              {ticket.status !== 'RESOLVED' && ticket.status !== 'CLOSED' && (
-                                <button
-                                  onClick={() => updateStatusMutation.mutate({ ticketId: ticket.id, status: 'RESOLVED' })}
-                                  disabled={updateStatusMutation.isPending}
-                                  className="px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold transition cursor-pointer"
-                                >
-                                  Resolve
-                                </button>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-
           </div>
-        </div>
+        ) : (
+          /* ── Tickets Data Table ─────────────────────────────────── */
+          <div className="overflow-x-auto w-full rounded-2xl border border-slate-100">
+            <table className="w-full text-left border-collapse min-w-[850px]">
+              <thead>
+                <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-black uppercase tracking-wider text-slate-500">
+                  <th className="px-5 py-3.5">Ticket ID</th>
+                  <th className="px-5 py-3.5">Requester</th>
+                  <th className="px-5 py-3.5">Subject & Category</th>
+                  <th className="px-5 py-3.5">Priority</th>
+                  <th className="px-5 py-3.5">Status</th>
+                  <th className="px-5 py-3.5">Created Date</th>
+                  <th className="px-5 py-3.5 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-xs">
+                {filteredTickets.map(ticket => {
+                  const requester = ticket.requesterName || 
+                    (ticket.user?.firstName ? `${ticket.user.firstName} ${ticket.user.lastName || ''}`.trim() : null) || 
+                    ticket.guestEmail || 
+                    'Patient';
+
+                  return (
+                    <tr 
+                      key={ticket.id} 
+                      className="hover:bg-blue-50/30 transition-colors group cursor-pointer"
+                      onClick={() => setSelectedTicket(ticket)}
+                    >
+                      <td className="px-5 py-4 font-mono font-bold text-slate-600 whitespace-nowrap">
+                        #{ticket.ticketNumber || ticket.id}
+                      </td>
+                      <td className="px-5 py-4">
+                        <p className="font-extrabold text-slate-900 flex items-center gap-1.5">
+                          <User size={13} className="text-slate-400" />
+                          <span>{requester}</span>
+                        </p>
+                        {ticket.requesterEmail && (
+                          <p className="text-[11px] text-slate-400 font-mono mt-0.5">{ticket.requesterEmail}</p>
+                        )}
+                      </td>
+                      <td className="px-5 py-4 max-w-sm">
+                        <p className="font-bold text-slate-800 line-clamp-1 group-hover:text-[#2864FF] transition">
+                          {ticket.subject}
+                        </p>
+                        <span className="inline-block mt-1 text-[10px] font-extrabold px-2 py-0.5 rounded bg-slate-100 text-slate-600">
+                          {ticket.category || 'GENERAL'}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        {renderPriorityBadge(ticket.priority)}
+                      </td>
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        {renderStatusBadge(ticket.status)}
+                      </td>
+                      <td className="px-5 py-4 whitespace-nowrap text-slate-500 font-medium">
+                        {ticket.createdAt ? new Date(ticket.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recent'}
+                      </td>
+                      <td className="px-5 py-4 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => setSelectedTicket(ticket)}
+                            className="px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-blue-50 hover:border-blue-200 text-[#2864FF] text-xs font-bold transition cursor-pointer"
+                          >
+                            View / Chat
+                          </button>
+                          {ticket.status !== 'RESOLVED' && ticket.status !== 'CLOSED' && (
+                            <button
+                              onClick={() => updateStatusMutation.mutate({ ticketId: ticket.id, status: 'RESOLVED' })}
+                              disabled={updateStatusMutation.isPending}
+                              className="px-3.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold transition cursor-pointer"
+                            >
+                              Resolve
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
 
       </div>
 
