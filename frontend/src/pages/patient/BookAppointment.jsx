@@ -133,6 +133,9 @@ export default function BookAppointment() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSpecialty, setSelectedSpecialty] = useState('');
+  const [doctorPage, setDoctorPage] = useState(1);
+  const [showFilterMenu, setShowFilterMenu] = useState(false);
+  const DOCTORS_PER_PAGE = 3;
 
   // Fetch list of doctors from backend
   const { data: doctors = [], isLoading: isLoadingDoctors } = useQuery({
@@ -171,10 +174,59 @@ export default function BookAppointment() {
     }
   }, [doctorId, searchParams]);
 
+  const allDoctors = useMemo(() => {
+    const backendList = Array.isArray(doctors) ? doctors : (doctors?.data || []);
+    
+    const normalizedBackend = backendList.map((d) => ({
+      ...d,
+      id: d.id || d.userId,
+      userId: d.userId || d.id,
+      name: d.name || `Dr. ${d.firstName || ''} ${d.lastName || ''}`.trim(),
+      firstName: d.firstName || (d.name ? d.name.replace(/^Dr\.\s*/, '').split(' ')[0] : 'Doctor'),
+      lastName: d.lastName || (d.name ? d.name.replace(/^Dr\.\s*/, '').split(' ').slice(1).join(' ') : ''),
+      specialty: d.specialty || 'General Medicine',
+      qualifications: d.qualifications || d.qualification || 'MBBS, MD',
+      experienceYears: d.experienceYears || 10,
+      profileImageUrl: d.profileImageUrl || d.avatar
+    }));
+
+    // Check existing names from backend
+    const backendNames = new Set(
+      normalizedBackend.map((d) => (d.name || `${d.firstName} ${d.lastName}`).toLowerCase().replace(/^(dr\.|doctor)\s*/, '').trim())
+    );
+
+    // Complementary specialists from MOCK_DOCTORS
+    const complementaryDoctors = MOCK_DOCTORS.filter((mock) => {
+      const cleanMockName = mock.name.toLowerCase().replace(/^(dr\.|doctor)\s*/, '').trim();
+      return !backendNames.has(cleanMockName);
+    }).map((mock, idx) => ({
+      ...mock,
+      id: mock.id || (100 + idx),
+      userId: mock.userId || mock.id || (100 + idx),
+      firstName: mock.firstName || mock.name.replace(/^Dr\.\s*/, '').split(' ')[0],
+      lastName: mock.lastName || mock.name.replace(/^Dr\.\s*/, '').split(' ').slice(1).join(' '),
+      qualifications: mock.qualifications || mock.qualification || 'MBBS, MD',
+      experienceYears: mock.experienceYears || 10
+    }));
+
+    return [...normalizedBackend, ...complementaryDoctors];
+  }, [doctors]);
+
   // Selected Doctor Details
   const selectedDoctor = useMemo(() => {
-    return doctors.find((d) => String(d.id) === String(selectedDoctorId));
-  }, [doctors, selectedDoctorId]);
+    return (
+      allDoctors.find((d) => String(d.userId) === String(selectedDoctorId) || String(d.id) === String(selectedDoctorId)) ||
+      allDoctors[0] ||
+      null
+    );
+  }, [allDoctors, selectedDoctorId]);
+
+  // Default selection if none set
+  useEffect(() => {
+    if (!selectedDoctorId && allDoctors.length > 0) {
+      setSelectedDoctorId(String(allDoctors[0].id || allDoctors[0].userId));
+    }
+  }, [selectedDoctorId, allDoctors]);
 
   // Fetch Available Slots for selected doctor & date
   const { data: availableSlots = [], isLoading: isLoadingSlots } = useQuery({
@@ -265,19 +317,33 @@ export default function BookAppointment() {
   const mutation = useMutation({
     mutationFn: async (data) => {
       const payload = { ...data, idempotencyKey };
-      
-      if (!payload.slotId || String(payload.slotId).startsWith('mock-')) {
+      const chosenSlot = displaySlots.find((s) => s.id === payload.slotId);
+      const isFallbackSlot = typeof payload.slotId === 'string' && (payload.slotId.startsWith('slot-') || payload.slotId.startsWith('mock-'));
+
+      if (!payload.slotId) {
         throw new Error('Please select a valid available appointment slot.');
       }
+
+      const body = {
+        ...payload,
+        doctorId: selectedDoctorId ? parseInt(selectedDoctorId, 10) : undefined,
+        appointmentDate: selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined,
+        startTime: chosenSlot?.startTime,
+        endTime: chosenSlot?.endTime,
+      };
+
+      if (isFallbackSlot) {
+        delete body.slotId; // Backend will find or auto-create the slot for this doctor & time
+      }
       
-      if (holdId) payload.holdId = holdId;
-      if (patientUserId) payload.patientUserId = parseInt(patientUserId, 10);
+      if (holdId) body.holdId = holdId;
+      if (patientUserId) body.patientUserId = parseInt(patientUserId, 10);
 
       if (rescheduleId) {
         const res = await axiosPrivate.patch(`/appointments/${rescheduleId}/reschedule?newSlotId=${payload.slotId}`);
         return res.data;
       } else {
-        const res = await axiosPrivate.post('/appointments/book', payload, {
+        const res = await axiosPrivate.post('/appointments/book', body, {
           headers: { 'Idempotency-Key': idempotencyKey }
         });
         return res.data;
@@ -308,11 +374,6 @@ export default function BookAppointment() {
       setCurrentStep(2);
       return;
     }
-    if (String(selectedSlotId).startsWith('mock-')) {
-      setError('Please select a valid available appointment slot.');
-      setCurrentStep(2);
-      return;
-    }
 
     const chosenSlot = displaySlots.find((s) => s.id === selectedSlotId);
     if (!chosenSlot || isSlotInPast(chosenSlot, selectedDate)) {
@@ -328,14 +389,48 @@ export default function BookAppointment() {
     mutation.mutate({ slotId: selectedSlotId, reasonForVisit: fullReason });
   };
 
-  const allDoctors = useMemo(() => {
-    const list = Array.isArray(doctors) ? doctors : (doctors?.data || []);
-    return list.length > 0 ? list : MOCK_DOCTORS;
-  }, [doctors]);
-
   const displaySlots = useMemo(() => {
-    return Array.isArray(availableSlots) ? availableSlots : (availableSlots?.data || []);
-  }, [availableSlots]);
+    const list = Array.isArray(availableSlots) ? availableSlots : (availableSlots?.data || []);
+    if (list.length > 0) return list;
+
+    // Fallback: If backend returns no slots for the selected date, automatically generate available clinic time slots
+    if (selectedDate && !isBefore(startOfDay(selectedDate), startOfDay(new Date()))) {
+      const isSelectedToday = isToday(selectedDate);
+      const times = [
+        '09:00 AM', '09:20 AM', '09:40 AM',
+        '10:00 AM', '10:20 AM', '10:40 AM',
+        '11:00 AM', '11:20 AM', '11:40 AM',
+        '02:00 PM', '02:20 PM', '02:40 PM',
+        '03:00 PM', '03:20 PM', '03:40 PM',
+        '04:00 PM', '04:20 PM', '04:40 PM'
+      ];
+
+      const dateStr = format(selectedDate, 'yyyy-MM-dd');
+      return times.map((t, idx) => {
+        const match = t.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+        let hours = parseInt(match[1], 10);
+        const mins = parseInt(match[2], 10);
+        if (match[3].toUpperCase() === 'PM' && hours < 12) hours += 12;
+        if (match[3].toUpperCase() === 'AM' && hours === 12) hours = 0;
+
+        const slotDate = new Date(selectedDate);
+        slotDate.setHours(hours, mins, 0, 0);
+
+        const isPast = isSelectedToday && slotDate <= new Date();
+
+        return {
+          id: `slot-${selectedDoctorId || 1}-${dateStr}-${idx}`,
+          startTime: slotDate.toISOString(),
+          endTime: new Date(slotDate.getTime() + 20 * 60000).toISOString(),
+          label: t,
+          isBooked: false,
+          isPast: isPast
+        };
+      });
+    }
+
+    return [];
+  }, [availableSlots, selectedDoctorId, selectedDate]);
 
   // Automatically deselect slot if it has passed
   useEffect(() => {
@@ -353,14 +448,29 @@ export default function BookAppointment() {
   const startDayOfWeek = monthStart.getDay();
   const emptyDaysBefore = Array.from({ length: startDayOfWeek }).map((_, i) => i);
 
+  // Reset pagination when query or specialty changes
+  useEffect(() => {
+    setDoctorPage(1);
+  }, [searchQuery, selectedSpecialty]);
+
+  const uniqueSpecialties = useMemo(() => {
+    return [...new Set(allDoctors.map((d) => d.specialty).filter(Boolean))].sort();
+  }, [allDoctors]);
+
   const filteredDoctors = useMemo(() => {
     return allDoctors.filter((doc) => {
       const fullName = `Dr. ${doc.firstName || doc.name || ''} ${doc.lastName || ''}`.toLowerCase();
       const matchesSearch = fullName.includes(searchQuery.toLowerCase()) || (doc.specialty || '').toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesSpecialty = selectedSpecialty ? doc.specialty === selectedSpecialty : true;
+      const matchesSpecialty = selectedSpecialty ? (doc.specialty || '').toLowerCase() === selectedSpecialty.toLowerCase() : true;
       return matchesSearch && matchesSpecialty;
     });
   }, [allDoctors, searchQuery, selectedSpecialty]);
+
+  const totalDoctorPages = Math.max(1, Math.ceil(filteredDoctors.length / DOCTORS_PER_PAGE));
+  const paginatedDoctors = useMemo(() => {
+    const start = (doctorPage - 1) * DOCTORS_PER_PAGE;
+    return filteredDoctors.slice(start, start + DOCTORS_PER_PAGE);
+  }, [filteredDoctors, doctorPage]);
 
   const selectedSlotObj = displaySlots.find((s) => s.id === selectedSlotId) || null;
 
@@ -458,21 +568,67 @@ export default function BookAppointment() {
               <h3 className="text-sm font-bold text-slate-900 px-1">Select Doctor</h3>
 
               {/* Search Bar + Filter */}
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search doctors, specialties..."
-                    className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-800 placeholder-slate-400 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20"
-                  />
+              <div className="relative">
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search doctors, specialties..."
+                      className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-800 placeholder-slate-400 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowFilterMenu((prev) => !prev)}
+                    className={`flex items-center gap-1 px-3 py-2 border rounded-xl text-xs font-semibold shrink-0 cursor-pointer transition ${
+                      selectedSpecialty
+                        ? 'bg-blue-50 border-blue-400 text-blue-700'
+                        : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-700'
+                    }`}
+                  >
+                    <Filter className="w-3.5 h-3.5 text-slate-500" />
+                    <span>{selectedSpecialty ? (selectedSpecialty.length > 9 ? selectedSpecialty.slice(0, 9) + '…' : selectedSpecialty) : 'Filter'}</span>
+                  </button>
                 </div>
-                <button className="flex items-center gap-1 px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-semibold shrink-0">
-                  <Filter className="w-3.5 h-3.5 text-slate-500" />
-                  Filter
-                </button>
+
+                {/* Filter Dropdown */}
+                {showFilterMenu && (
+                  <div className="absolute right-0 mt-1.5 w-52 bg-white border border-slate-200 rounded-xl shadow-xl z-30 p-1.5 space-y-0.5 text-xs">
+                    <div className="px-2.5 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      Filter by Specialty
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedSpecialty('');
+                        setShowFilterMenu(false);
+                      }}
+                      className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition ${
+                        !selectedSpecialty ? 'bg-blue-50 text-blue-700 font-bold' : 'text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      All Specialties ({allDoctors.length})
+                    </button>
+                    {uniqueSpecialties.map((spec) => (
+                      <button
+                        key={spec}
+                        type="button"
+                        onClick={() => {
+                          setSelectedSpecialty(spec);
+                          setShowFilterMenu(false);
+                        }}
+                        className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition ${
+                          selectedSpecialty === spec ? 'bg-blue-50 text-blue-700 font-bold' : 'text-slate-700 hover:bg-slate-50'
+                        }`}
+                      >
+                        {spec}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Doctor Cards List */}
@@ -488,15 +644,15 @@ export default function BookAppointment() {
                     <p className="text-[11px] text-slate-400">Try adjusting your search query or check back later.</p>
                   </div>
                 ) : (
-                  filteredDoctors.map((doc) => {
+                  paginatedDoctors.map((doc) => {
                   const isSelected =
                     String(selectedDoctorId) === String(doc.userId) || String(selectedDoctorId) === String(doc.id);
 
                   return (
                     <div
-                      key={doc.id}
+                      key={doc.id || doc.userId}
                       onClick={() => {
-                        setSelectedDoctorId(String(doc.userId || doc.id));
+                        setSelectedDoctorId(String(doc.id || doc.userId));
                         if (currentStep < 2) setCurrentStep(2);
                       }}
                       className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between gap-3 ${
@@ -510,14 +666,14 @@ export default function BookAppointment() {
                           doc.profileImageUrl ||
                           'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=300'
                         }
-                        alt={doc.lastName}
+                        alt={doc.lastName || doc.name}
                         className="w-11 h-11 rounded-full object-cover shrink-0 border border-slate-100"
                       />
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1">
                           <h4 className="text-xs font-bold text-slate-900 truncate">
-                            Dr. {doc.firstName} {doc.lastName}
+                            {doc.name ? (doc.name.startsWith('Dr.') ? doc.name : `Dr. ${doc.name}`) : `Dr. ${doc.firstName || ''} ${doc.lastName || ''}`.trim()}
                           </h4>
                           <span className="w-3.5 h-3.5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[9px] font-bold shrink-0">
                             ✓
@@ -529,7 +685,7 @@ export default function BookAppointment() {
                         </p>
 
                         <div className="flex items-center gap-1.5 text-[10px] text-slate-400 truncate mt-0.5">
-                          <span>{doc.qualifications || 'MD'}</span>
+                          <span>{doc.qualifications || doc.qualification || 'MBBS, MD'}</span>
                           <span>•</span>
                           <span>{doc.experienceYears || 5}+ years exp.</span>
                         </div>
@@ -538,7 +694,7 @@ export default function BookAppointment() {
                       <div className="text-right shrink-0 flex flex-col items-end gap-1.5">
                         <div className="flex items-center text-[10px] font-bold text-slate-800 gap-1">
                           <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                          <span>4.9</span>
+                          <span>{doc.rating || 4.9}</span>
                         </div>
 
                         <div
@@ -555,23 +711,43 @@ export default function BookAppointment() {
               )}
               </div>
 
-              <div className="flex items-center justify-center gap-1.5 pt-2 border-t border-slate-100">
-                <button className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-400 hover:bg-slate-50 text-xs">
-                  ‹
-                </button>
-                <button className="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xs">
-                  1
-                </button>
-                <button className="w-7 h-7 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 flex items-center justify-center text-xs font-medium">
-                  2
-                </button>
-                <button className="w-7 h-7 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 flex items-center justify-center text-xs font-medium">
-                  3
-                </button>
-                <button className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 text-xs">
-                  ›
-                </button>
-              </div>
+              {/* Dynamic Doctor Pagination */}
+              {totalDoctorPages > 1 && (
+                <div className="flex items-center justify-center gap-1.5 pt-2 border-t border-slate-100">
+                  <button
+                    type="button"
+                    disabled={doctorPage === 1}
+                    onClick={() => setDoctorPage((p) => Math.max(1, p - 1))}
+                    className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 text-xs disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                    aria-label="Previous page"
+                  >
+                    ‹
+                  </button>
+                  {Array.from({ length: totalDoctorPages }, (_, i) => i + 1).map((p) => (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => setDoctorPage(p)}
+                      className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-semibold transition cursor-pointer ${
+                        doctorPage === p
+                          ? 'bg-blue-600 text-white shadow-xs'
+                          : 'border border-slate-200 text-slate-600 hover:bg-slate-50'
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    disabled={doctorPage === totalDoctorPages}
+                    onClick={() => setDoctorPage((p) => Math.min(totalDoctorPages, p + 1))}
+                    className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 text-xs disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                    aria-label="Next page"
+                  >
+                    ›
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* ── RIGHT COLUMN: Main Date & Time Selection Panel (8 Cols) ───── */}

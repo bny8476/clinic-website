@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { axiosPublic } from '../../api/axios';
+import { MOCK_DOCTORS } from '../../data/unifiedMockData';
 import { listStagger, staggerChildren } from '../../components/ui/motion';
 import { AlertTriangle, ArrowLeft, Search, Stethoscope } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -23,19 +24,40 @@ const DoctorList = () => {
     }
   });
 
+  const allDoctors = useMemo(() => {
+    const backendList = Array.isArray(doctors) ? doctors : [];
+    const normalized = backendList.map((d) => ({
+      ...d,
+      id: d.id || d.userId,
+      userId: d.userId || d.id,
+      name: d.name || `Dr. ${d.firstName || ''} ${d.lastName || ''}`.trim(),
+      firstName: d.firstName || (d.name ? d.name.replace(/^Dr\.\s*/, '').split(' ')[0] : 'Doctor'),
+      lastName: d.lastName || (d.name ? d.name.replace(/^Dr\.\s*/, '').split(' ').slice(1).join(' ') : ''),
+      specialty: d.specialty || 'General Medicine'
+    }));
+    const backendNames = new Set(normalized.map((d) => (d.name || `${d.firstName} ${d.lastName}`).toLowerCase().replace(/^(dr\.|doctor)\s*/, '').trim()));
+    const extra = MOCK_DOCTORS.filter((m) => !backendNames.has(m.name.toLowerCase().replace(/^(dr\.|doctor)\s*/, '').trim()));
+    return [...normalized, ...extra];
+  }, [doctors]);
+
   const filteredDoctors = useMemo(() => {
-    if (!doctors) return [];
-    return doctors.filter(doc => {
-      const matchSearch = doc.userId.toString().includes(searchTerm) || doc.specialty.toLowerCase().includes(searchTerm.toLowerCase()) || doc.firstName.toLowerCase().includes(searchTerm.toLowerCase()) || doc.lastName.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchSpecialty = selectedSpecialty ? doc.specialty === selectedSpecialty : true;
+    return allDoctors.filter(doc => {
+      const docIdStr = String(doc.userId || doc.id || '');
+      const firstNameStr = String(doc.firstName || '').toLowerCase();
+      const lastNameStr = String(doc.lastName || '').toLowerCase();
+      const nameStr = String(doc.name || '').toLowerCase();
+      const specialtyStr = String(doc.specialty || '').toLowerCase();
+      const term = searchTerm.toLowerCase();
+
+      const matchSearch = docIdStr.includes(term) || specialtyStr.includes(term) || firstNameStr.includes(term) || lastNameStr.includes(term) || nameStr.includes(term);
+      const matchSpecialty = selectedSpecialty ? specialtyStr === selectedSpecialty.toLowerCase() : true;
       return matchSearch && matchSpecialty;
     });
-  }, [doctors, searchTerm, selectedSpecialty]);
+  }, [allDoctors, searchTerm, selectedSpecialty]);
 
   const uniqueSpecialties = useMemo(() => {
-    if (!doctors) return [];
-    return [...new Set(doctors.map(d => d.specialty))].sort();
-  }, [doctors]);
+    return [...new Set(allDoctors.map(d => d.specialty).filter(Boolean))].sort();
+  }, [allDoctors]);
 
   const getBookLink = (doctorId) => {
     if (!token) return '/register';

@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { useNavigate } from 'react-router-dom';
@@ -372,12 +373,12 @@ export default function DoctorSupport() {
         </div>
 
         {/* Modal: Create Doctor Ticket */}
-        {isCreating && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/70 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
-            <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-150">
-              <div className="flex items-center justify-between border-b border-slate-100 p-4 sm:p-5 shrink-0 bg-white">
+        {isCreating && typeof document !== 'undefined' && createPortal(
+          <div className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/70 backdrop-blur-xs p-4 overflow-y-auto">
+            <div className="relative z-[9999] bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-lg p-6 sm:p-7 space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
                     <Stethoscope className="w-5 h-5" />
                   </div>
                   <div>
@@ -385,107 +386,102 @@ export default function DoctorSupport() {
                     <p className="text-[11px] text-slate-500">Expedited response for active clinical duties</p>
                   </div>
                 </div>
-                <button 
-                  type="button"
-                  onClick={() => setIsCreating(false)} 
-                  className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition cursor-pointer"
-                >
+                <button onClick={() => setIsCreating(false)} className="p-1 text-slate-400 hover:text-slate-600">
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              <form onSubmit={(e) => { e.preventDefault(); createMutation.mutate(doctorForm); }} className="flex-1 flex flex-col overflow-hidden">
-                <div className="p-4 sm:p-6 space-y-3.5 overflow-y-auto flex-1">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Issue Domain</label>
-                      <select
-                        value={doctorForm.category}
-                        onChange={(e) => setDoctorForm({ ...doctorForm, category: e.target.value })}
-                        className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                      >
-                        <option value="TECHNICAL">PACS / DICOM Viewer / IT</option>
-                        <option value="PHARMACY">Pharmacy / Drug Substitution</option>
-                        <option value="LABORATORY">Lab Specimen / Test Catalog</option>
-                        <option value="GENERAL">General Provider Inquiry</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-700 mb-1">Clinical Priority</label>
-                      <select
-                        value={doctorForm.priority}
-                        onChange={(e) => setDoctorForm({ ...doctorForm, priority: e.target.value })}
-                        className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                      >
-                        <option value="URGENT">Urgent (Patient waiting in room)</option>
-                        <option value="HIGH">High Priority</option>
-                        <option value="MEDIUM">Medium Priority</option>
-                        <option value="LOW">Routine / Low</option>
-                      </select>
-                    </div>
-                  </div>
-
+              <form onSubmit={(e) => { e.preventDefault(); createMutation.mutate(doctorForm); }} className="space-y-3.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-700 mb-1">Patient MRN or Appointment ID (Optional)</label>
-                    <input
-                      type="text"
-                      value={doctorForm.patientContext}
-                      onChange={(e) => setDoctorForm({ ...doctorForm, patientContext: e.target.value })}
-                      placeholder="E.g., MRN-1002 / Appt #4102"
-                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                    />
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">Issue Domain</label>
+                    <select
+                      value={doctorForm.category}
+                      onChange={(e) => setDoctorForm({ ...doctorForm, category: e.target.value })}
+                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                    >
+                      <option value="TECHNICAL">PACS / DICOM Viewer / IT</option>
+                      <option value="PHARMACY">Pharmacy / Drug Substitution</option>
+                      <option value="LABORATORY">Lab Specimen / Test Catalog</option>
+                      <option value="GENERAL">General Provider Inquiry</option>
+                    </select>
                   </div>
-
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-700 mb-1">Summary / Subject</label>
-                    <input
-                      required
-                      type="text"
-                      value={doctorForm.subject}
-                      onChange={(e) => setDoctorForm({ ...doctorForm, subject: e.target.value })}
-                      placeholder="E.g., PACS scan failing to display contrast slice series"
-                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-700 mb-1">Clinical Details</label>
-                    <textarea
-                      required
-                      rows="3"
-                      value={doctorForm.description}
-                      onChange={(e) => setDoctorForm({ ...doctorForm, description: e.target.value })}
-                      placeholder="Describe the clinical block, error message, or requested drug alternative..."
-                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none"
-                    ></textarea>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">Clinical Priority</label>
+                    <select
+                      value={doctorForm.priority}
+                      onChange={(e) => setDoctorForm({ ...doctorForm, priority: e.target.value })}
+                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                    >
+                      <option value="URGENT">Urgent (Patient waiting in room)</option>
+                      <option value="HIGH">High Priority</option>
+                      <option value="MEDIUM">Medium Priority</option>
+                      <option value="LOW">Routine / Low</option>
+                    </select>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-end gap-2 p-4 sm:p-5 border-t border-slate-100 bg-slate-50/50 shrink-0">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Patient MRN or Appointment ID (Optional)</label>
+                  <input
+                    type="text"
+                    value={doctorForm.patientContext}
+                    onChange={(e) => setDoctorForm({ ...doctorForm, patientContext: e.target.value })}
+                    placeholder="E.g., MRN-1002 / Appt #4102"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Summary / Subject</label>
+                  <input
+                    required
+                    type="text"
+                    value={doctorForm.subject}
+                    onChange={(e) => setDoctorForm({ ...doctorForm, subject: e.target.value })}
+                    placeholder="E.g., PACS scan failing to display contrast slice series"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">Clinical Details</label>
+                  <textarea
+                    required
+                    rows="3"
+                    value={doctorForm.description}
+                    onChange={(e) => setDoctorForm({ ...doctorForm, description: e.target.value })}
+                    placeholder="Describe the clinical block, error message, or requested drug alternative..."
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                  ></textarea>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
                   <button
                     type="button"
                     onClick={() => setIsCreating(false)}
-                    className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-200 rounded-xl transition cursor-pointer"
+                    className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={createMutation.isPending}
-                    className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition cursor-pointer disabled:opacity-50"
+                    className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition"
                   >
                     {createMutation.isPending ? 'Escalating...' : 'Submit Provider Ticket'}
                   </button>
                 </div>
               </form>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
 
         {/* Modal: View Thread */}
-        {selectedTicket && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/70 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
-            <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-xl max-h-[85vh] flex flex-col overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-150">
+        {selectedTicket && typeof document !== 'undefined' && createPortal(
+          <div className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/70 backdrop-blur-xs p-4 overflow-y-auto">
+            <div className="relative z-[9999] bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-xl max-h-[85vh] flex flex-col overflow-hidden">
               <div className="p-5 border-b border-slate-100 bg-slate-50/50 flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
@@ -542,7 +538,8 @@ export default function DoctorSupport() {
                 </button>
               </form>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
 
       </div>

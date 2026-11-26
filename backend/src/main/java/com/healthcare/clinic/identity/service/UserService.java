@@ -44,6 +44,7 @@ public class UserService {
     private final BranchRepository branchRepository;
     private final DepartmentRepository departmentRepository;
     private final DoctorProfileRepository doctorProfileRepository;
+    private final com.healthcare.clinic.doctor.repository.DoctorWorkingHoursRepository doctorWorkingHoursRepository;
     private final AuditTrailService auditTrailService;
     private final PasswordEncoder passwordEncoder;
     private final EmailNotificationService emailNotificationService;
@@ -406,7 +407,23 @@ public class UserService {
         dp.setExperienceYears(createDto.getExperienceYears() != null ? createDto.getExperienceYears() : 5);
         dp.setIsActive(user.getEnabled() != null ? user.getEnabled() : true);
 
-        doctorProfileRepository.save(dp);
+        DoctorProfile savedDp = doctorProfileRepository.save(dp);
+        if (doctorWorkingHoursRepository.findByDoctorIdAndIsActiveTrue(savedDp.getId()).isEmpty()) {
+            for (int day = 1; day <= 6; day++) {
+                com.healthcare.clinic.doctor.entity.DoctorWorkingHours hours = com.healthcare.clinic.doctor.entity.DoctorWorkingHours.builder()
+                        .doctor(savedDp)
+                        .dayOfWeek(day % 7) // 1=Mon, ..., 6=Sat
+                        .startTime(java.time.LocalTime.of(9, 0))
+                        .endTime(java.time.LocalTime.of(17, 0))
+                        .slotDurationMinutes(20)
+                        .isActive(true)
+                        .branchId(savedDp.getBranchId() != null ? savedDp.getBranchId() : 1L)
+                        .createdAt(java.time.Instant.now())
+                        .updatedAt(java.time.Instant.now())
+                        .build();
+                doctorWorkingHoursRepository.save(hours);
+            }
+        }
     }
 
     private void checkPrivilegeEscalation(List<String> targetRoles) {

@@ -125,54 +125,13 @@ public class DataSeeder implements CommandLineRunner {
             log.warn("DataSeeder: branch seed warning: {}", e.getMessage());
         }
 
-        User doctor = null;
-        try {
-            doctor = seedUser("doctor@clinic.com", "Clinic@2026#Doctor", "John", "Doe", Set.of("ROLE_DOCTOR"));
-        } catch (Exception e) {
-            log.error("DataSeeder: error seeding doctor@clinic.com: {}", e.getMessage());
-        }
-        
-        // Ensure the seeded doctor has a DoctorProfile so the dashboard loads
-        if (doctor != null) {
-            try {
-                if (doctorProfileRepository.findByUserId(doctor.getId()).isEmpty()) {
-                    DoctorProfile profile = DoctorProfile.builder()
-                            .userId(doctor.getId())
-                            .specialty("Cardiology")
-                            .qualifications("MBBS, MD (Cardiology)")
-                            .experienceYears(10)
-                            .consultationFee(new java.math.BigDecimal("50.00"))
-                            .bio("Experienced cardiologist specializing in cardiovascular wellness and preventive care.")
-                            .registrationNumber("DOC-CARD-2026-88")
-                            .isActive(true)
-                            .branchId(1L)
-                            .build();
-                    doctorProfileRepository.save(profile);
-                    log.info("DataSeeder: created default DoctorProfile for doctor@clinic.com.");
-                }
-                
-                DoctorProfile savedProfile = doctorProfileRepository.findByUserId(doctor.getId()).orElse(null);
-                if (savedProfile != null && doctorWorkingHoursRepository.findByDoctorIdAndIsActiveTrue(savedProfile.getId()).isEmpty()) {
-                    for (int day = 1; day <= 5; day++) { // Monday to Friday
-                        DoctorWorkingHours hours = DoctorWorkingHours.builder()
-                                .doctor(savedProfile)
-                                .dayOfWeek(day)
-                                .startTime(java.time.LocalTime.of(9, 0))
-                                .endTime(java.time.LocalTime.of(17, 0))
-                                .slotDurationMinutes(20)
-                                .isActive(true)
-                                .branchId(savedProfile.getBranchId())
-                                .createdAt(java.time.Instant.now())
-                                .updatedAt(java.time.Instant.now())
-                                .build();
-                        doctorWorkingHoursRepository.save(hours);
-                    }
-                    log.info("DataSeeder: created default DoctorWorkingHours for doctor@clinic.com.");
-                }
-            } catch (Exception e) {
-                log.warn("DataSeeder: doctor profile/hours warning: {}", e.getMessage());
-            }
-        }
+        // Seed Doctors across core specialties
+        seedDoctorWithProfile("doctor@clinic.com", "John", "Doe", "Cardiology", "MBBS, MD (Cardiology), FACC", 12, new java.math.BigDecimal("50.00"), "DOC-CARD-2026-88", "Experienced cardiologist specializing in cardiovascular wellness and preventive care.");
+        seedDoctorWithProfile("emily.davis@clinic.com", "Emily", "Davis", "Pediatrics", "MBBS, MD (Pediatrics), FAAP", 11, new java.math.BigDecimal("85.00"), "DOC-PED-2026-42", "Board-certified pediatrician dedicated to comprehensive child health and development.");
+        seedDoctorWithProfile("michael.lee@clinic.com", "Michael", "Lee", "Orthopedics", "MS (Ortho), MCh, FACS", 16, new java.math.BigDecimal("120.00"), "DOC-SURG-2026-19", "Senior orthopedic surgeon specializing in joint replacement, sports traumatology, and rehabilitation.");
+        seedDoctorWithProfile("sarah.jenkins@clinic.com", "Sarah", "Jenkins", "Neurology", "MBBS, MD (Neurology), DM", 14, new java.math.BigDecimal("130.00"), "DOC-NEUR-2026-31", "Clinical neurologist focusing on migraine therapies, neuropathic disorders, and EEG evaluation.");
+        seedDoctorWithProfile("robert.chen@clinic.com", "Robert", "Chen", "Dermatology", "MBBS, MD (Dermatology)", 9, new java.math.BigDecimal("90.00"), "DOC-DERM-2026-55", "Dermatologist specializing in medical dermatology, allergic dermatoses, and aesthetic skin wellness.");
+        seedDoctorWithProfile("amanda.smith@clinic.com", "Amanda", "Smith", "General Medicine", "MBBS, MD (Internal Medicine)", 13, new java.math.BigDecimal("75.00"), "DOC-GEN-2026-73", "Consultant in internal medicine focusing on lifestyle disease management and diagnostic care.");
 
         seedUser("nurse@clinic.com", "Clinic@2026#Nurse", "Jane", "Smith", Set.of("ROLE_NURSE"));
         seedUser("receptionist@clinic.com", "Clinic@2026#Reception", "Rec", "Eptionist", Set.of("ROLE_RECEPTION"));
@@ -286,5 +245,49 @@ public class DataSeeder implements CommandLineRunner {
             case "ROLE_HR" -> "hr";
             default -> null;
         };
+    }
+
+    private void seedDoctorWithProfile(String email, String firstName, String lastName, String specialty, String qualifications, int experienceYears, java.math.BigDecimal fee, String regNumber, String bio) {
+        try {
+            User docUser = seedUser(email, "Clinic@2026#Doctor", firstName, lastName, Set.of("ROLE_DOCTOR"));
+            if (docUser != null) {
+                if (doctorProfileRepository.findByUserId(docUser.getId()).isEmpty()) {
+                    DoctorProfile profile = DoctorProfile.builder()
+                            .userId(docUser.getId())
+                            .specialty(specialty)
+                            .qualifications(qualifications)
+                            .experienceYears(experienceYears)
+                            .consultationFee(fee)
+                            .bio(bio)
+                            .registrationNumber(regNumber)
+                            .isActive(true)
+                            .branchId(1L)
+                            .build();
+                    doctorProfileRepository.save(profile);
+                    log.info("DataSeeder: created DoctorProfile for {}.", email);
+                }
+                
+                DoctorProfile savedProfile = doctorProfileRepository.findByUserId(docUser.getId()).orElse(null);
+                if (savedProfile != null && doctorWorkingHoursRepository.findByDoctorIdAndIsActiveTrue(savedProfile.getId()).isEmpty()) {
+                    for (int day = 1; day <= 5; day++) { // Monday to Friday
+                        DoctorWorkingHours hours = DoctorWorkingHours.builder()
+                                .doctor(savedProfile)
+                                .dayOfWeek(day)
+                                .startTime(java.time.LocalTime.of(9, 0))
+                                .endTime(java.time.LocalTime.of(17, 0))
+                                .slotDurationMinutes(20)
+                                .isActive(true)
+                                .branchId(savedProfile.getBranchId())
+                                .createdAt(java.time.Instant.now())
+                                .updatedAt(java.time.Instant.now())
+                                .build();
+                        doctorWorkingHoursRepository.save(hours);
+                    }
+                    log.info("DataSeeder: created default DoctorWorkingHours for {}.", email);
+                }
+            }
+        } catch (Exception e) {
+            log.warn("DataSeeder: doctor seed error for {}: {}", email, e.getMessage());
+        }
     }
 }

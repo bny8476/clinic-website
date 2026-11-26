@@ -123,16 +123,46 @@ public class AppointmentService {
         ZonedDateTime startOfDay = date.atStartOfDay(zone);
         ZonedDateTime endOfDay = startOfDay.plusDays(1).minusNanos(1);
 
-        List<AppointmentSlot> existingSlots = slotRepository.findByDoctorUserIdAndStartTimeBetween(userId, startOfDay, endOfDay);
+        List<AppointmentSlot> existingSlots = new java.util.ArrayList<>();
+        if (userId != null) {
+            existingSlots.addAll(slotRepository.findByDoctorUserIdAndStartTimeBetween(userId, startOfDay, endOfDay));
+        }
+        if (doctor.getId() != null) {
+            for (AppointmentSlot s : slotRepository.findByDoctorIdAndStartTimeBetween(doctor.getId(), startOfDay, endOfDay)) {
+                if (existingSlots.stream().noneMatch(x -> x.getId().equals(s.getId()))) {
+                    existingSlots.add(s);
+                }
+            }
+        }
 
-        if (existingSlots.isEmpty()) {
-            doctorScheduleService.generateSlotsForRange(userId, date, date);
-            existingSlots = slotRepository.findByDoctorUserIdAndStartTimeBetween(userId, startOfDay, endOfDay);
+        if (existingSlots.isEmpty() && userId != null) {
+            try {
+                doctorScheduleService.generateSlotsForRange(userId, date, date);
+            } catch (Exception e) {
+                log.warn("doctorScheduleService slot generation failed for doctor userId {}: {}", userId, e.getMessage());
+            }
+            existingSlots = new java.util.ArrayList<>(slotRepository.findByDoctorUserIdAndStartTimeBetween(userId, startOfDay, endOfDay));
+            if (doctor.getId() != null) {
+                for (AppointmentSlot s : slotRepository.findByDoctorIdAndStartTimeBetween(doctor.getId(), startOfDay, endOfDay)) {
+                    if (existingSlots.stream().noneMatch(x -> x.getId().equals(s.getId()))) {
+                        existingSlots.add(s);
+                    }
+                }
+            }
         }
 
         if (existingSlots.isEmpty()) {
             generateFallbackSlotsForDate(doctor, date);
-            existingSlots = slotRepository.findByDoctorUserIdAndStartTimeBetween(userId, startOfDay, endOfDay);
+            if (userId != null) {
+                existingSlots = new java.util.ArrayList<>(slotRepository.findByDoctorUserIdAndStartTimeBetween(userId, startOfDay, endOfDay));
+            }
+            if (doctor.getId() != null) {
+                for (AppointmentSlot s : slotRepository.findByDoctorIdAndStartTimeBetween(doctor.getId(), startOfDay, endOfDay)) {
+                    if (existingSlots.stream().noneMatch(x -> x.getId().equals(s.getId()))) {
+                        existingSlots.add(s);
+                    }
+                }
+            }
         }
 
         ZonedDateTime now = ZonedDateTime.now(zone);
@@ -159,20 +189,15 @@ public class AppointmentService {
     }
 
     private void generateFallbackSlotsForDate(DoctorProfile doctor, java.time.LocalDate date) {
-        java.time.DayOfWeek day = date.getDayOfWeek();
-        if (day == java.time.DayOfWeek.SATURDAY || day == java.time.DayOfWeek.SUNDAY) {
-            return;
-        }
         java.time.ZoneId zone = java.time.ZoneId.systemDefault();
         java.time.LocalTime current = java.time.LocalTime.of(9, 0);
-        java.time.LocalTime end = java.time.LocalTime.of(17, 0);
+        java.time.DayOfWeek day = date.getDayOfWeek();
+        java.time.LocalTime end = (day == java.time.DayOfWeek.SATURDAY || day == java.time.DayOfWeek.SUNDAY)
+                ? java.time.LocalTime.of(14, 0)
+                : java.time.LocalTime.of(17, 0);
         int duration = 20;
 
-        if (doctor.getBranchId() == null) {
-            throw new org.springframework.web.server.ResponseStatusException(
-                    org.springframework.http.HttpStatus.BAD_REQUEST,
-                    "Doctor profile does not have an assigned branch ID.");
-        }
+        Long branchId = doctor.getBranchId() != null ? doctor.getBranchId() : 1L;
 
         while (current.plusMinutes(duration).isBefore(end) || current.plusMinutes(duration).equals(end)) {
             ZonedDateTime slotStart = ZonedDateTime.of(date, current, zone);
@@ -183,7 +208,7 @@ public class AppointmentService {
                     .startTime(slotStart)
                     .endTime(slotEnd)
                     .isBooked(false)
-                    .branchId(doctor.getBranchId())
+                    .branchId(branchId)
                     .build();
             slotRepository.save(slot);
 
@@ -346,9 +371,7 @@ public class AppointmentService {
                         slotBranchId = request.getBranchId();
                     }
                     if (slotBranchId == null) {
-                        throw new org.springframework.web.server.ResponseStatusException(
-                                org.springframework.http.HttpStatus.BAD_REQUEST,
-                                "Branch context is required to create a new appointment slot for this doctor.");
+                        slotBranchId = 1L;
                     }
                     ZonedDateTime endZdt = request.getEndTime() != null ? parseDateTime(request.getEndTime(), request.getAppointmentDate()) : startZdt.plusMinutes(30);
                     AppointmentSlot newSlot = AppointmentSlot.builder()
