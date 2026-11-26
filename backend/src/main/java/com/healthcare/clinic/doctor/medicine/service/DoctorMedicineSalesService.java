@@ -349,6 +349,40 @@ public class DoctorMedicineSalesService {
     }
 
     /**
+     * Pharmacy updates order status by numeric ID or order number (e.g. ORD-2026-64904)
+     */
+    @Transactional
+    public MedicineOrderResponseDto updateOrderStatusByIdOrNumber(String idOrNumber, String targetStatusStr, Long actionUserId) {
+        if (idOrNumber == null || idOrNumber.trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Order identifier cannot be empty");
+        }
+
+        MedicineOrder order = null;
+        try {
+            Long numericId = Long.parseLong(idOrNumber.trim());
+            order = medicineOrderRepository.findById(numericId).orElse(null);
+        } catch (NumberFormatException ignored) {}
+
+        if (order == null) {
+            order = medicineOrderRepository.findByOrderNumber(idOrNumber.trim()).orElse(null);
+        }
+
+        if (order == null) {
+            String clean = idOrNumber.trim().replace("ORD-2026-", "").replace("ORD-", "");
+            try {
+                Long parsed = Long.parseLong(clean);
+                order = medicineOrderRepository.findById(parsed).orElse(null);
+            } catch (Exception ignored) {}
+        }
+
+        if (order == null) {
+            throw new ResourceNotFoundException("Order not found with identifier: " + idOrNumber);
+        }
+
+        return updateOrderStatus(order.getId(), targetStatusStr, actionUserId);
+    }
+
+    /**
      * Pharmacy dispenses order, executing transactional stock deduction and audit log
      */
     @Transactional

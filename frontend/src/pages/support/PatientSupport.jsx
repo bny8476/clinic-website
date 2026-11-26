@@ -75,6 +75,18 @@ const CLINIC_FAQS = [
   }
 ];
 
+// Bulletproof Portal wrapper that only renders after DOM body is guaranteed
+function SafePortal({ children }) {
+  const [container, setContainer] = useState(() => (typeof document !== 'undefined' && document.body ? document.body : null));
+  useEffect(() => {
+    if (typeof document !== 'undefined' && document.body && !container) {
+      setContainer(document.body);
+    }
+  }, [container]);
+  if (!container) return null;
+  return createPortal(children, container);
+}
+
 export default function PatientSupport() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -686,33 +698,38 @@ export default function PatientSupport() {
         </div>
 
         {/* ── 6. Create Support Ticket Modal ────────────────────────────────── */}
-        {mounted && isCreating && typeof document !== 'undefined' && Boolean(document?.body) && createPortal(
-          <div className="fixed inset-0 z-[9998] flex items-center justify-center p-4 overflow-y-auto">
-            {/* Fullscreen Backdrop overlay */}
+        {isCreating && (
+          <SafePortal>
             <div
-              className="fixed inset-0 bg-black/70 backdrop-blur-xs transition-opacity"
-              onClick={() => setIsCreating(false)}
-            />
-
-            {/* Modal Dialog */}
-            <div className="relative z-[9999] bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-xl p-6 sm:p-8 space-y-5 animate-in fade-in duration-200 my-auto">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                    <Ticket className="w-5 h-5" />
+              className="fixed inset-0 z-[99998] flex items-center justify-center bg-black/75 backdrop-blur-xs p-4 overflow-y-auto"
+              style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99998, backgroundColor: 'rgba(0, 0, 0, 0.72)' }}
+              onClick={(e) => {
+                if (e.target === e.currentTarget) setIsCreating(false);
+              }}
+            >
+              {/* Modal Dialog */}
+              <div
+                className="relative z-[99999] bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-xl p-6 sm:p-8 space-y-5 animate-in fade-in duration-200 my-auto"
+                style={{ position: 'relative', zIndex: 99999 }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                      <Ticket className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-slate-900 text-base">Create Support Ticket</h3>
+                      <p className="text-xs text-slate-500">Our patient concierge team will respond promptly</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-bold text-slate-900 text-base">Create Support Ticket</h3>
-                    <p className="text-xs text-slate-500">Our patient concierge team will respond promptly</p>
-                  </div>
+                  <button
+                    onClick={() => setIsCreating(false)}
+                    className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition cursor-pointer"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
                 </div>
-                <button
-                  onClick={() => setIsCreating(false)}
-                  className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition cursor-pointer"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
 
               <form
                 onSubmit={(e) => {
@@ -821,21 +838,26 @@ export default function PatientSupport() {
                 </div>
               </form>
             </div>
-          </div>,
-          document.body
-        )}
+          </div>
+        </SafePortal>
+      )}
 
-        {/* ── 7. Ticket Details & Discussion Thread Modal ───────────────────── */}
-        {mounted && selectedTicket && typeof document !== 'undefined' && Boolean(document?.body) && createPortal(
-          <div className="fixed inset-0 z-[9998] flex items-center justify-center p-4 overflow-y-auto">
-            {/* Fullscreen Backdrop overlay */}
-            <div
-              className="fixed inset-0 bg-black/70 backdrop-blur-xs transition-opacity"
-              onClick={() => setSelectedTicket(null)}
-            />
-
+      {/* ── 7. Ticket Details & Discussion Thread Modal ───────────────────── */}
+      {selectedTicket && (
+        <SafePortal>
+          <div
+            className="fixed inset-0 z-[99998] flex items-center justify-center bg-black/75 backdrop-blur-xs p-4 overflow-y-auto"
+            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99998, backgroundColor: 'rgba(0, 0, 0, 0.72)' }}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setSelectedTicket(null);
+            }}
+          >
             {/* Modal Dialog */}
-            <div className="relative z-[9999] bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in duration-200 my-auto">
+            <div
+              className="relative z-[99999] bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in duration-200 my-auto"
+              style={{ position: 'relative', zIndex: 99999 }}
+              onClick={(e) => e.stopPropagation()}
+            >
               {/* Modal Header */}
               <div className="p-5 sm:p-6 border-b border-slate-100 bg-slate-50/50 flex items-start justify-between gap-4">
                 <div className="space-y-1.5">
@@ -951,9 +973,9 @@ export default function PatientSupport() {
                 </div>
               </form>
             </div>
-          </div>,
-          document.body
-        )}
+          </div>
+        </SafePortal>
+      )}
 
       </div>
     </div>

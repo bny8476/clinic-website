@@ -6,6 +6,7 @@ import { format } from 'date-fns';
 import { fadeUp, listStagger, staggerChildren } from '../../components/ui/motion';
 import {
   AlertCircle,
+  AlertTriangle,
   CheckCircle,
   CheckCircle2,
   Clock,
@@ -14,10 +15,12 @@ import {
   Package,
   Pill,
   RefreshCw,
+  RotateCcw,
   ShieldCheck,
   ShoppingBag,
   Truck,
-  ArrowRight
+  ArrowRight,
+  XCircle
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
@@ -130,6 +133,13 @@ export default function Orders() {
 
   const getMedicineStatusBadge = (status) => {
     const s = (status || '').toUpperCase();
+    if (s === 'CANCELLED') {
+      return {
+        bg: 'bg-rose-50 text-rose-700 border-rose-200',
+        text: 'CANCELLED (OUT OF STOCK)',
+        icon: AlertTriangle
+      };
+    }
     if (['DELIVERED', 'COMPLETED'].includes(s)) {
       return {
         bg: 'bg-emerald-50 text-emerald-700 border-emerald-200',
@@ -333,43 +343,90 @@ export default function Orders() {
                       </div>
                     </div>
 
-                    {/* Stepper Progress Bar */}
-                    <div className="p-6 border-b border-slate-100 bg-gradient-to-r from-emerald-500/5 via-teal-500/5 to-blue-500/5">
-                      <div className="grid grid-cols-4 gap-2 relative">
-                        {stepsList.map((s) => {
-                          const isDone = s.num <= currentStage;
-                          const isCurrent = s.num === currentStage;
-                          return (
-                            <div key={s.num} className="flex flex-col items-center text-center space-y-1.5 relative z-10">
-                              <div
-                                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                                  isCurrent
-                                    ? 'bg-emerald-600 text-white ring-4 ring-emerald-100 shadow-xs'
-                                    : isDone
-                                    ? 'bg-emerald-500 text-white'
-                                    : 'bg-slate-200 text-slate-400'
-                                }`}
-                              >
-                                {isDone ? <CheckCircle2 className="w-4 h-4" /> : s.num}
-                              </div>
-                              <span
-                                className={`text-[11px] font-bold ${
-                                  isCurrent ? 'text-emerald-700' : isDone ? 'text-slate-800' : 'text-slate-400'
-                                }`}
-                              >
-                                {s.label}
+                    {/* Stepper Progress Bar OR Cancellation & Refund Banner */}
+                    {(order.orderStatus || order.status || '').toUpperCase() === 'CANCELLED' ? (
+                      <div className="p-5 sm:p-6 border-b border-rose-100 bg-rose-50/80 text-xs">
+                        <div className="flex items-start gap-3.5">
+                          <div className="w-10 h-10 rounded-2xl bg-rose-100 border border-rose-200 text-rose-600 flex items-center justify-center shrink-0">
+                            <AlertTriangle className="w-5 h-5" />
+                          </div>
+                          <div className="space-y-1.5 flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-extrabold text-rose-900 text-sm">
+                                Order Cancelled by Pharmacy Dispensary
+                              </span>
+                              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-200 text-rose-800 uppercase tracking-wider">
+                                Out of Stock
                               </span>
                             </div>
-                          );
-                        })}
+
+                            <p className="text-slate-700 font-medium">
+                              Reason: <span className="font-semibold text-rose-800">{order.cancellationReason || 'Medicine item(s) currently out of stock in central clinic inventory'}</span>
+                            </p>
+
+                            {/* Reversal / Refund Box */}
+                            <div className="p-3.5 bg-white rounded-xl border border-rose-200/90 shadow-2xs mt-2 flex items-start gap-3">
+                              <RotateCcw className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                              <div className="space-y-0.5">
+                                <p className="font-bold text-xs text-slate-900">
+                                  {order.paymentMethod === 'COD' || order.paymentStatus === 'COD_PENDING'
+                                    ? 'No Payment Deducted'
+                                    : 'Online Payment Refund Initiated (Reversal within 5–7 Days)'}
+                                </p>
+                                <p className="text-[11px] text-slate-600 leading-relaxed">
+                                  {order.paymentMethod === 'COD' || order.paymentStatus === 'COD_PENDING'
+                                    ? 'This order was placed as Cash on Delivery. Since the order was cancelled prior to dispatch, no payment was collected.'
+                                    : `As you paid online via UPI / Netbanking / Card (₹${Number(totalAmt).toFixed(2)}), a full refund has been initiated. The amount will be reversed to your original payment source account within 5–7 business days.`
+                                  }
+                                </p>
+                                {order.refundRefId && (
+                                  <p className="text-[10px] font-mono font-bold text-slate-500 pt-0.5">
+                                    Refund Reference Tracking ID: #{order.refundRefId}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden mt-4">
-                        <div
-                          className="bg-emerald-500 h-full transition-all duration-500 rounded-full"
-                          style={{ width: `${Math.max(10, ((currentStage - 1) / 3) * 100)}%` }}
-                        />
+                    ) : (
+                      <div className="p-6 border-b border-slate-100 bg-gradient-to-r from-emerald-500/5 via-teal-500/5 to-blue-500/5">
+                        <div className="grid grid-cols-4 gap-2 relative">
+                          {stepsList.map((s) => {
+                            const isDone = s.num <= currentStage;
+                            const isCurrent = s.num === currentStage;
+                            return (
+                              <div key={s.num} className="flex flex-col items-center text-center space-y-1.5 relative z-10">
+                                <div
+                                  className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                                    isCurrent
+                                      ? 'bg-emerald-600 text-white ring-4 ring-emerald-100 shadow-xs'
+                                      : isDone
+                                      ? 'bg-emerald-500 text-white'
+                                      : 'bg-slate-200 text-slate-400'
+                                  }`}
+                                >
+                                  {isDone ? <CheckCircle2 className="w-4 h-4" /> : s.num}
+                                </div>
+                                <span
+                                  className={`text-[11px] font-bold ${
+                                    isCurrent ? 'text-emerald-700' : isDone ? 'text-slate-800' : 'text-slate-400'
+                                  }`}
+                                >
+                                  {s.label}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden mt-4">
+                          <div
+                            className="bg-emerald-500 h-full transition-all duration-500 rounded-full"
+                            style={{ width: `${Math.max(10, ((currentStage - 1) / 3) * 100)}%` }}
+                          />
+                        </div>
                       </div>
-                    </div>
+                    )}
 
                     {/* Order Details & Items */}
                     <div className="p-6 grid grid-cols-1 md:grid-cols-12 gap-6">

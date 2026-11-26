@@ -124,10 +124,10 @@ public class DoctorMedicineSalesController {
     @PutMapping({"/api/pharmacy/medicine-orders/{id}/status", "/api/pharmacy/orders/{id}/status"})
     @PreAuthorize("hasAnyAuthority('ROLE_PHARMACIST','PHARMACIST','ROLE_PHARMACY_STAFF','PHARMACY_STAFF','ROLE_SUPERVISOR','SUPERVISOR','ROLE_SYSTEM_ADMIN','SYSTEM_ADMIN','ROLE_ADMIN','ADMIN','ROLE_SUPER_ADMIN','SUPER_ADMIN','ROLE_DOCTOR','DOCTOR','ROLE_STOREKEEPER')")
     public ResponseEntity<MedicineOrderResponseDto> updatePharmacyOrderStatus(
-            @PathVariable Long id,
+            @PathVariable String id,
             @RequestBody Map<String, String> payload) {
         Long actionUserId = SecurityUtils.getCurrentUserId();
         String status = payload != null ? payload.get("status") : "COMPLETED";
-        return ResponseEntity.ok(salesService.updateOrderStatus(id, status, actionUserId));
+        return ResponseEntity.ok(salesService.updateOrderStatusByIdOrNumber(id, status, actionUserId));
     }
 }

@@ -23,6 +23,18 @@ import {
   AlertCircle
 } from 'lucide-react';
 
+// Bulletproof Portal wrapper
+function SafePortal({ children }) {
+  const [container, setContainer] = useState(null);
+  useEffect(() => {
+    if (typeof document !== 'undefined' && document.body) {
+      setContainer(document.body);
+    }
+  }, []);
+  if (!container) return null;
+  return createPortal(children, container);
+}
+
 export default function DoctorSupport() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -378,15 +390,16 @@ export default function DoctorSupport() {
         </div>
 
         {/* Modal: Create Doctor Ticket */}
-        {mounted && isCreating && typeof document !== 'undefined' && Boolean(document?.body) && createPortal(
-          <div
-            className="fixed inset-0 z-[99998] flex items-center justify-center bg-black/75 backdrop-blur-xs p-4 overflow-y-auto"
-            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99998, backgroundColor: 'rgba(0, 0, 0, 0.72)' }}
-          >
+        {isCreating && (
+          <SafePortal>
             <div
-              className="relative z-[99999] bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-lg p-6 sm:p-7 space-y-4"
-              style={{ position: 'relative', zIndex: 99999 }}
+              className="fixed inset-0 z-[99998] flex items-center justify-center bg-black/75 backdrop-blur-xs p-4 overflow-y-auto"
+              style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99998, backgroundColor: 'rgba(0, 0, 0, 0.72)' }}
             >
+              <div
+                className="relative z-[99999] bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-lg p-6 sm:p-7 space-y-4"
+                style={{ position: 'relative', zIndex: 99999 }}
+              >
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-2.5">
                   <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
@@ -485,12 +498,13 @@ export default function DoctorSupport() {
                 </div>
               </form>
             </div>
-          </div>,
-          document.body
-        )}
+          </div>
+        </SafePortal>
+      )}
 
-        {/* Modal: View Thread */}
-        {mounted && selectedTicket && typeof document !== 'undefined' && Boolean(document?.body) && createPortal(
+      {/* Modal: View Thread */}
+      {selectedTicket && (
+        <SafePortal>
           <div
             className="fixed inset-0 z-[99998] flex items-center justify-center bg-black/75 backdrop-blur-xs p-4 overflow-y-auto"
             style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99998, backgroundColor: 'rgba(0, 0, 0, 0.72)' }}
@@ -555,9 +569,9 @@ export default function DoctorSupport() {
                 </button>
               </form>
             </div>
-          </div>,
-          document.body
-        )}
+          </div>
+        </SafePortal>
+      )}
 
       </div>
     </div>

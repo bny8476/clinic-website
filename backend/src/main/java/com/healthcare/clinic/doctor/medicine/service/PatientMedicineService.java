@@ -94,7 +94,16 @@ public class PatientMedicineService {
             patient = patientProfileRepository.findAll().stream().findFirst().orElse(null);
             if (patient == null) {
                 Long safeUserId = patientProfileId != null ? patientProfileId : 1L;
-                patient = patientProfileRepository.save(PatientProfile.builder().userId(safeUserId).build());
+                try {
+                    patient = patientProfileRepository.save(
+                            PatientProfile.builder()
+                                    .userId(safeUserId)
+                                    .branchId(1L)
+                                    .opNumber("OP-" + safeUserId + "-" + System.currentTimeMillis() % 10000L)
+                                    .build());
+                } catch (Exception e) {
+                    log.warn("Could not save new patient profile for order: {}", e.getMessage());
+                }
             }
         }
 
@@ -148,12 +157,18 @@ public class PatientMedicineService {
                 String medName = itemDto.getName() != null ? itemDto.getName() : "Prescription Medicine";
 
                 if (medicine != null) {
-                    medName = medicine.getName();
-                    itemPrice = medicine.getPrice();
-                    // Deduct stock if available
-                    if (medicine.getStockQuantity() >= itemDto.getQuantity()) {
-                        medicine.setStockQuantity(medicine.getStockQuantity() - itemDto.getQuantity());
-                        doctorMedicineRepository.save(medicine);
+                    if (medicine.getName() != null) medName = medicine.getName();
+                    if (medicine.getPrice() != null) itemPrice = medicine.getPrice();
+                    // Deduct stock if available safely
+                    try {
+                        Integer currentStock = medicine.getStockQuantity();
+                        int reqQty = (itemDto.getQuantity() != null && itemDto.getQuantity() > 0) ? itemDto.getQuantity() : 1;
+                        if (currentStock != null && currentStock >= reqQty) {
+                            medicine.setStockQuantity(currentStock - reqQty);
+                            doctorMedicineRepository.save(medicine);
+                        }
+                    } catch (Exception ex) {
+                        log.warn("Non-fatal stock deduction error on item {}: {}", itemDto.getName(), ex.getMessage());
                     }
                 }
 
