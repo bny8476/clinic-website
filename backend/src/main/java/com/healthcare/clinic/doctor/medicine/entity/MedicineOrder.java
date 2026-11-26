@@ -39,8 +39,38 @@ public class MedicineOrder {
     private PatientProfile patient;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "doctor_id", nullable = false)
+    @JoinColumn(name = "doctor_id", nullable = true)
     private DoctorProfile doctor;
+
+    @Column(name = "delivery_address", columnDefinition = "TEXT")
+    private String deliveryAddress;
+
+    @Column(name = "delivery_city", length = 100)
+    private String deliveryCity;
+
+    @Column(name = "delivery_pincode", length = 20)
+    private String deliveryPincode;
+
+    @Column(name = "delivery_notes", columnDefinition = "TEXT")
+    private String deliveryNotes;
+
+    @Column(name = "contact_phone", length = 50)
+    private String contactPhone;
+
+    @Column(name = "patient_name", length = 255)
+    private String patientName;
+
+    @Column(name = "payment_method", length = 50)
+    private String paymentMethod;
+
+    @Column(name = "razorpay_order_id", length = 100)
+    private String razorpayOrderId;
+
+    @Column(name = "razorpay_payment_id", length = 100)
+    private String razorpayPaymentId;
+
+    @Column(name = "prescription_url", columnDefinition = "TEXT")
+    private String prescriptionUrl;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)

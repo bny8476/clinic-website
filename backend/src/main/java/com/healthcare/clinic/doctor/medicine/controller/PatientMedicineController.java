@@ -2,28 +2,29 @@ package com.healthcare.clinic.doctor.medicine.controller;
 
 import com.healthcare.clinic.doctor.medicine.dto.DoctorMedicineDto;
 import com.healthcare.clinic.doctor.medicine.dto.MedicineOrderRequest;
+import com.healthcare.clinic.doctor.medicine.entity.MedicineOrder;
 import com.healthcare.clinic.doctor.medicine.service.PatientMedicineService;
-import com.healthcare.clinic.finance.service.StripePaymentService;
+import com.healthcare.clinic.patient.entity.PatientProfile;
 import com.healthcare.clinic.patient.repository.PatientProfileRepository;
 import com.healthcare.clinic.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/patient/medicines")
 @RequiredArgsConstructor
+@Slf4j
 @PreAuthorize("hasAuthority('ROLE_PATIENT') or hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_ADMIN')")
 public class PatientMedicineController {
 
     private final PatientMedicineService patientMedicineService;
     private final PatientProfileRepository patientProfileRepository;
-    private final StripePaymentService stripePaymentService;
 
     @GetMapping
     public List<DoctorMedicineDto> getAvailableMedicines() {
@@ -33,23 +34,33 @@ public class PatientMedicineController {
     }
 
     @PostMapping({"/order", "/orders"})
-    public Map<String, String> orderMedicines(@RequestBody MedicineOrderRequest request) {
+    public Map<String, Object> orderMedicines(@RequestBody MedicineOrderRequest request) {
         Long currentUserId = SecurityUtils.getCurrentUserId();
         Long patientProfileId = getPatientProfileIdForUserId(currentUserId);
         
-        Long orderId = patientMedicineService.createOrder(patientProfileId, request);
+        MedicineOrder order = patientMedicineService.createOrder(patientProfileId, request);
         
-        String checkoutUrl = stripePaymentService.createMedicineCheckoutSession(orderId);
-        
-        return Map.of("checkoutUrl", checkoutUrl);
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("orderId", order.getOrderNumber() != null ? order.getOrderNumber() : ("ORD-2026-" + order.getId()));
+        response.put("id", order.getId());
+        response.put("totalAmount", order.getTotalAmount());
+        response.put("status", order.getStatus() != null ? order.getStatus().name() : "PHARMACY_PROCESSING");
+        response.put("paymentStatus", order.getPaymentStatus());
+        response.put("paymentMethod", order.getPaymentMethod());
+        response.put("message", "Order placed successfully! Forwarded directly to Pharmacy for fulfillment.");
+
+        return response;
     }
 
     private Long getPatientProfileIdForUserId(Long userId) {
-        if (userId == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
-        }
+        if (userId == null) return null;
         return patientProfileRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Patient profile not found"))
-                .getId();
+                .map(PatientProfile::getId)
+                .orElseGet(() -> {
+                    return patientProfileRepository.findById(userId)
+                            .map(PatientProfile::getId)
+                            .orElse(null);
+                });
     }
 }

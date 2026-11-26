@@ -14,4 +14,16 @@ import java.util.List;
 public class MedicineOrderRequest {
     private Long doctorId;
     private List<MedicineCartItemDto> items;
+    
+    // Patient Delivery & Payment Details
+    private String patientName;
+    private String contactPhone;
+    private String deliveryAddress;
+    private String deliveryCity;
+    private String deliveryPincode;
+    private String deliveryNotes;
+    private String paymentMethod;
+    private String razorpayOrderId;
+    private String razorpayPaymentId;
+    private String prescriptionUrl;
 }

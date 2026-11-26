@@ -29,6 +29,9 @@ public class MedicineOrderItem {
     @Column(name = "medicine_id")
     private Long medicineId;
 
+    @Column(name = "medicine_name_snapshot", length = 255)
+    private String medicineNameSnapshot;
+
     @Column(nullable = false)
     private Integer quantity;
 

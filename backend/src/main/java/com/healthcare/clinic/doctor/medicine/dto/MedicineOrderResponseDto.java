@@ -27,6 +27,15 @@ public class MedicineOrderResponseDto {
     private BigDecimal tax;
     private BigDecimal total;
     private String paymentStatus;
+    private String deliveryAddress;
+    private String deliveryCity;
+    private String deliveryPincode;
+    private String deliveryNotes;
+    private String contactPhone;
+    private String paymentMethod;
+    private String razorpayOrderId;
+    private String razorpayPaymentId;
+    private String prescriptionUrl;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<MedicineOrderItemDto> items;
@@ -39,6 +48,7 @@ public class MedicineOrderResponseDto {
         private Long id;
         private Long medicineId;
         private String medicineName;
+        private String medicineNameSnapshot;
         private String genericName;
         private String brandName;
         private String strength;

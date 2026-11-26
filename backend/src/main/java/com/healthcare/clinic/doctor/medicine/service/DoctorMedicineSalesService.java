@@ -414,7 +414,9 @@ public class DoctorMedicineSalesService {
                 Boolean rxReq = false;
                 Integer stock = 0;
 
-                if (item.getMedicineId() != null) {
+                if (item.getMedicineNameSnapshot() != null && !item.getMedicineNameSnapshot().trim().isEmpty()) {
+                    medName = item.getMedicineNameSnapshot();
+                } else if (item.getMedicineId() != null) {
                     EcommerceProduct product = productRepository.findById(item.getMedicineId()).orElse(null);
                     if (product != null) {
                         medName = product.getTitle();
@@ -434,6 +436,7 @@ public class DoctorMedicineSalesService {
                         .id(item.getId())
                         .medicineId(item.getMedicineId() != null ? item.getMedicineId() : (item.getDoctorMedicine() != null ? item.getDoctorMedicine().getId() : null))
                         .medicineName(medName)
+                        .medicineNameSnapshot(item.getMedicineNameSnapshot() != null ? item.getMedicineNameSnapshot() : medName)
                         .genericName(genericName)
                         .brandName(brandName)
                         .strength(strength)
@@ -451,11 +454,14 @@ public class DoctorMedicineSalesService {
             }
         }
 
+        String displayName = (order.getPatientName() != null && !order.getPatientName().trim().isEmpty())
+                ? order.getPatientName() : patientName;
+
         return MedicineOrderResponseDto.builder()
                 .id(order.getId())
-                .orderNumber(order.getOrderNumber() != null ? order.getOrderNumber() : ("MED-" + order.getId()))
+                .orderNumber(order.getOrderNumber() != null ? order.getOrderNumber() : ("ORD-2026-" + String.format("%05d", order.getId())))
                 .patientId(order.getPatient() != null ? order.getPatient().getId() : null)
-                .patientName(patientName)
+                .patientName(displayName)
                 .doctorId(order.getDoctor() != null ? order.getDoctor().getId() : null)
                 .doctorName(doctorName)
                 .prescriptionId(order.getPrescriptionId())
@@ -466,6 +472,15 @@ public class DoctorMedicineSalesService {
                 .tax(order.getTax())
                 .total(order.getTotal() != null && order.getTotal().compareTo(BigDecimal.ZERO) > 0 ? order.getTotal() : order.getTotalAmount())
                 .paymentStatus(order.getPaymentStatus())
+                .deliveryAddress(order.getDeliveryAddress())
+                .deliveryCity(order.getDeliveryCity())
+                .deliveryPincode(order.getDeliveryPincode())
+                .deliveryNotes(order.getDeliveryNotes())
+                .contactPhone(order.getContactPhone())
+                .paymentMethod(order.getPaymentMethod())
+                .razorpayOrderId(order.getRazorpayOrderId())
+                .razorpayPaymentId(order.getRazorpayPaymentId())
+                .prescriptionUrl(order.getPrescriptionUrl())
                 .createdAt(order.getCreatedAt())
                 .updatedAt(order.getUpdatedAt())
                 .items(itemDtos)
