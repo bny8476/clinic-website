@@ -4,7 +4,7 @@ import Card from '../../components/ui/Card';
 import { useNavigate, useParams } from 'react-router-dom';
 import { axiosPrivate } from '../../api/axios';
 import { toast } from 'react-hot-toast';
-import { Activity, AlertTriangle, ArrowLeft, CheckCircle, File, FileText, List, Lock, MessageSquare, Mic, MicOff, Paperclip, Pill, Plus, Save, Search, Send, Stethoscope, Upload, Video } from 'lucide-react';
+import { Activity, AlertTriangle, ArrowLeft, CheckCircle, ChevronLeft, ChevronRight, File, FileText, List, Lock, MessageSquare, Mic, MicOff, Paperclip, Pill, Plus, Save, Search, Send, Stethoscope, Upload, Video } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 const ClinicalWorkspace = () => {
@@ -22,6 +22,36 @@ const ClinicalWorkspace = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+
+  const tabsContainerRef = useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const checkTabScroll = () => {
+    if (tabsContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = tabsContainerRef.current;
+      setCanScrollLeft(scrollLeft > 4);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 4);
+    }
+  };
+
+  useEffect(() => {
+    checkTabScroll();
+    const handleResize = () => checkTabScroll();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const scrollTabs = (direction) => {
+    if (tabsContainerRef.current) {
+      const scrollAmount = 240;
+      tabsContainerRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth',
+      });
+      setTimeout(checkTabScroll, 320);
+    }
+  };
 
   const [recordingField, setRecordingField] = useState(null);
   const recognitionRef = useRef(null);
@@ -405,36 +435,79 @@ const ClinicalWorkspace = () => {
         {/* Main Content Area */}
         <div className="lg:col-span-3">
           <div className="bg-white rounded-2xl shadow-xs border border-slate-200 flex flex-col h-full min-h-[600px]">
-            {/* Tabs */}
-            <div className="flex border-b border-slate-200 overflow-x-auto hide-scrollbar p-1 bg-slate-50/50 rounded-t-2xl">
-              {[
-                { id: 'soap', icon: FileText, label: 'SOAP Notes' },
-                { id: 'dx', icon: List, label: 'Diagnoses' },
-                { id: 'allergy', icon: AlertTriangle, label: 'Allergies' },
-                { id: 'prescriptions', icon: Pill, label: 'Prescriptions' },
-                { id: 'referrals', icon: Send, label: 'Referrals' },
-                { id: 'attachments', icon: Paperclip, label: 'Attachments' },
-                { id: 'messages', icon: MessageSquare, label: 'Messages' }
-              ].map(tab => (
-                <button 
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`relative flex items-center gap-2 px-5 py-3 text-sm font-bold transition whitespace-nowrap ${activeTab === tab.id ? 'text-indigo-700' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100/50 rounded-xl'}`}
-                >
-                  {activeTab === tab.id && (
-                    <motion.div
-                      layoutId="workspaceTab"
-                      className="absolute inset-0 bg-white border border-slate-200 shadow-sm rounded-xl"
-                      initial={false}
-                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                      style={{ zIndex: 0 }}
-                    />
-                  )}
-                  <span className="relative z-10 flex items-center gap-2">
-                    <tab.icon size={16} /> {tab.label}
-                  </span>
-                </button>
-              ))}
+            {/* Tabs Navigation Header with Both Side Arrows */}
+            <div className="flex items-center border-b border-slate-200 bg-slate-50/60 rounded-t-2xl px-2 py-1 gap-1">
+              {/* Left Arrow Button */}
+              <button
+                type="button"
+                onClick={() => scrollTabs('left')}
+                disabled={!canScrollLeft}
+                className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-all border border-transparent ${
+                  canScrollLeft
+                    ? 'text-slate-700 hover:text-indigo-600 hover:bg-white hover:border-slate-200 cursor-pointer shadow-2xs active:scale-95'
+                    : 'text-slate-300 bg-transparent cursor-not-allowed opacity-30 pointer-events-none'
+                }`}
+                title="Scroll Left"
+                aria-label="Scroll tabs left"
+              >
+                <ChevronLeft size={18} strokeWidth={2.5} />
+              </button>
+
+              {/* Scrollable Tabs List */}
+              <div 
+                ref={tabsContainerRef}
+                onScroll={checkTabScroll}
+                className="flex-1 flex items-center gap-1 overflow-x-auto no-scrollbar scrollbar-none scroll-smooth py-0.5"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              >
+                {[
+                  { id: 'soap', icon: FileText, label: 'SOAP Notes' },
+                  { id: 'dx', icon: List, label: 'Diagnoses' },
+                  { id: 'allergy', icon: AlertTriangle, label: 'Allergies' },
+                  { id: 'prescriptions', icon: Pill, label: 'Prescriptions' },
+                  { id: 'referrals', icon: Send, label: 'Referrals' },
+                  { id: 'attachments', icon: Paperclip, label: 'Attachments' },
+                  { id: 'messages', icon: MessageSquare, label: 'Messages' }
+                ].map(tab => (
+                  <button 
+                    key={tab.id}
+                    onClick={() => {
+                      setActiveTab(tab.id);
+                      setTimeout(checkTabScroll, 100);
+                    }}
+                    className={`relative flex items-center gap-2 px-5 py-3 text-sm font-bold transition whitespace-nowrap shrink-0 ${activeTab === tab.id ? 'text-indigo-700' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100/60 rounded-xl'}`}
+                  >
+                    {activeTab === tab.id && (
+                      <motion.div
+                        layoutId="workspaceTab"
+                        className="absolute inset-0 bg-white border border-slate-200 shadow-sm rounded-xl"
+                        initial={false}
+                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                        style={{ zIndex: 0 }}
+                      />
+                    )}
+                    <span className="relative z-10 flex items-center gap-2">
+                      <tab.icon size={16} /> {tab.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Right Arrow Button */}
+              <button
+                type="button"
+                onClick={() => scrollTabs('right')}
+                disabled={!canScrollRight}
+                className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-all border border-transparent ${
+                  canScrollRight
+                    ? 'text-slate-700 hover:text-indigo-600 hover:bg-white hover:border-slate-200 cursor-pointer shadow-2xs active:scale-95'
+                    : 'text-slate-300 bg-transparent cursor-not-allowed opacity-30 pointer-events-none'
+                }`}
+                title="Scroll Right"
+                aria-label="Scroll tabs right"
+              >
+                <ChevronRight size={18} strokeWidth={2.5} />
+              </button>
             </div>
 
             {/* Tab Content */}
