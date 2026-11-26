@@ -132,12 +132,23 @@ export default function LeaveManagement() {
     }
   ], []);
 
-  const displayLeaves = rawLeaves.length > 0 ? rawLeaves : fallbackLeaves;
+  const [localOverrides, setLocalOverrides] = useState({});
+
+  const displayLeaves = useMemo(() => {
+    const list = rawLeaves.length > 0 ? rawLeaves : fallbackLeaves;
+    return list.map(l => {
+      if (localOverrides[l.id]) {
+        return { ...l, status: localOverrides[l.id] };
+      }
+      return l;
+    });
+  }, [rawLeaves, fallbackLeaves, localOverrides]);
 
   // Approve / Reject Status Mutation
   const statusMutation = useMutation({
     mutationFn: async ({ id, status }) => {
-      return (await axiosPrivate.patch(`/hr/leaves/${id}/status?status=${status}`)).data;
+      setLocalOverrides(prev => ({ ...prev, [id]: status }));
+      return (await axiosPrivate.patch(`/hr/leaves/${id}/status?status=${status}`, { status })).data;
     },
     onSuccess: (_, vars) => {
       toast.success(`Leave request ${vars.status === 'APPROVED' ? 'Approved' : 'Rejected'} successfully!`);

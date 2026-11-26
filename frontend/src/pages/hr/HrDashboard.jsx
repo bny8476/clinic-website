@@ -136,10 +136,13 @@ export default function HrDashboard() {
     enabled: userSearchQuery.trim().length >= 2
   });
 
+  const [localLeaveOverrides, setLocalLeaveOverrides] = useState({});
+
   // Leave Status Mutation (Approve / Reject directly from Command Center)
   const updateLeaveMutation = useMutation({
     mutationFn: async ({ id, status }) => {
-      return (await axiosPrivate.patch(`/hr/leaves/${id}/status?status=${status}`)).data;
+      setLocalLeaveOverrides(prev => ({ ...prev, [id]: status }));
+      return (await axiosPrivate.patch(`/hr/leaves/${id}/status?status=${status}`, { status })).data;
     },
     onSuccess: (_, vars) => {
       toast.success(`Leave request ${vars.status === 'APPROVED' ? 'Approved' : 'Rejected'} successfully!`);
@@ -178,44 +181,49 @@ export default function HrDashboard() {
 
   // Pending leaves queue
   const pendingLeaves = useMemo(() => {
+    let list = [];
     if (dashboardData?.pendingLeaveRequests && dashboardData.pendingLeaveRequests.length > 0) {
-      return dashboardData.pendingLeaveRequests;
-    }
-    const realPending = leaves.filter(l => (l.status || '').toUpperCase() === 'PENDING');
-    if (realPending.length > 0) return realPending;
-
-    // Realistic fallback pending leaves for testing
-    return [
-      {
-        id: 201,
-        leaveType: 'CASUAL',
-        startDate: new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0],
-        endDate: new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0],
-        reason: 'Family urgent commitment and travel.',
-        status: 'PENDING',
-        employee: {
-          id: 12,
-          department: 'Cardiology',
-          designation: 'Clinical Specialist',
-          user: { firstName: 'Dr. Rachel', lastName: 'Green', email: 'r.green@clinic.com' }
-        }
-      },
-      {
-        id: 202,
-        leaveType: 'SICK',
-        startDate: new Date().toISOString().split('T')[0],
-        endDate: new Date(Date.now() + 1 * 86400000).toISOString().split('T')[0],
-        reason: 'Acute viral fever and clinical recovery.',
-        status: 'PENDING',
-        employee: {
-          id: 15,
-          department: 'Emergency & Trauma',
-          designation: 'Senior Triage Nurse',
-          user: { firstName: 'James', lastName: 'Wilson', email: 'j.wilson@clinic.com' }
-        }
+      list = dashboardData.pendingLeaveRequests;
+    } else {
+      const realPending = leaves.filter(l => (l.status || '').toUpperCase() === 'PENDING');
+      if (realPending.length > 0) {
+        list = realPending;
+      } else {
+        list = [
+          {
+            id: 201,
+            leaveType: 'CASUAL',
+            startDate: new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0],
+            endDate: new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0],
+            reason: 'Family urgent commitment and travel.',
+            status: 'PENDING',
+            employee: {
+              id: 12,
+              department: 'Cardiology',
+              designation: 'Clinical Specialist',
+              user: { firstName: 'Dr. Rachel', lastName: 'Green', email: 'r.green@clinic.com' }
+            }
+          },
+          {
+            id: 202,
+            leaveType: 'SICK',
+            startDate: new Date().toISOString().split('T')[0],
+            endDate: new Date(Date.now() + 1 * 86400000).toISOString().split('T')[0],
+            reason: 'Acute viral fever and clinical recovery.',
+            status: 'PENDING',
+            employee: {
+              id: 15,
+              department: 'Emergency & Trauma',
+              designation: 'Senior Triage Nurse',
+              user: { firstName: 'James', lastName: 'Wilson', email: 'j.wilson@clinic.com' }
+            }
+          }
+        ];
       }
-    ];
-  }, [dashboardData, leaves]);
+    }
+
+    return list.filter(l => !localLeaveOverrides[l.id] || localLeaveOverrides[l.id] === 'PENDING');
+  }, [dashboardData, leaves, localLeaveOverrides]);
 
   // Aggregated KPI Stats
   const stats = useMemo(() => {

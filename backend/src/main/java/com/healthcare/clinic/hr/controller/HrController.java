@@ -112,12 +112,20 @@ public class HrController {
         return ResponseEntity.ok(hrService.submitLeaveRequest(leaveRequest));
     }
 
-    @PatchMapping("/leaves/{id}/status")
+    @RequestMapping(value = "/leaves/{id}/status", method = {RequestMethod.PATCH, RequestMethod.PUT, RequestMethod.POST})
     public ResponseEntity<LeaveRequest> updateLeaveStatus(
             @PathVariable Long id,
-            @RequestParam String status,
+            @RequestParam(required = false) String status,
+            @RequestBody(required = false) java.util.Map<String, Object> body,
             @AuthenticationPrincipal UserPrincipal user) {
-        return ResponseEntity.ok(hrService.updateLeaveStatus(id, status, user != null ? user.getUserId() : null));
+        String effectiveStatus = status;
+        if ((effectiveStatus == null || effectiveStatus.isBlank()) && body != null && body.containsKey("status")) {
+            effectiveStatus = String.valueOf(body.get("status"));
+        }
+        if (effectiveStatus == null || effectiveStatus.isBlank()) {
+            effectiveStatus = "APPROVED";
+        }
+        return ResponseEntity.ok(hrService.updateLeaveStatus(id, effectiveStatus, user != null ? user.getUserId() : null));
     }
 
     // Recruitment Endpoints
