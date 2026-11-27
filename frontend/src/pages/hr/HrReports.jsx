@@ -402,9 +402,6 @@ export default function HrReports() {
               <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
                 HR Workforce & Analytics Reports
               </h1>
-              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-blue-50 text-blue-700 border border-blue-200">
-                Audited & Institutional
-              </span>
             </div>
             <p className="text-sm font-medium text-slate-500 mt-1">
               Multi-dimensional reporting across staff headcount distribution, biometric attendance, leave utilization, and payroll compliance.

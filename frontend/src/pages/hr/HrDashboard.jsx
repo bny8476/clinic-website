@@ -337,9 +337,6 @@ export default function HrDashboard() {
               <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
                 HR Command Center & People Operations
               </h1>
-              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-blue-50 text-blue-700 border border-blue-200">
-                Institutional Core
-              </span>
             </div>
             <p className="text-sm font-medium text-slate-500 mt-1">
               Oversee hospital staffing, biometric shift attendance, leave adjudications, and monthly payroll disbursement.
