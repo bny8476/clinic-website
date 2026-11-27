@@ -67,7 +67,7 @@ const getTodayDateString = () => {
 
 export default function LeaveManagement() {
   const queryClient = useQueryClient();
-  const todayStr = useMemo(() => getTodayDateString(), []);
+  const todayStr = getTodayDateString();
 
   // Search & Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -467,7 +467,15 @@ export default function LeaveManagement() {
           </button>
 
           <button
-            onClick={() => setIsApplyModalOpen(true)}
+            onClick={() => {
+              const currentToday = getTodayDateString();
+              setLeaveForm(prev => ({
+                ...prev,
+                startDate: (!prev.startDate || prev.startDate < currentToday) ? currentToday : prev.startDate,
+                endDate: (!prev.endDate || prev.endDate < currentToday) ? currentToday : prev.endDate
+              }));
+              setIsApplyModalOpen(true);
+            }}
             className="px-5 py-2.5 rounded-xl font-bold text-xs text-white bg-[#2864FF] hover:bg-blue-700 flex items-center gap-2 transition shadow-md shadow-blue-500/20 cursor-pointer"
           >
             <Plus size={15} /> + Submit Leave Request
@@ -1001,6 +1009,15 @@ export default function LeaveManagement() {
                         value={leaveForm.startDate}
                         onChange={e => {
                           const val = e.target.value;
+                          if (val && val < todayStr) {
+                            toast.error('Start date cannot be in the past');
+                            setLeaveForm(prev => ({
+                              ...prev,
+                              startDate: todayStr,
+                              endDate: prev.endDate && prev.endDate < todayStr ? todayStr : prev.endDate
+                            }));
+                            return;
+                          }
                           setLeaveForm(prev => ({
                             ...prev,
                             startDate: val,
@@ -1009,6 +1026,9 @@ export default function LeaveManagement() {
                         }}
                         className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#2864FF] focus:bg-white transition cursor-pointer"
                       />
+                      <p className="text-[10px] text-slate-400 font-medium mt-1">
+                        Completed / past dates disabled (Starts from today: {todayStr})
+                      </p>
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
@@ -1019,9 +1039,21 @@ export default function LeaveManagement() {
                         required
                         min={leaveForm.startDate || todayStr}
                         value={leaveForm.endDate}
-                        onChange={e => setLeaveForm({ ...leaveForm, endDate: e.target.value })}
+                        onChange={e => {
+                          const val = e.target.value;
+                          const minAllowed = leaveForm.startDate || todayStr;
+                          if (val && val < minAllowed) {
+                            toast.error('End date cannot be prior to start date');
+                            setLeaveForm(prev => ({ ...prev, endDate: minAllowed }));
+                            return;
+                          }
+                          setLeaveForm({ ...leaveForm, endDate: val });
+                        }}
                         className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#2864FF] focus:bg-white transition cursor-pointer"
                       />
+                      <p className="text-[10px] text-slate-400 font-medium mt-1">
+                        Must be on or after start date
+                      </p>
                     </div>
                   </div>
 
