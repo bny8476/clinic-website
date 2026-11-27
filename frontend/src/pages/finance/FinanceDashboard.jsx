@@ -308,7 +308,7 @@ export default function FinanceDashboard() {
   }, [expenses, expenseFilter, searchTerm]);
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto min-h-screen bg-slate-50/60 font-sans">
+    <div className="w-full min-h-screen p-4 sm:p-6 lg:p-8 xl:p-10 space-y-6 bg-slate-50/60 font-sans max-w-[1920px] mx-auto">
       
       {/* ─── Top Executive Banner ─── */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white p-6 sm:p-7 rounded-2xl border border-slate-200/80 shadow-2xs">
@@ -380,7 +380,7 @@ export default function FinanceDashboard() {
       </div>
 
       {/* ─── 4 Primary Top Financial KPIs ─── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 xl:gap-6">
         
         {/* Total Revenue */}
         <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/80 shadow-2xs relative overflow-hidden group">
@@ -571,13 +571,13 @@ export default function FinanceDashboard() {
         <div className="space-y-6">
           
           {/* Charts Row 1: Revenue vs Expenses & Department Breakdown */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
             {/* 6-Month Revenue vs Expenses Trend */}
-            <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-2xs space-y-4">
+            <div className="lg:col-span-7 xl:col-span-8 bg-white p-6 sm:p-7 rounded-2xl border border-slate-200/80 shadow-2xs space-y-4">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div>
-                  <h3 className="text-base font-black text-slate-900">Revenue vs. Expenses Trend</h3>
+                  <h3 className="text-base sm:text-lg font-black text-slate-900">Revenue vs. Expenses Trend</h3>
                   <p className="text-xs text-slate-500">6-Month historical comparative trajectory and gross margin expansion</p>
                 </div>
                 <div className="flex items-center gap-4 text-xs font-bold">
@@ -594,7 +594,7 @@ export default function FinanceDashboard() {
               </div>
 
               {/* Bar Visualization */}
-              <div className="h-64 flex items-end justify-between gap-3 sm:gap-6 pt-6 border-b border-slate-100">
+              <div className="h-72 sm:h-80 flex items-end justify-between gap-3 sm:gap-6 lg:gap-8 pt-6 border-b border-slate-100">
                 {revenueVsExpenses.map((m, idx) => {
                   const maxVal = 5500000;
                   const revHeight = (m.revenue / maxVal) * 100;
@@ -603,23 +603,23 @@ export default function FinanceDashboard() {
 
                   return (
                     <div key={idx} className="flex-1 flex flex-col items-center h-full justify-end group">
-                      <div className="w-full flex items-end justify-center gap-1 sm:gap-2 h-full">
+                      <div className="w-full flex items-end justify-center gap-1.5 sm:gap-2.5 h-full">
                         {/* Revenue Bar */}
                         <div 
                           style={{ height: `${revHeight}%` }} 
-                          className="w-full max-w-[18px] bg-emerald-500 hover:bg-emerald-600 rounded-t-lg transition relative cursor-pointer"
+                          className="w-full max-w-[22px] bg-emerald-500 hover:bg-emerald-600 rounded-t-lg transition relative cursor-pointer"
                           title={`Revenue: ${formatINR(m.revenue)}`}
                         ></div>
                         {/* Expense Bar */}
                         <div 
                           style={{ height: `${expHeight}%` }} 
-                          className="w-full max-w-[18px] bg-rose-400 hover:bg-rose-500 rounded-t-lg transition relative cursor-pointer"
+                          className="w-full max-w-[22px] bg-rose-400 hover:bg-rose-500 rounded-t-lg transition relative cursor-pointer"
                           title={`Expense: ${formatINR(m.expense)}`}
                         ></div>
                         {/* Profit Bar */}
                         <div 
                           style={{ height: `${profitHeight}%` }} 
-                          className="w-full max-w-[14px] bg-blue-500 hover:bg-blue-600 rounded-t-lg transition relative cursor-pointer"
+                          className="w-full max-w-[16px] bg-blue-500 hover:bg-blue-600 rounded-t-lg transition relative cursor-pointer"
                           title={`Profit: ${formatINR(m.netProfit)}`}
                         ></div>
                       </div>
@@ -636,13 +636,13 @@ export default function FinanceDashboard() {
             </div>
 
             {/* Department Revenue Breakdown */}
-            <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-2xs space-y-4">
+            <div className="lg:col-span-5 xl:col-span-4 bg-white p-6 sm:p-7 rounded-2xl border border-slate-200/80 shadow-2xs space-y-4">
               <div>
-                <h3 className="text-base font-black text-slate-900">Revenue by Clinical Unit</h3>
+                <h3 className="text-base sm:text-lg font-black text-slate-900">Revenue by Clinical Unit</h3>
                 <p className="text-xs text-slate-500">Departmental contribution to hospital turnover</p>
               </div>
 
-              <div className="space-y-3 pt-2">
+              <div className="space-y-3.5 pt-2">
                 {revenueByDepartment.map((dept, i) => (
                   <div key={i} className="space-y-1">
                     <div className="flex justify-between items-center text-xs">
@@ -756,30 +756,30 @@ export default function FinanceDashboard() {
       {activeTab === 'revenue' && (
         <div className="space-y-6">
           {/* Revenue Workflow Header */}
-          <div className="p-5 bg-white rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
+          <div className="p-5 sm:p-6 bg-white rounded-2xl border border-slate-200/80 shadow-2xs space-y-4">
             <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
               <TrendingUp className="text-emerald-600 w-4 h-4" />
               Automated Clinical Revenue Ingestion Pipeline
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-2 pt-1 text-xs">
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/70 text-center">
-                <span className="font-bold text-slate-500 block text-[10px]">Step 1</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-1 text-xs">
+              <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/70 text-center">
+                <span className="font-bold text-slate-500 block text-[10px] uppercase">Step 1</span>
                 <span className="font-extrabold text-slate-800">Patient Receives Service</span>
               </div>
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/70 text-center">
-                <span className="font-bold text-slate-500 block text-[10px]">Step 2</span>
+              <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/70 text-center">
+                <span className="font-bold text-slate-500 block text-[10px] uppercase">Step 2</span>
                 <span className="font-extrabold text-slate-800">Billing Generates Invoice</span>
               </div>
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/70 text-center">
-                <span className="font-bold text-slate-500 block text-[10px]">Step 3</span>
+              <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/70 text-center">
+                <span className="font-bold text-slate-500 block text-[10px] uppercase">Step 3</span>
                 <span className="font-extrabold text-slate-800">Payment Captured</span>
               </div>
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/70 text-center">
-                <span className="font-bold text-slate-500 block text-[10px]">Step 4</span>
+              <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/70 text-center">
+                <span className="font-bold text-slate-500 block text-[10px] uppercase">Step 4</span>
                 <span className="font-extrabold text-slate-800">Finance Auto-Reconciles</span>
               </div>
-              <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-center">
-                <span className="font-bold text-emerald-700 block text-[10px]">Step 5</span>
+              <div className="p-3.5 bg-emerald-50 rounded-xl border border-emerald-200 text-center">
+                <span className="font-bold text-emerald-700 block text-[10px] uppercase">Step 5</span>
                 <span className="font-extrabold text-emerald-900">General Ledger Posted</span>
               </div>
             </div>
@@ -789,7 +789,7 @@ export default function FinanceDashboard() {
           </div>
 
           {/* Revenue Streams Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 xl:gap-6">
             <div className="p-4 bg-white rounded-2xl border border-slate-200/80 shadow-2xs space-y-2">
               <span className="text-xs font-bold text-slate-500 uppercase">Pharmacy Sales</span>
               <p className="text-xl font-black text-slate-900 font-mono">₹16,40,000</p>
@@ -1119,7 +1119,7 @@ export default function FinanceDashboard() {
           </div>
 
           {/* Bank Accounts Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {(bankingData.bankAccounts || [
               { accountName: 'HDFC Bank - Healthcare Operating A/C', accountNumber: '0029810004921', ifscCode: 'HDFC0000298', balance: 2145000, purpose: 'Corporate Salary & Vendor Outflows' },
               { accountName: 'SBI - Clinical Revenue Collection A/C', accountNumber: '38100928174', ifscCode: 'SBIN0004012', balance: 695000, purpose: 'UPI, POS Card & Patient Direct Credits' },
@@ -1146,7 +1146,7 @@ export default function FinanceDashboard() {
               <Wallet className="w-4 h-4 text-emerald-600" />
               Active Physical Cash Desk Drawers
             </h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {(bankingData.cashDrawers || [
                 { drawerName: 'Main OPD Front Desk Cash Drawer', cashierName: 'Cashier: Priya Nair', balance: 145000, status: 'OPEN', shift: 'Morning Shift' },
                 { drawerName: 'Pharmacy 24/7 Dispensing Register', cashierName: 'Cashier: Ramesh Kumar', balance: 120000, status: 'OPEN', shift: 'Continuous Shift' },
@@ -1182,7 +1182,7 @@ export default function FinanceDashboard() {
           </div>
 
           {/* Payroll KPI Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             <div className="p-5 bg-white rounded-2xl border border-slate-200/80 shadow-2xs space-y-1">
               <span className="text-xs font-bold text-slate-500 uppercase">Monthly Salary Expense</span>
               <p className="text-2xl font-black text-slate-900 font-mono">₹16,80,000</p>
