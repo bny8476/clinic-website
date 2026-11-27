@@ -555,9 +555,31 @@ function App() {
                   <Route path="archive" element={<RadiologyArchive />} />
                 </Route>
 
-                {/* ── Accountant → Finance redirect ───────────────────────────── */}
-                <Route path="/accountant" element={<Navigate to="/finance" replace />} />
-                <Route path="/accountant/*" element={<Navigate to="/finance" replace />} />
+                {/* ── Finance & Accounting Routes ───────────────────────────── */}
+                <Route
+                  path="/finance"
+                  element={
+                    <RoleRoute allowedRoles={['ROLE_FINANCE', 'ROLE_ACCOUNTANT', 'ROLE_ADMIN', 'ROLE_SUPER_ADMIN']} portalSlug="finance">
+                      <DashboardLayout portalSlug="finance" allowedRoles={['ROLE_FINANCE', 'ROLE_ACCOUNTANT', 'ROLE_ADMIN', 'ROLE_SUPER_ADMIN']} />
+                    </RoleRoute>
+                  }
+                >
+                  <Route index element={<Navigate to="/finance/dashboard" replace />} />
+                  <Route path="dashboard" element={<FinanceDashboard />} />
+                  <Route path="invoices" element={<InvoicesList />} />
+                  <Route path="pnl" element={<PnLStatement />} />
+                  <Route path="payments" element={<FinancePayments />} />
+                  <Route path="insurance-claims" element={<InsuranceClaimsList />} />
+                  <Route path="refunds" element={<FinanceRefunds />} />
+                  <Route path="daily-cash" element={<FinanceDailyCash />} />
+                  <Route path="reports" element={<FinancialReports />} />
+                  <Route path="revenue" element={<FinanceAnalyticsDashboard />} />
+                </Route>
+
+                {/* ── Accountant → Finance redirects ───────────────────────────── */}
+                <Route path="/accountant" element={<Navigate to="/finance/dashboard" replace />} />
+                <Route path="/accountant/dashboard" element={<Navigate to="/finance/dashboard" replace />} />
+                <Route path="/accountant/*" element={<Navigate to="/finance/dashboard" replace />} />
 
                 {/* ── HR Module Routes ────────────────────────────────────────── */}
                 <Route
