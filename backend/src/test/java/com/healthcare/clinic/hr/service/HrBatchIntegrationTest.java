@@ -137,7 +137,7 @@ public class HrBatchIntegrationTest {
         assertThat(procRes.getBody().getStatus()).isEqualTo("PAID");
 
         // Verify getAllStaffPayrolls includes it
-        ResponseEntity<List<StaffPayroll>> allRes = payrollController.getAllStaffPayrolls();
+        ResponseEntity<List<Map<String, Object>>> allRes = payrollController.getAllStaffPayrolls();
         assertThat(allRes.getBody()).isNotEmpty();
     }
 
