@@ -40,6 +40,9 @@ public class LeaveRequest {
     @Builder.Default
     private String status = "PENDING"; // PENDING, APPROVED, REJECTED
 
+    @Column(name = "document_url", columnDefinition = "TEXT")
+    private String documentUrl;
+
     @Column(name = "reviewed_by")
     private Long reviewedBy;
 

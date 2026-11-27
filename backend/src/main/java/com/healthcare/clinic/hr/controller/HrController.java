@@ -15,6 +15,7 @@ import com.healthcare.clinic.hr.service.OnboardingService;
 import com.healthcare.clinic.hr.service.RecruitmentService;
 import com.healthcare.clinic.hr.service.HrDocumentService;
 import com.healthcare.clinic.hr.service.CredentialService;
+import com.healthcare.clinic.hr.service.HrReportingService;
 import com.healthcare.clinic.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -38,6 +39,14 @@ public class HrController {
     private final OffboardingService offboardingService;
     private final HrDocumentService hrDocumentService;
     private final CredentialService credentialService;
+    private final HrReportingService hrReportingService;
+
+    @GetMapping("/reports/analytics")
+    public ResponseEntity<java.util.Map<String, Object>> getHrReportsAnalytics(
+            @RequestParam(required = false, defaultValue = "THIS_MONTH") String timeRange,
+            @RequestParam(required = false, defaultValue = "ALL") String department) {
+        return ResponseEntity.ok(hrReportingService.getComprehensiveHrReport(timeRange, department));
+    }
 
     @GetMapping("/dashboard")
     public ResponseEntity<java.util.Map<String, Object>> getHrDashboardSummary() {
@@ -59,17 +68,19 @@ public class HrController {
                 .filter(l -> l.getStartDate() != null && l.getEndDate() != null &&
                         !today.isBefore(l.getStartDate()) && !today.isAfter(l.getEndDate()))
                 .count();
+        long absentToday = Math.max(0, totalEmployees - presentToday - onLeaveToday);
 
         java.util.Map<String, Object> summary = new java.util.HashMap<>();
         summary.put("totalEmployees", totalEmployees);
         summary.put("presentToday", presentToday);
         summary.put("onLeaveToday", onLeaveToday);
+        summary.put("absentToday", absentToday);
         summary.put("pendingLeaves", pendingLeaves);
         summary.put("activeRequisitions", activeReqs.size());
         summary.put("recentEmployees", employees.stream().limit(6).toList());
         summary.put("pendingLeaveRequests", allLeaves.stream()
                 .filter(l -> "PENDING".equalsIgnoreCase(l.getStatus()))
-                .limit(6)
+                .limit(10)
                 .toList());
 
         return ResponseEntity.ok(summary);
@@ -80,9 +91,35 @@ public class HrController {
         return ResponseEntity.ok(hrService.getAllEmployees());
     }
 
+    @GetMapping("/employees/{id}")
+    public ResponseEntity<Employee> getEmployeeById(@PathVariable Long id) {
+        return hrService.getEmployeeById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @PostMapping("/employees")
     public ResponseEntity<Employee> createEmployee(@RequestBody Employee employee) {
         return ResponseEntity.ok(hrService.createEmployee(employee));
+    }
+
+    @PutMapping("/employees/{id}")
+    public ResponseEntity<Employee> updateEmployee(@PathVariable Long id, @RequestBody Employee employee) {
+        return ResponseEntity.ok(hrService.updateEmployee(id, employee));
+    }
+
+    @RequestMapping(value = "/employees/{id}/status", method = {RequestMethod.PATCH, RequestMethod.PUT, RequestMethod.POST})
+    public ResponseEntity<Employee> toggleEmployeeStatus(
+            @PathVariable Long id,
+            @RequestParam(required = false) Boolean active,
+            @RequestBody(required = false) java.util.Map<String, Object> body) {
+        Boolean targetActive = active;
+        if (targetActive == null && body != null && body.containsKey("isActive")) {
+            targetActive = Boolean.valueOf(String.valueOf(body.get("isActive")));
+        } else if (targetActive == null && body != null && body.containsKey("active")) {
+            targetActive = Boolean.valueOf(String.valueOf(body.get("active")));
+        }
+        return ResponseEntity.ok(hrService.toggleEmployeeStatus(id, targetActive));
     }
 
     @PostMapping("/attendance/check-in/{employeeId}")
@@ -97,9 +134,58 @@ public class HrController {
 
     @GetMapping("/attendance")
     public ResponseEntity<List<Attendance>> getAttendance(
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        if (startDate != null && endDate != null) {
+            return ResponseEntity.ok(hrService.getAttendanceByDateRange(startDate, endDate));
+        }
         LocalDate targetDate = date != null ? date : LocalDate.now();
         return ResponseEntity.ok(hrService.getAttendanceByDate(targetDate));
+    }
+
+    @PostMapping("/attendance/manual")
+    public ResponseEntity<Attendance> recordManualAttendance(@RequestBody java.util.Map<String, Object> body) {
+        Long employeeId = Long.valueOf(String.valueOf(body.get("employeeId")));
+        LocalDate date = body.get("date") != null ? LocalDate.parse(String.valueOf(body.get("date"))) : LocalDate.now();
+        String checkIn = body.get("checkIn") != null ? String.valueOf(body.get("checkIn")) : null;
+        String checkOut = body.get("checkOut") != null ? String.valueOf(body.get("checkOut")) : null;
+        String status = body.get("status") != null ? String.valueOf(body.get("status")) : "PRESENT";
+        String remarks = body.get("remarks") != null ? String.valueOf(body.get("remarks")) : null;
+
+        return ResponseEntity.ok(hrService.recordManualAttendance(employeeId, date, checkIn, checkOut, status, remarks));
+    }
+
+    @PutMapping("/attendance/{id}")
+    public ResponseEntity<Attendance> updateAttendance(
+            @PathVariable Long id,
+            @RequestBody java.util.Map<String, Object> body) {
+        String checkIn = body.get("checkIn") != null ? String.valueOf(body.get("checkIn")) : null;
+        String checkOut = body.get("checkOut") != null ? String.valueOf(body.get("checkOut")) : null;
+        String status = body.get("status") != null ? String.valueOf(body.get("status")) : null;
+        String remarks = body.get("remarks") != null ? String.valueOf(body.get("remarks")) : null;
+
+        return ResponseEntity.ok(hrService.updateAttendanceRecord(id, checkIn, checkOut, status, remarks));
+    }
+
+    @DeleteMapping("/attendance/{id}")
+    public ResponseEntity<Void> deleteAttendance(@PathVariable Long id) {
+        hrService.deleteAttendanceRecord(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/attendance/bulk-check-in")
+    public ResponseEntity<List<Attendance>> bulkCheckIn(@RequestBody java.util.Map<String, Object> body) {
+        @SuppressWarnings("unchecked")
+        List<Object> rawIds = (List<Object>) body.get("employeeIds");
+        List<Long> employeeIds = rawIds != null
+                ? rawIds.stream().map(o -> Long.valueOf(String.valueOf(o))).toList()
+                : java.util.Collections.emptyList();
+        LocalDate date = body.get("date") != null ? LocalDate.parse(String.valueOf(body.get("date"))) : LocalDate.now();
+        String checkIn = body.get("checkIn") != null ? String.valueOf(body.get("checkIn")) : null;
+        String status = body.get("status") != null ? String.valueOf(body.get("status")) : "PRESENT";
+
+        return ResponseEntity.ok(hrService.bulkCheckIn(employeeIds, date, checkIn, status));
     }
 
     @GetMapping("/leaves")
@@ -110,6 +196,19 @@ public class HrController {
     @PostMapping("/leaves")
     public ResponseEntity<LeaveRequest> submitLeave(@RequestBody LeaveRequest leaveRequest) {
         return ResponseEntity.ok(hrService.submitLeaveRequest(leaveRequest));
+    }
+
+    @PutMapping("/leaves/{id}")
+    public ResponseEntity<LeaveRequest> updateLeave(
+            @PathVariable Long id,
+            @RequestBody LeaveRequest updated) {
+        return ResponseEntity.ok(hrService.updateLeaveRequest(id, updated));
+    }
+
+    @DeleteMapping("/leaves/{id}")
+    public ResponseEntity<Void> deleteLeave(@PathVariable Long id) {
+        hrService.deleteLeaveRequest(id);
+        return ResponseEntity.noContent().build();
     }
 
     @RequestMapping(value = "/leaves/{id}/status", method = {RequestMethod.PATCH, RequestMethod.PUT, RequestMethod.POST})
@@ -129,6 +228,11 @@ public class HrController {
     }
 
     // Recruitment Endpoints
+    @GetMapping("/requisitions")
+    public ResponseEntity<List<JobRequisition>> getAllRequisitions() {
+        return ResponseEntity.ok(recruitmentService.getAllRequisitions());
+    }
+
     @PostMapping("/requisitions")
     public ResponseEntity<JobRequisition> createRequisition(@RequestBody JobRequisition requisition) {
         return ResponseEntity.ok(recruitmentService.createRequisition(requisition));
@@ -139,14 +243,54 @@ public class HrController {
         return ResponseEntity.ok(recruitmentService.getActiveRequisitions());
     }
 
+    @PutMapping("/requisitions/{id}")
+    public ResponseEntity<JobRequisition> updateRequisition(@PathVariable Long id, @RequestBody JobRequisition requisition) {
+        return ResponseEntity.ok(recruitmentService.updateRequisition(id, requisition));
+    }
+
+    @DeleteMapping("/requisitions/{id}")
+    public ResponseEntity<Void> deleteRequisition(@PathVariable Long id) {
+        recruitmentService.deleteRequisition(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/applications")
+    public ResponseEntity<List<JobApplication>> getAllApplications() {
+        return ResponseEntity.ok(recruitmentService.getAllApplications());
+    }
+
+    @PostMapping("/applications")
+    public ResponseEntity<JobApplication> submitApplication(@RequestBody JobApplication application) {
+        if (application.getJobRequisition() != null && application.getJobRequisition().getId() != null) {
+            return ResponseEntity.ok(recruitmentService.applyForJob(application.getJobRequisition().getId(), application));
+        }
+        return ResponseEntity.badRequest().build();
+    }
+
     @PostMapping("/requisitions/{id}/apply")
     public ResponseEntity<JobApplication> applyForJob(@PathVariable Long id, @RequestBody JobApplication application) {
         return ResponseEntity.ok(recruitmentService.applyForJob(id, application));
     }
 
-    @PutMapping("/applications/{id}/status")
-    public ResponseEntity<JobApplication> updateApplicationStatus(@PathVariable Long id, @RequestParam String status) {
-        return ResponseEntity.ok(recruitmentService.updateApplicationStatus(id, status));
+    @RequestMapping(value = "/applications/{id}/status", method = {RequestMethod.PUT, RequestMethod.PATCH})
+    public ResponseEntity<JobApplication> updateApplicationStatus(
+            @PathVariable Long id,
+            @RequestParam(required = false) String status,
+            @RequestBody(required = false) java.util.Map<String, Object> body) {
+        String effectiveStatus = status;
+        if ((effectiveStatus == null || effectiveStatus.isBlank()) && body != null && body.containsKey("status")) {
+            effectiveStatus = String.valueOf(body.get("status"));
+        }
+        if (effectiveStatus == null || effectiveStatus.isBlank()) {
+            effectiveStatus = "SCREENING";
+        }
+        return ResponseEntity.ok(recruitmentService.updateApplicationStatus(id, effectiveStatus));
+    }
+
+    @DeleteMapping("/applications/{id}")
+    public ResponseEntity<Void> deleteApplication(@PathVariable Long id) {
+        recruitmentService.deleteApplication(id);
+        return ResponseEntity.noContent().build();
     }
 
     // Onboarding Endpoints

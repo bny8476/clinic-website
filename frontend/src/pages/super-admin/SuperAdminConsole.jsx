@@ -6,8 +6,8 @@ import {
   Shield, Database, Server, Mail, Bell, AlertTriangle, User, 
   CheckCircle2, XCircle, RefreshCw, Download, Key, Cpu, HardDrive, 
   Lock, Sliders, Globe, Activity, Plus, Search, Building2, Trash2, 
-  Edit3, ExternalLink, ShieldAlert, Users, Layers, Zap, ArrowUpRight,
-  Clock, FileText, Check, ShieldCheck
+  Edit3, ExternalLink, ShieldAlert, Users, Zap, ArrowUpRight,
+  FileText, Check, ShieldCheck
 } from 'lucide-react';
 
 import DashboardShell from '../../components/dashboard/shared/DashboardShell';
@@ -167,20 +167,11 @@ const SuperAdminConsole = ({ defaultTab = 'health' }) => {
     { id: 'health', label: 'System Health', sub: 'Microservices & DB', icon: Activity },
     { id: 'users', label: 'User Management', sub: 'RBAC Directory & Roles', icon: Users },
     { id: 'flags', label: 'Feature Flags', sub: 'Global Toggles', icon: Sliders },
-    { id: 'plans', label: 'Subscription Plans', sub: 'SaaS Tiers & MRR', icon: Layers },
     { id: 'audit', label: 'Audit Logs', sub: 'Compliance Trail', icon: ShieldAlert },
     { id: 'security', label: 'Security & RBAC', sub: '98% Grade A+', icon: ShieldCheck },
     { id: 'sessions', label: 'Active Sessions', sub: 'Live Connections', icon: Users },
     { id: 'integrations', label: 'API & Integrations', sub: 'Gateways & ABDM', icon: Globe },
-    { id: 'backups', label: 'Backups & DR', sub: 'S3 Snapshots', icon: Database },
-    { id: 'retention', label: 'Data Retention', sub: 'HIPAA Purge Rules', icon: Clock }
-  ];
-
-  // Mock Subscription Plans Data
-  const subscriptionPlans = [
-    { name: 'Enterprise Healthcare', price: '₹49,999', period: '/month', badge: 'Popular', clinics: 12, maxDoctors: 'Unlimited', maxStorage: '2 TB', features: ['All 30+ Clinical & ERP Modules', '24/7 Dedicated SLA Support', 'Custom ABDM & FHIR Integration', 'Multi-Branch Inventory Sync'] },
-    { name: 'Clinic Pro', price: '₹19,999', period: '/month', badge: 'Standard', clinics: 4, maxDoctors: '25 Doctors', maxStorage: '500 GB', features: ['OPD, IPD, Pharmacy & Lab', 'Standard Email & Phone Support', 'Automated Daily Backups', 'Patient Portal & App Access'] },
-    { name: 'Basic Practice', price: '₹7,999', period: '/month', badge: 'Starter', clinics: 1, maxDoctors: '5 Doctors', maxStorage: '100 GB', features: ['OPD Appointments & Prescriptions', 'Basic Billing & Invoicing', 'Role-Based Access Control', 'Standard Security Audit Trail'] }
+    { id: 'backups', label: 'Backups & DR', sub: 'S3 Snapshots', icon: Database }
   ];
 
   // Mock Integrations Data
@@ -197,7 +188,7 @@ const SuperAdminConsole = ({ defaultTab = 'health' }) => {
       tabs={tabs} 
       activeTab={activeTab} 
       onTabChange={setActiveTab} 
-      tabsClassName="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-5 lg:grid-cols-5 xl:grid-cols-5 gap-2.5 px-6 py-3.5 bg-white border-b border-slate-200 shrink-0 w-full max-w-full"
+      tabsClassName="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-2.5 px-6 py-3.5 bg-white border-b border-slate-200 shrink-0 w-full max-w-full"
       quickActions={[]}
     >
       
@@ -248,7 +239,7 @@ const SuperAdminConsole = ({ defaultTab = 'health' }) => {
         {activeTab === 'health' && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <KPICard label="Active Subscriptions" value={loadingStats ? '...' : (stats.activePlans ?? 14)} colorToken="info" />
+              <KPICard label="Active Staff & Users" value={loadingStats ? '...' : (stats.totalUsers ?? 142)} colorToken="info" />
               <KPICard label="Global Config Keys" value={loadingStats ? '...' : (stats.totalConfigs ?? 48)} colorToken="success" />
               <KPICard label="Total Audit Events" value={loadingStats ? '...' : (stats.totalAuditLogs ? stats.totalAuditLogs.toLocaleString() : '12,450')} colorToken="primary" />
               <KPICard label="Infrastructure Health" value={stats.systemStatus ?? "Operational"} colorToken="warning" />
@@ -378,60 +369,6 @@ const SuperAdminConsole = ({ defaultTab = 'health' }) => {
                 isLoading={loadingFlags}
                 emptyTitle="No feature flags found"
               />
-            </div>
-          </div>
-        )}
-
-        {/* ── TAB 3: Subscription Plans ── */}
-        {activeTab === 'plans' && (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 m-0">Subscription & Licensing Tiers</h2>
-              <p className="text-xs text-slate-500 m-0 mt-0.5">Manage enterprise pricing models, module allocations, and clinic tenant limits.</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {subscriptionPlans.map((plan, i) => (
-                <div key={i} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex flex-col justify-between relative overflow-hidden">
-                  <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950 px-3 py-1 rounded-full border border-blue-200 dark:border-blue-800">
-                        {plan.badge}
-                      </span>
-                      <span className="text-xs font-semibold text-slate-400">{plan.clinics} Active Tenant{plan.clinics > 1 ? 's' : ''}</span>
-                    </div>
-                    <h3 className="text-xl font-extrabold text-slate-900 dark:text-slate-100 mb-2">{plan.name}</h3>
-                    <div className="flex items-baseline gap-1 mb-6">
-                      <span className="text-3xl font-black text-slate-900 dark:text-white">{plan.price}</span>
-                      <span className="text-xs text-slate-500 font-medium">{plan.period}</span>
-                    </div>
-
-                    <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800 mb-6">
-                      <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
-                        <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                        <span>Max Doctors: <strong>{plan.maxDoctors}</strong></span>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
-                        <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                        <span>Cloud Storage: <strong>{plan.maxStorage}</strong></span>
-                      </div>
-                      {plan.features.map((f, idx) => (
-                        <div key={idx} className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
-                          <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                          <span>{f}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => toast.success(`Editing configuration for ${plan.name}`)}
-                    className="w-full py-2.5 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 text-slate-700 dark:text-slate-200 font-bold text-xs transition cursor-pointer"
-                  >
-                    Configure Plan Limits
-                  </button>
-                </div>
-              ))}
             </div>
           </div>
         )}
@@ -650,63 +587,6 @@ const SuperAdminConsole = ({ defaultTab = 'health' }) => {
                     </button>
                   </div>
                 ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ── TAB 9: Data Retention ── */}
-        {activeTab === 'retention' && (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 m-0">Data Retention & Compliance Governance</h2>
-              <p className="text-xs text-slate-500 m-0 mt-0.5">Configure medical record retention timelines, automated PHI purge rules, and HIPAA log archives.</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
-                <div className="p-3 bg-blue-50 dark:bg-blue-950/40 text-[#2160FF] rounded-2xl w-fit">
-                  <Clock size={20} />
-                </div>
-                <div>
-                  <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-100 m-0">Clinical Records Retention</h3>
-                  <p className="text-xs text-slate-500 mt-1">Minimum legal retention period for patient EMR & prescription files.</p>
-                </div>
-                <div className="text-2xl font-black text-[#2160FF]">7 Years</div>
-                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-                  ✓ Compliant with Medical Council Rules
-                </span>
-              </div>
-
-              <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
-                <div className="p-3 bg-purple-50 dark:bg-purple-950/40 text-purple-600 rounded-2xl w-fit">
-                  <FileText size={20} />
-                </div>
-                <div>
-                  <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-100 m-0">Audit Logs Archival</h3>
-                  <p className="text-xs text-slate-500 mt-1">Active hot storage window for access & modification audit events.</p>
-                </div>
-                <div className="text-2xl font-black text-purple-600">365 Days</div>
-                <span className="text-[10px] font-bold text-purple-600 bg-purple-50 px-2.5 py-1 rounded-full border border-purple-200">
-                  Auto-archived to AWS S3 Glacier
-                </span>
-              </div>
-
-              <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
-                <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 rounded-2xl w-fit">
-                  <ShieldCheck size={20} />
-                </div>
-                <div>
-                  <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-100 m-0">Automated Purge Scheduler</h3>
-                  <p className="text-xs text-slate-500 mt-1">Scheduled cron task for soft-deleted record cleanup.</p>
-                </div>
-                <div className="text-2xl font-black text-emerald-600">Every 30 Days</div>
-                <button
-                  onClick={() => toast.success('Triggered compliance data retention verification run')}
-                  className="w-full py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition cursor-pointer"
-                >
-                  Run Compliance Check
-                </button>
               </div>
             </div>
           </div>

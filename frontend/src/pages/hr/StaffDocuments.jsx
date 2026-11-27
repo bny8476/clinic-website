@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
@@ -326,15 +327,9 @@ export default function StaffDocuments() {
             <FileText className="w-7 h-7 text-[#2864FF]" />
           </div>
           <div>
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-                Staff Document Repository & Compliance
-              </h1>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-blue-50 text-blue-700 border border-blue-200 shadow-2xs">
-                <ShieldCheck size={14} className="text-blue-600" />
-                Verified Clinical Files
-              </span>
-            </div>
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+              Staff Document Repository & Compliance
+            </h1>
             <p className="text-sm font-medium text-slate-500 mt-1">
               Store contracts, inspect medical licensure, track clinical credentials, and archive verified personnel documentation.
             </p>
@@ -343,18 +338,6 @@ export default function StaffDocuments() {
 
         {/* Action Controls */}
         <div className="flex items-center gap-3 shrink-0 flex-wrap sm:flex-nowrap w-full sm:w-auto">
-          <button
-            onClick={() => {
-              refetch();
-              toast.success('Document archive refreshed');
-            }}
-            title="Refresh Archive"
-            disabled={isFetching}
-            className="p-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 transition shadow-2xs cursor-pointer flex items-center justify-center shrink-0"
-          >
-            <RotateCw size={17} className={isFetching ? 'animate-spin text-blue-600' : ''} />
-          </button>
-
           <button
             onClick={() => {
               setUploadForm(prev => ({ ...prev, staffId: selectedStaff }));
@@ -686,15 +669,16 @@ export default function StaffDocuments() {
       </div>
 
       {/* ── Upload Document Modal ────────────────────────────────────── */}
-      <AnimatePresence>
-        {isUploadModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-lg w-full p-6 sm:p-7 space-y-4"
-            >
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {isUploadModalOpen && (
+            <div className="fixed inset-0 z-[9998] flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="relative z-[9999] bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-lg w-full p-6 sm:p-7 space-y-4 max-h-[90vh] overflow-y-auto"
+              >
               <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
@@ -807,18 +791,21 @@ export default function StaffDocuments() {
             </motion.div>
           </div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body
+    )}
 
       {/* ── Document Preview Modal ──────────────────────────────────── */}
-      <AnimatePresence>
-        {previewDoc && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-3xl w-full p-6 sm:p-7 space-y-4 max-h-[90vh] flex flex-col"
-            >
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {previewDoc && (
+            <div className="fixed inset-0 z-[9998] flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="relative z-[9999] bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-3xl w-full p-6 sm:p-7 space-y-4 max-h-[90vh] flex flex-col"
+              >
               {/* Header */}
               <div className="flex items-center justify-between pb-3 border-b border-slate-100 shrink-0">
                 <div className="flex items-center gap-3 truncate">
@@ -918,7 +905,9 @@ export default function StaffDocuments() {
             </motion.div>
           </div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body
+    )}
 
       {/* ── Confirm Delete Dialog ────────────────────────────────────── */}
       <ConfirmDialog

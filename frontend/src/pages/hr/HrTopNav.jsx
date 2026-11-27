@@ -1,13 +1,14 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
-  Activity,
+  LayoutDashboard,
   Users,
   Calendar,
-  FileSignature,
+  Clock,
   DollarSign,
   Briefcase,
-  FileText
+  FileText,
+  BarChart3
 } from 'lucide-react';
 
 export default function HrTopNav() {
@@ -15,18 +16,19 @@ export default function HrTopNav() {
   const location = useLocation();
 
   const navTabs = [
-    { id: 'dashboard', label: 'Command Center', icon: Activity, path: '/hr/dashboard' },
-    { id: 'employees', label: 'Staff Directory', icon: Users, path: '/hr/employees' },
-    { id: 'attendance', label: 'Attendance & Shifts', icon: Calendar, path: '/hr/attendance' },
-    { id: 'leave', label: 'Leave Requests', icon: FileSignature, path: '/hr/leave' },
-    { id: 'payroll', label: 'Payroll Processing', icon: DollarSign, path: '/hr/payroll' },
-    { id: 'recruitment', label: 'Recruitment & Jobs', icon: Briefcase, path: '/hr/recruitment' },
-    { id: 'documents', label: 'Staff Documents', icon: FileText, path: '/hr/documents' }
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/hr/dashboard' },
+    { id: 'employees', label: 'Employees', icon: Users, path: '/hr/employees' },
+    { id: 'attendance', label: 'Attendance', icon: Calendar, path: '/hr/attendance' },
+    { id: 'leave', label: 'Leave', icon: Clock, path: '/hr/leave' },
+    { id: 'payroll', label: 'Payroll', icon: DollarSign, path: '/hr/payroll' },
+    { id: 'recruitment', label: 'Recruitment', icon: Briefcase, path: '/hr/recruitment' },
+    { id: 'documents', label: 'Documents', icon: FileText, path: '/hr/documents' },
+    { id: 'reports', label: 'Reports', icon: BarChart3, path: '/hr/reports' }
   ];
 
   return (
     <div className="w-full flex justify-center">
-      <div className="flex w-fit max-w-full items-center gap-1.5 bg-white p-1.5 rounded-2xl shadow-2xs border border-slate-200/80 overflow-x-auto scrollbar-none">
+      <div className="flex w-fit max-w-full items-center gap-1 sm:gap-1.5 bg-white p-1.5 rounded-2xl shadow-2xs border border-slate-200/80 overflow-x-auto scrollbar-none">
         {navTabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = tab.path === '/hr/dashboard'
@@ -37,7 +39,7 @@ export default function HrTopNav() {
             <button
               key={tab.id}
               onClick={() => navigate(tab.path)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-150 whitespace-nowrap cursor-pointer shrink-0 ${
+              className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-bold transition-all duration-150 whitespace-nowrap cursor-pointer shrink-0 ${
                 isActive
                   ? 'bg-[#2864FF] text-white shadow-sm shadow-blue-500/20'
                   : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'

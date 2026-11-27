@@ -12,4 +12,5 @@ public interface StaffPayrollRepository extends JpaRepository<StaffPayroll, Long
     List<StaffPayroll> findByStaffIdOrderByMonthYearDesc(Long staffId);
     List<StaffPayroll> findByMonthYear(String monthYear);
     Optional<StaffPayroll> findByStaffIdAndMonthYear(Long staffId, String monthYear);
+    List<StaffPayroll> findAllByOrderByIdDesc();
 }

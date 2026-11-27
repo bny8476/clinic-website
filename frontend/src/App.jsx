@@ -207,6 +207,7 @@ const Attendance = lazy(() => import('./pages/hr/Attendance'));
 const PayrollManagement = lazy(() => import('./pages/hr/PayrollManagement'));
 const Recruitment = lazy(() => import('./pages/hr/Recruitment'));
 const StaffDocuments = lazy(() => import('./pages/hr/StaffDocuments'));
+const HrReports = lazy(() => import('./pages/hr/HrReports'));
 
 // Analytics Module routes
 const AnalyticsDashboard = lazy(() => import('./pages/analytics/AnalyticsDashboard'));
@@ -283,7 +284,7 @@ function App() {
       <BrowserRouter>
         <AuthInitializer>
           <RealtimeNotificationsListener />
-          <Toaster 
+          <Toaster
             position="top-right"
             toastOptions={{
               duration: 4000,
@@ -314,543 +315,542 @@ function App() {
             <Suspense fallback={<PageLoadingSkeleton />}>
               <Routes>
 
-            {/* ── Public Routes ───────────────────────────────────────────── */}
-            <Route element={<PublicLayout />}>
-              <Route path="/" element={<Home />} />
-              <Route path="/doctors" element={<DoctorList />} />
-              <Route path="/medicines" element={<MedicineMarketplace />} />
-              <Route path="/medicines/:medicineId" element={<MedicineDetailsPage />} />
-              <Route path="/cart" element={<CartPage />} />
-              <Route path="/checkout" element={<MedicineCheckoutPage />} />
-              <Route path="/my-orders" element={<PatientOrdersPage />} />
-              <Route path="/my-orders/:orderId" element={<PatientOrderDetailPage />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/:portalSlug/register" element={<Register />} />
-            </Route>
-            
-            {/* ── Unified Single Login Page ────────────────────────────────── */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/403" element={<Unauthorized />} />
-            <Route path="/unauthorized" element={<Unauthorized />} />
+                {/* ── Public Routes ───────────────────────────────────────────── */}
+                <Route element={<PublicLayout />}>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/doctors" element={<DoctorList />} />
+                  <Route path="/medicines" element={<MedicineMarketplace />} />
+                  <Route path="/medicines/:medicineId" element={<MedicineDetailsPage />} />
+                  <Route path="/cart" element={<CartPage />} />
+                  <Route path="/checkout" element={<MedicineCheckoutPage />} />
+                  <Route path="/my-orders" element={<PatientOrdersPage />} />
+                  <Route path="/my-orders/:orderId" element={<PatientOrderDetailPage />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/:portalSlug/register" element={<Register />} />
+                </Route>
 
-            {/* Legacy Portal Login Redirects */}
-            <Route path="/doctor/login" element={<Navigate to="/login" replace />} />
-            <Route path="/patient/login" element={<Navigate to="/login" replace />} />
-            <Route path="/nurse/login" element={<Navigate to="/login" replace />} />
-            <Route path="/pharmacy/login" element={<Navigate to="/login" replace />} />
-            <Route path="/admin/login" element={<Navigate to="/login" replace />} />
-            <Route path="/lab/login" element={<Navigate to="/login" replace />} />
-            <Route path="/:portalSlug/login" element={<Navigate to="/login" replace />} />
-            
-            <Route 
-              path="/teleconsultation/room/:id" 
-              element={
-                <RoleRoute allowedRoles={['ROLE_PATIENT', 'ROLE_DOCTOR', 'ROLE_SUPER_ADMIN']}>
-                  <TeleconsultationRoom />
-                </RoleRoute>
-              } 
-            />
+                {/* ── Unified Single Login Page ────────────────────────────────── */}
+                <Route path="/login" element={<Login />} />
+                <Route path="/403" element={<Unauthorized />} />
+                <Route path="/unauthorized" element={<Unauthorized />} />
 
-          {/* ── Patient Routes ──────────────────────────────────────────── */}
-          <Route
-            path="/patient"
-            element={
-              <RoleRoute allowedRoles={['ROLE_PATIENT', 'ROLE_SUPER_ADMIN']} portalSlug="patient">
-                <DashboardLayout portalSlug="patient" allowedRoles={['ROLE_PATIENT', 'ROLE_SUPER_ADMIN']} />
-              </RoleRoute>
-            }
-          >
-            <Route index element={<Navigate to="/patient/dashboard" replace />} />
-            <Route path="dashboard" element={<PatientDashboard />} />
-            <Route path="profile" element={<PatientProfileEdit />} />
-            <Route path="profile-edit" element={<PatientProfileEdit />} />
-            <Route path="book" element={<BookAppointment />} />
-            <Route path="book/:doctorId" element={<BookAppointment />} />
-            <Route path="appointments" element={<AppointmentHistory />} />
-            <Route path="records" element={<MedicalRecords />} />
-            <Route path="billing" element={<PatientBilling />} />
-            <Route path="payments" element={<PatientBilling />} />
-            <Route path="prescriptions" element={<PatientPrescriptions />} />
-            <Route path="order-medicine" element={<OrderMedicine />} />
-            <Route path="lab-reports" element={<LabReports />} />
-            {/* Previously missing patient routes */}
-            <Route path="radiology-reports" element={<RadiologyReports />} />
-            <Route path="radiology" element={<RadiologyReports />} />
-            <Route path="insurance" element={<Insurance />} />
-            <Route path="timeline" element={<HealthTimeline />} />
-            <Route path="vitals" element={<HealthTimeline />} />
-            <Route path="orders" element={<Orders />} />
-            <Route path="dependents" element={<PatientDependents />} />
-            <Route path="settings" element={<PatientSettings />} />
-            <Route path="consent" element={<PatientConsent />} />
-            <Route path="support" element={<PatientSupport />} />
-            <Route path="home-visits" element={<HomeVisits />} />
-            <Route path="membership" element={<MembershipPlans />} />
-            <Route path="reminders" element={<PatientReminders />} />
-            <Route path="survey" element={<SurveyResponse />} />
-            <Route path="notifications" element={<NotificationsPage />} />
-            <Route path="teleconsultations" element={<Teleconsultations />} />
-            <Route path="teleconsult" element={<Teleconsultations />} />
-            <Route path="ai-assistant" element={<AiAssistant />} />
-            <Route path="documents" element={<PatientDocuments />} />
-            
-            {/* Patient eCommerce Routes */}
-            <Route path="ecommerce">
-              <Route path="catalog" element={<ProductCatalog />} />
-              <Route path="cart" element={<ShoppingCart />} />
-              <Route path="checkout" element={<CheckoutPage />} />
-            </Route>
-          </Route>
+                {/* Legacy Portal Login Redirects */}
+                <Route path="/doctor/login" element={<Navigate to="/login" replace />} />
+                <Route path="/patient/login" element={<Navigate to="/login" replace />} />
+                <Route path="/nurse/login" element={<Navigate to="/login" replace />} />
+                <Route path="/pharmacy/login" element={<Navigate to="/login" replace />} />
+                <Route path="/admin/login" element={<Navigate to="/login" replace />} />
+                <Route path="/lab/login" element={<Navigate to="/login" replace />} />
+                <Route path="/:portalSlug/login" element={<Navigate to="/login" replace />} />
 
-          {/* ── Doctor Routes ───────────────────────────────────────────── */}
-          <Route
-            path="/doctor"
-            element={
-              <RoleRoute allowedRoles={['ROLE_DOCTOR', 'ROLE_SUPER_ADMIN']} portalSlug="doctor">
-                <DashboardLayout portalSlug="doctor" allowedRoles={['ROLE_DOCTOR', 'ROLE_SUPER_ADMIN']} />
-              </RoleRoute>
-            }
-          >
-            <Route index element={<Navigate to="/doctor/dashboard" replace />} />
-            <Route path="dashboard" element={<DoctorDashboard />} />
-            <Route path="appointments/today" element={<AppointmentListToday />} />
-            <Route path="queue" element={<ConsultationQueue />} />
-            <Route path="consultation/:id" element={<ClinicalWorkspace />} />
-            <Route path="calendar" element={<DoctorCalendar />} />
-            <Route path="patients" element={<PatientList />} />
-            <Route path="register" element={<PatientRegistration />} />
-            <Route path="patients/:patientId" element={<PatientDetail />} />
-            <Route path="patients/:patientId/notes" element={<ClinicalNotes />} />
-            <Route path="patients/:patientId/prescriptions/new" element={<NewPrescription />} />
-            <Route path="patients/:patientId/prescriptions/:prescriptionId/edit" element={<NewPrescription />} />
+                <Route
+                  path="/teleconsultation/room/:id"
+                  element={
+                    <RoleRoute allowedRoles={['ROLE_PATIENT', 'ROLE_DOCTOR', 'ROLE_SUPER_ADMIN']}>
+                      <TeleconsultationRoom />
+                    </RoleRoute>
+                  }
+                />
 
-            <Route path="lab-request" element={<LabRequest />} />
-            <Route path="radiology-request" element={<RadiologyRequest />} />
-            <Route path="patients/:patientId/lab-request" element={<LabRequest />} />
-            <Route path="patients/:patientId/radiology-request" element={<RadiologyRequest />} />
-            <Route path="patients/:patientId/care-pathways" element={<PatientCarePathwayView />} />
-            <Route path="prescriptions" element={<DoctorPrescriptions />} />
-            <Route path="lab-reports" element={<DoctorLabReports />} />
-            <Route path="lab-reports/upload" element={<UploadLabReport />} />
-            <Route path="medical-certificate" element={<DoctorMedicalCertificates />} />
-            <Route path="prescription-templates" element={<PrescriptionTemplates />} />
-            <Route path="follow-ups" element={<FollowUps />} />
-            <Route path="earnings" element={<DoctorEarnings />} />
-            <Route path="analytics" element={<DoctorAnalytics />} />
-            <Route path="cds" element={<ClinicalDecisionSupport />} />
-            <Route path="care-pathways/builder" element={<CarePathwayBuilder />} />
-            <Route path="schedule-settings" element={<DoctorScheduleSettings />} />
-            <Route path="manage-medicines" element={<ManageMedicines />} />
-            <Route path="orders" element={<DoctorMedicineOrders />} />
-            <Route path="orders/:orderId" element={<DoctorMedicineOrders />} />
-            <Route path="support" element={<DoctorSupport />} />
-          </Route>
+                {/* ── Patient Routes ──────────────────────────────────────────── */}
+                <Route
+                  path="/patient"
+                  element={
+                    <RoleRoute allowedRoles={['ROLE_PATIENT', 'ROLE_SUPER_ADMIN']} portalSlug="patient">
+                      <DashboardLayout portalSlug="patient" allowedRoles={['ROLE_PATIENT', 'ROLE_SUPER_ADMIN']} />
+                    </RoleRoute>
+                  }
+                >
+                  <Route index element={<Navigate to="/patient/dashboard" replace />} />
+                  <Route path="dashboard" element={<PatientDashboard />} />
+                  <Route path="profile" element={<PatientProfileEdit />} />
+                  <Route path="profile-edit" element={<PatientProfileEdit />} />
+                  <Route path="book" element={<BookAppointment />} />
+                  <Route path="book/:doctorId" element={<BookAppointment />} />
+                  <Route path="appointments" element={<AppointmentHistory />} />
+                  <Route path="records" element={<MedicalRecords />} />
+                  <Route path="billing" element={<PatientBilling />} />
+                  <Route path="payments" element={<PatientBilling />} />
+                  <Route path="prescriptions" element={<PatientPrescriptions />} />
+                  <Route path="order-medicine" element={<OrderMedicine />} />
+                  <Route path="lab-reports" element={<LabReports />} />
+                  {/* Previously missing patient routes */}
+                  <Route path="radiology-reports" element={<RadiologyReports />} />
+                  <Route path="radiology" element={<RadiologyReports />} />
+                  <Route path="insurance" element={<Insurance />} />
+                  <Route path="timeline" element={<HealthTimeline />} />
+                  <Route path="vitals" element={<HealthTimeline />} />
+                  <Route path="orders" element={<Orders />} />
+                  <Route path="dependents" element={<PatientDependents />} />
+                  <Route path="settings" element={<PatientSettings />} />
+                  <Route path="consent" element={<PatientConsent />} />
+                  <Route path="support" element={<PatientSupport />} />
+                  <Route path="home-visits" element={<HomeVisits />} />
+                  <Route path="membership" element={<MembershipPlans />} />
+                  <Route path="reminders" element={<PatientReminders />} />
+                  <Route path="survey" element={<SurveyResponse />} />
+                  <Route path="notifications" element={<NotificationsPage />} />
+                  <Route path="teleconsultations" element={<Teleconsultations />} />
+                  <Route path="teleconsult" element={<Teleconsultations />} />
+                  <Route path="ai-assistant" element={<AiAssistant />} />
+                  <Route path="documents" element={<PatientDocuments />} />
 
-          {/* ── Nurse Routes ────────────────────────────────────────────── */}
-          <Route
-            path="/nurse"
-            element={
-              <RoleRoute allowedRoles={['ROLE_NURSE', 'ROLE_SUPER_ADMIN']} portalSlug="nurse">
-                <DashboardLayout portalSlug="nurse" allowedRoles={['ROLE_NURSE', 'ROLE_SUPER_ADMIN']} />
-              </RoleRoute>
-            }
-          >
-            <Route index element={<Navigate to="/nurse/dashboard" replace />} />
-            <Route path="dashboard" element={<NurseDashboard />} />
-            <Route path="patients" element={<NurseAssignedPatients />} />
-            <Route path="vitals" element={<VitalSignsEntry />} />
-            <Route path="medication" element={<MedicationAdministration />} />
-            <Route path="medications" element={<MedicationAdministration />} />
-            <Route path="notes" element={<NursingNotes />} />
-            <Route path="care" element={<NursingNotes />} />
-            <Route path="reports" element={<UploadLabReport />} />
-            <Route path="lab" element={<LabWorklist />} />
-            <Route path="monitoring" element={<PatientMonitoring />} />
-            <Route path="wards" element={<WardManagement />} />
-            <Route path="tasks" element={<TaskManagement />} />
-            <Route path="activities" element={<TaskManagement />} />
-            <Route path="op-queue" element={<NurseAssignedPatients />} />
-            <Route path="walk-in" element={<WalkInCheckIn />} />
-            <Route path="workspace/:patientId" element={<NurseWorkspace />} />
-            {/* Previously missing nurse routes */}
-          </Route>
+                  {/* Patient eCommerce Routes */}
+                  <Route path="ecommerce">
+                    <Route path="catalog" element={<ProductCatalog />} />
+                    <Route path="cart" element={<ShoppingCart />} />
+                    <Route path="checkout" element={<CheckoutPage />} />
+                  </Route>
+                </Route>
 
-          {/* ── Reception Routes ────────────────────────────────────────── */}
-          <Route
-            path="/reception"
-            element={
-              <RoleRoute allowedRoles={['ROLE_RECEPTION', 'ROLE_SUPER_ADMIN']} portalSlug="reception">
-                <DashboardLayout portalSlug="reception" allowedRoles={['ROLE_RECEPTION', 'ROLE_SUPER_ADMIN']} />
-              </RoleRoute>
-            }
-          >
-            <Route index element={<Navigate to="/reception/dashboard" replace />} />
-            <Route path="dashboard" element={<ReceptionDashboard />} />
-            <Route path="queue" element={<QueueManagement />} />
-            <Route path="register" element={<PatientRegistration />} />
-            <Route path="tokens" element={<TokenGeneration />} />
-            <Route path="walk-in" element={<WalkInCheckIn />} />
-            <Route path="billing" element={<ReceptionBilling />} />
-            <Route path="insurance" element={<InsuranceVerificationPage />} />
-            <Route path="documents" element={<DocumentScanning />} />
-            <Route path="kiosk" element={<CheckInKiosk />} />
-            <Route path="search" element={<PatientSearch />} />
-            {/* Previously missing reception routes */}
-            <Route path="book" element={<DoctorList />} />
-            <Route path="book/:doctorId" element={<BookAppointment />} />
-            <Route path="support" element={<ReceptionSupport />} />
-          </Route>
+                {/* ── Doctor Routes ───────────────────────────────────────────── */}
+                <Route
+                  path="/doctor"
+                  element={
+                    <RoleRoute allowedRoles={['ROLE_DOCTOR', 'ROLE_SUPER_ADMIN']} portalSlug="doctor">
+                      <DashboardLayout portalSlug="doctor" allowedRoles={['ROLE_DOCTOR', 'ROLE_SUPER_ADMIN']} />
+                    </RoleRoute>
+                  }
+                >
+                  <Route index element={<Navigate to="/doctor/dashboard" replace />} />
+                  <Route path="dashboard" element={<DoctorDashboard />} />
+                  <Route path="appointments/today" element={<AppointmentListToday />} />
+                  <Route path="queue" element={<ConsultationQueue />} />
+                  <Route path="consultation/:id" element={<ClinicalWorkspace />} />
+                  <Route path="calendar" element={<DoctorCalendar />} />
+                  <Route path="patients" element={<PatientList />} />
+                  <Route path="register" element={<PatientRegistration />} />
+                  <Route path="patients/:patientId" element={<PatientDetail />} />
+                  <Route path="patients/:patientId/notes" element={<ClinicalNotes />} />
+                  <Route path="patients/:patientId/prescriptions/new" element={<NewPrescription />} />
+                  <Route path="patients/:patientId/prescriptions/:prescriptionId/edit" element={<NewPrescription />} />
 
-          {/* ── Pharmacist Routes ───────────────────────────────────────── */}
-          <Route
-            path="/pharmacist"
-            element={
-              <RoleRoute allowedRoles={['ROLE_PHARMACIST', 'ROLE_SUPER_ADMIN']} portalSlug="pharmacist">
-                <DashboardLayout portalSlug="pharmacist" allowedRoles={['ROLE_PHARMACIST', 'ROLE_SUPER_ADMIN']} />
-              </RoleRoute>
-            }
-          >
-            <Route index element={<Navigate to="/pharmacist/dashboard" replace />} />
-            <Route path="dashboard" element={<PharmacistDashboard />} />
-          </Route>
+                  <Route path="lab-request" element={<LabRequest />} />
+                  <Route path="radiology-request" element={<RadiologyRequest />} />
+                  <Route path="patients/:patientId/lab-request" element={<LabRequest />} />
+                  <Route path="patients/:patientId/radiology-request" element={<RadiologyRequest />} />
+                  <Route path="patients/:patientId/care-pathways" element={<PatientCarePathwayView />} />
+                  <Route path="prescriptions" element={<DoctorPrescriptions />} />
+                  <Route path="lab-reports" element={<DoctorLabReports />} />
+                  <Route path="lab-reports/upload" element={<UploadLabReport />} />
+                  <Route path="medical-certificate" element={<DoctorMedicalCertificates />} />
+                  <Route path="prescription-templates" element={<PrescriptionTemplates />} />
+                  <Route path="follow-ups" element={<FollowUps />} />
+                  <Route path="earnings" element={<DoctorEarnings />} />
+                  <Route path="analytics" element={<DoctorAnalytics />} />
+                  <Route path="cds" element={<ClinicalDecisionSupport />} />
+                  <Route path="care-pathways/builder" element={<CarePathwayBuilder />} />
+                  <Route path="schedule-settings" element={<DoctorScheduleSettings />} />
+                  <Route path="manage-medicines" element={<ManageMedicines />} />
+                  <Route path="orders" element={<DoctorMedicineOrders />} />
+                  <Route path="orders/:orderId" element={<DoctorMedicineOrders />} />
+                  <Route path="support" element={<DoctorSupport />} />
+                </Route>
 
-          {/* ── Lab Tech Routes (/lab) ───────────────────────────────────── */}
-          <Route
-            path="/lab"
-            element={
-              <RoleRoute allowedRoles={['ROLE_LAB_TECH', 'ROLE_LAB_TECHNICIAN', 'ROLE_LAB', 'ROLE_PATHOLOGIST', 'ROLE_SUPER_ADMIN', 'ROLE_ADMIN', 'LAB_TECH', 'LAB_TECHNICIAN', 'LAB', 'PATHOLOGIST']} portalSlug="lab">
-                <DashboardLayout portalSlug="lab" allowedRoles={['ROLE_LAB_TECH', 'ROLE_LAB_TECHNICIAN', 'ROLE_LAB', 'ROLE_PATHOLOGIST', 'ROLE_SUPER_ADMIN', 'ROLE_ADMIN', 'LAB_TECH', 'LAB_TECHNICIAN', 'LAB', 'PATHOLOGIST']} />
-              </RoleRoute>
-            }
-          >
-            <Route index element={<Navigate to="/lab/dashboard" replace />} />
-            <Route path="dashboard" element={<LabDashboard />} />
-            <Route path="worklist" element={<LabWorklist />} />
-            <Route path="catalog" element={<LabCatalogManagement />} />
-            <Route path="verification" element={<ReportVerification />} />
-            <Route path="notifications" element={<LabNotifications />} />
-            {/* Previously missing lab routes */}
-            <Route path="lab-request" element={<LabRequest />} />
-          </Route>
-          {/* Redirect legacy /lab-tech → /lab */}
-          <Route path="/lab-tech/*" element={<Navigate to="/lab" replace />} />
+                {/* ── Nurse Routes ────────────────────────────────────────────── */}
+                <Route
+                  path="/nurse"
+                  element={
+                    <RoleRoute allowedRoles={['ROLE_NURSE', 'ROLE_SUPER_ADMIN']} portalSlug="nurse">
+                      <DashboardLayout portalSlug="nurse" allowedRoles={['ROLE_NURSE', 'ROLE_SUPER_ADMIN']} />
+                    </RoleRoute>
+                  }
+                >
+                  <Route index element={<Navigate to="/nurse/dashboard" replace />} />
+                  <Route path="dashboard" element={<NurseDashboard />} />
+                  <Route path="patients" element={<NurseAssignedPatients />} />
+                  <Route path="vitals" element={<VitalSignsEntry />} />
+                  <Route path="medication" element={<MedicationAdministration />} />
+                  <Route path="medications" element={<MedicationAdministration />} />
+                  <Route path="notes" element={<NursingNotes />} />
+                  <Route path="care" element={<NursingNotes />} />
+                  <Route path="reports" element={<UploadLabReport />} />
+                  <Route path="lab" element={<LabWorklist />} />
+                  <Route path="monitoring" element={<PatientMonitoring />} />
+                  <Route path="wards" element={<WardManagement />} />
+                  <Route path="tasks" element={<TaskManagement />} />
+                  <Route path="activities" element={<TaskManagement />} />
+                  <Route path="op-queue" element={<NurseAssignedPatients />} />
+                  <Route path="walk-in" element={<WalkInCheckIn />} />
+                  <Route path="workspace/:patientId" element={<NurseWorkspace />} />
+                  {/* Previously missing nurse routes */}
+                </Route>
 
-          {/* ── Radiologist Routes ──────────────────────────────────────── */}
-          <Route
-            path="/radiologist"
-            element={
-              <RoleRoute allowedRoles={['ROLE_RADIOLOGIST', 'ROLE_SUPER_ADMIN']} portalSlug="radiologist">
-                <DashboardLayout portalSlug="radiologist" allowedRoles={['ROLE_RADIOLOGIST', 'ROLE_SUPER_ADMIN']} />
-              </RoleRoute>
-            }
-          >
-            <Route index element={<Navigate to="/radiologist/dashboard" replace />} />
-            <Route path="dashboard" element={<RadiologistDashboard />} />
-            <Route path="requests" element={<RadiologyRequests />} />
-            <Route path="upload" element={<RadiologyUpload />} />
-            <Route path="viewer" element={<DicomViewer />} />
-            <Route path="reporting" element={<Navigate to="/radiologist/requests" replace />} />
-            <Route path="reporting/:requestId" element={<RadiologyReporting />} />
-            <Route path="archive" element={<RadiologyArchive />} />
-          </Route>
+                {/* ── Reception Routes ────────────────────────────────────────── */}
+                <Route
+                  path="/reception"
+                  element={
+                    <RoleRoute allowedRoles={['ROLE_RECEPTION', 'ROLE_SUPER_ADMIN']} portalSlug="reception">
+                      <DashboardLayout portalSlug="reception" allowedRoles={['ROLE_RECEPTION', 'ROLE_SUPER_ADMIN']} />
+                    </RoleRoute>
+                  }
+                >
+                  <Route index element={<Navigate to="/reception/dashboard" replace />} />
+                  <Route path="dashboard" element={<ReceptionDashboard />} />
+                  <Route path="queue" element={<QueueManagement />} />
+                  <Route path="register" element={<PatientRegistration />} />
+                  <Route path="tokens" element={<TokenGeneration />} />
+                  <Route path="walk-in" element={<WalkInCheckIn />} />
+                  <Route path="billing" element={<ReceptionBilling />} />
+                  <Route path="insurance" element={<InsuranceVerificationPage />} />
+                  <Route path="documents" element={<DocumentScanning />} />
+                  <Route path="kiosk" element={<CheckInKiosk />} />
+                  <Route path="search" element={<PatientSearch />} />
+                  {/* Previously missing reception routes */}
+                  <Route path="book" element={<DoctorList />} />
+                  <Route path="book/:doctorId" element={<BookAppointment />} />
+                  <Route path="support" element={<ReceptionSupport />} />
+                </Route>
 
-          {/* ── Accountant → Finance redirect ───────────────────────────── */}
-          <Route path="/accountant" element={<Navigate to="/finance" replace />} />
-          <Route path="/accountant/*" element={<Navigate to="/finance" replace />} />
+                {/* ── Pharmacist Routes ───────────────────────────────────────── */}
+                <Route
+                  path="/pharmacist"
+                  element={
+                    <RoleRoute allowedRoles={['ROLE_PHARMACIST', 'ROLE_SUPER_ADMIN']} portalSlug="pharmacist">
+                      <DashboardLayout portalSlug="pharmacist" allowedRoles={['ROLE_PHARMACIST', 'ROLE_SUPER_ADMIN']} />
+                    </RoleRoute>
+                  }
+                >
+                  <Route index element={<Navigate to="/pharmacist/dashboard" replace />} />
+                  <Route path="dashboard" element={<PharmacistDashboard />} />
+                </Route>
 
-          {/* ── Finance / Accountant Routes ─────────────────────────────── */}
-          <Route
-            path="/finance"
-            element={
-              <RoleRoute allowedRoles={['ROLE_FINANCE', 'ROLE_ACCOUNTANT', 'ROLE_SUPER_ADMIN']} portalSlug="finance">
-                <DashboardLayout portalSlug="finance" allowedRoles={['ROLE_FINANCE', 'ROLE_ACCOUNTANT', 'ROLE_SUPER_ADMIN']} />
-              </RoleRoute>
-            }
-          >
-            <Route index element={<Navigate to="/finance/dashboard" replace />} />
-            <Route path="dashboard" element={<FinanceDashboard />} />
-            <Route path="invoices" element={<InvoicesList />} />
-            <Route path="pnl" element={<PnLStatement />} />
-            {/* Previously missing finance routes */}
-            <Route path="payments" element={<FinancePayments />} />
-            <Route path="insurance-claims" element={<InsuranceClaimsList />} />
-            <Route path="refunds" element={<FinanceRefunds />} />
-            <Route path="daily-cash" element={<FinanceDailyCash />} />
-            <Route path="revenue" element={<PnLStatement />} />
-            <Route path="reports" element={<PnLStatement />} />
-          </Route>
+                {/* ── Lab Tech Routes (/lab) ───────────────────────────────────── */}
+                <Route
+                  path="/lab"
+                  element={
+                    <RoleRoute allowedRoles={['ROLE_LAB_TECH', 'ROLE_LAB_TECHNICIAN', 'ROLE_LAB', 'ROLE_PATHOLOGIST', 'ROLE_SUPER_ADMIN', 'ROLE_ADMIN', 'LAB_TECH', 'LAB_TECHNICIAN', 'LAB', 'PATHOLOGIST']} portalSlug="lab">
+                      <DashboardLayout portalSlug="lab" allowedRoles={['ROLE_LAB_TECH', 'ROLE_LAB_TECHNICIAN', 'ROLE_LAB', 'ROLE_PATHOLOGIST', 'ROLE_SUPER_ADMIN', 'ROLE_ADMIN', 'LAB_TECH', 'LAB_TECHNICIAN', 'LAB', 'PATHOLOGIST']} />
+                    </RoleRoute>
+                  }
+                >
+                  <Route index element={<Navigate to="/lab/dashboard" replace />} />
+                  <Route path="dashboard" element={<LabDashboard />} />
+                  <Route path="worklist" element={<LabWorklist />} />
+                  <Route path="catalog" element={<LabCatalogManagement />} />
+                  <Route path="verification" element={<ReportVerification />} />
+                  <Route path="notifications" element={<LabNotifications />} />
+                  {/* Previously missing lab routes */}
+                  <Route path="lab-request" element={<LabRequest />} />
+                </Route>
+                {/* Redirect legacy /lab-tech → /lab */}
+                <Route path="/lab-tech/*" element={<Navigate to="/lab" replace />} />
 
-          {/* ── Inventory Routes ────────────────────────────────────────── */}
-          <Route
-            path="/inventory"
-            element={
-              <RoleRoute allowedRoles={['ROLE_INVENTORY_MANAGER', 'ROLE_SUPER_ADMIN']} portalSlug="inventory">
-                <DashboardLayout portalSlug="inventory" allowedRoles={['ROLE_INVENTORY_MANAGER', 'ROLE_SUPER_ADMIN']} />
-              </RoleRoute>
-            }
-          >
-            <Route index element={<Navigate to="/inventory/dashboard" replace />} />
-            <Route path="dashboard" element={<InventoryDashboard />} />
-            <Route path="warehouses" element={<WarehousesList />} />
-            <Route path="purchase-orders" element={<InventoryPurchaseOrders />} />
-            <Route path="suppliers" element={<InventorySuppliers />} />
-            <Route path="transfers" element={<StockTransfers />} />
-            <Route path="batches" element={<InventoryBatches />} />
-            <Route path="expiry" element={<InventoryExpiry />} />
-            <Route path="branches" element={<InventoryBranches />} />
-            <Route path="reports" element={<InventoryReports />} />
-          </Route>
+                {/* ── Radiologist Routes ──────────────────────────────────────── */}
+                <Route
+                  path="/radiologist"
+                  element={
+                    <RoleRoute allowedRoles={['ROLE_RADIOLOGIST', 'ROLE_SUPER_ADMIN']} portalSlug="radiologist">
+                      <DashboardLayout portalSlug="radiologist" allowedRoles={['ROLE_RADIOLOGIST', 'ROLE_SUPER_ADMIN']} />
+                    </RoleRoute>
+                  }
+                >
+                  <Route index element={<Navigate to="/radiologist/dashboard" replace />} />
+                  <Route path="dashboard" element={<RadiologistDashboard />} />
+                  <Route path="requests" element={<RadiologyRequests />} />
+                  <Route path="upload" element={<RadiologyUpload />} />
+                  <Route path="viewer" element={<DicomViewer />} />
+                  <Route path="reporting" element={<Navigate to="/radiologist/requests" replace />} />
+                  <Route path="reporting/:requestId" element={<RadiologyReporting />} />
+                  <Route path="archive" element={<RadiologyArchive />} />
+                </Route>
 
-          {/* ── Marketing / CRM Routes ──────────────────────────────────── */}
-          <Route
-            path="/marketing"
-            element={
-              <RoleRoute allowedRoles={['ROLE_MARKETING', 'ROLE_SUPER_ADMIN', 'ROLE_BRANCH_ADMIN']} portalSlug="marketing">
-                <DashboardLayout portalSlug="marketing" allowedRoles={['ROLE_MARKETING', 'ROLE_SUPER_ADMIN', 'ROLE_BRANCH_ADMIN']} />
-              </RoleRoute>
-            }
-          >
-            <Route index element={<Navigate to="/marketing/dashboard" replace />} />
-            <Route path="dashboard" element={<MarketingDashboard />} />
-            <Route path="campaigns" element={<MarketingCampaigns />} />
-            <Route path="leads" element={<MarketingLeads />} />
-            <Route path="loyalty" element={<MarketingLoyalty />} />
-            <Route path="nps" element={<MarketingNps />} />
-            <Route path="consent" element={<MarketingConsent />} />
-            <Route path="analytics" element={<MarketingAnalytics />} />
-            <Route path="communications" element={<MarketingCommunications />} />
-          </Route>
+                {/* ── Accountant → Finance redirect ───────────────────────────── */}
+                <Route path="/accountant" element={<Navigate to="/finance" replace />} />
+                <Route path="/accountant/*" element={<Navigate to="/finance" replace />} />
 
-          {/* ── HR Module Routes ────────────────────────────────────────── */}
-          <Route
-            path="/hr"
-            element={
-              <RoleRoute allowedRoles={['ROLE_HR', 'ROLE_SUPER_ADMIN']} portalSlug="hr">
-                <DashboardLayout portalSlug="hr" allowedRoles={['ROLE_HR', 'ROLE_SUPER_ADMIN']} />
-              </RoleRoute>
-            }
-          >
-            <Route index element={<Navigate to="/hr/dashboard" replace />} />
-            <Route path="dashboard" element={<HrDashboard />} />
-            <Route path="employees" element={<Employees />} />
-            <Route path="attendance" element={<Attendance />} />
-            <Route path="leave" element={<LeaveManagement />} />
-            <Route path="payroll" element={<PayrollManagement />} />
-            <Route path="recruitment" element={<Recruitment />} />
-            <Route path="documents" element={<StaffDocuments />} />
-          </Route>
+                {/* ── HR Module Routes ────────────────────────────────────────── */}
+                <Route
+                  path="/hr"
+                  element={
+                    <RoleRoute allowedRoles={['ROLE_HR', 'ROLE_SUPER_ADMIN']} portalSlug="hr">
+                      <DashboardLayout portalSlug="hr" allowedRoles={['ROLE_HR', 'ROLE_SUPER_ADMIN']} />
+                    </RoleRoute>
+                  }
+                >
+                  <Route index element={<Navigate to="/hr/dashboard" replace />} />
+                  <Route path="dashboard" element={<HrDashboard />} />
+                  <Route path="employees" element={<Employees />} />
+                  <Route path="attendance" element={<Attendance />} />
+                  <Route path="leave" element={<LeaveManagement />} />
+                  <Route path="payroll" element={<PayrollManagement />} />
+                  <Route path="recruitment" element={<Recruitment />} />
+                  <Route path="documents" element={<StaffDocuments />} />
+                  <Route path="reports" element={<HrReports />} />
+                </Route>
 
-          {/* ── Analytics Module Routes ─────────────────────────────────────── */}
-          <Route
-            path="/analytics"
-            element={
-              <RoleRoute allowedRoles={['ROLE_ADMIN', 'ROLE_SUPER_ADMIN']} portalSlug="analytics">
-                <DashboardLayout portalSlug="analytics" allowedRoles={['ROLE_ADMIN', 'ROLE_SUPER_ADMIN']} />
-              </RoleRoute>
-            }
-          >
-            <Route index element={<Navigate to="/analytics/dashboard" replace />} />
-            <Route path="dashboard" element={<AnalyticsDashboard />} />
-            <Route path="financial" element={<FinancialReports />} />
-            <Route path="clinical" element={<ClinicalAnalyticsDashboard />} />
-            <Route path="finance-reports" element={<FinanceAnalyticsDashboard />} />
-            <Route path="ipd" element={<IPDAnalyticsDashboard />} />
-            <Route path="lab" element={<LabAnalyticsDashboard />} />
-            <Route path="opd" element={<OPDAnalyticsDashboard />} />
-          </Route>
+                {/* ── Inventory Routes ────────────────────────────────────────── */}
+                <Route
+                  path="/inventory"
+                  element={
+                    <RoleRoute allowedRoles={['ROLE_INVENTORY_MANAGER', 'ROLE_SUPER_ADMIN']} portalSlug="inventory">
+                      <DashboardLayout portalSlug="inventory" allowedRoles={['ROLE_INVENTORY_MANAGER', 'ROLE_SUPER_ADMIN']} />
+                    </RoleRoute>
+                  }
+                >
+                  <Route index element={<Navigate to="/inventory/dashboard" replace />} />
+                  <Route path="dashboard" element={<InventoryDashboard />} />
+                  <Route path="warehouses" element={<WarehousesList />} />
+                  <Route path="purchase-orders" element={<InventoryPurchaseOrders />} />
+                  <Route path="suppliers" element={<InventorySuppliers />} />
+                  <Route path="transfers" element={<StockTransfers />} />
+                  <Route path="batches" element={<InventoryBatches />} />
+                  <Route path="expiry" element={<InventoryExpiry />} />
+                  <Route path="branches" element={<InventoryBranches />} />
+                  <Route path="reports" element={<InventoryReports />} />
+                </Route>
 
-          {/* ── Pharmacy Full Module ─────────────────────────────────────── */}
-          <Route 
-            path="/pharmacy" 
-            element={
-              <RoleRoute allowedRoles={['ROLE_ADMIN', 'ROLE_PHARMACIST', 'ROLE_PHARMACY_STAFF', 'ROLE_STOREKEEPER', 'ROLE_MEDICAL_STAFF']} portalSlug="pharmacy">
-                <PharmacyAuthProvider>
-                  <MainLayout />
-                </PharmacyAuthProvider>
-              </RoleRoute>
-            }
-          >
-            {PharmacyRoutes}
-          </Route>
-          {/* ── Inpatient Module Routes ──────────────────────────────────── */}
-          <Route
-            path="/inpatient"
-            element={
-              <RoleRoute allowedRoles={['ROLE_ADMIN', 'ROLE_SUPER_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE']} portalSlug="inpatient">
-                <DashboardLayout portalSlug="inpatient" allowedRoles={['ROLE_ADMIN', 'ROLE_SUPER_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE']} />
-              </RoleRoute>
-            }
-          >
-            <Route index element={<Navigate to="/inpatient/dashboard" replace />} />
-            <Route path="dashboard" element={<InpatientDashboard />} />
-            <Route path="beds" element={<BedStatusBoard />} />
-            <Route path="nursing-station" element={<NursingStationDashboard />} />
-            <Route path="admission" element={<AdmissionWorkflow />} />
-          </Route>
+                {/* ── Marketing / CRM Routes ──────────────────────────────────── */}
+                <Route
+                  path="/marketing"
+                  element={
+                    <RoleRoute allowedRoles={['ROLE_MARKETING', 'ROLE_SUPER_ADMIN', 'ROLE_BRANCH_ADMIN']} portalSlug="marketing">
+                      <DashboardLayout portalSlug="marketing" allowedRoles={['ROLE_MARKETING', 'ROLE_SUPER_ADMIN', 'ROLE_BRANCH_ADMIN']} />
+                    </RoleRoute>
+                  }
+                >
+                  <Route index element={<Navigate to="/marketing/dashboard" replace />} />
+                  <Route path="dashboard" element={<MarketingDashboard />} />
+                  <Route path="campaigns" element={<MarketingCampaigns />} />
+                  <Route path="leads" element={<MarketingLeads />} />
+                  <Route path="loyalty" element={<MarketingLoyalty />} />
+                  <Route path="nps" element={<MarketingNps />} />
+                  <Route path="consent" element={<MarketingConsent />} />
+                  <Route path="analytics" element={<MarketingAnalytics />} />
+                  <Route path="communications" element={<MarketingCommunications />} />
+                </Route>
 
-          {/* ── Emergency Module Routes ──────────────────────────────────── */}
-          <Route
-            path="/emergency"
-            element={
-              <RoleRoute allowedRoles={['ROLE_ADMIN', 'ROLE_SUPER_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE', 'ROLE_RECEPTION']} portalSlug="emergency">
-                <DashboardLayout portalSlug="emergency" allowedRoles={['ROLE_ADMIN', 'ROLE_SUPER_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE', 'ROLE_RECEPTION']} />
-              </RoleRoute>
-            }
-          >
-            <Route index element={<Navigate to="/emergency/queue" replace />} />
-            <Route path="queue" element={<EmergencyQueue />} />
-          </Route>
+                {/* ── HR Module Routes ────────────────────────────────────────── */}
+                <Route
+                  path="/hr"
+                  element={
+                    <RoleRoute allowedRoles={['ROLE_HR', 'ROLE_SUPER_ADMIN']} portalSlug="hr">
+                      <DashboardLayout portalSlug="hr" allowedRoles={['ROLE_HR', 'ROLE_SUPER_ADMIN']} />
+                    </RoleRoute>
+                  }
+                >
+                  <Route index element={<Navigate to="/hr/dashboard" replace />} />
+                  <Route path="dashboard" element={<HrDashboard />} />
+                  <Route path="employees" element={<Employees />} />
+                  <Route path="attendance" element={<Attendance />} />
+                  <Route path="leave" element={<LeaveManagement />} />
+                  <Route path="payroll" element={<PayrollManagement />} />
+                  <Route path="recruitment" element={<Recruitment />} />
+                  <Route path="documents" element={<StaffDocuments />} />
+                  <Route path="reports" element={<HrReports />} />
+                </Route>
 
-          {/* ── Surgery Module Routes ──────────────────────────────────── */}
-          <Route
-            path="/surgery"
-            element={
-              <RoleRoute allowedRoles={['ROLE_ADMIN', 'ROLE_SUPER_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE']} portalSlug="surgery">
-                <DashboardLayout portalSlug="surgery" allowedRoles={['ROLE_ADMIN', 'ROLE_SUPER_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE']} />
-              </RoleRoute>
-            }
-          >
-            <Route index element={<Navigate to="/surgery/schedule" replace />} />
-            <Route path="schedule" element={<OtSchedulingCalendar />} />
-          </Route>
+                {/* ── Analytics Module Routes ─────────────────────────────────────── */}
+                <Route
+                  path="/analytics"
+                  element={
+                    <RoleRoute allowedRoles={['ROLE_ADMIN', 'ROLE_SUPER_ADMIN']} portalSlug="analytics">
+                      <DashboardLayout portalSlug="analytics" allowedRoles={['ROLE_ADMIN', 'ROLE_SUPER_ADMIN']} />
+                    </RoleRoute>
+                  }
+                >
+                  <Route index element={<Navigate to="/analytics/dashboard" replace />} />
+                  <Route path="dashboard" element={<AnalyticsDashboard />} />
+                  <Route path="financial" element={<FinancialReports />} />
+                  <Route path="clinical" element={<ClinicalAnalyticsDashboard />} />
+                  <Route path="finance-reports" element={<FinanceAnalyticsDashboard />} />
+                  <Route path="ipd" element={<IPDAnalyticsDashboard />} />
+                  <Route path="lab" element={<LabAnalyticsDashboard />} />
+                  <Route path="opd" element={<OPDAnalyticsDashboard />} />
+                </Route>
 
-          {/* ── Branch Admin Module Routes ──────────────────────────────────── */}
-          <Route
-            path="/branch-admin"
-            element={
-              <RoleRoute allowedRoles={['ROLE_ADMIN', 'ROLE_SUPER_ADMIN', 'ROLE_BRANCH_ADMIN']} portalSlug="branch-admin">
-                <DashboardLayout portalSlug="branch-admin" allowedRoles={['ROLE_ADMIN', 'ROLE_SUPER_ADMIN', 'ROLE_BRANCH_ADMIN']} />
-              </RoleRoute>
-            }
-          >
-            <Route index element={<Navigate to="/branch-admin/analytics" replace />} />
-            <Route path="analytics" element={<BranchPerformance />} />
-            <Route path="staff" element={<BranchLocalHR />} />
-            <Route path="facilities" element={<BranchFacility />} />
-          </Route>
+                {/* ── Pharmacy Full Module ─────────────────────────────────────── */}
+                <Route
+                  path="/pharmacy"
+                  element={
+                    <RoleRoute allowedRoles={['ROLE_ADMIN', 'ROLE_PHARMACIST', 'ROLE_PHARMACY_STAFF', 'ROLE_STOREKEEPER', 'ROLE_MEDICAL_STAFF']} portalSlug="pharmacy">
+                      <PharmacyAuthProvider>
+                        <MainLayout />
+                      </PharmacyAuthProvider>
+                    </RoleRoute>
+                  }
+                >
+                  {PharmacyRoutes}
+                </Route>
+                {/* ── Inpatient Module Routes ──────────────────────────────────── */}
+                <Route
+                  path="/inpatient"
+                  element={
+                    <RoleRoute allowedRoles={['ROLE_ADMIN', 'ROLE_SUPER_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE']} portalSlug="inpatient">
+                      <DashboardLayout portalSlug="inpatient" allowedRoles={['ROLE_ADMIN', 'ROLE_SUPER_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE']} />
+                    </RoleRoute>
+                  }
+                >
+                  <Route index element={<Navigate to="/inpatient/dashboard" replace />} />
+                  <Route path="dashboard" element={<InpatientDashboard />} />
+                  <Route path="beds" element={<BedStatusBoard />} />
+                  <Route path="nursing-station" element={<NursingStationDashboard />} />
+                  <Route path="admission" element={<AdmissionWorkflow />} />
+                </Route>
 
-          {/* ── Back Office Module Routes ──────────────────────────────────── */}
-          <Route
-            path="/backoffice"
-            element={
-              <RoleRoute allowedRoles={['ROLE_ADMIN', 'ROLE_SUPER_ADMIN']} portalSlug="backoffice">
-                <DashboardLayout portalSlug="backoffice" allowedRoles={['ROLE_ADMIN', 'ROLE_SUPER_ADMIN']} />
-              </RoleRoute>
-            }
-          >
-            <Route index element={<Navigate to="/backoffice/support" replace />} />
-            <Route path="support" element={<SupportTicketing />} />
-            <Route path="ecommerce" element={<EcommerceAdmin />} />
-            <Route path="vendors" element={<VendorManagement />} />
-          </Route>
+                {/* ── Emergency Module Routes ──────────────────────────────────── */}
+                <Route
+                  path="/emergency"
+                  element={
+                    <RoleRoute allowedRoles={['ROLE_ADMIN', 'ROLE_SUPER_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE', 'ROLE_RECEPTION']} portalSlug="emergency">
+                      <DashboardLayout portalSlug="emergency" allowedRoles={['ROLE_ADMIN', 'ROLE_SUPER_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE', 'ROLE_RECEPTION']} />
+                    </RoleRoute>
+                  }
+                >
+                  <Route index element={<Navigate to="/emergency/queue" replace />} />
+                  <Route path="queue" element={<EmergencyQueue />} />
+                </Route>
 
-          {/* ── Support Module Routes ──────────────────────────────────── */}
-          <Route
-            path="/support"
-            element={
-              <RoleRoute allowedRoles={['ROLE_SUPPORT', 'ROLE_CUSTOMER_SUPPORT', 'ROLE_SUPER_ADMIN']} portalSlug="support">
-                <DashboardLayout portalSlug="support" allowedRoles={['ROLE_SUPPORT', 'ROLE_CUSTOMER_SUPPORT', 'ROLE_SUPER_ADMIN']} />
-              </RoleRoute>
-            }
-          >
-            <Route index element={<Navigate to="/support/dashboard" replace />} />
-            <Route path="dashboard" element={<SupportDashboard />} />
-            <Route path="agent" element={<AgentDashboard />} />
-            <Route path="tickets" element={<TicketDesk />} />
-          </Route>
+                {/* ── Surgery Module Routes ──────────────────────────────────── */}
+                <Route
+                  path="/surgery"
+                  element={
+                    <RoleRoute allowedRoles={['ROLE_ADMIN', 'ROLE_SUPER_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE']} portalSlug="surgery">
+                      <DashboardLayout portalSlug="surgery" allowedRoles={['ROLE_ADMIN', 'ROLE_SUPER_ADMIN', 'ROLE_DOCTOR', 'ROLE_NURSE']} />
+                    </RoleRoute>
+                  }
+                >
+                  <Route index element={<Navigate to="/surgery/schedule" replace />} />
+                  <Route path="schedule" element={<OtSchedulingCalendar />} />
+                </Route>
 
-          {/* ── Admin Module Routes ──────────────────────────────────── */}
-          <Route
-            path="/admin"
-            element={
-              <RoleRoute allowedRoles={['ROLE_ADMIN', 'ROLE_SUPER_ADMIN']} portalSlug="admin">
-                <DashboardLayout portalSlug="admin" allowedRoles={['ROLE_ADMIN', 'ROLE_SUPER_ADMIN']} />
-              </RoleRoute>
-            }
-          >
-            <Route index element={<Navigate to="/admin/dashboard" replace />} />
-            <Route path="dashboard" element={<AdminDashboard defaultTab="analytics" />} />
-            <Route path="branches" element={<AdminDashboard defaultTab="branches" />} />
-            <Route path="users" element={<AdminDashboard defaultTab="users" />} />
-            <Route path="patients" element={<AdminDashboard defaultTab="patients" />} />
-            <Route path="doctors" element={<AdminDashboard defaultTab="doctors" />} />
-            <Route path="departments" element={<AdminDashboard defaultTab="departments" />} />
-            <Route path="audit" element={<AdminDashboard defaultTab="audit" />} />
-          </Route>
+                {/* ── Branch Admin Module Routes ──────────────────────────────────── */}
+                <Route
+                  path="/branch-admin"
+                  element={
+                    <RoleRoute allowedRoles={['ROLE_ADMIN', 'ROLE_SUPER_ADMIN', 'ROLE_BRANCH_ADMIN']} portalSlug="branch-admin">
+                      <DashboardLayout portalSlug="branch-admin" allowedRoles={['ROLE_ADMIN', 'ROLE_SUPER_ADMIN', 'ROLE_BRANCH_ADMIN']} />
+                    </RoleRoute>
+                  }
+                >
+                  <Route index element={<Navigate to="/branch-admin/analytics" replace />} />
+                  <Route path="analytics" element={<BranchPerformance />} />
+                  <Route path="staff" element={<BranchLocalHR />} />
+                  <Route path="facilities" element={<BranchFacility />} />
+                </Route>
 
-          {/* ── Fallbacks ───────────────────────────────────────────────── */}
-          {/* ── Super Admin ────────────────────────────────────────────── */}
-          <Route
-            path="/super-admin"
-            element={
-              <RoleRoute allowedRoles={['ROLE_SUPER_ADMIN']} portalSlug="super-admin">
-                <DashboardLayout portalSlug="super-admin" allowedRoles={['ROLE_SUPER_ADMIN']} />
-              </RoleRoute>
-            }
-          >
-            <Route index element={<Navigate to="/super-admin/dashboard" replace />} />
-            <Route path="dashboard" element={<SuperAdminConsole defaultTab="health" />} />
-            <Route path="users" element={<SuperAdminConsole defaultTab="users" />} />
-          </Route>
+                {/* ── Back Office Module Routes ──────────────────────────────────── */}
+                <Route
+                  path="/backoffice"
+                  element={
+                    <RoleRoute allowedRoles={['ROLE_ADMIN', 'ROLE_SUPER_ADMIN']} portalSlug="backoffice">
+                      <DashboardLayout portalSlug="backoffice" allowedRoles={['ROLE_ADMIN', 'ROLE_SUPER_ADMIN']} />
+                    </RoleRoute>
+                  }
+                >
+                  <Route index element={<Navigate to="/backoffice/support" replace />} />
+                  <Route path="support" element={<SupportTicketing />} />
+                  <Route path="ecommerce" element={<EcommerceAdmin />} />
+                  <Route path="vendors" element={<VendorManagement />} />
+                </Route>
 
-          {/* ── Ambulance ──────────────────────────────────────────────── */}
-          <Route
-            path="/ambulance"
-            element={
-              <RoleRoute allowedRoles={['ROLE_AMBULANCE', 'ROLE_SUPER_ADMIN']} portalSlug="ambulance">
-                <DashboardLayout portalSlug="ambulance" allowedRoles={['ROLE_AMBULANCE', 'ROLE_SUPER_ADMIN']} />
-              </RoleRoute>
-            }
-          >
-            <Route index element={<Navigate to="/ambulance/dashboard" replace />} />
-            <Route path="dashboard" element={<AmbulanceDashboard />} />
-          </Route>
+                {/* ── Support Module Routes ──────────────────────────────────── */}
+                <Route
+                  path="/support"
+                  element={
+                    <RoleRoute allowedRoles={['ROLE_SUPPORT', 'ROLE_CUSTOMER_SUPPORT', 'ROLE_SUPER_ADMIN']} portalSlug="support">
+                      <DashboardLayout portalSlug="support" allowedRoles={['ROLE_SUPPORT', 'ROLE_CUSTOMER_SUPPORT', 'ROLE_SUPER_ADMIN']} />
+                    </RoleRoute>
+                  }
+                >
+                  <Route index element={<Navigate to="/support/dashboard" replace />} />
+                  <Route path="dashboard" element={<SupportDashboard />} />
+                  <Route path="agent" element={<AgentDashboard />} />
+                  <Route path="tickets" element={<TicketDesk />} />
+                </Route>
 
-          {/* ── Vendor ─────────────────────────────────────────────────── */}
-          <Route
-            path="/vendor"
-            element={
-              <RoleRoute allowedRoles={['ROLE_VENDOR', 'ROLE_SUPER_ADMIN']} portalSlug="vendor">
-                <DashboardLayout portalSlug="vendor" allowedRoles={['ROLE_VENDOR', 'ROLE_SUPER_ADMIN']} />
-              </RoleRoute>
-            }
-          >
-            <Route index element={<Navigate to="/vendor/dashboard" replace />} />
-            <Route path="dashboard" element={<VendorDashboard />} />
-          </Route>
+                {/* ── Admin Module Routes ──────────────────────────────────── */}
+                <Route
+                  path="/admin"
+                  element={
+                    <RoleRoute allowedRoles={['ROLE_ADMIN', 'ROLE_SUPER_ADMIN']} portalSlug="admin">
+                      <DashboardLayout portalSlug="admin" allowedRoles={['ROLE_ADMIN', 'ROLE_SUPER_ADMIN']} />
+                    </RoleRoute>
+                  }
+                >
+                  <Route index element={<Navigate to="/admin/dashboard" replace />} />
+                  <Route path="dashboard" element={<AdminDashboard defaultTab="analytics" />} />
+                  <Route path="branches" element={<AdminDashboard defaultTab="branches" />} />
+                  <Route path="users" element={<AdminDashboard defaultTab="users" />} />
+                  <Route path="patients" element={<AdminDashboard defaultTab="patients" />} />
+                  <Route path="doctors" element={<AdminDashboard defaultTab="doctors" />} />
+                  <Route path="departments" element={<AdminDashboard defaultTab="departments" />} />
+                  <Route path="audit" element={<AdminDashboard defaultTab="audit" />} />
+                </Route>
 
-          {/* ── Insurance Staff ────────────────────────────────────────── */}
-          <Route
-            path="/insurance"
-            element={
-              <RoleRoute allowedRoles={['ROLE_INSURANCE', 'ROLE_SUPER_ADMIN']} portalSlug="insurance">
-                <DashboardLayout portalSlug="insurance" allowedRoles={['ROLE_INSURANCE', 'ROLE_SUPER_ADMIN']} />
-              </RoleRoute>
-            }
-          >
-            <Route index element={<Navigate to="/insurance/dashboard" replace />} />
-            <Route path="dashboard" element={<InsuranceDashboard />} />
-            <Route path="support" element={<InsuranceSupport />} />
-          </Route>
+                {/* ── Fallbacks ───────────────────────────────────────────────── */}
+                {/* ── Super Admin ────────────────────────────────────────────── */}
+                <Route
+                  path="/super-admin"
+                  element={
+                    <RoleRoute allowedRoles={['ROLE_SUPER_ADMIN']} portalSlug="super-admin">
+                      <DashboardLayout portalSlug="super-admin" allowedRoles={['ROLE_SUPER_ADMIN']} />
+                    </RoleRoute>
+                  }
+                >
+                  <Route index element={<Navigate to="/super-admin/dashboard" replace />} />
+                  <Route path="dashboard" element={<SuperAdminConsole defaultTab="health" />} />
+                  <Route path="users" element={<SuperAdminConsole defaultTab="users" />} />
+                </Route>
 
-          <Route path="/unauthorized" element={
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', flexDirection: 'column', gap: 16, fontFamily: 'Inter, sans-serif' }}>
-              <h1 style={{ fontSize: '4rem', fontWeight: 800, color: 'var(--color-danger)', margin: 0 }}>403</h1>
-              <p style={{ color: 'var(--color-text-muted)' }}>You don't have permission to view this page.</p>
-              <a href="/" style={{ color: 'var(--color-info)' }}>← Return Home</a>
-            </div>
-          } />
-          <Route path="*" element={
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', flexDirection: 'column', gap: 16, fontFamily: 'Inter, sans-serif' }}>
-              <h1 style={{ fontSize: '4rem', fontWeight: 800, color: 'var(--color-text)', margin: 0 }}>404</h1>
-              <p style={{ color: 'var(--color-text-muted)' }}>Page not found.</p>
-              <a href="/" style={{ color: 'var(--color-info)' }}>← Return Home</a>
-            </div>
-          } />
+                {/* ── Ambulance ──────────────────────────────────────────────── */}
+                <Route
+                  path="/ambulance"
+                  element={
+                    <RoleRoute allowedRoles={['ROLE_AMBULANCE', 'ROLE_SUPER_ADMIN']} portalSlug="ambulance">
+                      <DashboardLayout portalSlug="ambulance" allowedRoles={['ROLE_AMBULANCE', 'ROLE_SUPER_ADMIN']} />
+                    </RoleRoute>
+                  }
+                >
+                  <Route index element={<Navigate to="/ambulance/dashboard" replace />} />
+                  <Route path="dashboard" element={<AmbulanceDashboard />} />
+                </Route>
 
-        </Routes>
-          </Suspense>
-        </MotionConfig>
+                {/* ── Vendor ─────────────────────────────────────────────────── */}
+                <Route
+                  path="/vendor"
+                  element={
+                    <RoleRoute allowedRoles={['ROLE_VENDOR', 'ROLE_SUPER_ADMIN']} portalSlug="vendor">
+                      <DashboardLayout portalSlug="vendor" allowedRoles={['ROLE_VENDOR', 'ROLE_SUPER_ADMIN']} />
+                    </RoleRoute>
+                  }
+                >
+                  <Route index element={<Navigate to="/vendor/dashboard" replace />} />
+                  <Route path="dashboard" element={<VendorDashboard />} />
+                </Route>
+
+                {/* ── Insurance Staff ────────────────────────────────────────── */}
+                <Route
+                  path="/insurance"
+                  element={
+                    <RoleRoute allowedRoles={['ROLE_INSURANCE', 'ROLE_SUPER_ADMIN']} portalSlug="insurance">
+                      <DashboardLayout portalSlug="insurance" allowedRoles={['ROLE_INSURANCE', 'ROLE_SUPER_ADMIN']} />
+                    </RoleRoute>
+                  }
+                >
+                  <Route index element={<Navigate to="/insurance/dashboard" replace />} />
+                  <Route path="dashboard" element={<InsuranceDashboard />} />
+                  <Route path="support" element={<InsuranceSupport />} />
+                </Route>
+
+                <Route path="/unauthorized" element={
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', flexDirection: 'column', gap: 16, fontFamily: 'Inter, sans-serif' }}>
+                    <h1 style={{ fontSize: '4rem', fontWeight: 800, color: 'var(--color-danger)', margin: 0 }}>403</h1>
+                    <p style={{ color: 'var(--color-text-muted)' }}>You don't have permission to view this page.</p>
+                    <a href="/" style={{ color: 'var(--color-info)' }}>← Return Home</a>
+                  </div>
+                } />
+                <Route path="*" element={
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', flexDirection: 'column', gap: 16, fontFamily: 'Inter, sans-serif' }}>
+                    <h1 style={{ fontSize: '4rem', fontWeight: 800, color: 'var(--color-text)', margin: 0 }}>404</h1>
+                    <p style={{ color: 'var(--color-text-muted)' }}>Page not found.</p>
+                    <a href="/" style={{ color: 'var(--color-info)' }}>← Return Home</a>
+                  </div>
+                } />
+
+              </Routes>
+            </Suspense>
+          </MotionConfig>
         </AuthInitializer>
       </BrowserRouter>
     </QueryClientProvider>
