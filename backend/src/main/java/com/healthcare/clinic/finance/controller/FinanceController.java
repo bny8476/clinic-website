@@ -89,4 +89,29 @@ public class FinanceController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         return ResponseEntity.ok(dashboardService.getRealtimeDashboardData(branchId, startDate, endDate));
     }
+
+    @GetMapping("/receivables")
+    public ResponseEntity<List<java.util.Map<String, Object>>> getReceivables() {
+        return ResponseEntity.ok(financeService.getReceivablesOverview());
+    }
+
+    @GetMapping("/payables")
+    public ResponseEntity<List<java.util.Map<String, Object>>> getPayables() {
+        return ResponseEntity.ok(financeService.getPayablesOverview());
+    }
+
+    @GetMapping("/banking")
+    public ResponseEntity<java.util.Map<String, Object>> getBankingOverview() {
+        return ResponseEntity.ok(financeService.getBankingOverview());
+    }
+
+    @GetMapping("/chart-of-accounts")
+    public ResponseEntity<List<java.util.Map<String, Object>>> getChartOfAccounts() {
+        return ResponseEntity.ok(financeService.getChartOfAccountsOverview());
+    }
+
+    @GetMapping("/payroll-summary")
+    public ResponseEntity<java.util.Map<String, Object>> getPayrollSummary() {
+        return ResponseEntity.ok(financeService.getPayrollSummaryOverview());
+    }
 }
