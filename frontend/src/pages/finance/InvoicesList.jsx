@@ -6,7 +6,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { useNavigate } from 'react-router-dom';
 import { 
-  ArrowLeft,
   ArrowRight,
   ArrowUpRight,
   Building2,
@@ -652,16 +651,15 @@ const InvoicesList = () => {
       </div>
 
       {/* ─── Create Invoice Modal ─── */}
-      {createPortal(
-        <AnimatePresence>
-          {isModalOpen && (
-            <div className="fixed inset-0 z-[9998] flex items-center justify-center p-4 bg-black/70">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                className="relative z-[9999] bg-white rounded-3xl p-6 sm:p-7 max-w-lg w-full shadow-2xl border border-slate-200 space-y-5"
-              >
+      <AnimatePresence>
+        {isModalOpen && createPortal(
+          <div className="fixed inset-0 z-[9998] flex items-center justify-center p-4 bg-black/70">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="relative z-[9999] bg-white rounded-3xl p-6 sm:p-7 max-w-lg w-full shadow-2xl border border-slate-200 space-y-5"
+            >
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-2.5">
                   <div className="w-9 h-9 rounded-xl bg-blue-50 text-[#1557FF] flex items-center justify-center border border-blue-100">
@@ -821,11 +819,10 @@ const InvoicesList = () => {
 
               </form>
             </motion.div>
-          </div>
+          </div>,
+          document.body
         )}
-      </AnimatePresence>,
-      document.body
-      )}
+      </AnimatePresence>
 
     </div>
   );
