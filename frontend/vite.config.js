@@ -14,6 +14,7 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
       '@bklitui/ui/charts': path.resolve(__dirname, './src/components/ui/charts.jsx'),
+      '@bklitui/ui/sparkline': path.resolve(__dirname, './src/components/ui/sparkline.jsx'),
       '@bklitui/ui': path.resolve(__dirname, './src/components/ui')
     }
   },

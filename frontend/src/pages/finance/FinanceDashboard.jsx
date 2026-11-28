@@ -10,6 +10,11 @@ import {
   Grid,
   ChartTooltip,
 } from "@bklitui/ui/charts";
+import {
+  AreaSparkline,
+  LineSparkline,
+  BarSparkline,
+} from "@bklitui/ui/sparkline";
 import { 
   Activity,
   AlertCircle,
@@ -230,6 +235,15 @@ export default function FinanceDashboard() {
     { month: 'Nov', revenue: 4825000, expense: 3140000, netProfit: 1685000 },
   ];
 
+  const receivablesTrend = useMemo(() => [
+    { month: 'Jun', amount: 620000 },
+    { month: 'Jul', amount: 680000 },
+    { month: 'Aug', amount: 710000 },
+    { month: 'Sep', amount: 760000 },
+    { month: 'Oct', amount: 810000 },
+    { month: 'Nov', amount: 845000 },
+  ], []);
+
   const revenueByDepartment = dashboard.revenueByDepartment || [
     { name: 'Pharmacy Dispensing', amount: 1640000, percentage: 34, color: '#3B82F6' },
     { name: 'Diagnostic Laboratory', amount: 965000, percentage: 20, color: '#10B981' },
@@ -408,6 +422,18 @@ export default function FinanceDashboard() {
               </span>
               <span className="text-slate-400 font-medium">vs last month</span>
             </div>
+            <div className="mt-3 pt-1">
+              <AreaSparkline
+                data={revenueVsExpenses}
+                dataKey="revenue"
+                color="#1557FF"
+                height={32}
+                fill="gradient"
+                fillOpacity={0.18}
+                strokeWidth={2}
+                dot={true}
+              />
+            </div>
           </div>
         </div>
 
@@ -429,6 +455,16 @@ export default function FinanceDashboard() {
                 <ArrowUpRight size={14} /> +{expenseGrowth}%
               </span>
               <span className="text-slate-400 font-medium">operational outflows</span>
+            </div>
+            <div className="mt-3 pt-1">
+              <LineSparkline
+                data={revenueVsExpenses}
+                dataKey="expense"
+                color="#FF6584"
+                height={32}
+                strokeWidth={2}
+                dot={true}
+              />
             </div>
           </div>
         </div>
@@ -452,6 +488,18 @@ export default function FinanceDashboard() {
               </span>
               <span className="text-slate-400 font-medium">34.9% net margin</span>
             </div>
+            <div className="mt-3 pt-1">
+              <AreaSparkline
+                data={revenueVsExpenses}
+                dataKey="netProfit"
+                color="#2563EB"
+                height={32}
+                fill="gradient"
+                fillOpacity={0.18}
+                strokeWidth={2}
+                dot={true}
+              />
+            </div>
           </div>
         </div>
 
@@ -473,6 +521,18 @@ export default function FinanceDashboard() {
                 51 Unsettled Invoices
               </span>
               <span className="text-slate-400 font-medium">Patient & TPA</span>
+            </div>
+            <div className="mt-3 pt-1">
+              <BarSparkline
+                data={receivablesTrend}
+                dataKey="amount"
+                color="#F59E0B"
+                height={32}
+                barGap={3}
+                barRadius={1.5}
+                dot={false}
+                crosshair="dashed"
+              />
             </div>
           </div>
         </div>
@@ -587,15 +647,15 @@ export default function FinanceDashboard() {
                   <h3 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Revenue vs. Expenses Trend</h3>
                   <p className="text-xs sm:text-sm font-medium text-slate-500 mt-0.5">6-Month historical comparative trajectory and gross margin expansion</p>
                 </div>
-                <div className="flex items-center gap-4 text-xs font-bold shrink-0 flex-wrap">
-                  <span className="flex items-center gap-1.5 text-slate-700">
-                    <span className="w-3 h-3 rounded-full bg-[#1557FF]"></span> Total Revenue
+                <div className="flex items-center gap-5 text-xs font-bold shrink-0 flex-wrap">
+                  <span className="flex items-center gap-2 text-slate-700">
+                    <span className="w-3 h-3 rounded-full bg-[#00B67A]"></span> Total Revenue
                   </span>
-                  <span className="flex items-center gap-1.5 text-slate-700">
-                    <span className="w-3 h-3 rounded-full bg-[#ff6b81]"></span> Operating Expenses
+                  <span className="flex items-center gap-2 text-slate-700">
+                    <span className="w-3 h-3 rounded-full bg-[#FF6584]"></span> Operating Expenses
                   </span>
-                  <span className="flex items-center gap-1.5 text-slate-700">
-                    <span className="w-3 h-3 rounded-full bg-[#38bdf8]"></span> Net Profit
+                  <span className="flex items-center gap-2 text-slate-700">
+                    <span className="w-3 h-3 rounded-full bg-[#2563EB]"></span> Net Profit
                   </span>
                 </div>
               </div>
@@ -603,19 +663,19 @@ export default function FinanceDashboard() {
               {/* Bklit UI BarChart Composable Architecture */}
               <BarChart data={revenueVsExpenses} xDataKey="month" height={320}>
                 <Grid horizontal />
-                <Bar dataKey="revenue" name="Total Revenue" fill="#1557FF" lineCap="round" barWidth={22} />
-                <Bar dataKey="expense" name="Operating Expenses" fill="#ff6b81" lineCap="round" barWidth={22} />
-                <Bar dataKey="netProfit" name="Net Profit" fill="#38bdf8" lineCap="round" barWidth={18} />
+                <Bar dataKey="revenue" name="Total Revenue" fill="#00B67A" lineCap="round" barWidth={22} />
+                <Bar dataKey="expense" name="Operating Expenses" fill="#FF6584" lineCap="round" barWidth={22} />
+                <Bar dataKey="netProfit" name="Net Profit" fill="#2563EB" lineCap="round" barWidth={18} />
                 <BarXAxis />
                 <ChartTooltip formatter={formatINR} />
               </BarChart>
 
-              <div className="flex items-center justify-between text-xs sm:text-sm pt-2 border-t border-slate-100">
-                <span className="font-semibold text-slate-500">
-                  Lowest Outflow: <span className="font-bold text-slate-700">Jun (₹27.5L)</span>
+              <div className="flex items-center justify-between text-xs sm:text-sm pt-3 border-t border-slate-100">
+                <span className="font-medium text-slate-500">
+                  Lowest Outflow: Jun (₹27.5L)
                 </span>
-                <span className="font-bold text-[#1557FF]">
-                  Peak Collection: <span className="font-extrabold text-slate-900">Nov (₹48.25L)</span> • +25.3% H2 Growth
+                <span className="font-bold text-[#00B67A]">
+                  Peak Collection: Nov (₹48.25L • +25.3% H2 Growth)
                 </span>
               </div>
             </div>
