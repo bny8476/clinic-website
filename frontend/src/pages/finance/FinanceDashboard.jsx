@@ -3,6 +3,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import {
+  BarChart,
+  Bar,
+  BarXAxis,
+  Grid,
+  ChartTooltip,
+} from "@bklitui/ui/charts";
 import { 
   Activity,
   AlertCircle,
@@ -308,12 +315,12 @@ export default function FinanceDashboard() {
   }, [expenses, expenseFilter, searchTerm]);
 
   return (
-    <div className="w-full min-h-screen p-4 sm:p-6 lg:p-8 xl:p-10 space-y-6 bg-slate-50/60 font-sans max-w-[1920px] mx-auto">
+    <div className="w-full min-h-screen p-4 sm:p-6 lg:p-8 xl:p-10 space-y-6 bg-slate-50/60 font-finance tracking-[-0.01em] max-w-[1920px] mx-auto antialiased">
       
       {/* ─── Top Executive Banner ─── */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white p-6 sm:p-7 rounded-2xl border border-slate-200/80 shadow-2xs">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 bg-gradient-to-br from-emerald-600 to-teal-700 rounded-2xl flex items-center justify-center shrink-0 shadow-md shadow-emerald-600/20 text-white">
+          <div className="w-14 h-14 bg-gradient-to-br from-[#1557FF] to-blue-700 rounded-2xl flex items-center justify-center shrink-0 shadow-md shadow-[#1557FF]/25 text-white">
             <Landmark className="w-7 h-7" />
           </div>
           <div>
@@ -321,8 +328,8 @@ export default function FinanceDashboard() {
               <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
                 Hospital Financial Command Center
               </h1>
-              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-blue-50 text-[#1557FF] border border-blue-200 flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-[#1557FF] animate-pulse"></span>
                 Ledger Balanced
               </span>
             </div>
@@ -336,7 +343,7 @@ export default function FinanceDashboard() {
         <div className="flex items-center gap-3 shrink-0 flex-wrap sm:flex-nowrap w-full sm:w-auto">
           {/* Date Range Selector */}
           <div className="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200/90 flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-emerald-600 shrink-0" />
+            <Calendar className="w-4 h-4 text-[#1557FF] shrink-0" />
             <select
               value={dateRange}
               onChange={(e) => setDateRange(e.target.value)}
@@ -350,12 +357,12 @@ export default function FinanceDashboard() {
 
           {/* Realtime Live Clock */}
           <div className="px-3.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200/90 flex items-center gap-2">
-            <Clock className="w-4 h-4 text-emerald-600 shrink-0" />
+            <Clock className="w-4 h-4 text-[#1557FF] shrink-0" />
             <div className="text-right">
               <span className="text-[10px] font-bold text-slate-400 block uppercase leading-none">
                 {currentTime.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })}
               </span>
-              <span className="text-xs font-black text-slate-900 font-mono tracking-wide leading-tight">
+              <span className="text-xs font-black text-slate-900 font-financeMono tabular-nums tracking-wide leading-tight">
                 {currentTime.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}
               </span>
             </div>
@@ -363,16 +370,16 @@ export default function FinanceDashboard() {
 
           <button 
             onClick={handleRefreshAll}
-            className="p-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-600 border border-slate-200/90 shadow-2xs hover:text-emerald-600 transition flex items-center gap-1.5 text-xs font-bold cursor-pointer"
+            className="p-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-600 border border-slate-200/90 shadow-2xs hover:text-[#1557FF] transition flex items-center gap-1.5 text-xs font-bold cursor-pointer"
             title="Refresh finance data"
           >
-            <RefreshCw className={`w-4 h-4 ${isDashboardFetching ? 'animate-spin text-emerald-600' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${isDashboardFetching ? 'animate-spin text-[#1557FF]' : ''}`} />
             <span className="hidden sm:inline">Sync</span>
           </button>
 
           <button
             onClick={() => setIsExpenseModalOpen(true)}
-            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition shadow-sm shadow-emerald-600/20 cursor-pointer"
+            className="flex items-center gap-2 bg-[#1557FF] hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition shadow-sm shadow-[#1557FF]/25 cursor-pointer"
           >
             <Plus className="w-4 h-4" /> Record Expense
           </button>
@@ -384,19 +391,19 @@ export default function FinanceDashboard() {
         
         {/* Total Revenue */}
         <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/80 shadow-2xs relative overflow-hidden group">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-emerald-500"></div>
+          <div className="absolute top-0 left-0 right-0 h-1 bg-[#1557FF]"></div>
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Revenue</span>
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#1557FF] flex items-center justify-center">
               <TrendingUp size={20} />
             </div>
           </div>
           <div className="mt-3">
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-mono">
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-financeMono tabular-nums">
               {formatINR(totalRevenue)}
             </h2>
             <div className="flex items-center gap-2 mt-2 text-xs">
-              <span className="px-2 py-0.5 rounded-md font-extrabold bg-emerald-50 text-emerald-700 flex items-center gap-0.5">
+              <span className="px-2 py-0.5 rounded-md font-extrabold bg-blue-50 text-[#1557FF] flex items-center gap-0.5">
                 <ArrowUpRight size={14} /> +{revenueGrowth}%
               </span>
               <span className="text-slate-400 font-medium">vs last month</span>
@@ -414,7 +421,7 @@ export default function FinanceDashboard() {
             </div>
           </div>
           <div className="mt-3">
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-mono">
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-financeMono tabular-nums">
               {formatINR(totalExpenses)}
             </h2>
             <div className="flex items-center gap-2 mt-2 text-xs">
@@ -436,7 +443,7 @@ export default function FinanceDashboard() {
             </div>
           </div>
           <div className="mt-3">
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-mono">
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-financeMono tabular-nums">
               {formatINR(netProfit)}
             </h2>
             <div className="flex items-center gap-2 mt-2 text-xs">
@@ -458,7 +465,7 @@ export default function FinanceDashboard() {
             </div>
           </div>
           <div className="mt-3">
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-mono">
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-financeMono tabular-nums">
               {formatINR(receivables)}
             </h2>
             <div className="flex items-center gap-2 mt-2 text-xs">
@@ -476,7 +483,7 @@ export default function FinanceDashboard() {
       <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-2xs">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
-            <Scale size={16} className="text-emerald-600" />
+            <Scale size={16} className="text-[#1557FF]" />
             Operational Liquidity & Treasury Balances
           </h3>
           <span className="text-[11px] font-bold text-slate-400">Live Auto-Reconciliation Active</span>
@@ -486,49 +493,49 @@ export default function FinanceDashboard() {
           
           <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
             <span className="text-[10px] font-bold text-slate-500 uppercase block truncate">Today's Collection</span>
-            <p className="text-sm font-black text-slate-900 font-mono mt-0.5">{formatINR(todayCollection)}</p>
-            <span className="text-[10px] font-semibold text-emerald-600">Daily Cash Desk</span>
+            <p className="text-sm font-black text-slate-900 font-financeMono tabular-nums mt-0.5">{formatINR(todayCollection)}</p>
+            <span className="text-[10px] font-semibold text-[#1557FF]">Daily Cash Desk</span>
           </div>
 
           <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
             <span className="text-[10px] font-bold text-slate-500 uppercase block truncate">Month Revenue</span>
-            <p className="text-sm font-black text-slate-900 font-mono mt-0.5">{formatINR(thisMonthRevenue)}</p>
+            <p className="text-sm font-black text-slate-900 font-financeMono tabular-nums mt-0.5">{formatINR(thisMonthRevenue)}</p>
             <span className="text-[10px] font-semibold text-blue-600">MTD Inflows</span>
           </div>
 
           <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
             <span className="text-[10px] font-bold text-slate-500 uppercase block truncate">Month Expenses</span>
-            <p className="text-sm font-black text-slate-900 font-mono mt-0.5">{formatINR(thisMonthExpenses)}</p>
+            <p className="text-sm font-black text-slate-900 font-financeMono tabular-nums mt-0.5">{formatINR(thisMonthExpenses)}</p>
             <span className="text-[10px] font-semibold text-rose-600">MTD Outflows</span>
           </div>
 
           <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
             <span className="text-[10px] font-bold text-slate-500 uppercase block truncate">Pending Payments</span>
-            <p className="text-sm font-black text-slate-900 font-mono mt-0.5">{formatINR(pendingPayments)}</p>
+            <p className="text-sm font-black text-slate-900 font-financeMono tabular-nums mt-0.5">{formatINR(pendingPayments)}</p>
             <span className="text-[10px] font-semibold text-amber-600">Patient Due</span>
           </div>
 
           <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
             <span className="text-[10px] font-bold text-slate-500 uppercase block truncate">Vendor Payables</span>
-            <p className="text-sm font-black text-slate-900 font-mono mt-0.5">{formatINR(vendorPayables)}</p>
+            <p className="text-sm font-black text-slate-900 font-financeMono tabular-nums mt-0.5">{formatINR(vendorPayables)}</p>
             <span className="text-[10px] font-semibold text-purple-600">Med Supplies</span>
           </div>
 
           <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
             <span className="text-[10px] font-bold text-slate-500 uppercase block truncate">Payroll Payable</span>
-            <p className="text-sm font-black text-slate-900 font-mono mt-0.5">{formatINR(payrollPayable)}</p>
+            <p className="text-sm font-black text-slate-900 font-financeMono tabular-nums mt-0.5">{formatINR(payrollPayable)}</p>
             <span className="text-[10px] font-semibold text-indigo-600">HR Batch Run</span>
           </div>
 
           <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
             <span className="text-[10px] font-bold text-slate-500 uppercase block truncate">Bank Balance</span>
-            <p className="text-sm font-black text-slate-900 font-mono mt-0.5">{formatINR(bankBalance)}</p>
-            <span className="text-[10px] font-semibold text-emerald-600">HDFC & SBI</span>
+            <p className="text-sm font-black text-slate-900 font-financeMono tabular-nums mt-0.5">{formatINR(bankBalance)}</p>
+            <span className="text-[10px] font-semibold text-[#1557FF]">HDFC & SBI</span>
           </div>
 
           <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
             <span className="text-[10px] font-bold text-slate-500 uppercase block truncate">Cash Balance</span>
-            <p className="text-sm font-black text-slate-900 font-mono mt-0.5">{formatINR(cashBalance)}</p>
+            <p className="text-sm font-black text-slate-900 font-financeMono tabular-nums mt-0.5">{formatINR(cashBalance)}</p>
             <span className="text-[10px] font-semibold text-slate-600">3 Cash Drawers</span>
           </div>
 
@@ -555,7 +562,7 @@ export default function FinanceDashboard() {
               onClick={() => setActiveTab(tab.id)}
               className={`px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 whitespace-nowrap transition-all cursor-pointer ${
                 isActive
-                  ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/25 ring-2 ring-emerald-600/20'
+                  ? 'bg-[#1557FF] text-white shadow-sm shadow-[#1557FF]/25 ring-2 ring-[#1557FF]/20'
                   : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200/90 shadow-2xs'
               }`}
             >
@@ -573,65 +580,43 @@ export default function FinanceDashboard() {
           {/* Charts Row 1: Revenue vs Expenses & Department Breakdown */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
-            {/* 6-Month Revenue vs Expenses Trend */}
-            <div className="lg:col-span-7 xl:col-span-8 bg-white p-6 sm:p-7 rounded-2xl border border-slate-200/80 shadow-2xs space-y-4">
-              <div className="flex items-center justify-between flex-wrap gap-2">
+            {/* 6-Month Revenue vs Expenses Trend (Bklit BarChart UI) */}
+            <div className="lg:col-span-7 xl:col-span-8 bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-2xs space-y-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                  <h3 className="text-base sm:text-lg font-black text-slate-900">Revenue vs. Expenses Trend</h3>
-                  <p className="text-xs text-slate-500">6-Month historical comparative trajectory and gross margin expansion</p>
+                  <h3 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Revenue vs. Expenses Trend</h3>
+                  <p className="text-xs sm:text-sm font-medium text-slate-500 mt-0.5">6-Month historical comparative trajectory and gross margin expansion</p>
                 </div>
-                <div className="flex items-center gap-4 text-xs font-bold">
-                  <span className="flex items-center gap-1.5 text-emerald-600">
-                    <span className="w-3 h-3 rounded-md bg-emerald-500"></span> Total Revenue
+                <div className="flex items-center gap-4 text-xs font-bold shrink-0 flex-wrap">
+                  <span className="flex items-center gap-1.5 text-slate-700">
+                    <span className="w-3 h-3 rounded-full bg-[#1557FF]"></span> Total Revenue
                   </span>
-                  <span className="flex items-center gap-1.5 text-rose-500">
-                    <span className="w-3 h-3 rounded-md bg-rose-400"></span> Operating Expenses
+                  <span className="flex items-center gap-1.5 text-slate-700">
+                    <span className="w-3 h-3 rounded-full bg-[#ff6b81]"></span> Operating Expenses
                   </span>
-                  <span className="flex items-center gap-1.5 text-blue-600">
-                    <span className="w-3 h-3 rounded-md bg-blue-500"></span> Net Profit
+                  <span className="flex items-center gap-1.5 text-slate-700">
+                    <span className="w-3 h-3 rounded-full bg-[#38bdf8]"></span> Net Profit
                   </span>
                 </div>
               </div>
 
-              {/* Bar Visualization */}
-              <div className="h-72 sm:h-80 flex items-end justify-between gap-3 sm:gap-6 lg:gap-8 pt-6 border-b border-slate-100">
-                {revenueVsExpenses.map((m, idx) => {
-                  const maxVal = 5500000;
-                  const revHeight = (m.revenue / maxVal) * 100;
-                  const expHeight = (m.expense / maxVal) * 100;
-                  const profitHeight = (m.netProfit / maxVal) * 100;
+              {/* Bklit UI BarChart Composable Architecture */}
+              <BarChart data={revenueVsExpenses} xDataKey="month" height={320}>
+                <Grid horizontal />
+                <Bar dataKey="revenue" name="Total Revenue" fill="#1557FF" lineCap="round" barWidth={22} />
+                <Bar dataKey="expense" name="Operating Expenses" fill="#ff6b81" lineCap="round" barWidth={22} />
+                <Bar dataKey="netProfit" name="Net Profit" fill="#38bdf8" lineCap="round" barWidth={18} />
+                <BarXAxis />
+                <ChartTooltip formatter={formatINR} />
+              </BarChart>
 
-                  return (
-                    <div key={idx} className="flex-1 flex flex-col items-center h-full justify-end group">
-                      <div className="w-full flex items-end justify-center gap-1.5 sm:gap-2.5 h-full">
-                        {/* Revenue Bar */}
-                        <div 
-                          style={{ height: `${revHeight}%` }} 
-                          className="w-full max-w-[22px] bg-emerald-500 hover:bg-emerald-600 rounded-t-lg transition relative cursor-pointer"
-                          title={`Revenue: ${formatINR(m.revenue)}`}
-                        ></div>
-                        {/* Expense Bar */}
-                        <div 
-                          style={{ height: `${expHeight}%` }} 
-                          className="w-full max-w-[22px] bg-rose-400 hover:bg-rose-500 rounded-t-lg transition relative cursor-pointer"
-                          title={`Expense: ${formatINR(m.expense)}`}
-                        ></div>
-                        {/* Profit Bar */}
-                        <div 
-                          style={{ height: `${profitHeight}%` }} 
-                          className="w-full max-w-[16px] bg-blue-500 hover:bg-blue-600 rounded-t-lg transition relative cursor-pointer"
-                          title={`Profit: ${formatINR(m.netProfit)}`}
-                        ></div>
-                      </div>
-                      <span className="text-[11px] font-bold text-slate-600 mt-2">{m.month}</span>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="flex items-center justify-between text-xs text-slate-500 pt-1">
-                <span>Lowest Outflow: Jun (₹27.5L)</span>
-                <span className="font-bold text-emerald-700">Peak Collection: Nov (₹48.25L • +25.3% H2 Growth)</span>
+              <div className="flex items-center justify-between text-xs sm:text-sm pt-2 border-t border-slate-100">
+                <span className="font-semibold text-slate-500">
+                  Lowest Outflow: <span className="font-bold text-slate-700">Jun (₹27.5L)</span>
+                </span>
+                <span className="font-bold text-[#1557FF]">
+                  Peak Collection: <span className="font-extrabold text-slate-900">Nov (₹48.25L)</span> • +25.3% H2 Growth
+                </span>
               </div>
             </div>
 
@@ -650,7 +635,7 @@ export default function FinanceDashboard() {
                         <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: dept.color }}></span>
                         {dept.name}
                       </span>
-                      <span className="font-mono font-bold text-slate-900">{formatINR(dept.amount)} ({dept.percentage}%)</span>
+                      <span className="font-financeMono tabular-nums font-bold text-slate-900">{formatINR(dept.amount)} ({dept.percentage}%)</span>
                     </div>
                     <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
                       <div 
@@ -680,7 +665,7 @@ export default function FinanceDashboard() {
                   <h3 className="text-base font-black text-slate-900">Payment Collection Channels</h3>
                   <p className="text-xs text-slate-500">Tender breakdown across digital, card, TPA and cash desks</p>
                 </div>
-                <CreditCard className="w-5 h-5 text-emerald-600" />
+                <CreditCard className="w-5 h-5 text-[#1557FF]" />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
@@ -688,9 +673,9 @@ export default function FinanceDashboard() {
                   <div key={i} className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/60 space-y-1">
                     <div className="flex justify-between items-center">
                       <span className="text-xs font-extrabold text-slate-800">{pm.method}</span>
-                      <span className="text-xs font-black text-emerald-600 font-mono">{pm.percentage}%</span>
+                      <span className="text-xs font-black text-[#1557FF] font-financeMono tabular-nums">{pm.percentage}%</span>
                     </div>
-                    <p className="text-sm font-black text-slate-900 font-mono">{formatINR(pm.amount)}</p>
+                    <p className="text-sm font-black text-slate-900 font-financeMono tabular-nums">{formatINR(pm.amount)}</p>
                     <span className="text-[10px] text-slate-400 font-medium block">{pm.description}</span>
                   </div>
                 ))}
@@ -718,10 +703,10 @@ export default function FinanceDashboard() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-black text-slate-900 font-mono">{formatINR(age.amount)}</p>
+                      <p className="text-sm font-black text-slate-900 font-financeMono tabular-nums">{formatINR(age.amount)}</p>
                       <button 
                         onClick={() => setActiveTab('receivables')}
-                        className="text-[10px] font-bold text-emerald-600 hover:text-emerald-700 uppercase tracking-wider cursor-pointer"
+                        className="text-[10px] font-bold text-[#1557FF] hover:text-blue-700 uppercase tracking-wider cursor-pointer"
                       >
                         Inspect Dues →
                       </button>
@@ -734,18 +719,18 @@ export default function FinanceDashboard() {
           </div>
 
           {/* Quick Nav Shortcut to Dedicated Ledger Pages */}
-          <div className="p-4 bg-emerald-50/80 rounded-2xl border border-emerald-200 flex flex-wrap items-center justify-between gap-3 text-xs">
-            <div className="flex items-center gap-2 text-emerald-900 font-bold">
-              <FileCheck className="w-5 h-5 text-emerald-600" />
+          <div className="p-4 bg-blue-50/70 rounded-2xl border border-blue-200 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2 text-blue-950 font-bold">
+              <FileCheck className="w-5 h-5 text-[#1557FF]" />
               <span>Dedicated Financial Ledgers & Statements:</span>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <button onClick={() => navigate('/finance/invoices')} className="px-3 py-1.5 bg-white border border-emerald-300 rounded-lg font-bold text-slate-700 hover:bg-emerald-100 transition cursor-pointer">Invoices</button>
-              <button onClick={() => navigate('/finance/payments')} className="px-3 py-1.5 bg-white border border-emerald-300 rounded-lg font-bold text-slate-700 hover:bg-emerald-100 transition cursor-pointer">Payments</button>
-              <button onClick={() => navigate('/finance/pnl')} className="px-3 py-1.5 bg-white border border-emerald-300 rounded-lg font-bold text-slate-700 hover:bg-emerald-100 transition cursor-pointer">P&L Statement</button>
-              <button onClick={() => navigate('/finance/insurance-claims')} className="px-3 py-1.5 bg-white border border-emerald-300 rounded-lg font-bold text-slate-700 hover:bg-emerald-100 transition cursor-pointer">Insurance Claims</button>
-              <button onClick={() => navigate('/finance/refunds')} className="px-3 py-1.5 bg-white border border-emerald-300 rounded-lg font-bold text-slate-700 hover:bg-emerald-100 transition cursor-pointer">Refunds & Credit Notes</button>
-              <button onClick={() => navigate('/finance/daily-cash')} className="px-3 py-1.5 bg-white border border-emerald-300 rounded-lg font-bold text-slate-700 hover:bg-emerald-100 transition cursor-pointer">Cash Drawers</button>
+              <button onClick={() => navigate('/finance/invoices')} className="px-3 py-1.5 bg-white border border-blue-200 rounded-lg font-bold text-slate-700 hover:bg-blue-100 transition cursor-pointer">Invoices</button>
+              <button onClick={() => navigate('/finance/payments')} className="px-3 py-1.5 bg-white border border-blue-200 rounded-lg font-bold text-slate-700 hover:bg-blue-100 transition cursor-pointer">Payments</button>
+              <button onClick={() => navigate('/finance/pnl')} className="px-3 py-1.5 bg-white border border-blue-200 rounded-lg font-bold text-slate-700 hover:bg-blue-100 transition cursor-pointer">P&L Statement</button>
+              <button onClick={() => navigate('/finance/insurance-claims')} className="px-3 py-1.5 bg-white border border-blue-200 rounded-lg font-bold text-slate-700 hover:bg-blue-100 transition cursor-pointer">Insurance Claims</button>
+              <button onClick={() => navigate('/finance/refunds')} className="px-3 py-1.5 bg-white border border-blue-200 rounded-lg font-bold text-slate-700 hover:bg-blue-100 transition cursor-pointer">Refunds & Credit Notes</button>
+              <button onClick={() => navigate('/finance/daily-cash')} className="px-3 py-1.5 bg-white border border-blue-200 rounded-lg font-bold text-slate-700 hover:bg-blue-100 transition cursor-pointer">Cash Drawers</button>
             </div>
           </div>
 
@@ -758,7 +743,7 @@ export default function FinanceDashboard() {
           {/* Revenue Workflow Header */}
           <div className="p-5 sm:p-6 bg-white rounded-2xl border border-slate-200/80 shadow-2xs space-y-4">
             <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
-              <TrendingUp className="text-emerald-600 w-4 h-4" />
+              <TrendingUp className="text-[#1557FF] w-4 h-4" />
               Automated Clinical Revenue Ingestion Pipeline
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-1 text-xs">
@@ -778,9 +763,9 @@ export default function FinanceDashboard() {
                 <span className="font-bold text-slate-500 block text-[10px] uppercase">Step 4</span>
                 <span className="font-extrabold text-slate-800">Finance Auto-Reconciles</span>
               </div>
-              <div className="p-3.5 bg-emerald-50 rounded-xl border border-emerald-200 text-center">
-                <span className="font-bold text-emerald-700 block text-[10px] uppercase">Step 5</span>
-                <span className="font-extrabold text-emerald-900">General Ledger Posted</span>
+              <div className="p-3.5 bg-blue-50 rounded-xl border border-blue-200 text-center">
+                <span className="font-bold text-[#1557FF] block text-[10px] uppercase">Step 5</span>
+                <span className="font-extrabold text-blue-950">General Ledger Posted</span>
               </div>
             </div>
             <p className="text-xs text-slate-500 pt-1">
@@ -792,29 +777,29 @@ export default function FinanceDashboard() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 xl:gap-6">
             <div className="p-4 bg-white rounded-2xl border border-slate-200/80 shadow-2xs space-y-2">
               <span className="text-xs font-bold text-slate-500 uppercase">Pharmacy Sales</span>
-              <p className="text-xl font-black text-slate-900 font-mono">₹16,40,000</p>
-              <span className="text-[11px] font-semibold text-emerald-600 block">34% of hospital revenue</span>
+              <p className="text-xl font-black text-slate-900 font-financeMono tabular-nums">₹16,40,000</p>
+              <span className="text-[11px] font-semibold text-[#1557FF] block">34% of hospital revenue</span>
             </div>
             <div className="p-4 bg-white rounded-2xl border border-slate-200/80 shadow-2xs space-y-2">
               <span className="text-xs font-bold text-slate-500 uppercase">Laboratory Revenue</span>
-              <p className="text-xl font-black text-slate-900 font-mono">₹9,65,000</p>
+              <p className="text-xl font-black text-slate-900 font-financeMono tabular-nums">₹9,65,000</p>
               <span className="text-[11px] font-semibold text-blue-600 block">Blood, Bio & Cultures</span>
             </div>
             <div className="p-4 bg-white rounded-2xl border border-slate-200/80 shadow-2xs space-y-2">
               <span className="text-xs font-bold text-slate-500 uppercase">Radiology & CT</span>
-              <p className="text-xl font-black text-slate-900 font-mono">₹8,20,000</p>
+              <p className="text-xl font-black text-slate-900 font-financeMono tabular-nums">₹8,20,000</p>
               <span className="text-[11px] font-semibold text-purple-600 block">Imaging & MRI Panels</span>
             </div>
             <div className="p-4 bg-white rounded-2xl border border-slate-200/80 shadow-2xs space-y-2">
               <span className="text-xs font-bold text-slate-500 uppercase">Consultations & IPD</span>
-              <p className="text-xl font-black text-slate-900 font-mono">₹14,00,000</p>
+              <p className="text-xl font-black text-slate-900 font-financeMono tabular-nums">₹14,00,000</p>
               <span className="text-[11px] font-semibold text-amber-600 block">Doctor Rounds & Beds</span>
             </div>
           </div>
 
           {/* Quick Action Navigation */}
           <div className="flex items-center gap-3">
-            <button onClick={() => navigate('/finance/invoices')} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-xs cursor-pointer">
+            <button onClick={() => navigate('/finance/invoices')} className="px-4 py-2 bg-[#1557FF] hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow-xs cursor-pointer">
               Open Full Invoices Ledger →
             </button>
             <button onClick={() => navigate('/finance/payments')} className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold transition cursor-pointer">
@@ -834,7 +819,7 @@ export default function FinanceDashboard() {
             </div>
             <button 
               onClick={() => setIsExpenseModalOpen(true)}
-              className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
+              className="px-4 py-2.5 bg-[#1557FF] hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
             >
               <Plus size={16} /> Add New Expense
             </button>
@@ -881,14 +866,14 @@ export default function FinanceDashboard() {
                   ) : (
                     filteredExpenses.map((exp) => (
                       <tr key={exp.id} className="hover:bg-slate-50/60 transition">
-                        <td className="py-3.5 px-4 font-mono font-medium text-slate-700">{exp.incurredOn}</td>
+                        <td className="py-3.5 px-4 font-financeMono tabular-nums font-medium text-slate-700">{exp.incurredOn}</td>
                         <td className="py-3.5 px-4 font-bold text-slate-900">{exp.category}</td>
                         <td className="py-3.5 px-4 font-medium text-slate-700 max-w-xs truncate">{exp.description}</td>
-                        <td className="py-3.5 px-4 text-right font-black font-mono text-slate-900">{formatINR(exp.amount)}</td>
+                        <td className="py-3.5 px-4 text-right font-black font-financeMono tabular-nums text-slate-900">{formatINR(exp.amount)}</td>
                         <td className="py-3.5 px-4 text-center">
                           <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase ${
-                            exp.status === 'PAID' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
-                            exp.status === 'APPROVED' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+                            exp.status === 'PAID' ? 'bg-blue-50 text-[#1557FF] border border-blue-200' :
+                            exp.status === 'APPROVED' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' :
                             exp.status === 'REJECTED' ? 'bg-rose-50 text-rose-700 border border-rose-200' :
                             'bg-amber-50 text-amber-700 border border-amber-200'
                           }`}>
@@ -900,7 +885,7 @@ export default function FinanceDashboard() {
                             <>
                               <button 
                                 onClick={() => approveMutation.mutate(exp.id)}
-                                className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-lg transition text-[11px] cursor-pointer"
+                                className="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-[#1557FF] font-bold rounded-lg transition text-[11px] cursor-pointer"
                               >
                                 Approve
                               </button>
@@ -942,7 +927,7 @@ export default function FinanceDashboard() {
               <h3 className="text-base font-black text-slate-900">Accounts Receivable Ledger</h3>
               <p className="text-xs text-slate-500">Unsettled patient dues, corporate credit accounts, and TPA insurance claim settlements</p>
             </div>
-            <span className="px-3 py-1 rounded-xl bg-amber-50 text-amber-800 font-mono font-bold text-xs border border-amber-200">
+            <span className="px-3 py-1 rounded-xl bg-amber-50 text-amber-800 font-financeMono tabular-nums font-bold text-xs border border-amber-200">
               Total Outstanding: {formatINR(receivables)}
             </span>
           </div>
@@ -964,16 +949,16 @@ export default function FinanceDashboard() {
                 <tbody className="divide-y divide-slate-100">
                   {receivablesList.map((rec, i) => (
                     <tr key={i} className="hover:bg-slate-50/60 transition">
-                      <td className="py-3.5 px-4 font-mono font-bold text-blue-600">{rec.invoiceNumber}</td>
+                      <td className="py-3.5 px-4 font-financeMono tabular-nums font-bold text-blue-600">{rec.invoiceNumber}</td>
                       <td className="py-3.5 px-4 font-bold text-slate-900">{rec.payerName}</td>
                       <td className="py-3.5 px-4 text-slate-600 font-medium">{rec.serviceDescription}</td>
-                      <td className="py-3.5 px-4 text-right font-black font-mono text-slate-900">{formatINR(rec.amount)}</td>
+                      <td className="py-3.5 px-4 text-right font-black font-financeMono tabular-nums text-slate-900">{formatINR(rec.amount)}</td>
                       <td className="py-3.5 px-4">
                         <span className="px-2 py-0.5 rounded-md font-extrabold text-[10px] bg-amber-50 text-amber-700 border border-amber-200">
                           {rec.agingBracket}
                         </span>
                       </td>
-                      <td className="py-3.5 px-4 font-mono text-slate-600">{rec.dueDate}</td>
+                      <td className="py-3.5 px-4 font-financeMono tabular-nums text-slate-600">{rec.dueDate}</td>
                       <td className="py-3.5 px-4 text-right">
                         <button 
                           onClick={() => toast.success(`Payment follow-up notice sent for ${rec.invoiceNumber}`)}
@@ -999,7 +984,7 @@ export default function FinanceDashboard() {
               <h3 className="text-base font-black text-slate-900">Accounts Payable & Supplier Invoices</h3>
               <p className="text-xs text-slate-500">Medical supplies, pharmaceutical purchases, equipment maintenance, and facility payables</p>
             </div>
-            <span className="px-3 py-1 rounded-xl bg-purple-50 text-purple-800 font-mono font-bold text-xs border border-purple-200">
+            <span className="px-3 py-1 rounded-xl bg-purple-50 text-purple-800 font-financeMono tabular-nums font-bold text-xs border border-purple-200">
               Total Payables Due: {formatINR(vendorPayables)}
             </span>
           </div>
@@ -1022,10 +1007,10 @@ export default function FinanceDashboard() {
                   {payablesList.map((pay, i) => (
                     <tr key={i} className="hover:bg-slate-50/60 transition">
                       <td className="py-3.5 px-4 font-bold text-slate-900">{pay.vendorName}</td>
-                      <td className="py-3.5 px-4 font-mono text-slate-600">{pay.billNumber}</td>
+                      <td className="py-3.5 px-4 font-financeMono tabular-nums text-slate-600">{pay.billNumber}</td>
                       <td className="py-3.5 px-4 text-slate-700 font-medium">{pay.description}</td>
-                      <td className="py-3.5 px-4 text-right font-black font-mono text-slate-900">{formatINR(pay.amount)}</td>
-                      <td className="py-3.5 px-4 font-mono text-slate-600">{pay.dueDate}</td>
+                      <td className="py-3.5 px-4 text-right font-black font-financeMono tabular-nums text-slate-900">{formatINR(pay.amount)}</td>
+                      <td className="py-3.5 px-4 font-financeMono tabular-nums text-slate-600">{pay.dueDate}</td>
                       <td className="py-3.5 px-4 text-center">
                         <span className={`px-2 py-0.5 rounded-md font-extrabold text-[10px] ${
                           pay.status === 'OVERDUE' ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-amber-50 text-amber-700 border border-amber-200'
@@ -1036,7 +1021,7 @@ export default function FinanceDashboard() {
                       <td className="py-3.5 px-4 text-right">
                         <button 
                           onClick={() => toast.success(`Bank disbursement initiated for ${pay.vendorName}`)}
-                          className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition text-[11px] cursor-pointer"
+                          className="px-3 py-1 bg-[#1557FF] hover:bg-blue-700 text-white font-bold rounded-lg transition text-[11px] cursor-pointer"
                         >
                           Disburse
                         </button>
@@ -1080,20 +1065,20 @@ export default function FinanceDashboard() {
                 <tbody className="divide-y divide-slate-100">
                   {chartOfAccounts.map((coa, i) => (
                     <tr key={i} className="hover:bg-slate-50/60 transition">
-                      <td className="py-3.5 px-4 font-mono font-bold text-slate-900">{coa.accountCode}</td>
+                      <td className="py-3.5 px-4 font-financeMono tabular-nums font-bold text-slate-900">{coa.accountCode}</td>
                       <td className="py-3.5 px-4 font-bold text-slate-800">{coa.accountName}</td>
                       <td className="py-3.5 px-4">
                         <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${
-                          coa.accountType === 'ASSET' ? 'bg-emerald-50 text-emerald-700' :
+                          coa.accountType === 'ASSET' ? 'bg-blue-50 text-[#1557FF]' :
                           coa.accountType === 'LIABILITY' ? 'bg-rose-50 text-rose-700' :
                           coa.accountType === 'EQUITY' ? 'bg-purple-50 text-purple-700' :
-                          coa.accountType === 'REVENUE' ? 'bg-blue-50 text-blue-700' : 'bg-amber-50 text-amber-700'
+                          coa.accountType === 'REVENUE' ? 'bg-indigo-50 text-indigo-700' : 'bg-amber-50 text-amber-700'
                         }`}>
                           {coa.accountType}
                         </span>
                       </td>
                       <td className="py-3.5 px-4 text-slate-500 font-medium">{coa.category}</td>
-                      <td className="py-3.5 px-4 text-right font-black font-mono text-slate-900">{formatINR(coa.balance)}</td>
+                      <td className="py-3.5 px-4 text-right font-black font-financeMono tabular-nums text-slate-900">{formatINR(coa.balance)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -1112,7 +1097,7 @@ export default function FinanceDashboard() {
               <p className="text-xs text-slate-500">Institutional operating accounts, clinical revenue sweeps, and cash drawers</p>
             </div>
             <div className="flex items-center gap-2">
-              <span className="px-3 py-1 bg-emerald-50 text-emerald-800 text-xs font-bold rounded-xl border border-emerald-200">
+              <span className="px-3 py-1 bg-blue-50 text-blue-900 text-xs font-bold rounded-xl border border-blue-200">
                 Reconciliation: 248 Matched / 12 In-Transit
               </span>
             </div>
@@ -1128,10 +1113,10 @@ export default function FinanceDashboard() {
               <div key={i} className="p-5 bg-white rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
                 <div className="flex justify-between items-start">
                   <span className="text-xs font-bold text-slate-500 uppercase">{bank.accountName}</span>
-                  <Landmark className="w-5 h-5 text-emerald-600" />
+                  <Landmark className="w-5 h-5 text-[#1557FF]" />
                 </div>
-                <h4 className="text-2xl font-black text-slate-900 font-mono">{formatINR(bank.balance)}</h4>
-                <div className="text-[11px] text-slate-500 space-y-0.5 border-t border-slate-100 pt-2 font-mono">
+                <h4 className="text-2xl font-black text-slate-900 font-financeMono tabular-nums">{formatINR(bank.balance)}</h4>
+                <div className="text-[11px] text-slate-500 space-y-0.5 border-t border-slate-100 pt-2 font-financeMono tabular-nums">
                   <div>A/C: {bank.accountNumber}</div>
                   <div>IFSC: {bank.ifscCode}</div>
                   <div className="text-slate-400 font-sans mt-1">{bank.purpose}</div>
@@ -1143,7 +1128,7 @@ export default function FinanceDashboard() {
           {/* Cash Drawers Grid */}
           <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
             <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
-              <Wallet className="w-4 h-4 text-emerald-600" />
+              <Wallet className="w-4 h-4 text-[#1557FF]" />
               Active Physical Cash Desk Drawers
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1155,9 +1140,9 @@ export default function FinanceDashboard() {
                 <div key={i} className="p-4 bg-slate-50 rounded-xl border border-slate-200/70 space-y-1">
                   <div className="flex justify-between items-center text-xs">
                     <span className="font-bold text-slate-900">{cd.drawerName}</span>
-                    <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-emerald-100 text-emerald-800">{cd.status}</span>
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-blue-100 text-[#1557FF]">{cd.status}</span>
                   </div>
-                  <p className="text-lg font-black text-slate-900 font-mono">{formatINR(cd.balance)}</p>
+                  <p className="text-lg font-black text-slate-900 font-financeMono tabular-nums">{formatINR(cd.balance)}</p>
                   <span className="text-[11px] text-slate-500 block">{cd.cashierName} • {cd.shift}</span>
                 </div>
               ))}
@@ -1185,18 +1170,18 @@ export default function FinanceDashboard() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             <div className="p-5 bg-white rounded-2xl border border-slate-200/80 shadow-2xs space-y-1">
               <span className="text-xs font-bold text-slate-500 uppercase">Monthly Salary Expense</span>
-              <p className="text-2xl font-black text-slate-900 font-mono">₹16,80,000</p>
+              <p className="text-2xl font-black text-slate-900 font-financeMono tabular-nums">₹16,80,000</p>
               <span className="text-[11px] font-medium text-slate-400">48 Clinical & Admin Staff</span>
             </div>
             <div className="p-5 bg-white rounded-2xl border border-slate-200/80 shadow-2xs space-y-1">
               <span className="text-xs font-bold text-slate-500 uppercase">Statutory Deductions (PF/ESI/TDS)</span>
-              <p className="text-2xl font-black text-purple-700 font-mono">₹1,45,000</p>
+              <p className="text-2xl font-black text-purple-700 font-financeMono tabular-nums">₹1,45,000</p>
               <span className="text-[11px] font-medium text-purple-600">Remitted to Government</span>
             </div>
             <div className="p-5 bg-white rounded-2xl border border-slate-200/80 shadow-2xs space-y-1">
               <span className="text-xs font-bold text-slate-500 uppercase">Net Salary Payable</span>
-              <p className="text-2xl font-black text-emerald-700 font-mono">₹15,35,000</p>
-              <span className="text-[11px] font-medium text-emerald-600">Pending Bank Batch Dispatch</span>
+              <p className="text-2xl font-black text-[#1557FF] font-financeMono tabular-nums">₹15,35,000</p>
+              <span className="text-[11px] font-medium text-[#1557FF]">Pending Bank Batch Dispatch</span>
             </div>
           </div>
 
@@ -1220,7 +1205,7 @@ export default function FinanceDashboard() {
                     <span className="text-[10px] text-slate-400">{d.headcount} Staff Members</span>
                   </div>
                   <div className="text-right">
-                    <span className="font-mono font-black text-slate-900">{formatINR(d.cost)}</span>
+                    <span className="font-financeMono tabular-nums font-black text-slate-900">{formatINR(d.cost)}</span>
                     <span className="text-[10px] text-slate-500 block">{d.pct}% of payroll</span>
                   </div>
                 </div>
@@ -1247,7 +1232,7 @@ export default function FinanceDashboard() {
                 <select
                   value={newExpense.category}
                   onChange={(e) => setNewExpense({ ...newExpense, category: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-bold text-slate-800 outline-none focus:border-emerald-500 cursor-pointer"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-bold text-slate-800 outline-none focus:border-[#1557FF] focus:ring-1 focus:ring-[#1557FF] cursor-pointer"
                 >
                   <option value="Medical Supplies">Medical Supplies</option>
                   <option value="Pharmacy Purchases">Pharmacy Purchases</option>
@@ -1270,7 +1255,7 @@ export default function FinanceDashboard() {
                   placeholder="e.g. Roche diagnostic reagent kits batch #492"
                   value={newExpense.description}
                   onChange={(e) => setNewExpense({ ...newExpense, description: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-medium text-slate-800 outline-none focus:border-emerald-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-medium text-slate-800 outline-none focus:border-[#1557FF] focus:ring-1 focus:ring-[#1557FF]"
                 />
               </div>
 
@@ -1283,7 +1268,7 @@ export default function FinanceDashboard() {
                     placeholder="0.00"
                     value={newExpense.amount}
                     onChange={(e) => setNewExpense({ ...newExpense, amount: e.target.value })}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-mono font-bold text-slate-800 outline-none focus:border-emerald-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-financeMono tabular-nums font-bold text-slate-800 outline-none focus:border-[#1557FF] focus:ring-1 focus:ring-[#1557FF]"
                   />
                 </div>
                 <div>
@@ -1292,7 +1277,7 @@ export default function FinanceDashboard() {
                     type="date"
                     value={newExpense.incurredOn}
                     onChange={(e) => setNewExpense({ ...newExpense, incurredOn: e.target.value })}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-mono font-bold text-slate-800 outline-none focus:border-emerald-500 cursor-pointer"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 font-financeMono tabular-nums font-bold text-slate-800 outline-none focus:border-[#1557FF] focus:ring-1 focus:ring-[#1557FF] cursor-pointer"
                   />
                 </div>
               </div>
@@ -1313,7 +1298,7 @@ export default function FinanceDashboard() {
                   amount: parseFloat(newExpense.amount),
                   incurredOn: newExpense.incurredOn
                 })}
-                className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold rounded-xl transition shadow-sm shadow-emerald-600/20 cursor-pointer"
+                className="px-5 py-2 bg-[#1557FF] hover:bg-blue-700 disabled:opacity-50 text-white font-bold rounded-xl transition shadow-sm shadow-[#1557FF]/25 cursor-pointer"
               >
                 {addExpenseMutation.isPending ? 'Recording...' : 'Submit Expense'}
               </button>

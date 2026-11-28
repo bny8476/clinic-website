@@ -101,6 +101,8 @@ export default {
         "gold": "#C5A059"
       },
       fontFamily: {
+        finance: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif'],
+        financeMono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
         display: ['Onest', 'sans-serif'],
         sans: ['Onest', 'sans-serif'],
         body: ['Onest', 'sans-serif'],

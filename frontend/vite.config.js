@@ -2,9 +2,21 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import viteCompression from 'vite-plugin-compression'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 // https://vite.dev/config/
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+      '@bklitui/ui/charts': path.resolve(__dirname, './src/components/ui/charts.jsx'),
+      '@bklitui/ui': path.resolve(__dirname, './src/components/ui')
+    }
+  },
   plugins: [
     react(),
     viteCompression({ algorithm: 'gzip' }),
