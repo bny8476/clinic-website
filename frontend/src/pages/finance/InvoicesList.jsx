@@ -652,7 +652,7 @@ const InvoicesList = () => {
       </div>
 
       {/* ─── Create Invoice Modal ─── */}
-      {createPortal(
+      {createPortal((
         <AnimatePresence>
           {isModalOpen && (
             <div className="fixed inset-0 z-[9998] flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
@@ -823,9 +823,8 @@ const InvoicesList = () => {
               </motion.div>
             </div>
           )}
-        </AnimatePresence>,
-        document.body
-      )}
+        </AnimatePresence>
+      ), document.body)}
 
     </div>
   );
