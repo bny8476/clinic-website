@@ -36,6 +36,14 @@ public class AppointmentController {
         } else if (doctorId != null) {
             return ResponseEntity.ok(ApiResponse.success(appointmentService.getDoctorAppointments(doctorId)));
         }
+        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        boolean isDeskOrAdmin = auth != null && auth.getAuthorities().stream().anyMatch(a ->
+                a.getAuthority().equals("ROLE_RECEPTION") ||
+                a.getAuthority().equals("ROLE_ADMIN") ||
+                a.getAuthority().equals("ROLE_SUPER_ADMIN"));
+        if (isDeskOrAdmin) {
+            return ResponseEntity.ok(ApiResponse.success(appointmentService.getAllTodayAppointments()));
+        }
         Long currentUserId = SecurityUtils.getCurrentUserId();
         if (currentUserId != null) {
             try {
@@ -48,7 +56,7 @@ public class AppointmentController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAuthority('ROLE_PATIENT') or hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_DOCTOR')")
+    @PreAuthorize("hasAuthority('ROLE_PATIENT') or hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_DOCTOR')")
     public ResponseEntity<ApiResponse<Appointment>> createAppointmentAlias(
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
             @RequestBody com.healthcare.clinic.appointment.dto.BookingRequest request) {
@@ -112,7 +120,7 @@ public class AppointmentController {
     }
 
     @PostMapping("/book")
-    @PreAuthorize("hasAuthority('ROLE_PATIENT') or hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_DOCTOR')")
+    @PreAuthorize("hasAuthority('ROLE_PATIENT') or hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_DOCTOR')")
     public ResponseEntity<ApiResponse<Appointment>> bookAppointment(
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
             @jakarta.validation.Valid @RequestBody com.healthcare.clinic.appointment.dto.BookingRequest request) {

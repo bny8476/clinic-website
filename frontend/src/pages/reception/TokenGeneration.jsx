@@ -11,6 +11,7 @@ const TokenGeneration = () => {
   const [issuedToken, setIssuedToken] = useState(null);
   const [walkIns, setWalkIns] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [issuing, setIssuing] = useState(false);
   
   const user = useAuthStore(state => state.user);
@@ -19,17 +20,12 @@ const TokenGeneration = () => {
   const fetchWalkIns = async () => {
     try {
       setLoading(true);
+      setError(null);
       const res = await axiosPrivate.get(`/reception/branches/${branchId}/walk-ins`);
-      const list = res.data || [];
-      setWalkIns(list.length > 0 ? list : [
-        { id: 101, firstName: 'John', lastName: 'Smith', patient: { firstName: 'John', lastName: 'Smith' }, reasonForVisit: 'Cardiology Consultation (Dr. John Doe)' },
-        { id: 102, firstName: 'Sarah', lastName: 'Jenkins', patient: { firstName: 'Sarah', lastName: 'Jenkins' }, reasonForVisit: 'Pediatrics Consultation (Dr. Emily Davis)' }
-      ]);
+      setWalkIns(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
-      setWalkIns([
-        { id: 101, firstName: 'John', lastName: 'Smith', patient: { firstName: 'John', lastName: 'Smith' }, reasonForVisit: 'Cardiology Consultation (Dr. John Doe)' },
-        { id: 102, firstName: 'Sarah', lastName: 'Jenkins', patient: { firstName: 'Sarah', lastName: 'Jenkins' }, reasonForVisit: 'Pediatrics Consultation (Dr. Emily Davis)' }
-      ]);
+      setWalkIns([]);
+      setError(err?.response?.data?.message || 'Failed to load walk-in registrations');
     } finally {
       setLoading(false);
     }
@@ -42,22 +38,23 @@ const TokenGeneration = () => {
   const issueToken = async (walkIn) => {
     try {
       setIssuing(true);
-      const res = await axiosPrivate.post(`/reception/branches/${branchId}/queue/generate?walkInId=${walkIn.id}`);
+      const dept = walkIn.department ? `&department=${encodeURIComponent(walkIn.department)}` : '';
+      const res = await axiosPrivate.post(`/reception/branches/${branchId}/queue/generate?walkInId=${walkIn.id}${dept}`);
       
       const token = {
         tokenNumber: `T-${res.data.tokenNumber}`,
-        department: walkIn.reasonForVisit || 'General OPD',
+        department: res.data.currentDepartment || walkIn.reasonForVisit || 'General OPD',
         doctor: walkIn.patient?.firstName 
-          ? `${walkIn.patient.firstName} ${walkIn.patient.lastName}` 
-          : `${walkIn.firstName} ${walkIn.lastName}`,
+          ? `${walkIn.patient.firstName} ${walkIn.patient.lastName || ''}` 
+          : `${walkIn.firstName || ''} ${walkIn.lastName || ''}`.trim() || 'Walk-In Patient',
         issuedAt: new Date(res.data.generatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
       };
       
       setIssuedToken(token);
       toast.success(`Token ${token.tokenNumber} issued successfully`);
-      
+      fetchWalkIns();
     } catch (err) {
-      toast.error('Failed to issue token');
+      toast.error(err?.response?.data?.message || 'Failed to issue token');
     } finally {
       setIssuing(false);
     }
@@ -110,6 +107,16 @@ const TokenGeneration = () => {
               {loading ? (
                 <div className="flex-1 flex items-center justify-center">
                   <Loader2 className="w-8 h-8 animate-spin text-[#2864FF]" />
+                </div>
+              ) : error ? (
+                <div className="flex-1 flex flex-col items-center justify-center text-center p-6 space-y-3">
+                  <p className="text-sm font-bold text-red-600">{error}</p>
+                  <button
+                    onClick={fetchWalkIns}
+                    className="px-4 py-2 text-xs font-bold text-[#2864FF] bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors cursor-pointer"
+                  >
+                    Retry
+                  </button>
                 </div>
               ) : walkIns.length === 0 ? (
                 <div className="flex-1 flex flex-col items-center justify-center">

@@ -24,7 +24,7 @@ public class CashierController {
     }
 
     @GetMapping("/session/current")
-    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'ACCOUNTANT', 'SUPER_ADMIN', 'CASHIER', 'RECEPTIONIST')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'ACCOUNTANT', 'SUPER_ADMIN', 'CASHIER', 'RECEPTION', 'RECEPTIONIST')")
     public ResponseEntity<CashierSession> getCurrentSession(@RequestParam Long cashierId) {
         return cashierService.getCurrentSession(cashierId)
                 .map(ResponseEntity::ok)
@@ -32,7 +32,7 @@ public class CashierController {
     }
 
     @PostMapping("/session/open")
-    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'ACCOUNTANT', 'SUPER_ADMIN', 'CASHIER', 'RECEPTIONIST')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'ACCOUNTANT', 'SUPER_ADMIN', 'CASHIER', 'RECEPTION', 'RECEPTIONIST')")
     public ResponseEntity<CashierSession> openSession(@RequestBody Map<String, Object> request) {
         Object branchIdObj = request.get("branchId");
         Long branchId = (branchIdObj != null && !branchIdObj.toString().trim().isEmpty())
@@ -54,7 +54,7 @@ public class CashierController {
     }
 
     @PostMapping("/session/{sessionId}/close")
-    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'ACCOUNTANT', 'SUPER_ADMIN', 'CASHIER', 'RECEPTIONIST')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'ACCOUNTANT', 'SUPER_ADMIN', 'CASHIER', 'RECEPTION', 'RECEPTIONIST')")
     public ResponseEntity<CashierSession> closeSession(
             @PathVariable Long sessionId,
             @RequestBody Map<String, Object> request) {

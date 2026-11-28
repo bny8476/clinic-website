@@ -6,7 +6,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { axiosPublic } from '../../api/axios';
 import { MOCK_DOCTORS } from '../../data/unifiedMockData';
 import { listStagger, staggerChildren } from '../../components/ui/motion';
-import { AlertTriangle, ArrowLeft, Search, Stethoscope } from 'lucide-react';
+import { AlertTriangle, Search, Stethoscope } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const DoctorList = () => {
@@ -63,9 +63,9 @@ const DoctorList = () => {
     if (!token) return '/register';
     
     let path = '';
-    if (roles.includes('ROLE_RECEPTION')) {
+    if (roles.some(r => ['ROLE_RECEPTION', 'RECEPTION', 'ROLE_SUPER_ADMIN', 'ROLE_ADMIN'].includes(r))) {
       path = `/reception/book/${doctorId}`;
-    } else if (roles.includes('ROLE_PATIENT')) {
+    } else if (roles.some(r => ['ROLE_PATIENT', 'PATIENT'].includes(r))) {
       path = `/patient/book/${doctorId}`;
     } else {
       return '/register';
@@ -88,16 +88,6 @@ const DoctorList = () => {
   return (
     <div className="min-h-screen bg-gray-50/50 py-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto relative">
-        
-        {/* Back Button */}
-        <button 
-          onClick={() => navigate(-1)} 
-          className="absolute top-0 left-0 flex items-center text-gray-500 hover:text-indigo-600 transition-colors font-medium -mt-8 sm:mt-0"
-        >
-          <ArrowLeft className="w-5 h-5 mr-1" />
-          Back
-        </button>
-
         {/* Header Section */}
         <div className="text-center max-w-3xl mx-auto mb-16 mt-8 sm:mt-0">
           <span className="text-indigo-600 font-semibold tracking-wider uppercase text-sm mb-4 block">Our Specialists</span>

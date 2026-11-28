@@ -31,14 +31,51 @@ public class QueueManagementController {
         return ResponseEntity.ok(queueTokenRepository.findByBranchIdAndGeneratedAtAfterOrderByPriorityLevelDescTokenNumberAsc(branchId, startOfDay));
     }
 
+    private QueueToken findTokenByIdOrNumber(String tokenIdStr) {
+        if (tokenIdStr == null || tokenIdStr.trim().isEmpty()) {
+            throw new IllegalArgumentException("Token identifier is required");
+        }
+        String clean = tokenIdStr.trim().replaceAll("(?i)^T-?", "").trim();
+        Long numericId = null;
+        try {
+            numericId = Long.parseLong(clean);
+        } catch (NumberFormatException e) {
+            String digits = clean.replaceAll("[^0-9]", "");
+            if (!digits.isEmpty()) {
+                numericId = Long.parseLong(digits);
+            }
+        }
+
+        if (numericId == null) {
+            throw new IllegalArgumentException("Invalid token identifier: " + tokenIdStr);
+        }
+
+        java.util.Optional<QueueToken> opt = queueTokenRepository.findById(numericId);
+        if (opt.isPresent()) {
+            return opt.get();
+        }
+
+        final Long searchNum = numericId;
+        List<QueueToken> allTokens = queueTokenRepository.findAll();
+        QueueToken matched = allTokens.stream()
+                .filter(t -> t.getTokenNumber() != null && t.getTokenNumber().longValue() == searchNum)
+                .reduce((first, second) -> second)
+                .orElse(null);
+
+        if (matched != null) {
+            return matched;
+        }
+
+        throw new IllegalArgumentException("Token not found with ID or Number: " + tokenIdStr);
+    }
+
     @PostMapping("/{tokenId}/transfer")
     @PreAuthorize("hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_NURSE')")
     public ResponseEntity<QueueTransfer> transferToken(
-            @PathVariable Long tokenId,
+            @PathVariable String tokenId,
             @RequestBody Map<String, Object> request) {
         
-        QueueToken token = queueTokenRepository.findById(tokenId)
-                .orElseThrow(() -> new IllegalArgumentException("Token not found with ID: " + tokenId));
+        QueueToken token = findTokenByIdOrNumber(tokenId);
                 
         Long fromDoctorId = request.containsKey("fromDoctorId") && request.get("fromDoctorId") != null ? Long.valueOf(request.get("fromDoctorId").toString()) : null;
         Long toDoctorId = request.containsKey("toDoctorId") && request.get("toDoctorId") != null ? Long.valueOf(request.get("toDoctorId").toString()) : null;
@@ -46,7 +83,7 @@ public class QueueManagementController {
         String department = (String) request.get("department");
 
         QueueTransfer transfer = QueueTransfer.builder()
-                .tokenId(tokenId)
+                .tokenId(token.getId())
                 .fromDoctorId(fromDoctorId)
                 .toDoctorId(toDoctorId)
                 .reason(reason)
@@ -64,11 +101,10 @@ public class QueueManagementController {
     @PutMapping("/{tokenId}/status")
     @PreAuthorize("hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_DOCTOR') or hasAuthority('ROLE_NURSE') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<QueueToken> updateTokenStatus(
-            @PathVariable Long tokenId,
+            @PathVariable String tokenId,
             @RequestParam(required = false) String status,
             @RequestBody(required = false) Map<String, String> request) {
-        QueueToken token = queueTokenRepository.findById(tokenId)
-                .orElseThrow(() -> new IllegalArgumentException("Token not found with ID: " + tokenId));
+        QueueToken token = findTokenByIdOrNumber(tokenId);
                 
         String finalStatus = status;
         if ((finalStatus == null || finalStatus.trim().isEmpty()) && request != null) {

@@ -3,19 +3,17 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import toast from 'react-hot-toast';
 import useAuthStore from '../../store/authStore';
-import { ArrowLeft, Clock, Users, UserPlus, Ticket, History, Hourglass, Play, CheckCircle2 } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Clock, Users, UserPlus, Ticket, History, Hourglass, Play, CheckCircle2, XCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fadeIn, staggerChildren } from '../../components/ui/motion';
 import { Link } from 'react-router-dom';
-
-import { MOCK_QUEUE_TOKENS } from '../../data/unifiedMockData';
 
 const QueueManagement = () => {
   const queryClient = useQueryClient();
   const user = useAuthStore(state => state.user);
   const branchId = user?.branchId || 1;
 
-  const { data: queueList = [], isLoading } = useQuery({
+  const { data: queueList = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['queueTokens', branchId],
     queryFn: async () => {
       const res = await axiosPrivate.get(`/reception/queue/branch/${branchId}`);
@@ -33,14 +31,25 @@ const QueueManagement = () => {
       toast.success('Queue token updated successfully');
       queryClient.invalidateQueries({ queryKey: ['queueTokens', branchId] });
     },
-    onError: () => {
-      toast.error('Failed to update token status');
+    onError: (err) => {
+      toast.error(err?.response?.data?.message || 'Failed to update token status');
     }
   });
 
-  const displayTokens = (Array.isArray(queueList) && queueList.length > 0) ? queueList : MOCK_QUEUE_TOKENS;
+  const displayTokens = Array.isArray(queueList) ? queueList : [];
 
-  const waitingQueue = displayTokens.filter(q => q.status === 'WAITING' || q.status === 'IN_PROGRESS' || q.status === 'IN_CONSULTATION');
+  const waitingQueue = displayTokens.filter(q =>
+    ['WAITING', 'CALLED', 'IN_PROGRESS', 'IN_CONSULTATION'].includes((q.status || '').toUpperCase())
+  );
+
+  const waitingOnly = waitingQueue.filter(q => (q.status || '').toUpperCase() === 'WAITING');
+  const waitMinutesList = waitingOnly
+    .map(q => q.generatedAt ? Math.max(0, Math.round((Date.now() - new Date(q.generatedAt).getTime()) / 60000)) : 0);
+  const estWaitTime = waitingOnly.length > 0 ? `${waitingOnly.length * 10}m` : '0m';
+  const avgWaitTime = waitMinutesList.length > 0
+    ? `${Math.round(waitMinutesList.reduce((a, b) => a + b, 0) / waitMinutesList.length)}m`
+    : '0m';
+  const longestWaitTime = waitMinutesList.length > 0 ? `${Math.max(...waitMinutesList)}m` : '0m';
 
   return (
     <div className="min-h-full bg-[#F8FAFF] p-6 lg:p-10 w-full font-sans">
@@ -106,7 +115,7 @@ const QueueManagement = () => {
               </div>
               <div>
                 <p className="text-[12px] font-bold text-gray-500 uppercase tracking-wider mb-1">Estimated Wait Time</p>
-                <p className="text-2xl font-bold text-green-500">-</p>
+                <p className="text-2xl font-bold text-green-500">{estWaitTime}</p>
               </div>
             </div>
             {/* KPI 3 */}
@@ -116,7 +125,7 @@ const QueueManagement = () => {
               </div>
               <div>
                 <p className="text-[12px] font-bold text-gray-500 uppercase tracking-wider mb-1">Avg. Waiting Time</p>
-                <p className="text-2xl font-bold text-purple-500">-</p>
+                <p className="text-2xl font-bold text-purple-500">{avgWaitTime}</p>
               </div>
             </div>
             {/* KPI 4 */}
@@ -126,7 +135,7 @@ const QueueManagement = () => {
               </div>
               <div>
                 <p className="text-[12px] font-bold text-gray-500 uppercase tracking-wider mb-1">Longest Wait Time</p>
-                <p className="text-2xl font-bold text-orange-500">-</p>
+                <p className="text-2xl font-bold text-orange-500">{longestWaitTime}</p>
               </div>
             </div>
           </div>
@@ -135,6 +144,17 @@ const QueueManagement = () => {
           <div className="mt-4">
             {isLoading ? (
               <div className="flex items-center justify-center p-12 text-gray-500 font-medium">Loading queue data...</div>
+            ) : isError ? (
+              <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-red-200 rounded-3xl bg-red-50/40 space-y-4">
+                <AlertCircle className="w-10 h-10 text-red-500" />
+                <p className="text-red-700 font-bold text-sm">Failed to load queue tokens from server.</p>
+                <button
+                  onClick={() => refetch()}
+                  className="px-6 py-2.5 rounded-xl bg-white border border-red-200 text-red-700 font-bold text-xs hover:bg-red-50 transition-colors cursor-pointer"
+                >
+                  Retry
+                </button>
+              </div>
             ) : waitingQueue.length === 0 ? (
               <div className="flex flex-col items-center justify-center p-16 border-2 border-dashed border-gray-200 rounded-3xl bg-gray-50/50">
                 <div className="w-40 h-40 bg-[#F4F7FF] rounded-full flex items-center justify-center mb-8 relative">
@@ -174,21 +194,24 @@ const QueueManagement = () => {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {waitingQueue.map((q) => (
+                {waitingQueue.map((q) => {
+                  const isActiveCall = ['CALLED', 'IN_PROGRESS', 'IN_CONSULTATION'].includes((q.status || '').toUpperCase());
+                  const deptLabel = q.currentDepartment || q.department || 'GENERAL';
+                  return (
                   <motion.div
                     key={q.id}
                     variants={fadeIn}
                     className={`p-6 rounded-2xl border-2 flex flex-col justify-between gap-4 shadow-sm transition-all bg-white hover:-translate-y-1 ${
-                      q.status === 'IN_PROGRESS' 
+                      isActiveCall
                         ? 'border-blue-400/50 shadow-blue-500/10' 
                         : 'border-orange-200 shadow-orange-500/5'
                     }`}
                   >
                     <div className="flex justify-between items-start">
-                      <span className={`text-[11px] font-bold uppercase tracking-wider px-2 py-1 rounded-md ${q.status === 'IN_PROGRESS' ? 'bg-blue-50 text-[#2864FF]' : 'bg-orange-50 text-orange-500'}`}>
-                        {q.department} • P{q.priorityLevel}
+                      <span className={`text-[11px] font-bold uppercase tracking-wider px-2 py-1 rounded-md ${isActiveCall ? 'bg-blue-50 text-[#2864FF]' : 'bg-orange-50 text-orange-500'}`}>
+                        {deptLabel} • P{q.priorityLevel ?? 0}
                       </span>
-                      <span className={`text-[11px] font-bold uppercase tracking-wider ${q.status === 'IN_PROGRESS' ? 'text-[#2864FF]' : 'text-orange-500'}`}>
+                      <span className={`text-[11px] font-bold uppercase tracking-wider ${isActiveCall ? 'text-[#2864FF]' : 'text-orange-500'}`}>
                         {q.status}
                       </span>
                     </div>
@@ -199,20 +222,48 @@ const QueueManagement = () => {
                       </div>
                     </div>
 
-                    <div className="flex gap-3 w-full mt-2">
+                    <div className="flex gap-2 w-full mt-2">
                       {q.status === 'WAITING' && (
-                        <button 
-                          className="w-full flex justify-center items-center gap-2 bg-[#2864FF] text-white hover:bg-blue-700 font-bold py-3 rounded-xl text-sm transition-colors disabled:opacity-50"
-                          onClick={() => updateStatus.mutate({ tokenId: q.id, status: 'IN_PROGRESS' })}
-                          disabled={updateStatus.isPending}
-                        >
-                          <Play className="w-4 h-4" /> Call
-                        </button>
+                        <>
+                          <button 
+                            className="flex-1 flex justify-center items-center gap-2 bg-[#2864FF] text-white hover:bg-blue-700 font-bold py-3 rounded-xl text-sm transition-colors disabled:opacity-50"
+                            onClick={() => updateStatus.mutate({ tokenId: q.id ?? q.tokenNumber, status: 'CALLED' })}
+                            disabled={updateStatus.isPending}
+                          >
+                            <Play className="w-4 h-4" /> Call
+                          </button>
+                          <button
+                            title="Mark No-Show"
+                            className="px-3 flex justify-center items-center bg-slate-100 text-slate-600 hover:bg-red-50 hover:text-red-600 font-bold py-3 rounded-xl text-sm transition-colors disabled:opacity-50"
+                            onClick={() => updateStatus.mutate({ tokenId: q.id ?? q.tokenNumber, status: 'NO_SHOW' })}
+                            disabled={updateStatus.isPending}
+                          >
+                            <XCircle className="w-4 h-4" />
+                          </button>
+                        </>
                       )}
-                      {q.status === 'IN_PROGRESS' && (
+                      {q.status === 'CALLED' && (
+                        <>
+                          <button 
+                            className="flex-1 flex justify-center items-center gap-2 bg-[#2864FF] text-white hover:bg-blue-700 font-bold py-3 rounded-xl text-sm transition-colors disabled:opacity-50"
+                            onClick={() => updateStatus.mutate({ tokenId: q.id ?? q.tokenNumber, status: 'IN_CONSULTATION' })}
+                            disabled={updateStatus.isPending}
+                          >
+                            <Play className="w-4 h-4" /> Start
+                          </button>
+                          <button 
+                            className="px-3 flex justify-center items-center bg-green-500 text-white hover:bg-green-600 font-bold py-3 rounded-xl text-sm transition-colors disabled:opacity-50"
+                            onClick={() => updateStatus.mutate({ tokenId: q.id ?? q.tokenNumber, status: 'COMPLETED' })}
+                            disabled={updateStatus.isPending}
+                          >
+                            <CheckCircle2 className="w-4 h-4" />
+                          </button>
+                        </>
+                      )}
+                      {(q.status === 'IN_PROGRESS' || q.status === 'IN_CONSULTATION') && (
                         <button 
                           className="w-full flex justify-center items-center gap-2 bg-green-500 text-white hover:bg-green-600 font-bold py-3 rounded-xl text-sm transition-colors disabled:opacity-50"
-                          onClick={() => updateStatus.mutate({ tokenId: q.id, status: 'COMPLETED' })}
+                          onClick={() => updateStatus.mutate({ tokenId: q.id ?? q.tokenNumber, status: 'COMPLETED' })}
                           disabled={updateStatus.isPending}
                         >
                           <CheckCircle2 className="w-4 h-4" /> Done
@@ -220,7 +271,7 @@ const QueueManagement = () => {
                       )}
                     </div>
                   </motion.div>
-                ))}
+                );})}
               </div>
             )}
           </div>

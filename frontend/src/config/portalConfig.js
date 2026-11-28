@@ -101,7 +101,7 @@ export const PORTAL_CONFIGS = [
       { label: 'Book Appointment', path: '/reception/book', icon: 'CalendarPlus', description: 'Manage and view book appointment' },
       { label: 'Tokens', path: '/reception/tokens', icon: 'Ticket', description: 'Manage and view tokens' },
       { label: 'Billing', path: '/reception/billing', icon: 'Receipt', description: 'Manage and view billing' },
-      { label: 'Check-in / Out', path: '/reception/checkin', icon: 'CheckSquare', description: 'Manage and view check-in / out' },
+      { label: 'Check-in / Kiosk', path: '/reception/kiosk', icon: 'CheckSquare', description: 'Manage and view check-in / kiosk' },
       { label: 'Patient Search', path: '/reception/search', icon: 'Search', description: 'Manage and view patient search' },
       { label: 'Support Desk', path: '/reception/support', icon: 'LifeBuoy', description: 'Patient grievances & counter IT' },
     ],

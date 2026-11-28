@@ -19,7 +19,7 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @PostMapping("/initiate")
-    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'ACCOUNTANT', 'SUPER_ADMIN', 'RECEPTIONIST')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'ACCOUNTANT', 'SUPER_ADMIN', 'RECEPTION', 'RECEPTIONIST')")
     public ResponseEntity<Payment> initiatePayment(@RequestBody Map<String, Object> request) {
         BigDecimal amount = new BigDecimal(request.get("amount").toString());
         String paymentMethod = (String) request.get("paymentMethod");
@@ -30,7 +30,7 @@ public class PaymentController {
     }
 
     @PostMapping("/{paymentId}/capture")
-    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'ACCOUNTANT', 'SUPER_ADMIN', 'RECEPTIONIST')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'ACCOUNTANT', 'SUPER_ADMIN', 'RECEPTION', 'RECEPTIONIST')")
     public ResponseEntity<Payment> capturePayment(
             @PathVariable Long paymentId,
             @RequestBody Map<String, String> request) {
@@ -41,7 +41,7 @@ public class PaymentController {
     }
 
     @PostMapping("/{paymentId}/allocate")
-    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'ACCOUNTANT', 'SUPER_ADMIN', 'RECEPTIONIST')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'FINANCE', 'ACCOUNTANT', 'SUPER_ADMIN', 'RECEPTION', 'RECEPTIONIST')")
     public ResponseEntity<PaymentAllocation> allocatePayment(
             @PathVariable Long paymentId,
             @RequestBody Map<String, Object> request) {

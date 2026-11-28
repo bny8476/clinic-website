@@ -60,6 +60,20 @@ const ReceptionBilling = () => {
     }
   });
 
+  const markPaid = useMutation({
+    mutationFn: async ({ id, paymentMethod = 'CASH' }) => {
+      const res = await axiosPrivate.patch(`/billing/invoices/${id}/mark-paid?paymentMethod=${encodeURIComponent(paymentMethod)}`);
+      return res.data;
+    },
+    onSuccess: () => {
+      toast.success('Payment collected & invoice marked as paid');
+      queryClient.invalidateQueries({ queryKey: ['patient-invoices', selectedPatient?.patientId || selectedPatient?.userId || selectedPatient?.id] });
+    },
+    onError: (err) => {
+      toast.error(err?.response?.data?.message || 'Failed to collect payment');
+    }
+  });
+
   const handleDownloadPdf = async (id) => {
     try {
       const res = await axiosPrivate.get(`/billing/invoices/${id}/pdf`, { responseType: 'blob' });
@@ -268,17 +282,26 @@ const ReceptionBilling = () => {
                                   {inv.description || 'Consultation / Service'}
                                 </p>
                                 <p className="text-xs font-semibold text-gray-500 mt-1">
-                                  #{inv.invoiceNumber} • {new Date(inv.issueDate).toLocaleDateString()}
+                                  #{inv.invoiceNumber} • {new Date(inv.createdAt || inv.dueDate || Date.now()).toLocaleDateString()}
                                 </p>
                               </div>
                             </div>
                             <div className="flex items-center gap-6">
                               <div className="text-right">
-                                <p className="font-black text-slate-900 text-lg">${inv.totalAmount?.toFixed(2)}</p>
+                                <p className="font-black text-slate-900 text-lg">₹{Number(inv.totalAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                                 <span className={`inline-block mt-1 text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md ${inv.status === 'PAID' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-600'}`}>
                                   {inv.status}
                                 </span>
                               </div>
+                              {inv.status !== 'PAID' && (
+                                <button
+                                  onClick={() => markPaid.mutate({ id: inv.id, paymentMethod: 'CASH' })}
+                                  disabled={markPaid.isPending}
+                                  className="px-3.5 py-2 bg-[#2864FF] hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-colors cursor-pointer disabled:opacity-50"
+                                >
+                                  Collect
+                                </button>
+                              )}
                               <button 
                                 onClick={() => handleDownloadPdf(inv.id)} 
                                 className="w-10 h-10 flex items-center justify-center bg-white border border-gray-200 text-gray-400 hover:text-[#2864FF] hover:border-[#2864FF] rounded-xl transition-all"

@@ -21,15 +21,29 @@ public class ReceptionPatientController {
     private final IdentityVerificationService identityVerificationService;
 
     @GetMapping("/patients/search")
-    @PreAuthorize("hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<List<Map<String, Object>>> searchPatients(
             @RequestParam(required = false) String query,
             @RequestParam(required = false) String opNumber) {
         return ResponseEntity.ok(patientService.searchPatients(query, opNumber));
     }
 
+    @GetMapping("/patients/{patientId}")
+    @PreAuthorize("hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
+    public ResponseEntity<Map<String, Object>> getPatientProfile(@PathVariable Long patientId) {
+        return ResponseEntity.ok(patientService.getPatientProfile(patientId));
+    }
+
+    @PutMapping("/patients/{patientId}")
+    @PreAuthorize("hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
+    public ResponseEntity<Map<String, Object>> updatePatientProfile(
+            @PathVariable Long patientId,
+            @RequestBody Map<String, Object> request) {
+        return ResponseEntity.ok(patientService.updatePatientProfile(patientId, request));
+    }
+
     @PostMapping("/patients/{patientId}/verify-identity")
-    @PreAuthorize("hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<IdentityVerificationResponse> verifyIdentity(
             @PathVariable Long patientId,
             @RequestBody IdentityVerificationRequest request) {
@@ -38,13 +52,13 @@ public class ReceptionPatientController {
     }
 
     @PostMapping("/patients/register")
-    @PreAuthorize("hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_DOCTOR')")
+    @PreAuthorize("hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_DOCTOR')")
     public ResponseEntity<Map<String, Object>> registerPatient(@RequestBody Map<String, Object> request) {
         return ResponseEntity.ok(patientService.registerPatient(request));
     }
 
     @GetMapping("/patients/{patientId}/identity-verifications")
-    @PreAuthorize("hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<List<IdentityVerificationResponse>> getVerifications(@PathVariable Long patientId) {
         return ResponseEntity.ok(identityVerificationService.getVerificationsForPatient(patientId));
     }

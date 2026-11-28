@@ -111,22 +111,90 @@ public class ReceptionPatientService {
         if (query == null || query.trim().isEmpty()) {
             return List.of();
         }
-        
-        // Use optimized DB search
-        org.springframework.data.domain.Page<User> users = userRepository.searchByNameOrEmail(query, org.springframework.data.domain.PageRequest.of(0, 20));
-        
+        String trimmed = query.trim();
         List<Map<String, Object>> results = new ArrayList<>();
+        Set<Long> seenProfileIds = new HashSet<>();
+
+        // Direct OP number match via query
+        patientProfileRepository.findByOpNumber(trimmed).ifPresent(p -> {
+            if (seenProfileIds.add(p.getId())) {
+                results.add(mapToSearchResult(p));
+            }
+        });
+
+        // Direct numeric patientProfileId or userId match
+        if (trimmed.matches("\\d+")) {
+            Long numId = Long.parseLong(trimmed);
+            patientProfileRepository.findById(numId).ifPresent(p -> {
+                if (seenProfileIds.add(p.getId())) {
+                    results.add(mapToSearchResult(p));
+                }
+            });
+            patientProfileRepository.findByUserId(numId).ifPresent(p -> {
+                if (seenProfileIds.add(p.getId())) {
+                    results.add(mapToSearchResult(p));
+                }
+            });
+        }
+
+        // Optimized DB search by name, email, or phone
+        org.springframework.data.domain.Page<User> users = userRepository.searchByNameOrEmail(trimmed, org.springframework.data.domain.PageRequest.of(0, 20));
         
         for (User u : users.getContent()) {
             boolean hasPatientRole = u.getRoles() == null || u.getRoles().isEmpty()
                     || u.getRoles().stream().anyMatch(r -> r.getName().equals("ROLE_PATIENT") || r.getName().equals("PATIENT"));
             if (hasPatientRole) {
                 patientProfileRepository.findByUserId(u.getId()).ifPresent(p -> {
-                    results.add(mapToSearchResult(p, u));
+                    if (seenProfileIds.add(p.getId())) {
+                        results.add(mapToSearchResult(p, u));
+                    }
                 });
             }
         }
         return results;
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, Object> getPatientProfile(Long patientId) {
+        PatientProfile p = patientProfileRepository.findById(patientId)
+                .or(() -> patientProfileRepository.findByUserId(patientId))
+                .orElseThrow(() -> new IllegalArgumentException("Patient not found with ID: " + patientId));
+        return mapToSearchResult(p);
+    }
+
+    @Transactional
+    public Map<String, Object> updatePatientProfile(Long patientId, Map<String, Object> request) {
+        PatientProfile p = patientProfileRepository.findById(patientId)
+                .or(() -> patientProfileRepository.findByUserId(patientId))
+                .orElseThrow(() -> new IllegalArgumentException("Patient not found with ID: " + patientId));
+
+        User u = p.getUserId() != null ? userRepository.findById(p.getUserId()).orElse(null) : null;
+        if (u != null) {
+            if (request.containsKey("firstName") && request.get("firstName") != null) {
+                u.setFirstName(request.get("firstName").toString());
+            }
+            if (request.containsKey("lastName") && request.get("lastName") != null) {
+                u.setLastName(request.get("lastName").toString());
+            }
+            if (request.containsKey("phone") && request.get("phone") != null) {
+                u.setPhoneNumber(request.get("phone").toString());
+            }
+            userRepository.save(u);
+        }
+
+        // Limited Reception-only fields (no clinical diagnosis/notes/prescriptions)
+        if (request.containsKey("address")) p.setAddress((String) request.get("address"));
+        if (request.containsKey("gender")) p.setGender((String) request.get("gender"));
+        if (request.containsKey("emergencyContact")) p.setEmergencyContactPhone((String) request.get("emergencyContact"));
+        if (request.containsKey("emergencyContactName")) p.setEmergencyContactName((String) request.get("emergencyContactName"));
+        if (request.containsKey("dateOfBirth") && request.get("dateOfBirth") != null) {
+            try {
+                p.setDateOfBirth(LocalDate.parse(request.get("dateOfBirth").toString()));
+            } catch (Exception ignored) {}
+        }
+
+        PatientProfile saved = patientProfileRepository.save(p);
+        return mapToSearchResult(saved, u);
     }
     
     private Map<String, Object> mapToSearchResult(PatientProfile p) {
@@ -142,6 +210,10 @@ public class ReceptionPatientService {
         map.put("gender", p.getGender());
         map.put("dateOfBirth", p.getDateOfBirth());
         map.put("branchId", p.getBranchId());
+        map.put("address", p.getAddress());
+        map.put("bloodGroup", p.getBloodGroup());
+        map.put("emergencyContact", p.getEmergencyContactPhone());
+        map.put("emergencyContactName", p.getEmergencyContactName());
         
         if (u != null) {
             map.put("firstName", u.getFirstName());

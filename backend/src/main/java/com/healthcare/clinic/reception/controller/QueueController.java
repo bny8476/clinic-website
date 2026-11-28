@@ -69,7 +69,12 @@ public class QueueController {
     }
 
     @PostMapping("/branches/{branchId}/queue/generate")
-    public ResponseEntity<QueueToken> generateToken(@PathVariable Long branchId, @RequestParam(required = false) Long walkInId, @RequestParam(required = false) Long appointmentId) {
+    public ResponseEntity<QueueToken> generateToken(
+            @PathVariable Long branchId,
+            @RequestParam(required = false) Long walkInId,
+            @RequestParam(required = false) Long appointmentId,
+            @RequestParam(required = false) String department,
+            @RequestParam(required = false) Integer priorityLevel) {
         Branch branch = branchRepository.findById(branchId).orElseGet(() -> branchRepository.findFirstByOrderByIdAsc().orElseThrow());
         
         WalkInRegistration walkIn = null;
@@ -80,7 +85,7 @@ public class QueueController {
         int maxRetries = 3;
         for (int i = 0; i < maxRetries; i++) {
             try {
-                QueueToken token = queueTokenService.generateToken(branch, walkIn, appointmentId);
+                QueueToken token = queueTokenService.generateToken(branch, walkIn, appointmentId, department, priorityLevel);
                 return ResponseEntity.ok(token);
             } catch (DataIntegrityViolationException e) {
                 if (i == maxRetries - 1) {

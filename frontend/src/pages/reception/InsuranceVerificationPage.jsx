@@ -10,6 +10,31 @@ const InsuranceVerificationPage = () => {
   const queryClient = useQueryClient();
   const [patientId, setPatientId] = useState('');
   const [searchedId, setSearchedId] = useState(null);
+  const [searchingPatient, setSearchingPatient] = useState(false);
+
+  const handleLookupPatient = async () => {
+    const raw = patientId.trim();
+    if (!raw) return;
+    if (/^\d+$/.test(raw)) {
+      setSearchedId(raw);
+      return;
+    }
+    try {
+      setSearchingPatient(true);
+      const res = await axiosPrivate.get(`/reception/patients/search?query=${encodeURIComponent(raw)}`);
+      const list = Array.isArray(res.data) ? res.data : [];
+      if (list.length > 0) {
+        setSearchedId(String(list[0].id));
+        toast.success(`Loaded patient: ${list[0].fullName || list[0].name || list[0].opNumber}`);
+      } else {
+        toast.error('No patient found matching that ID, OP#, or name');
+      }
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to look up patient');
+    } finally {
+      setSearchingPatient(false);
+    }
+  };
   const [formData, setFormData] = useState({
     insuranceProvider: '',
     policyNumber: ''
@@ -142,19 +167,19 @@ const InsuranceVerificationPage = () => {
                   </div>
                   <input
                     type="text"
-                    placeholder="Enter Patient ID (e.g., P12345)"
+                    placeholder="Enter Patient ID, OP#, or Name (e.g., OP-2026-0001)"
                     value={patientId}
                     onChange={(e) => setPatientId(e.target.value)}
                     className={`${inputClass} pl-12`}
-                    onKeyDown={(e) => e.key === 'Enter' && patientId && setSearchedId(patientId)}
+                    onKeyDown={(e) => e.key === 'Enter' && patientId && handleLookupPatient()}
                   />
                 </div>
                 <button 
-                  onClick={() => setSearchedId(patientId || null)} 
-                  disabled={!patientId}
+                  onClick={handleLookupPatient} 
+                  disabled={!patientId || searchingPatient}
                   className="flex items-center justify-center gap-2 px-8 py-3.5 bg-[#2864FF] hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 transition-colors disabled:opacity-50"
                 >
-                  Search <Search className="w-4 h-4" />
+                  {searchingPatient ? 'Searching...' : 'Search'} <Search className="w-4 h-4" />
                 </button>
               </div>
             </div>

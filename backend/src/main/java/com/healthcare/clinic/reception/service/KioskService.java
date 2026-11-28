@@ -1,6 +1,10 @@
 package com.healthcare.clinic.reception.service;
 
+import com.healthcare.clinic.appointment.dto.AppointmentResponseDto;
 import com.healthcare.clinic.appointment.repository.AppointmentRepository;
+import com.healthcare.clinic.billing.entity.Invoice;
+import com.healthcare.clinic.billing.entity.InvoiceStatus;
+import com.healthcare.clinic.billing.repository.InvoiceRepository;
 import com.healthcare.clinic.patient.entity.PatientDocument;
 import com.healthcare.clinic.patient.repository.PatientDocumentRepository;
 import com.healthcare.clinic.patient.repository.PatientProfileRepository;
@@ -16,7 +20,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
@@ -34,6 +40,7 @@ public class KioskService {
     private final QueueTokenRepository queueTokenRepository;
     private final PatientDocumentRepository patientDocumentRepository;
     private final ReceptionDocumentUploadRepository receptionDocumentUploadRepository;
+    private final InvoiceRepository invoiceRepository;
 
     /**
      * Patient self-checks in via kiosk — verifies appointment and creates kiosk record.
@@ -110,7 +117,8 @@ public class KioskService {
      * Get real-time dashboard stats for a branch.
      */
     public Map<String, Object> getDashboardStats(Long branchId) {
-        ZonedDateTime startOfDay = LocalDate.now().atStartOfDay(ZoneId.systemDefault());
+        LocalDateTime startOfDayLocal = LocalDate.now().atStartOfDay();
+        ZonedDateTime startOfDay = startOfDayLocal.atZone(ZoneId.systemDefault());
 
         long kioskPending = kioskCheckinRepository.countByBranchIdAndStatusAndCreatedAtAfter(branchId, "PENDING", startOfDay);
         long kioskVerified = kioskCheckinRepository.countByBranchIdAndStatusAndCreatedAtAfter(branchId, "VERIFIED", startOfDay);
@@ -126,6 +134,27 @@ public class KioskService {
 
         long queueWaiting = queueTokenRepository.countByBranchIdAndStatus(branchId, "WAITING");
 
+        ZonedDateTime endOfDay = startOfDay.plusDays(1).minusNanos(1);
+        List<AppointmentResponseDto> todayAppts = appointmentRepository.findAllAppointmentsToday(startOfDay, endOfDay);
+        long todayAppointments = todayAppts.size();
+        long completedAppointments = todayAppts.stream()
+                .filter(a -> "COMPLETED".equalsIgnoreCase(a.getStatus())).count();
+        long cancelledAppointments = todayAppts.stream()
+                .filter(a -> "CANCELLED".equalsIgnoreCase(a.getStatus())).count();
+        long checkedInAppointments = todayAppts.stream()
+                .filter(a -> "CHECKED_IN".equalsIgnoreCase(a.getStatus()) || "IN_CONSULTATION".equalsIgnoreCase(a.getStatus())).count();
+
+        List<Invoice> branchInvoices = invoiceRepository.findByBranchIdOrderByCreatedAtDesc(branchId);
+        long pendingPaymentsCount = branchInvoices.stream()
+                .filter(i -> i.getStatus() == InvoiceStatus.ISSUED 
+                          || i.getStatus() == InvoiceStatus.PARTIALLY_PAID
+                          || (i.getOutstandingBalance() != null && i.getOutstandingBalance().compareTo(BigDecimal.ZERO) > 0))
+                .count();
+        BigDecimal todayCollection = branchInvoices.stream()
+                .filter(i -> i.getStatus() == InvoiceStatus.PAID && i.getPaidAt() != null && !i.getPaidAt().isBefore(startOfDayLocal))
+                .map(i -> i.getTotalAmount() != null ? i.getTotalAmount() : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
         Map<String, Object> stats = new HashMap<>();
         stats.put("kioskPending", kioskPending);
         stats.put("kioskVerified", kioskVerified);
@@ -133,6 +162,12 @@ public class KioskService {
         stats.put("walkInsToday", walkInToday);
         stats.put("queueWaiting", queueWaiting);
         stats.put("totalKioskToday", kioskPending + kioskVerified + kioskCheckedIn);
+        stats.put("todayAppointments", todayAppointments);
+        stats.put("completedAppointments", completedAppointments);
+        stats.put("cancelledAppointments", cancelledAppointments);
+        stats.put("checkedInPatients", Math.max(kioskCheckedIn, checkedInAppointments));
+        stats.put("pendingPayments", pendingPaymentsCount);
+        stats.put("todayCollection", todayCollection);
         return stats;
     }
 }

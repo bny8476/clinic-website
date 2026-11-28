@@ -18,7 +18,7 @@ public class InsuranceVerificationController {
     private final InsuranceVerificationService insuranceVerificationService;
 
     @PostMapping("/request")
-    @PreAuthorize("hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_PATIENT')")
+    @PreAuthorize("hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_PATIENT')")
     public ResponseEntity<InsuranceVerification> requestVerification(@RequestBody Map<String, Object> request) {
         Long patientId = Long.valueOf(request.get("patientId").toString());
         String provider = (String) request.get("insuranceProvider");
@@ -29,7 +29,7 @@ public class InsuranceVerificationController {
     }
 
     @PutMapping("/{verificationId}/verify")
-    @PreAuthorize("hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<InsuranceVerification> verifyInsurance(
             @PathVariable Long verificationId,
             @RequestBody Map<String, Object> request) {
@@ -42,7 +42,7 @@ public class InsuranceVerificationController {
     }
 
     @GetMapping("/patient/{patientId}")
-    @PreAuthorize("hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_PATIENT')")
+    @PreAuthorize("hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN') or hasAuthority('ROLE_PATIENT')")
     public ResponseEntity<List<InsuranceVerification>> getPatientVerifications(@PathVariable Long patientId) {
         return ResponseEntity.ok(insuranceVerificationService.getPatientVerifications(patientId));
     }

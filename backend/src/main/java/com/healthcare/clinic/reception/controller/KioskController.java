@@ -39,7 +39,7 @@ public class KioskController {
      * Reception staff verifies a kiosk check-in.
      */
     @PutMapping("/{checkinId}/verify")
-    @PreAuthorize("hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<KioskCheckin> verifyCheckin(
             @PathVariable Long checkinId,
             @RequestBody Map<String, Object> request) {
@@ -52,7 +52,7 @@ public class KioskController {
      * Get today's kiosk check-ins for a branch.
      */
     @GetMapping("/branch/{branchId}/today")
-    @PreAuthorize("hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<List<KioskCheckin>> getTodaysCheckins(@PathVariable Long branchId) {
         return ResponseEntity.ok(kioskService.getTodaysCheckins(branchId));
     }
@@ -61,7 +61,7 @@ public class KioskController {
      * Get branch dashboard stats (live counts).
      */
     @GetMapping("/branch/{branchId}/stats")
-    @PreAuthorize("hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<Map<String, Object>> getDashboardStats(@PathVariable Long branchId) {
         return ResponseEntity.ok(kioskService.getDashboardStats(branchId));
     }
@@ -70,7 +70,7 @@ public class KioskController {
      * Upload a patient document from the reception desk scanner.
      */
     @PostMapping("/branch/{branchId}/documents")
-    @PreAuthorize("hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<PatientDocument> uploadDocument(
             @PathVariable Long branchId,
             @RequestBody Map<String, Object> request) {
@@ -91,7 +91,7 @@ public class KioskController {
      * Get all documents for a patient (reception desk view).
      */
     @GetMapping("/patient/{patientProfileId}/documents")
-    @PreAuthorize("hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_RECEPTION') or hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_SUPER_ADMIN')")
     public ResponseEntity<List<PatientDocument>> getPatientDocuments(@PathVariable Long patientProfileId) {
         return ResponseEntity.ok(kioskService.getPatientDocuments(patientProfileId));
     }

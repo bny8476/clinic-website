@@ -88,7 +88,11 @@ const WalkInCheckIn = () => {
 
       // Generate queue token for walk-in
       try {
-        const tokenRes = await axiosPrivate.post(`/reception/branches/${branchId}/queue/generate?walkInId=${walkIn.id}`);
+        const deptParam = encodeURIComponent(data.department || 'General OPD');
+        const priorityParam = data.priorityLevel || 0;
+        const tokenRes = await axiosPrivate.post(
+          `/reception/branches/${branchId}/queue/generate?walkInId=${walkIn.id}&department=${deptParam}&priorityLevel=${priorityParam}`
+        );
         return { walkIn, token: tokenRes.data };
       } catch (tokErr) {
         return { walkIn, token: { tokenNumber: 'Q-WalkIn' } };
@@ -135,7 +139,9 @@ const WalkInCheckIn = () => {
     if (!queueSearch.trim()) return walkIns;
     const term = queueSearch.toLowerCase();
     return walkIns.filter(w => {
-      const name = w.patient ? w.patient.name : `${w.firstName || ''} ${w.lastName || ''}`;
+      const name = w.patient?.firstName
+        ? `${w.patient.firstName} ${w.patient.lastName || ''}`
+        : `${w.firstName || ''} ${w.lastName || ''}`;
       return (
         name.toLowerCase().includes(term) ||
         (w.opNumber && w.opNumber.toLowerCase().includes(term)) ||
@@ -421,7 +427,9 @@ const WalkInCheckIn = () => {
             ) : (
               <div className="space-y-3">
                 {filteredWalkIns.map(w => {
-                  const patientName = w.patient ? w.patient.name : `${w.firstName || ''} ${w.lastName || ''}`.trim() || 'Walk-in Patient';
+                  const patientName = w.patient?.firstName
+                    ? `${w.patient.firstName} ${w.patient.lastName || ''}`.trim()
+                    : `${w.firstName || ''} ${w.lastName || ''}`.trim() || 'Walk-in Patient';
                   const isPriority = w.priorityLevel && w.priorityLevel > 0;
 
                   return (

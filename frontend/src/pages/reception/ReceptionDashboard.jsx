@@ -1,8 +1,9 @@
 import useAuthStore from '../../store/authStore';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { useNavigate } from 'react-router-dom';
-import { AlertCircle, ArrowRight, Check, ClipboardList, DollarSign, FileText, LifeBuoy, Loader2, Monitor, RefreshCw, Shield, Ticket, TrendingUp, UserCheck, UserPlus, Users } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { AlertCircle, ArrowRight, Calendar, Check, CheckCircle2, ClipboardList, Clock, DollarSign, FileText, IndianRupee, LifeBuoy, Loader2, Monitor, RefreshCw, Search, Shield, Ticket, TrendingUp, UserCheck, UserPlus, Users, XCircle } from 'lucide-react';
 import { fadeIn, staggerContainer } from '../../components/ui/motion';
 import { motion } from 'framer-motion';
 
@@ -10,6 +11,8 @@ const BRANCH_ID = 1;
 
 const QUICK_ACTIONS = [
   { label: 'Register\nPatient', icon: UserPlus, path: '/reception/register' },
+  { label: 'Patient\nSearch', icon: Search, path: '/reception/search' },
+  { label: 'Book\nAppointment', icon: Calendar, path: '/reception/book' },
   { label: 'Walk-In\nCheck-In', icon: UserCheck, path: '/reception/walk-in' },
   { label: 'Queue\nManagement', icon: Users, path: '/reception/queue' },
   { label: 'Token\nGeneration', icon: Ticket, path: '/reception/tokens' },
@@ -38,8 +41,9 @@ const StatCard = ({ label, value, icon: Icon, isLoading }) => (
 const ReceptionDashboard = () => {
   const user = useAuthStore(s => s.user);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  const { data: stats, isLoading: statsLoading, refetch, isFetching } = useQuery({
+  const { data: stats, isLoading: statsLoading, isError: statsError, refetch, isFetching } = useQuery({
     queryKey: ['receptionDashboardStats', BRANCH_ID],
     queryFn: async () => {
       const res = await axiosPrivate.get(`/reception/kiosk/branch/${BRANCH_ID}/stats`);
@@ -48,13 +52,28 @@ const ReceptionDashboard = () => {
     refetchInterval: 30000
   });
 
-  const { data: kioskToday = [], isLoading: kioskLoading } = useQuery({
+  const { data: kioskToday = [], isLoading: kioskLoading, isError: kioskError, refetch: refetchKiosk } = useQuery({
     queryKey: ['kioskToday', BRANCH_ID],
     queryFn: async () => {
       const res = await axiosPrivate.get(`/reception/kiosk/branch/${BRANCH_ID}/today`);
       return res.data;
     },
     refetchInterval: 15000
+  });
+
+  const verifyMutation = useMutation({
+    mutationFn: async (checkinId) => {
+      const res = await axiosPrivate.put(`/reception/kiosk/${checkinId}/verify`, { status: 'VERIFIED' });
+      return res.data;
+    },
+    onSuccess: () => {
+      toast.success('Kiosk check-in verified');
+      queryClient.invalidateQueries({ queryKey: ['kioskToday', BRANCH_ID] });
+      queryClient.invalidateQueries({ queryKey: ['receptionDashboardStats', BRANCH_ID] });
+    },
+    onError: (err) => {
+      toast.error(err?.response?.data?.message || 'Failed to verify check-in');
+    }
   });
 
   const statusVariant = (status) => {
@@ -113,38 +132,83 @@ const ReceptionDashboard = () => {
         </div>
 
         {/* Live Stats */}
-        <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-          <StatCard
-            label="Queue Waiting"
-            value={stats?.queueWaiting}
-            icon={ClipboardList}
-            isLoading={statsLoading}
-          />
-          <StatCard
-            label="Walk-ins Today"
-            value={stats?.walkInsToday}
-            icon={UserCheck}
-            isLoading={statsLoading}
-          />
-          <StatCard
-            label="Kiosk Pending"
-            value={stats?.kioskPending}
-            icon={AlertCircle}
-            isLoading={statsLoading}
-          />
-          <StatCard
-            label="Verified Today"
-            value={stats?.kioskVerified}
-            icon={UserPlus}
-            isLoading={statsLoading}
-          />
-          <StatCard
-            label="Checked In"
-            value={stats?.kioskCheckedIn}
-            icon={TrendingUp}
-            isLoading={statsLoading}
-          />
-        </motion.div>
+        {statsError ? (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-5 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 text-red-700 text-sm font-semibold">
+              <AlertCircle className="w-5 h-5 shrink-0" />
+              <span>Failed to load reception dashboard metrics from server.</span>
+            </div>
+            <button
+              onClick={() => refetch()}
+              className="px-4 py-2 rounded-lg bg-white border border-red-200 text-red-700 font-bold text-xs hover:bg-red-100 transition-colors cursor-pointer"
+            >
+              Retry
+            </button>
+          </div>
+        ) : (
+          <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            <StatCard
+              label="Today's Appointments"
+              value={stats?.todayAppointments}
+              icon={Calendar}
+              isLoading={statsLoading}
+            />
+            <StatCard
+              label="Checked In"
+              value={stats?.checkedInPatients ?? stats?.kioskCheckedIn}
+              icon={TrendingUp}
+              isLoading={statsLoading}
+            />
+            <StatCard
+              label="Queue Waiting"
+              value={stats?.queueWaiting}
+              icon={ClipboardList}
+              isLoading={statsLoading}
+            />
+            <StatCard
+              label="Completed"
+              value={stats?.completedAppointments}
+              icon={CheckCircle2}
+              isLoading={statsLoading}
+            />
+            <StatCard
+              label="Cancelled"
+              value={stats?.cancelledAppointments}
+              icon={XCircle}
+              isLoading={statsLoading}
+            />
+            <StatCard
+              label="Walk-ins Today"
+              value={stats?.walkInsToday}
+              icon={UserCheck}
+              isLoading={statsLoading}
+            />
+            <StatCard
+              label="Pending Payments"
+              value={stats?.pendingPayments}
+              icon={Clock}
+              isLoading={statsLoading}
+            />
+            <StatCard
+              label="Today's Collection"
+              value={stats?.todayCollection !== undefined ? `₹${Number(stats.todayCollection || 0).toLocaleString('en-IN')}` : '—'}
+              icon={IndianRupee}
+              isLoading={statsLoading}
+            />
+            <StatCard
+              label="Kiosk Pending"
+              value={stats?.kioskPending}
+              icon={AlertCircle}
+              isLoading={statsLoading}
+            />
+            <StatCard
+              label="Verified Today"
+              value={stats?.kioskVerified}
+              icon={UserPlus}
+              isLoading={statsLoading}
+            />
+          </motion.div>
+        )}
         
         {/* Today's Kiosk Check-ins */}
         <motion.div initial="hidden" animate="visible" variants={fadeIn} className="bg-white rounded-xl border border-[var(--color-border)] p-5">
@@ -165,6 +229,16 @@ const ReceptionDashboard = () => {
             {kioskLoading ? (
               <div className="flex justify-center py-6">
                 <Loader2 className="w-6 h-6 animate-spin text-[var(--color-navy-600)]" />
+              </div>
+            ) : kioskError ? (
+              <div className="text-center py-6 space-y-3">
+                <p className="text-[14px] text-red-600 font-semibold">Unable to load today's kiosk check-ins.</p>
+                <button
+                  onClick={() => refetchKiosk()}
+                  className="px-4 py-1.5 rounded-lg bg-red-50 text-red-700 text-xs font-bold border border-red-200 hover:bg-red-100 transition-colors cursor-pointer"
+                >
+                  Retry
+                </button>
               </div>
             ) : kioskToday.length === 0 ? (
               <div className="text-center py-6 text-[14px] text-[var(--color-text-muted)]">
@@ -193,9 +267,20 @@ const ReceptionDashboard = () => {
                         </p>
                       </div>
                     </div>
-                    <span className={`px-3 py-1 rounded-full text-[11px] font-bold ${statusVariant(k.status)}`}>
-                      {k.status}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      {k.status === 'PENDING' && (
+                        <button
+                          onClick={() => verifyMutation.mutate(k.id)}
+                          disabled={verifyMutation.isPending}
+                          className="px-3 py-1 rounded-full text-[11px] font-bold bg-[var(--color-navy-800)] text-white hover:opacity-90 transition-opacity flex items-center gap-1 cursor-pointer"
+                        >
+                          <Check className="w-3 h-3" /> Verify
+                        </button>
+                      )}
+                      <span className={`px-3 py-1 rounded-full text-[11px] font-bold ${statusVariant(k.status)}`}>
+                        {k.status}
+                      </span>
+                    </div>
                   </motion.div>
                 ))}
                 {kioskToday.length > 8 && (

@@ -51,4 +51,10 @@ public class WalkInRegistration {
     @Column(length = 50)
     @Builder.Default
     private String status = "WAITING"; // WAITING, IN_CONSULTATION, COMPLETED, CANCELLED
+
+    @Transient
+    private String department;
+
+    @Transient
+    private Integer priorityLevel;
 }

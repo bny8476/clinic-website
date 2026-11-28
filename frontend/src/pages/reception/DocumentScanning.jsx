@@ -12,6 +12,31 @@ const DocumentScanning = () => {
   const queryClient = useQueryClient();
   const [patientProfileId, setPatientProfileId] = useState('');
   const [searchedId, setSearchedId] = useState(null);
+  const [searchingPatient, setSearchingPatient] = useState(false);
+
+  const handleLookupPatient = async () => {
+    const raw = patientProfileId.trim();
+    if (!raw) return;
+    if (/^\d+$/.test(raw)) {
+      setSearchedId(raw);
+      return;
+    }
+    try {
+      setSearchingPatient(true);
+      const res = await axiosPrivate.get(`/reception/patients/search?query=${encodeURIComponent(raw)}`);
+      const list = Array.isArray(res.data) ? res.data : [];
+      if (list.length > 0) {
+        setSearchedId(String(list[0].id));
+        toast.success(`Loaded patient: ${list[0].fullName || list[0].name || list[0].opNumber}`);
+      } else {
+        toast.error('No patient found matching that ID, OP#, or name');
+      }
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to look up patient');
+    } finally {
+      setSearchingPatient(false);
+    }
+  };
   const [branchId] = useState(1);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
@@ -136,19 +161,19 @@ const DocumentScanning = () => {
                   </div>
                   <input
                     type="text"
-                    placeholder="Enter Patient Profile ID (e.g., P12345)"
+                    placeholder="Enter Patient ID, OP#, or Name (e.g., OP-2026-0001)"
                     value={patientProfileId}
                     onChange={(e) => setPatientProfileId(e.target.value)}
                     className={`${inputClass} pl-12`}
-                    onKeyDown={(e) => e.key === 'Enter' && patientProfileId && setSearchedId(patientProfileId)}
+                    onKeyDown={(e) => e.key === 'Enter' && patientProfileId && handleLookupPatient()}
                   />
                 </div>
                 <button 
-                  onClick={() => setSearchedId(patientProfileId || null)} 
-                  disabled={!patientProfileId}
+                  onClick={handleLookupPatient} 
+                  disabled={!patientProfileId || searchingPatient}
                   className="flex items-center justify-center gap-2 px-8 py-3.5 bg-[#2864FF] hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 transition-colors disabled:opacity-50"
                 >
-                  <Upload className="w-4 h-4" /> Load
+                  <Upload className="w-4 h-4" /> {searchingPatient ? 'Loading...' : 'Load'}
                 </button>
               </div>
             </div>
