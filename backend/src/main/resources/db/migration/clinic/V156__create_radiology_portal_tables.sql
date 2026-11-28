@@ -18,6 +18,13 @@ CREATE TABLE IF NOT EXISTS imaging_procedures (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+ALTER TABLE imaging_procedures ADD COLUMN IF NOT EXISTS modality VARCHAR(30) DEFAULT 'XRAY';
+ALTER TABLE imaging_procedures ADD COLUMN IF NOT EXISTS body_part VARCHAR(100);
+ALTER TABLE imaging_procedures ADD COLUMN IF NOT EXISTS price NUMERIC(10, 2) DEFAULT 0.00;
+ALTER TABLE imaging_procedures ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE;
+ALTER TABLE imaging_procedures ADD COLUMN IF NOT EXISTS requires_contrast BOOLEAN DEFAULT FALSE;
+ALTER TABLE imaging_procedures ADD COLUMN IF NOT EXISTS preparation_instructions TEXT;
+ALTER TABLE imaging_procedures ADD COLUMN IF NOT EXISTS duration_minutes INT DEFAULT 30;
 ALTER TABLE imaging_procedures ADD COLUMN IF NOT EXISTS turnaround_target_hours INT;
 ALTER TABLE imaging_procedures ADD COLUMN IF NOT EXISTS radiation_safety_notes TEXT;
 ALTER TABLE imaging_procedures ADD COLUMN IF NOT EXISTS created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();

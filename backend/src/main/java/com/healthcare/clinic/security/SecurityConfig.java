@@ -145,12 +145,6 @@ public class SecurityConfig {
         if (!patternOrigins.contains("https://clinic-website-ndzj.onrender.com")) {
             patternOrigins.add("https://clinic-website-ndzj.onrender.com");
         }
-        if (!patternOrigins.contains("https://*.vercel.app")) {
-            patternOrigins.add("https://*.vercel.app");
-        }
-        if (!patternOrigins.contains("https://*.onrender.com")) {
-            patternOrigins.add("https://*.onrender.com");
-        }
 
         if (!isProd) {
             if (!patternOrigins.contains("http://localhost:*")) patternOrigins.add("http://localhost:*");
