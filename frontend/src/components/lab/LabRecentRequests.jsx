@@ -103,19 +103,7 @@ const LabRecentRequests = ({ onViewDetails, filter = 'ALL', setFilter }) => {
   });
 
   const requests = useMemo(() => {
-    if (Array.isArray(rawRequests) && rawRequests.length > 0) {
-      return rawRequests;
-    }
-    // High-fidelity fallback items for demonstration
-    return [
-      { id: 108, patient: { user: { firstName: 'Eleanor', lastName: 'Vance' } }, testCatalog: { testName: 'Complete Blood Count (CBC)', category: 'Hematology' }, priority: 'STAT', status: 'REQUESTED', requestedAt: new Date(Date.now() - 25 * 60000).toISOString() },
-      { id: 107, patient: { user: { firstName: 'Marcus', lastName: 'Brody' } }, testCatalog: { testName: 'Lipid Profile & Cholesterol', category: 'Biochemistry' }, priority: 'URGENT', status: 'SAMPLE_COLLECTED', requestedAt: new Date(Date.now() - 45 * 60000).toISOString() },
-      { id: 106, patient: { user: { firstName: 'Sarah', lastName: 'Connor' } }, testCatalog: { testName: 'Liver Function Test (LFT)', category: 'Biochemistry' }, priority: 'ROUTINE', status: 'PROCESSING', requestedAt: new Date(Date.now() - 65 * 60000).toISOString() },
-      { id: 105, patient: { user: { firstName: 'David', lastName: 'Kim' } }, testCatalog: { testName: 'Thyroid Stimulating Hormone (TSH)', category: 'Endocrinology' }, priority: 'URGENT', status: 'RESULT_ENTERED', requestedAt: new Date(Date.now() - 95 * 60000).toISOString() },
-      { id: 104, patient: { user: { firstName: 'Hannah', lastName: 'Abbott' } }, testCatalog: { testName: 'Fasting Blood Glucose & HbA1c', category: 'Endocrinology' }, priority: 'ROUTINE', status: 'VERIFIED', requestedAt: new Date(Date.now() - 120 * 60000).toISOString() },
-      { id: 103, patient: { user: { firstName: 'James', lastName: 'Wilson' } }, testCatalog: { testName: 'High-Sensitivity Cardiac Troponin-I', category: 'Cardiology' }, priority: 'STAT', status: 'RELEASED', requestedAt: new Date(Date.now() - 180 * 60000).toISOString() },
-      { id: 102, patient: { user: { firstName: 'Emily', lastName: 'Clarke' } }, testCatalog: { testName: 'Urinalysis Comprehensive', category: 'Clinical Pathology' }, priority: 'ROUTINE', status: 'COMPLETED', requestedAt: new Date(Date.now() - 240 * 60000).toISOString() },
-    ];
+    return Array.isArray(rawRequests) ? rawRequests : [];
   }, [rawRequests]);
 
   const filteredRequests = useMemo(() => {

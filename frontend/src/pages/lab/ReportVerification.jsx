@@ -100,31 +100,7 @@ const ReportVerification = () => {
     }
   };
 
-  // Demonstration fallback items if queue is empty
-  const displayRequests = requests.length > 0 ? requests : [
-    {
-      id: 105,
-      labRequestNumber: 'LAB-2026-105',
-      patient: { firstName: 'David', lastName: 'Kim', user: { firstName: 'David', lastName: 'Kim' }, dateOfBirth: '1984-06-12', gender: 'MALE' },
-      doctorUser: { firstName: 'Sarah', lastName: 'Jenkins' },
-      testCatalog: { testName: 'Thyroid Stimulating Hormone (TSH)', category: 'Endocrinology', unit: 'uIU/mL', referenceRange: '0.4 - 4.0' },
-      priority: 'URGENT',
-      status: 'RESULT_ENTERED',
-      resultValue: '4.85',
-      requestedAt: new Date(Date.now() - 95 * 60000).toISOString(),
-    },
-    {
-      id: 109,
-      labRequestNumber: 'LAB-2026-109',
-      patient: { firstName: 'Clara', lastName: 'Oswald', user: { firstName: 'Clara', lastName: 'Oswald' }, dateOfBirth: '1992-11-23', gender: 'FEMALE' },
-      doctorUser: { firstName: 'Michael', lastName: 'Chen' },
-      testCatalog: { testName: 'Glycated Hemoglobin (HbA1c)', category: 'Biochemistry', unit: '%', referenceRange: '4.0 - 5.6' },
-      priority: 'ROUTINE',
-      status: 'RESULT_ENTERED',
-      resultValue: '5.9',
-      requestedAt: new Date(Date.now() - 140 * 60000).toISOString(),
-    }
-  ];
+  const displayRequests = Array.isArray(requests) ? requests : [];
 
   const filteredRequests = displayRequests.filter(req => {
     if (!search) return true;

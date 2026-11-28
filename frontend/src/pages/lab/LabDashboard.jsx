@@ -9,7 +9,8 @@ import {
   ListFilter, 
   BookOpen, 
   PlusCircle, 
-  Activity 
+  Activity,
+  AlertCircle
 } from 'lucide-react';
 import { axiosPrivate } from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
@@ -37,53 +38,48 @@ const LabDashboard = () => {
     { label: 'Test Catalog', path: '/lab/catalog' },
   ];
 
-  const DEFAULT_SUMMARY = {
-    totalRequests: 142,
-    requestsToday: 28,
-    pendingRequests: 12,
-    inProgressRequests: 18,
-    verifiedRequests: 14,
-    completedRequests: 92,
-    urgentRequests: 6,
-    rejectedRequests: 2,
-    statusCounts: {
-      REQUESTED: 12,
-      SAMPLE_COLLECTED: 18,
-      PROCESSING: 24,
-      RESULT_ENTERED: 14,
-      VERIFIED: 22,
-      RELEASED: 50,
-      REJECTED: 2,
-    },
-    priorityCounts: {
-      STAT: 4,
-      URGENT: 12,
-      ROUTINE: 126,
-    },
-    lowStockItems: 2,
-  };
-
-  const { data: summaryResponse, isLoading: summaryLoading, isFetching, refetch } = useQuery({
+  const { data: summaryResponse, isLoading: summaryLoading, isError, isFetching, refetch } = useQuery({
     queryKey: ['lab-dashboard-summary'],
     queryFn: async () => {
-      try {
-        const res = await axiosPrivate.get('/lab/operations/dashboard', {
-          params: { branchId: 1 },
-        });
-        return res.data;
-      } catch (err) {
-        return DEFAULT_SUMMARY;
-      }
+      const res = await axiosPrivate.get('/lab/operations/dashboard', {
+        params: { branchId: 1 },
+      });
+      return res.data;
     },
     refetchInterval: 10000,
   });
 
-  const summary = summaryResponse || DEFAULT_SUMMARY;
+  const summary = summaryResponse || {
+    totalRequests: 0,
+    requestsToday: 0,
+    pendingRequests: 0,
+    inProgressRequests: 0,
+    verifiedRequests: 0,
+    completedRequests: 0,
+    urgentRequests: 0,
+    rejectedRequests: 0,
+    statusCounts: {},
+    priorityCounts: {},
+    lowStockItems: 0,
+  };
 
   if (summaryLoading) {
     return (
       <div className="flex justify-center items-center h-full min-h-[500px] bg-[#F8FAFC]">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2160FF]"></div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[450px] p-6 text-center bg-[#F8FAFC]">
+        <AlertCircle className="w-12 h-12 text-rose-500 mb-3" />
+        <h3 className="text-base font-extrabold text-slate-900">Failed to load laboratory metrics</h3>
+        <p className="text-xs text-slate-500 mt-1 max-w-sm">Unable to connect to laboratory backend services.</p>
+        <button onClick={() => refetch()} className="mt-4 px-4 py-2 bg-[#2160FF] text-white rounded-xl text-xs font-bold hover:bg-blue-600 transition cursor-pointer">
+          Retry Sync
+        </button>
       </div>
     );
   }

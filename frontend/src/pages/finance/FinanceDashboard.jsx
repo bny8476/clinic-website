@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { axiosPrivate } from '../../api/axios';
 import { useNavigate } from 'react-router-dom';
@@ -396,22 +397,6 @@ export default function FinanceDashboard() {
         </div>
       </div>
 
-      {/* ─── Quick Nav Shortcut to Dedicated Ledger Pages ─── */}
-      <div className="p-4 bg-blue-50/70 rounded-2xl border border-blue-200 flex flex-wrap items-center justify-between gap-3 text-xs">
-        <div className="flex items-center gap-2 text-blue-950 font-bold">
-          <FileCheck className="w-5 h-5 text-[#1557FF]" />
-          <span>Dedicated Financial Ledgers & Statements:</span>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <button onClick={() => navigate('/finance/invoices')} className="px-3 py-1.5 bg-white border border-blue-200 rounded-lg font-bold text-slate-700 hover:bg-blue-100 transition cursor-pointer">Invoices</button>
-          <button onClick={() => navigate('/finance/payments')} className="px-3 py-1.5 bg-white border border-blue-200 rounded-lg font-bold text-slate-700 hover:bg-blue-100 transition cursor-pointer">Payments</button>
-          <button onClick={() => navigate('/finance/pnl')} className="px-3 py-1.5 bg-white border border-blue-200 rounded-lg font-bold text-slate-700 hover:bg-blue-100 transition cursor-pointer">P&L Statement</button>
-          <button onClick={() => navigate('/finance/insurance-claims')} className="px-3 py-1.5 bg-white border border-blue-200 rounded-lg font-bold text-slate-700 hover:bg-blue-100 transition cursor-pointer">Insurance Claims</button>
-          <button onClick={() => navigate('/finance/refunds')} className="px-3 py-1.5 bg-white border border-blue-200 rounded-lg font-bold text-slate-700 hover:bg-blue-100 transition cursor-pointer">Refunds & Credit Notes</button>
-          <button onClick={() => navigate('/finance/daily-cash')} className="px-3 py-1.5 bg-white border border-blue-200 rounded-lg font-bold text-slate-700 hover:bg-blue-100 transition cursor-pointer">Cash Drawers</button>
-        </div>
-      </div>
-
       {/* ─── 4 Primary Top Financial KPIs ─── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 xl:gap-6">
         
@@ -643,6 +628,22 @@ export default function FinanceDashboard() {
             </button>
           );
         })}
+      </div>
+
+      {/* ─── Quick Nav Shortcut to Dedicated Ledger Pages ─── */}
+      <div className="p-4 bg-blue-50/70 rounded-2xl border border-blue-200 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-2 text-blue-950 font-bold">
+          <FileCheck className="w-5 h-5 text-[#1557FF]" />
+          <span>Dedicated Financial Ledgers & Statements:</span>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <button onClick={() => navigate('/finance/invoices')} className="px-3 py-1.5 bg-white border border-blue-200 rounded-lg font-bold text-slate-700 hover:bg-blue-100 transition cursor-pointer">Invoices</button>
+          <button onClick={() => navigate('/finance/payments')} className="px-3 py-1.5 bg-white border border-blue-200 rounded-lg font-bold text-slate-700 hover:bg-blue-100 transition cursor-pointer">Payments</button>
+          <button onClick={() => navigate('/finance/pnl')} className="px-3 py-1.5 bg-white border border-blue-200 rounded-lg font-bold text-slate-700 hover:bg-blue-100 transition cursor-pointer">P&L Statement</button>
+          <button onClick={() => navigate('/finance/insurance-claims')} className="px-3 py-1.5 bg-white border border-blue-200 rounded-lg font-bold text-slate-700 hover:bg-blue-100 transition cursor-pointer">Insurance Claims</button>
+          <button onClick={() => navigate('/finance/refunds')} className="px-3 py-1.5 bg-white border border-blue-200 rounded-lg font-bold text-slate-700 hover:bg-blue-100 transition cursor-pointer">Refunds & Credit Notes</button>
+          <button onClick={() => navigate('/finance/daily-cash')} className="px-3 py-1.5 bg-white border border-blue-200 rounded-lg font-bold text-slate-700 hover:bg-blue-100 transition cursor-pointer">Cash Drawers</button>
+        </div>
       </div>
 
       {/* ─── Tab 1: Executive Overview & Charts ─── */}
@@ -1272,9 +1273,9 @@ export default function FinanceDashboard() {
       )}
 
       {/* ─── Modal: Record Expense (11 Healthcare Categories) ─── */}
-      {isExpenseModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
-          <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl border border-slate-200 p-6 space-y-4">
+      {isExpenseModalOpen && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[9998] bg-black/70 flex items-center justify-center p-4">
+          <div className="relative z-[9999] bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="text-base font-black text-slate-900">Record Operational Expense</h3>
               <button onClick={() => setIsExpenseModalOpen(false)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
@@ -1360,7 +1361,8 @@ export default function FinanceDashboard() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
     </div>

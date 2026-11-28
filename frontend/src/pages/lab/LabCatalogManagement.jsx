@@ -72,19 +72,8 @@ const LabCatalogManagement = () => {
     onError: () => toast.error('Failed to update status')
   });
 
-  // Comprehensive fallback catalog if database has none
   const displayCatalog = useMemo(() => {
-    if (catalog.length > 0) return catalog;
-    return [
-      { id: 1, testCode: 'CBC-DIFF', testName: 'Complete Blood Count (CBC) with Differential', department: 'Hematology', specimenType: 'Whole Blood', containerType: 'EDTA Purple Top', turnaroundTargetHours: 2, price: 35.00, referenceRange: 'See report', unit: 'cells/uL', isActive: true },
-      { id: 2, testCode: 'LIPID-PANEL', testName: 'Comprehensive Lipid & Cholesterol Profile', department: 'Biochemistry', specimenType: 'Serum', containerType: 'SST Gold Top', turnaroundTargetHours: 4, price: 45.00, referenceRange: '120 - 200', unit: 'mg/dL', isActive: true },
-      { id: 3, testCode: 'LFT-COMP', testName: 'Liver Function Test Comprehensive Panel', department: 'Biochemistry', specimenType: 'Serum', containerType: 'SST Gold Top', turnaroundTargetHours: 4, price: 50.00, referenceRange: 'Varies', unit: 'U/L', isActive: true },
-      { id: 4, testCode: 'TSH-ULTRA', testName: 'Thyroid Stimulating Hormone (TSH) Ultra', department: 'Endocrinology', specimenType: 'Serum', containerType: 'Plain Red Top', turnaroundTargetHours: 6, price: 40.00, referenceRange: '0.4 - 4.0', unit: 'uIU/mL', isActive: true },
-      { id: 5, testCode: 'GLU-FAST', testName: 'Fasting Blood Glucose & Glycated HbA1c', department: 'Endocrinology', specimenType: 'Plasma', containerType: 'Sodium Fluoride Grey', turnaroundTargetHours: 3, price: 30.00, referenceRange: '70 - 99', unit: 'mg/dL', isActive: true },
-      { id: 6, testCode: 'TROP-I-HS', testName: 'High-Sensitivity Cardiac Troponin-I', department: 'Cardiology', specimenType: 'Plasma', containerType: 'Heparin Green Top', turnaroundTargetHours: 1, price: 80.00, referenceRange: '< 0.04', unit: 'ng/mL', isActive: true },
-      { id: 7, testCode: 'UA-MIC', testName: 'Urinalysis Complete with Microscopic Exam', department: 'Clinical Pathology', specimenType: 'Clean Catch Urine', containerType: 'Sterile Urine Cup', turnaroundTargetHours: 2, price: 25.00, referenceRange: 'Normal', unit: 'HPF', isActive: true },
-      { id: 8, testCode: 'KFT-RENAL', testName: 'Renal Function & Electrolytes Panel', department: 'Biochemistry', specimenType: 'Serum', containerType: 'SST Gold Top', turnaroundTargetHours: 4, price: 42.00, referenceRange: 'Varies', unit: 'mg/dL', isActive: false },
-    ];
+    return Array.isArray(catalog) ? catalog : [];
   }, [catalog]);
 
   const departments = useMemo(() => {

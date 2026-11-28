@@ -10,7 +10,7 @@ const LabRequestDetailsModal = ({ isOpen, onClose, request }) => {
   const handleAction = (action) => {
     onClose();
     if (action === 'process') {
-      navigate('/lab/results'); // Just navigate to result entry
+      navigate('/lab/worklist'); // Navigate to worklist queue
     }
   };
 

@@ -333,20 +333,9 @@ const LabWorklist = () => {
     refetchInterval: 10000,
   });
 
-  const rawRequests = data.content !== undefined ? data.content : (Array.isArray(data) ? data : undefined);
+  const rawRequests = data.content !== undefined ? data.content : (Array.isArray(data) ? data : []);
   const requests = useMemo(() => {
-    if (rawRequests !== undefined && rawRequests.length > 0) {
-      return rawRequests;
-    }
-    // High-fidelity fallback orders
-    return [
-      { id: 108, labRequestNumber: 'LAB-2026-108', patient: { firstName: 'Eleanor', lastName: 'Vance', user: { firstName: 'Eleanor', lastName: 'Vance' } }, testCatalog: { testName: 'Complete Blood Count (CBC) with Differential', category: 'Hematology', turnaroundTargetHours: 2 }, priority: 'STAT', status: 'REQUESTED', requestedAt: new Date(Date.now() - 25 * 60000).toISOString() },
-      { id: 107, labRequestNumber: 'LAB-2026-107', patient: { firstName: 'Marcus', lastName: 'Brody', user: { firstName: 'Marcus', lastName: 'Brody' } }, testCatalog: { testName: 'Lipid Profile & Serum Cholesterol', category: 'Biochemistry', turnaroundTargetHours: 4 }, priority: 'URGENT', status: 'SAMPLE_COLLECTED', requestedAt: new Date(Date.now() - 45 * 60000).toISOString() },
-      { id: 106, labRequestNumber: 'LAB-2026-106', patient: { firstName: 'Sarah', lastName: 'Connor', user: { firstName: 'Sarah', lastName: 'Connor' } }, testCatalog: { testName: 'Comprehensive Liver Function Test (LFT)', category: 'Biochemistry', turnaroundTargetHours: 4 }, priority: 'ROUTINE', status: 'PROCESSING', requestedAt: new Date(Date.now() - 75 * 60000).toISOString() },
-      { id: 105, labRequestNumber: 'LAB-2026-105', patient: { firstName: 'David', lastName: 'Kim', user: { firstName: 'David', lastName: 'Kim' } }, testCatalog: { testName: 'Thyroid Stimulating Hormone (TSH)', category: 'Endocrinology', turnaroundTargetHours: 6 }, priority: 'URGENT', status: 'RESULT_ENTERED', requestedAt: new Date(Date.now() - 110 * 60000).toISOString(), resultValue: '4.85' },
-      { id: 104, labRequestNumber: 'LAB-2026-104', patient: { firstName: 'Hannah', lastName: 'Abbott', user: { firstName: 'Hannah', lastName: 'Abbott' } }, testCatalog: { testName: 'Fasting Blood Glucose & HbA1c', category: 'Endocrinology', turnaroundTargetHours: 3 }, priority: 'ROUTINE', status: 'VERIFIED', requestedAt: new Date(Date.now() - 150 * 60000).toISOString(), resultValue: '98 mg/dL' },
-      { id: 103, labRequestNumber: 'LAB-2026-103', patient: { firstName: 'James', lastName: 'Wilson', user: { firstName: 'James', lastName: 'Wilson' } }, testCatalog: { testName: 'High-Sensitivity Cardiac Troponin-I', category: 'Cardiology', turnaroundTargetHours: 1 }, priority: 'STAT', status: 'RELEASED', requestedAt: new Date(Date.now() - 210 * 60000).toISOString(), resultValue: '0.01 ng/mL' },
-    ];
+    return Array.isArray(rawRequests) ? rawRequests : [];
   }, [rawRequests]);
 
   const updateStatusMutation = useMutation({
