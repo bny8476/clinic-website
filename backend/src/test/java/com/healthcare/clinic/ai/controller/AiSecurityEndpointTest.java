@@ -6,6 +6,8 @@ import com.healthcare.clinic.ai.service.AiChatService;
 import com.healthcare.clinic.ai.service.AiConversationService;
 import com.healthcare.clinic.ai.service.AiDoctorService;
 import com.healthcare.clinic.ai.service.AiPatientService;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -45,9 +48,20 @@ class AiSecurityEndpointTest {
     @InjectMocks
     private AiPatientController aiPatientController;
 
+    @BeforeEach
+    void setUp() {
+        SecurityContextHolder.clearContext();
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
+    }
+
     @Test
     @DisplayName("Unauthenticated user calling getConversations returns 401 Unauthorized")
     void testGetConversationsUnauthenticatedReturns401() {
+        SecurityContextHolder.clearContext();
         // Unauthenticated context (userId is null)
         ResponseEntity<?> response = aiChatController.getConversations();
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
@@ -57,6 +71,7 @@ class AiSecurityEndpointTest {
     @Test
     @DisplayName("Public chat endpoint supports guest chat requests")
     void testPublicChatProcessesGuestRequest() {
+        SecurityContextHolder.clearContext();
         AiChatRequest request = new AiChatRequest();
         request.setMessage("Hello AI");
 
@@ -64,7 +79,7 @@ class AiSecurityEndpointTest {
         chatResponse.setSuccess(true);
         chatResponse.setMessage("Hello User");
 
-        when(aiChatService.processChat(any(AiChatRequest.class), eq(null), eq("ROLE_ANONYMOUS"), any()))
+        when(aiChatService.processChat(any(AiChatRequest.class), any(), eq("ROLE_ANONYMOUS"), any()))
                 .thenReturn(chatResponse);
 
         MockHttpServletRequest servletRequest = new MockHttpServletRequest();

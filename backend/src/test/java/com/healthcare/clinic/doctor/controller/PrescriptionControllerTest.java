@@ -23,6 +23,7 @@ import static org.mockito.Mockito.when;
 
 import org.springframework.test.annotation.DirtiesContext;
 
+@org.springframework.test.context.ActiveProfiles("test")
 @SpringBootTest(properties = {
                     "jwt.secret=mock-secret-key-that-is-at-least-32-chars-long-for-testing", 
     "jwt.expirationMs=3600000", 

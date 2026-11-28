@@ -24,16 +24,7 @@ const RadiologyRequests = () => {
     }
   });
 
-  const displayableRequests = (Array.isArray(requests) && requests.length > 0) ? requests : [
-    {
-      id: 1,
-      procedure: { name: 'Chest X-Ray PA View' },
-      patient: { user: { firstName: 'John', lastName: 'Smith' }, id: 'MRN-2026-001' },
-      clinicalNotes: 'Routine Cardiac Follow-up & Chest Clear Evaluation',
-      status: 'COMPLETED',
-      priority: 'ROUTINE'
-    }
-  ];
+  const displayableRequests = Array.isArray(requests) ? requests : [];
 
   return (
     

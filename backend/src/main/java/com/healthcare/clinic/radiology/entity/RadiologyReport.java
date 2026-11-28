@@ -1,11 +1,14 @@
 package com.healthcare.clinic.radiology.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.healthcare.clinic.identity.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.ZonedDateTime;
+import java.util.Map;
 
 @Entity
 @Table(name = "radiology_reports")
@@ -13,17 +16,18 @@ import java.time.ZonedDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class RadiologyReport {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "request_id", nullable = false, unique = true)
     private ImagingRequest request;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "radiologist_id")
     private User radiologist;
 
@@ -33,15 +37,30 @@ public class RadiologyReport {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String impression;
 
-    @Column(name = "dicom_study_uid")
+    @Column(columnDefinition = "TEXT")
+    private String recommendations;
+
+    @Column(columnDefinition = "TEXT")
+    private String technique;
+
+    @Column(columnDefinition = "TEXT")
+    private String comparison;
+
+    @Column(name = "clinical_indication", columnDefinition = "TEXT")
+    private String clinicalIndication;
+
+    @Column(name = "dicom_study_uid", length = 150)
     private String dicomStudyUid;
 
     @Column(name = "dicom_image_url", length = 500)
     private String dicomImageUrl;
 
-    @Column(nullable = false, length = 20)
+    @Column(name = "pdf_url", length = 500)
+    private String pdfUrl;
+
+    @Column(nullable = false, length = 30)
     @Builder.Default
-    private String status = "DRAFT"; // DRAFT, FINALIZED, VERIFIED
+    private String status = "DRAFT"; // DRAFT, PENDING_REVIEW, FINALIZED, VERIFIED, AMENDED
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -53,7 +72,7 @@ public class RadiologyReport {
     @Column(name = "verified_at")
     private ZonedDateTime verifiedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "verified_by")
     private User verifiedBy;
 
@@ -65,7 +84,10 @@ public class RadiologyReport {
     @JoinColumn(name = "parent_report_id")
     private RadiologyReport parentReport;
 
+    @Column(name = "amendment_reason", columnDefinition = "TEXT")
+    private String amendmentReason;
+
     @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
     @Column(name = "structured_data")
-    private java.util.Map<String, Object> structuredData;
+    private Map<String, Object> structuredData;
 }

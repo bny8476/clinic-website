@@ -13,62 +13,6 @@ import Modal from '../../components/ui/Modal';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 
-const DEFAULT_PROCEDURES = [
-  { id: 1, name: 'Chest X-Ray PA View', modality: 'XRAY', bodyPart: 'Chest', price: 120.00 },
-  { id: 2, name: 'Brain MRI with Contrast', modality: 'MRI', bodyPart: 'Head/Brain', price: 650.00 },
-  { id: 3, name: 'Abdominal & Pelvic CT Scan', modality: 'CT', bodyPart: 'Abdomen', price: 480.00 },
-  { id: 4, name: 'Thyroid Ultrasound Scan', modality: 'ULTRASOUND', bodyPart: 'Neck', price: 180.00 },
-  { id: 5, name: 'Lumbar Spine MRI (L1-S1)', modality: 'MRI', bodyPart: 'Spine', price: 620.00 }
-];
-
-const DEFAULT_REQUESTS = [
-  {
-    id: 101,
-    procedure: { id: 1, name: 'Chest X-Ray PA View', modality: 'XRAY', bodyPart: 'Chest', price: 120.00 },
-    patient: { id: 1, user: { firstName: 'John', lastName: 'Smith' }, opNumber: 'MRN-2026-001' },
-    priority: 'ROUTINE',
-    status: 'ORDERED',
-    clinicalNotes: 'Persistent dry cough for 3 weeks; evaluate for infiltrates or pneumonia.',
-    requestedAt: '2026-11-24T09:30:00Z',
-  },
-  {
-    id: 102,
-    procedure: { id: 2, name: 'Brain MRI with Contrast', modality: 'MRI', bodyPart: 'Head/Brain', price: 650.00 },
-    patient: { id: 2, user: { firstName: 'Sarah', lastName: 'Jenkins' }, opNumber: 'MRN-2026-002' },
-    priority: 'STAT',
-    status: 'SCHEDULED',
-    clinicalNotes: 'Acute onset migraine with aura and visual disturbance; rule out intracranial pathology.',
-    requestedAt: '2026-11-24T10:15:00Z',
-  },
-  {
-    id: 103,
-    procedure: { id: 3, name: 'Abdominal & Pelvic CT Scan', modality: 'CT', bodyPart: 'Abdomen', price: 480.00 },
-    patient: { id: 3, user: { firstName: 'Michael', lastName: 'Chang' }, opNumber: 'MRN-2026-003' },
-    priority: 'URGENT',
-    status: 'REPORTING',
-    clinicalNotes: 'Right lower quadrant pain; evaluate for acute appendicitis or bowel inflammation.',
-    requestedAt: '2026-11-24T11:00:00Z',
-  },
-  {
-    id: 104,
-    procedure: { id: 4, name: 'Thyroid Ultrasound Scan', modality: 'ULTRASOUND', bodyPart: 'Neck', price: 180.00 },
-    patient: { id: 4, user: { firstName: 'Emily', lastName: 'Watson' }, opNumber: 'MRN-2026-004' },
-    priority: 'ROUTINE',
-    status: 'VERIFIED',
-    clinicalNotes: 'Palpable solitary thyroid nodule detected on routine clinical physical exam.',
-    requestedAt: '2026-11-23T14:20:00Z',
-  },
-  {
-    id: 105,
-    procedure: { id: 5, name: 'Lumbar Spine MRI (L1-S1)', modality: 'MRI', bodyPart: 'Spine', price: 620.00 },
-    patient: { id: 5, user: { firstName: 'Robert', lastName: 'Taylor' }, opNumber: 'MRN-2026-005' },
-    priority: 'ROUTINE',
-    status: 'RELEASED',
-    clinicalNotes: 'Chronic low back pain radiating to left lower extremity; radiculopathy workup.',
-    requestedAt: '2026-11-23T16:45:00Z',
-  }
-];
-
 const CreateRadiologyRequestModal = ({ isOpen, onClose, onSuccess }) => {
   const [patientId, setPatientId] = useState('');
   const [procedureId, setProcedureId] = useState('');
@@ -78,18 +22,12 @@ const CreateRadiologyRequestModal = ({ isOpen, onClose, onSuccess }) => {
   const { data: rawProcedures = [] } = useQuery({
     queryKey: ['radiology-procedures'],
     queryFn: async () => {
-      try {
-        const res = await axiosPrivate.get('/radiology/procedures');
-        return Array.isArray(res.data) && res.data.length > 0 ? res.data : DEFAULT_PROCEDURES;
-      } catch (err) {
-        if (err.response?.status === 401) return DEFAULT_PROCEDURES;
-        return DEFAULT_PROCEDURES;
-      }
-    },
-    retry: false
+      const res = await axiosPrivate.get('/radiology/procedures');
+      return Array.isArray(res.data) ? res.data : [];
+    }
   });
 
-  const procedures = rawProcedures.length > 0 ? rawProcedures : DEFAULT_PROCEDURES;
+  const procedures = Array.isArray(rawProcedures) ? rawProcedures : [];
   const queryClient = useQueryClient();
 
   const createMutation = useMutation({
@@ -196,26 +134,33 @@ export default function RadiologistDashboard() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const queryClient = useQueryClient();
 
-  const { data: rawRequests = [], isLoading, refetch } = useQuery({
-    queryKey: ['radiology-requests-dashboard', filterStatus],
+  const { data: dashboardMetrics } = useQuery({
+    queryKey: ['radiology-dashboard-metrics'],
     queryFn: async () => {
       try {
-        const endpoint = filterStatus === 'ALL' ? '/radiology/requests' : `/radiology/requests?status=${filterStatus}`;
-        const res = await axiosPrivate.get(endpoint);
-        const list = Array.isArray(res.data) ? res.data : [];
-        return list.length > 0 ? list : DEFAULT_REQUESTS;
+        const res = await axiosPrivate.get('/radiology/dashboard');
+        return res.data;
       } catch (err) {
-        if (err.response?.status === 401) return DEFAULT_REQUESTS;
-        return DEFAULT_REQUESTS;
+        return null;
       }
     },
-    retry: false,
-    refetchInterval: 15000
+    refetchInterval: 10000
+  });
+
+  const { data: rawRequests = [], isLoading, isError, refetch } = useQuery({
+    queryKey: ['radiology-requests-dashboard', filterStatus],
+    queryFn: async () => {
+      const endpoint = filterStatus === 'ALL' ? '/radiology/requests' : `/radiology/requests?status=${filterStatus}`;
+      const res = await axiosPrivate.get(endpoint);
+      return Array.isArray(res.data) ? res.data : [];
+    },
+    refetchInterval: 10000
   });
 
   const handleManualRefresh = async () => {
     setIsRefreshing(true);
     await refetch();
+    queryClient.invalidateQueries({ queryKey: ['radiology-dashboard-metrics'] });
     setTimeout(() => setIsRefreshing(false), 600);
   };
 
@@ -226,18 +171,19 @@ export default function RadiologistDashboard() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['radiology-requests-dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['radiology-dashboard-metrics'] });
       toast.success('Procedure status updated successfully!');
     },
     onError: () => toast.error('Failed to update study status')
   });
 
-  const requests = Array.isArray(rawRequests) && rawRequests.length > 0 ? rawRequests : DEFAULT_REQUESTS;
+  const requests = Array.isArray(rawRequests) ? rawRequests : [];
 
-  // KPI Calculations
-  const pendingCount = requests.filter(r => ['DRAFT', 'ORDERED', 'SCHEDULED', 'ACQUIRED', 'IMAGE_ACQUIRED', 'REPORTING'].includes(r.status)).length;
-  const statUrgentCount = requests.filter(r => r.priority === 'STAT' || r.priority === 'URGENT').length;
-  const completedCount = requests.filter(r => ['VERIFIED', 'RELEASED', 'COMPLETED'].includes(r.status)).length;
-  const totalCount = requests.length;
+  // KPI Calculations from Live Database
+  const pendingCount = dashboardMetrics?.pendingOrders ?? requests.filter(r => ['DRAFT', 'ORDERED', 'SCHEDULED', 'ACQUIRED', 'IMAGE_ACQUIRED', 'REPORTING'].includes(r.status)).length;
+  const statUrgentCount = dashboardMetrics?.statOrUrgentCount ?? requests.filter(r => r.priority === 'STAT' || r.priority === 'URGENT').length;
+  const completedCount = dashboardMetrics?.studiesCompleted ?? requests.filter(r => ['VERIFIED', 'RELEASED', 'COMPLETED'].includes(r.status)).length;
+  const totalCount = dashboardMetrics?.totalVolume ?? requests.length;
 
   const filteredRequests = useMemo(() => {
     return requests.filter(req => {
@@ -520,7 +466,23 @@ export default function RadiologistDashboard() {
         </div>
 
         {/* ── Studies Worklist ── */}
-        {isLoading ? (
+        {isError ? (
+          <div className="py-16 flex flex-col items-center justify-center text-center px-4">
+            <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center mb-4">
+              <AlertCircle className="w-8 h-8" />
+            </div>
+            <h3 className="text-base font-extrabold text-slate-900 mb-1">Failed to load radiology worklist</h3>
+            <p className="text-xs text-slate-400 font-medium max-w-sm mb-5">
+              Unable to connect to diagnostic imaging backend services.
+            </p>
+            <button
+              onClick={() => refetch()}
+              className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow-sm cursor-pointer border-none"
+            >
+              Retry Sync
+            </button>
+          </div>
+        ) : isLoading ? (
           <div className="py-20 flex flex-col justify-center items-center gap-3">
             <div className="w-9 h-9 border-3 border-blue-100 border-t-blue-600 rounded-full animate-spin"></div>
             <p className="text-xs font-semibold text-slate-400">Loading diagnostic worklist...</p>

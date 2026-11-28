@@ -83,7 +83,10 @@ const DashboardLayout = ({ portalSlug, allowedRoles }) => {
         <div className="px-6 py-3 flex items-center justify-between">
           {/* Logo and Brand */}
           <div className="flex items-center gap-3">
-            {location.pathname !== `/${portalSlug}/dashboard` && location.pathname !== `/${portalSlug}/dashboard/` && (
+            {location.pathname !== `/${portalSlug}/dashboard` && 
+             location.pathname !== `/${portalSlug}/dashboard/` && 
+             !location.pathname.startsWith('/reception/book') && 
+             location.pathname !== '/reception/search' && (
               <button 
                 onClick={() => navigate(-1)}
                 className="p-2 mr-1 hover:bg-slate-100 rounded-full text-slate-600 transition flex items-center justify-center cursor-pointer"

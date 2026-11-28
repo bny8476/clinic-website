@@ -19,6 +19,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@org.springframework.test.context.ActiveProfiles("test")
 @SpringBootTest
 @Transactional
 public class PatientPortalBatch3IntegrationTest {

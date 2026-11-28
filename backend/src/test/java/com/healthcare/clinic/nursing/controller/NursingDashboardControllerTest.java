@@ -12,6 +12,7 @@ import com.healthcare.clinic.identity.entity.User;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
+@org.springframework.test.context.ActiveProfiles("test")
 @SpringBootTest(properties = {"jwt.secret=mock-secret-key-that-is-at-least-32-chars-long-for-testing", "jwt.expirationMs=3600000", "jwt.access-token-expiration-ms=3600000", "spring.flyway.enabled=false"})
 public class NursingDashboardControllerTest {
 

@@ -13,30 +13,27 @@ import {
   MapPin, 
   Droplet, 
   User, 
-  UserCheck, 
   Ticket, 
   Receipt, 
   ShieldCheck, 
   X, 
   RefreshCw, 
   AlertCircle, 
-  Sparkles, 
-  ChevronRight, 
   Eye, 
-  HeartPulse,
-  Clock,
-  CheckCircle2,
-  FileText
+  Clock, 
+  CheckCircle2, 
+  FileText 
 } from 'lucide-react';
 import { fadeIn, staggerChildren, scaleIn } from '../../components/ui/motion';
 
 const PatientSearch = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState('ALL'); // ALL, OP, PHONE, NAME
+  const [filterType, setFilterType] = useState('ALL'); // ALL, NAME, OP, PHONE
   const [selectedPatientModal, setSelectedPatientModal] = useState(null);
   const [debouncedQuery] = useDebounce(searchQuery, 300);
 
+  // Live Query against Master Patient Registry
   const { data: searchResults = [], isLoading, isFetching } = useQuery({
     queryKey: ['patient-search', debouncedQuery],
     queryFn: async () => {
@@ -71,75 +68,43 @@ const PatientSearch = () => {
   };
 
   return (
-    <div className="min-h-full bg-[#F8FAFC] p-4 sm:p-6 lg:p-8 xl:p-10 w-full font-sans">
+    <div className="min-h-full bg-[#F8FAFC] py-8 px-4 sm:px-6 lg:px-8 xl:px-12 w-full font-sans">
       <motion.div 
         initial="hidden" 
         animate="visible" 
         variants={staggerChildren}
-        className="max-w-[1400px] mx-auto space-y-6 sm:space-y-8"
+        className="w-full max-w-5xl xl:max-w-6xl mx-auto space-y-6 sm:space-y-8"
       >
-        {/* ─── Breadcrumb & Header ─── */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 bg-blue-50 text-[#2160FF] rounded-2xl flex items-center justify-center shrink-0 border border-blue-100 shadow-2xs">
-                <Search className="w-5 h-5 text-[#2160FF]" strokeWidth={2.5} />
-              </div>
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-                  Patient Search & Registry
-                </h1>
-                <p className="text-xs sm:text-sm text-slate-500 font-medium">
-                  Search and lookup master patient records across departments by UHID, OP Number, Name, or Phone.
-                </p>
-              </div>
-            </div>
+        {/* ─── Header: Matching Exact Clean Aesthetic (No Back Button) ─── */}
+        <div className="text-center space-y-2 pt-2">
+          <div className="inline-flex items-center justify-center gap-2.5 text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
+            <Search className="w-7 h-7 sm:w-8 sm:h-8 text-[#2160FF]" strokeWidth={2.8} />
+            <span>Patient Search</span>
           </div>
-
-          {/* Quick Header Actions */}
-          <div className="flex items-center flex-wrap gap-2.5">
-            <Link
-              to="/reception/register"
-              className="flex items-center gap-2 bg-[#2160FF] text-white hover:bg-blue-700 font-bold py-2.5 px-4 rounded-xl text-xs shadow-sm shadow-blue-500/20 transition-all cursor-pointer"
-            >
-              <UserPlus className="w-4 h-4" />
-              <span>Register Patient</span>
-            </Link>
-            <Link
-              to="/reception/walk-in"
-              className="flex items-center gap-2 bg-white text-slate-700 hover:bg-slate-50 border border-slate-200/90 font-bold py-2.5 px-4 rounded-xl text-xs shadow-2xs transition-all cursor-pointer"
-            >
-              <Clock className="w-4 h-4 text-slate-500" />
-              <span>Walk-In Desk</span>
-            </Link>
-            <Link
-              to="/reception/book"
-              className="flex items-center gap-2 bg-white text-slate-700 hover:bg-slate-50 border border-slate-200/90 font-bold py-2.5 px-4 rounded-xl text-xs shadow-2xs transition-all cursor-pointer"
-            >
-              <Calendar className="w-4 h-4 text-slate-500" />
-              <span>Appointments</span>
-            </Link>
-          </div>
+          <p className="text-xs sm:text-sm md:text-base text-slate-500 font-medium max-w-md mx-auto">
+            Search patient records by name, phone, or patient ID.
+          </p>
         </div>
 
-        {/* ─── Search & Filter Control Bar (Full-Width Card) ─── */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-5 sm:p-6 space-y-4">
+        {/* ─── Wide Responsive Search & Filter Container Card ─── */}
+        <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/90 shadow-sm p-4 sm:p-6 lg:p-8 space-y-5">
+          {/* Main Search Input */}
           <div className="relative w-full">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <Search className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
             <input
               type="text"
-              placeholder="Search by patient name, phone number, OP number (e.g. OP-2026-0001), or national ID..."
+              placeholder="Search by patient name, phone number, OP number (e.g. OP-2026-0001)..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-24 py-3.5 rounded-xl border border-slate-200 bg-slate-50/70 text-slate-900 font-medium placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:outline-none focus:border-[#2160FF] focus:ring-4 focus:ring-blue-500/10 transition-all text-sm sm:text-base"
+              className="w-full pl-12 sm:pl-13 pr-24 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl border border-slate-200 bg-white text-slate-900 font-medium placeholder:text-slate-400 placeholder:font-normal focus:outline-none focus:border-[#2160FF] focus:ring-4 focus:ring-blue-500/10 transition-all text-sm sm:text-base shadow-2xs"
               autoFocus
             />
-            <div className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center gap-2">
+            <div className="absolute right-3.5 sm:right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
               {searchQuery && (
                 <button
                   type="button"
                   onClick={handleClear}
-                  className="p-1 hover:bg-slate-200 text-slate-400 hover:text-slate-600 rounded-lg transition cursor-pointer"
+                  className="p-1.5 hover:bg-slate-100 text-slate-400 hover:text-slate-600 rounded-lg transition cursor-pointer"
                   title="Clear input"
                 >
                   <X className="w-4 h-4" />
@@ -155,8 +120,8 @@ const PatientSearch = () => {
             </div>
           </div>
 
-          {/* Filter Pills & Stats Row */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1 border-t border-slate-100">
+          {/* Quick Filter Pills Row */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-slate-100">
             <div className="flex items-center gap-1.5 flex-wrap">
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mr-1 hidden sm:inline">
                 Filter by:
@@ -186,81 +151,64 @@ const PatientSearch = () => {
                 <>
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                   <span>
-                    Found <strong className="text-slate-900">{filteredResults.length}</strong> matching record{filteredResults.length !== 1 ? 's' : ''}
+                    Found <strong className="text-slate-900">{filteredResults.length}</strong> record{filteredResults.length !== 1 ? 's' : ''}
                   </span>
                 </>
               ) : (
-                <span className="text-slate-400">Master database active • Enter keywords to query</span>
+                <span className="text-slate-400 text-[11px] sm:text-xs">
+                  Master database active • Enter 2+ characters
+                </span>
               )}
             </div>
           </div>
-        </div>
 
-        {/* ─── Search Results Area ─── */}
-        <div>
-          {/* 1. Prompt / Initial State (< 2 chars) */}
+          {/* ─── State 1: Prompt State (< 2 chars) — Wide Dotted Container ─── */}
           {debouncedQuery.trim().length < 2 && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-2xs space-y-2">
-                  <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
-                    <User className="w-4 h-4" />
-                  </div>
-                  <h3 className="font-bold text-slate-900 text-sm">Search by Name & Email</h3>
-                  <p className="text-xs text-slate-500 leading-relaxed">
-                    Type first or last name, e.g. <strong className="text-slate-700">"John"</strong> or <strong className="text-slate-700">"Sarah"</strong>, to find registered patient profiles.
-                  </p>
-                </div>
-
-                <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-2xs space-y-2">
-                  <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
-                    <FileText className="w-4 h-4" />
-                  </div>
-                  <h3 className="font-bold text-slate-900 text-sm">Search by OP Number / UHID</h3>
-                  <p className="text-xs text-slate-500 leading-relaxed">
-                    Look up unique hospital registration IDs, e.g. <strong className="text-slate-700">"OP-2026-0001"</strong> or numeric patient identifiers.
-                  </p>
-                </div>
-
-                <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-2xs space-y-2">
-                  <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
-                    <Phone className="w-4 h-4" />
-                  </div>
-                  <h3 className="font-bold text-slate-900 text-sm">Search by Mobile Phone</h3>
-                  <p className="text-xs text-slate-500 leading-relaxed">
-                    Lookup records using partial or full phone numbers, e.g. <strong className="text-slate-700">"555-0199"</strong> or digits directly.
-                  </p>
-                </div>
+            <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/60 p-8 sm:p-12 text-center space-y-4">
+              <div className="w-12 h-12 rounded-2xl bg-blue-50 text-[#2160FF] flex items-center justify-center mx-auto border border-blue-100 shadow-2xs">
+                <Search className="w-5 h-5 text-[#2160FF]" strokeWidth={2.5} />
+              </div>
+              <div className="space-y-1">
+                <h3 className="font-extrabold text-slate-800 text-sm sm:text-base">
+                  Type at least 2 characters to begin searching
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-400 max-w-md mx-auto">
+                  Search across all registered patient records by Patient Name, Phone Number, or Hospital OP ID.
+                </p>
               </div>
 
-              {/* Callout to Register New */}
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50/50 rounded-2xl border border-blue-100 p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-sm shadow-blue-600/30">
-                    <UserPlus className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h4 className="font-extrabold text-slate-900 text-sm sm:text-base">First-time Patient Visit?</h4>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      If the patient is not yet registered in the hospital network, proceed to create their master health record.
-                    </p>
-                  </div>
-                </div>
+              {/* Quick Suggestion Badges */}
+              <div className="flex items-center justify-center gap-2 flex-wrap pt-1">
+                <span className="text-[11px] font-semibold text-slate-500 bg-white border border-slate-200 px-3 py-1 rounded-full shadow-2xs">
+                  e.g. John Doe
+                </span>
+                <span className="text-[11px] font-semibold text-slate-500 bg-white border border-slate-200 px-3 py-1 rounded-full shadow-2xs">
+                  e.g. OP-2026-0001
+                </span>
+                <span className="text-[11px] font-semibold text-slate-500 bg-white border border-slate-200 px-3 py-1 rounded-full shadow-2xs">
+                  e.g. 555-0199
+                </span>
+              </div>
+
+              {/* Register New Patient CTA */}
+              <div className="pt-4 border-t border-slate-200/70 max-w-sm mx-auto flex items-center justify-center gap-3">
+                <span className="text-xs text-slate-500">First time visiting?</span>
                 <Link
                   to="/reception/register"
-                  className="bg-[#2160FF] hover:bg-blue-700 text-white font-bold py-2.5 px-5 rounded-xl text-xs transition shadow-sm shadow-blue-500/20 whitespace-nowrap text-center"
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-[#2160FF] hover:underline"
                 >
-                  Register New Patient
+                  <UserPlus className="w-3.5 h-3.5" />
+                  <span>Register Patient</span>
                 </Link>
               </div>
             </div>
           )}
 
-          {/* 2. Loading State */}
+          {/* ─── State 2: Loading Skeletons ─── */}
           {isLoading && debouncedQuery.trim().length >= 2 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 pt-2">
               {[1, 2, 3, 4, 5, 6].map((n) => (
-                <div key={n} className="bg-white rounded-2xl border border-slate-200 p-6 animate-pulse space-y-4">
+                <div key={n} className="bg-slate-50 rounded-2xl border border-slate-200 p-5 animate-pulse space-y-4">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-slate-200 rounded-2xl" />
                     <div className="space-y-2 flex-1">
@@ -272,29 +220,29 @@ const PatientSearch = () => {
                     <div className="h-3 bg-slate-100 rounded w-full" />
                     <div className="h-3 bg-slate-100 rounded w-4/5" />
                   </div>
-                  <div className="h-8 bg-slate-100 rounded-xl w-full" />
+                  <div className="h-9 bg-slate-200/70 rounded-xl w-full" />
                 </div>
               ))}
             </div>
           )}
 
-          {/* 3. Empty Search Results */}
+          {/* ─── State 3: Empty Search Results ─── */}
           {!isLoading && debouncedQuery.trim().length >= 2 && filteredResults.length === 0 && (
-            <div className="bg-white rounded-2xl border border-slate-200/90 p-8 sm:p-12 text-center shadow-2xs space-y-4 max-w-xl mx-auto">
-              <div className="w-14 h-14 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center mx-auto border border-rose-100">
-                <AlertCircle className="w-7 h-7" />
+            <div className="rounded-2xl border border-slate-200/90 bg-slate-50/50 p-8 sm:p-12 text-center space-y-4 max-w-lg mx-auto">
+              <div className="w-13 h-13 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center mx-auto border border-rose-100">
+                <AlertCircle className="w-6 h-6" />
               </div>
-              <div>
-                <h3 className="font-extrabold text-slate-900 text-lg">No matching patient records found</h3>
-                <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-                  We could not find any registered patient matching <strong className="text-slate-800">"{debouncedQuery}"</strong> in the database.
+              <div className="space-y-1">
+                <h3 className="font-extrabold text-slate-900 text-base sm:text-lg">No matching patient records found</h3>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                  No registered patient matches <strong className="text-slate-800">"{debouncedQuery}"</strong> in the database.
                 </p>
               </div>
               <div className="flex items-center justify-center gap-3 pt-2">
                 <button
                   type="button"
                   onClick={handleClear}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition cursor-pointer"
+                  className="px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 font-bold rounded-xl text-xs border border-slate-200 transition cursor-pointer"
                 >
                   Clear Search
                 </button>
@@ -308,9 +256,9 @@ const PatientSearch = () => {
             </div>
           )}
 
-          {/* 4. Results Grid (Responsive 1-col mobile, 2-col md, 3-col xl) */}
+          {/* ─── State 4: Responsive Results Grid (1-col mobile, 2-col tablet, 3-col desktop) ─── */}
           {!isLoading && debouncedQuery.trim().length >= 2 && filteredResults.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 sm:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 pt-2">
               {filteredResults.map((patient) => {
                 const fullName = patient.name || patient.fullName || `${patient.firstName || ''} ${patient.lastName || ''}`.trim() || 'Patient Client';
                 const initial = (patient.firstName?.[0] || fullName?.[0] || 'P').toUpperCase();
@@ -321,16 +269,16 @@ const PatientSearch = () => {
                   <motion.div
                     key={patient.id}
                     variants={fadeIn}
-                    className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-blue-300 transition-all p-5 sm:p-6 flex flex-col justify-between space-y-4 group"
+                    className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-blue-300 transition-all p-5 flex flex-col justify-between space-y-4 group"
                   >
                     {/* Patient Header */}
                     <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3.5">
-                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-black text-lg flex items-center justify-center shrink-0 shadow-sm shadow-blue-500/20 group-hover:scale-105 transition-transform">
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-black text-base flex items-center justify-center shrink-0 shadow-sm shadow-blue-500/20 group-hover:scale-105 transition-transform">
                           {initial}
                         </div>
                         <div>
-                          <h3 className="font-extrabold text-slate-900 text-base group-hover:text-blue-600 transition-colors line-clamp-1">
+                          <h3 className="font-extrabold text-slate-900 text-sm sm:text-base group-hover:text-blue-600 transition-colors line-clamp-1">
                             {fullName}
                           </h3>
                           <div className="flex items-center gap-1.5 mt-0.5">
@@ -338,7 +286,7 @@ const PatientSearch = () => {
                               {opNum}
                             </span>
                             {patient.gender && (
-                              <span className="text-[11px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md uppercase">
+                              <span className="text-[10px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md uppercase">
                                 {patient.gender}
                               </span>
                             )}
@@ -347,7 +295,7 @@ const PatientSearch = () => {
                       </div>
 
                       {patient.bloodGroup && (
-                        <span className="shrink-0 flex items-center gap-1 text-[11px] font-extrabold text-rose-600 bg-rose-50 border border-rose-200/60 px-2 py-0.5 rounded-md">
+                        <span className="shrink-0 flex items-center gap-1 text-[10px] font-extrabold text-rose-600 bg-rose-50 border border-rose-200/60 px-2 py-0.5 rounded-md">
                           <Droplet className="w-3 h-3 text-rose-500" />
                           {patient.bloodGroup}
                         </span>
@@ -419,14 +367,14 @@ const PatientSearch = () => {
                           onClick={() => navigate(`/reception/insurance?patientId=${pId}`)}
                           className="hover:text-blue-600 hover:underline transition flex items-center gap-1 cursor-pointer"
                         >
-                          <ShieldCheck className="w-3 h-3 text-emerald-600" /> Verify Insurance
+                          <ShieldCheck className="w-3 h-3 text-emerald-600" /> Insurance
                         </button>
                         <button
                           type="button"
                           onClick={() => navigate(`/reception/billing?patientId=${pId}`)}
                           className="hover:text-blue-600 hover:underline transition flex items-center gap-1 cursor-pointer"
                         >
-                          <Receipt className="w-3 h-3 text-indigo-600" /> View Billing
+                          <Receipt className="w-3 h-3 text-indigo-600" /> Billing
                         </button>
                       </div>
                     </div>
