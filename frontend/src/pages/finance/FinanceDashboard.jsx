@@ -342,10 +342,6 @@ export default function FinanceDashboard() {
               <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
                 Hospital Financial Command Center
               </h1>
-              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-blue-50 text-[#1557FF] border border-blue-200 flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-[#1557FF] animate-pulse"></span>
-                Ledger Balanced
-              </span>
             </div>
             <p className="text-sm font-medium text-slate-500 mt-1">
               Financial source of truth: patient billing, clinical expenditure, double-entry ledger, and banking treasury.
