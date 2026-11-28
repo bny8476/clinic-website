@@ -144,8 +144,17 @@ public class LabService {
         // Resolve doctor if current user is doctor or specified
         Long currentUserId = SecurityUtils.getCurrentUserId();
         DoctorProfile doctor = null;
+        User doctorUser = null;
         if (currentUserId != null) {
             doctor = doctorProfileRepository.findByUserId(currentUserId).orElse(null);
+            doctorUser = userRepository.findById(currentUserId).orElse(null);
+        }
+
+        User patientUser = null;
+        if (patient != null && patient.getUserId() != null) {
+            patientUser = userRepository.findById(patient.getUserId()).orElse(null);
+        } else if (patientId != null) {
+            patientUser = userRepository.findById(patientId).orElse(null);
         }
 
         // Handle single test vs multiple tests
@@ -173,8 +182,13 @@ public class LabService {
             LabRequest req = LabRequest.builder()
                     .labRequestNumber(reqNumber)
                     .patientId(patientId)
-                    .patient(patient)
-                    .doctor(doctor)
+                    .patientProfile(patient)
+                    .patientUser(patientUser)
+                    .patientFirstName(patientUser != null ? patientUser.getFirstName() : null)
+                    .patientLastName(patientUser != null ? patientUser.getLastName() : null)
+                    .doctorProfile(doctor)
+                    .doctorUser(doctorUser)
+                    .doctorName(doctorUser != null ? ("Dr. " + (doctorUser.getFirstName() != null ? doctorUser.getFirstName() : "") + " " + (doctorUser.getLastName() != null ? doctorUser.getLastName() : "")).trim() : null)
                     .testCatalog(catalog)
                     .branchId(dto.getBranchId() != null ? dto.getBranchId() : 1L)
                     .priority(dto.getPriority() != null ? dto.getPriority().toUpperCase() : "ROUTINE")
