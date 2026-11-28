@@ -598,17 +598,17 @@ export default function FinanceDashboard() {
         </div>
       </div>
 
-      {/* ─── 7 Core Areas Interactive Navigation Bar ─── */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+      {/* ─── 8 Core Areas Interactive Navigation Bar ─── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-8 gap-2.5">
         {[
-          { id: 'overview', label: '1. Executive Overview & Charts', icon: LayoutGrid },
-          { id: 'revenue', label: '2. Revenue & Billing Streams', icon: TrendingUp },
-          { id: 'expenses', label: '3. Expenses & Approvals', icon: TrendingDown },
-          { id: 'receivables', label: '4. Accounts Receivable', icon: Receipt },
-          { id: 'payables', label: '5. Accounts Payable & Vendors', icon: Building2 },
-          { id: 'accounting', label: '6. Accounting & General Ledger', icon: BookOpen },
-          { id: 'banking', label: '7. Banking & Cash Treasury', icon: Landmark },
-          { id: 'payroll', label: '8. HR Payroll Integration', icon: Users },
+          { id: 'overview', label: '1. Overview', icon: LayoutGrid },
+          { id: 'revenue', label: '2. Revenue', icon: TrendingUp },
+          { id: 'expenses', label: '3. Expenses', icon: TrendingDown },
+          { id: 'receivables', label: '4. Receivables', icon: Receipt },
+          { id: 'payables', label: '5. Payables', icon: Building2 },
+          { id: 'accounting', label: '6. Accounting', icon: BookOpen },
+          { id: 'banking', label: '7. Banking & Cash', icon: Landmark },
+          { id: 'payroll', label: '8. HR Payroll', icon: Users },
         ].map(tab => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -616,14 +616,14 @@ export default function FinanceDashboard() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 whitespace-nowrap transition-all cursor-pointer ${
+              className={`px-3 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 whitespace-nowrap transition-all cursor-pointer ${
                 isActive
                   ? 'bg-[#1557FF] text-white shadow-sm shadow-[#1557FF]/25 ring-2 ring-[#1557FF]/20'
                   : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200/90 shadow-2xs'
               }`}
             >
               <Icon className="w-4 h-4 shrink-0" />
-              {tab.label}
+              <span className="truncate">{tab.label}</span>
             </button>
           );
         })}
