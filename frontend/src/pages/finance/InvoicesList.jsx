@@ -239,6 +239,178 @@ const InvoicesList = () => {
       });
   }, [displayableInvoices, searchTerm, statusFilter, sortBy]);
 
+  const invoiceModal = (
+    <AnimatePresence>
+      {isModalOpen && (
+        <div className="fixed inset-0 z-[9998] flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            className="relative z-[9999] bg-white rounded-3xl p-6 sm:p-7 max-w-lg w-full shadow-2xl border border-slate-200 space-y-5"
+          >
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-blue-50 text-[#1557FF] flex items-center justify-center border border-blue-100">
+                  <Receipt className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-black text-slate-900 text-lg">Create Billing Invoice</h3>
+                  <p className="text-xs text-slate-500">Generate a financial transaction &amp; patient charge bill</p>
+                </div>
+              </div>
+              <button
+                onClick={() => { setIsModalOpen(false); resetForm(); }}
+                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4 text-xs font-medium text-slate-700">
+              {/* Patient Search Input */}
+              <div>
+                <label className="block font-bold text-slate-800 mb-1.5 uppercase tracking-wider text-[11px]">
+                  Patient Selection <span className="text-rose-500">*</span>
+                </label>
+
+                {selectedPatient ? (
+                  <div className="flex items-center justify-between px-3.5 py-2.5 bg-blue-50 border border-blue-200 rounded-xl">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-full bg-[#1557FF] text-white font-bold flex items-center justify-center text-xs">
+                        {(selectedPatient.fullName || selectedPatient.name || 'P').charAt(0)}
+                      </div>
+                      <div>
+                        <span className="font-extrabold text-blue-950 block text-xs">
+                          {selectedPatient.fullName || selectedPatient.name}
+                        </span>
+                        <span className="text-[10px] text-blue-700 font-financeMono">
+                          {selectedPatient.uhid || selectedPatient.opNumber || `ID: ${selectedPatient.id}`}
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedPatient(null)}
+                      className="text-blue-700 hover:text-rose-600 transition p-1 cursor-pointer"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <input
+                        type="text"
+                        value={patientSearch}
+                        onChange={e => { setPatientSearch(e.target.value); setPatientDropdownOpen(true); }}
+                        onFocus={() => setPatientDropdownOpen(true)}
+                        placeholder="Search patient by name or UHID…"
+                        className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:border-[#1557FF] focus:ring-1 focus:ring-[#1557FF] text-xs font-medium transition"
+                      />
+                    </div>
+
+                    {patientDropdownOpen && (patientResults.length > 0 || patientSearchLoading) && (
+                      <div className="absolute z-20 top-full mt-1 left-0 right-0 bg-white border border-slate-200 rounded-xl shadow-xl max-h-48 overflow-y-auto">
+                        {patientSearchLoading && (
+                          <div className="px-3.5 py-2.5 text-xs text-slate-400 font-semibold">Searching patient directory…</div>
+                        )}
+                        {patientResults.map(p => (
+                          <button
+                            key={p.id}
+                            type="button"
+                            className="w-full text-left px-3.5 py-2.5 text-xs hover:bg-blue-50/70 flex flex-col transition border-b border-slate-100 last:border-0 cursor-pointer"
+                            onClick={() => {
+                              setSelectedPatient(p);
+                              setPatientDropdownOpen(false);
+                              setPatientSearch('');
+                            }}
+                          >
+                            <span className="font-bold text-slate-900">
+                              {p.fullName || p.name || `${p.firstName || ''} ${p.lastName || ''}`.trim() || 'Patient'}
+                            </span>
+                            <span className="text-[10px] text-slate-400 font-financeMono">
+                              {p.uhid || p.opNumber || `ID: ${p.id}`}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Amount & Tax */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-800 mb-1 uppercase tracking-wider text-[11px]">
+                    Amount (₹) <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    step="any"
+                    placeholder="0.00"
+                    value={formData.amount}
+                    onChange={e => setFormData({ ...formData, amount: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:border-[#1557FF] focus:ring-1 focus:ring-[#1557FF] font-financeMono tabular-nums font-bold text-sm text-slate-900"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-800 mb-1 uppercase tracking-wider text-[11px]">
+                    Tax (₹)
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    placeholder="0.00"
+                    value={formData.tax}
+                    onChange={e => setFormData({ ...formData, tax: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:border-[#1557FF] focus:ring-1 focus:ring-[#1557FF] font-financeMono tabular-nums font-bold text-sm text-slate-900"
+                  />
+                </div>
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="block font-bold text-slate-800 mb-1 uppercase tracking-wider text-[11px]">
+                  Description / Service Wing
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Cardiology OPD Consultation & ECG panel"
+                  value={formData.description}
+                  onChange={e => setFormData({ ...formData, description: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:border-[#1557FF] focus:ring-1 focus:ring-[#1557FF] text-xs font-medium text-slate-900"
+                />
+              </div>
+
+              {/* Modal Buttons */}
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => { setIsModalOpen(false); resetForm(); }}
+                  className="px-4 py-2 font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={mutation.isPending || !selectedPatient || !formData.amount}
+                  className="px-5 py-2 bg-[#1557FF] hover:bg-blue-700 disabled:opacity-50 text-white font-bold rounded-xl transition shadow-sm shadow-[#1557FF]/25 cursor-pointer flex items-center gap-1.5"
+                >
+                  {mutation.isPending ? 'Generating...' : 'Create Invoice'}
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+
   return (
     <div className="w-full min-h-screen p-4 sm:p-6 lg:p-8 xl:p-10 space-y-6 bg-slate-50/60 font-finance tracking-[-0.01em] max-w-[1920px] mx-auto antialiased">
       
@@ -652,179 +824,7 @@ const InvoicesList = () => {
       </div>
 
       {/* ─── Create Invoice Modal ─── */}
-      {createPortal((
-        <AnimatePresence>
-          {isModalOpen && (
-            <div className="fixed inset-0 z-[9998] flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                className="relative z-[9999] bg-white rounded-3xl p-6 sm:p-7 max-w-lg w-full shadow-2xl border border-slate-200 space-y-5"
-              >
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-xl bg-blue-50 text-[#1557FF] flex items-center justify-center border border-blue-100">
-                    <Receipt className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="font-black text-slate-900 text-lg">Create Billing Invoice</h3>
-                    <p className="text-xs text-slate-500">Generate a financial transaction & patient charge bill</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => { setIsModalOpen(false); resetForm(); }}
-                  className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition cursor-pointer"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              <form onSubmit={handleSubmit} className="space-y-4 text-xs font-medium text-slate-700">
-                
-                {/* Patient Search Input */}
-                <div>
-                  <label className="block font-bold text-slate-800 mb-1.5 uppercase tracking-wider text-[11px]">
-                    Patient Selection <span className="text-rose-500">*</span>
-                  </label>
-                  
-                  {selectedPatient ? (
-                    <div className="flex items-center justify-between px-3.5 py-2.5 bg-blue-50 border border-blue-200 rounded-xl">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 rounded-full bg-[#1557FF] text-white font-bold flex items-center justify-center text-xs">
-                          {(selectedPatient.fullName || selectedPatient.name || 'P').charAt(0)}
-                        </div>
-                        <div>
-                          <span className="font-extrabold text-blue-950 block text-xs">
-                            {selectedPatient.fullName || selectedPatient.name}
-                          </span>
-                          <span className="text-[10px] text-blue-700 font-financeMono">
-                            {selectedPatient.uhid || selectedPatient.opNumber || `ID: ${selectedPatient.id}`}
-                          </span>
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setSelectedPatient(null)}
-                        className="text-blue-700 hover:text-rose-600 transition p-1 cursor-pointer"
-                      >
-                        <X size={16} />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="relative">
-                      <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                        <input
-                          type="text"
-                          value={patientSearch}
-                          onChange={e => { setPatientSearch(e.target.value); setPatientDropdownOpen(true); }}
-                          onFocus={() => setPatientDropdownOpen(true)}
-                          placeholder="Search patient by name or UHID…"
-                          className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:border-[#1557FF] focus:ring-1 focus:ring-[#1557FF] text-xs font-medium transition"
-                        />
-                      </div>
-
-                      {patientDropdownOpen && (patientResults.length > 0 || patientSearchLoading) && (
-                        <div className="absolute z-20 top-full mt-1 left-0 right-0 bg-white border border-slate-200 rounded-xl shadow-xl max-h-48 overflow-y-auto">
-                          {patientSearchLoading && (
-                            <div className="px-3.5 py-2.5 text-xs text-slate-400 font-semibold">Searching patient directory…</div>
-                          )}
-                          {patientResults.map(p => (
-                            <button
-                              key={p.id}
-                              type="button"
-                              className="w-full text-left px-3.5 py-2.5 text-xs hover:bg-blue-50/70 flex flex-col transition border-b border-slate-100 last:border-0 cursor-pointer"
-                              onClick={() => {
-                                setSelectedPatient(p);
-                                setPatientDropdownOpen(false);
-                                setPatientSearch('');
-                              }}
-                            >
-                              <span className="font-bold text-slate-900">
-                                {p.fullName || p.name || `${p.firstName || ''} ${p.lastName || ''}`.trim() || 'Patient'}
-                              </span>
-                              <span className="text-[10px] text-slate-400 font-financeMono">
-                                {p.uhid || p.opNumber || `ID: ${p.id}`}
-                              </span>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Amount & Tax */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block font-bold text-slate-800 mb-1 uppercase tracking-wider text-[11px]">
-                      Amount (₹) <span className="text-rose-500">*</span>
-                    </label>
-                    <input
-                      type="number"
-                      required
-                      step="any"
-                      placeholder="0.00"
-                      value={formData.amount}
-                      onChange={e => setFormData({ ...formData, amount: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:border-[#1557FF] focus:ring-1 focus:ring-[#1557FF] font-financeMono tabular-nums font-bold text-sm text-slate-900"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-slate-800 mb-1 uppercase tracking-wider text-[11px]">
-                      Tax (₹)
-                    </label>
-                    <input
-                      type="number"
-                      step="any"
-                      placeholder="0.00"
-                      value={formData.tax}
-                      onChange={e => setFormData({ ...formData, tax: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:border-[#1557FF] focus:ring-1 focus:ring-[#1557FF] font-financeMono tabular-nums font-bold text-sm text-slate-900"
-                    />
-                  </div>
-                </div>
-
-                {/* Description */}
-                <div>
-                  <label className="block font-bold text-slate-800 mb-1 uppercase tracking-wider text-[11px]">
-                    Description / Service Wing
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Cardiology OPD Consultation & ECG panel"
-                    value={formData.description}
-                    onChange={e => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:border-[#1557FF] focus:ring-1 focus:ring-[#1557FF] text-xs font-medium text-slate-900"
-                  />
-                </div>
-
-                {/* Modal Buttons */}
-                <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
-                  <button
-                    type="button"
-                    onClick={() => { setIsModalOpen(false); resetForm(); }}
-                    className="px-4 py-2 font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={mutation.isPending || !selectedPatient || !formData.amount}
-                    className="px-5 py-2 bg-[#1557FF] hover:bg-blue-700 disabled:opacity-50 text-white font-bold rounded-xl transition shadow-sm shadow-[#1557FF]/25 cursor-pointer flex items-center gap-1.5"
-                  >
-                    {mutation.isPending ? 'Generating...' : 'Create Invoice'}
-                  </button>
-                </div>
-
-              </form>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
-      ), document.body)}
+      {createPortal(invoiceModal, document.body)}
 
     </div>
   );
