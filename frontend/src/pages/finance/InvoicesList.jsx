@@ -244,14 +244,6 @@ const InvoicesList = () => {
       {/* ─── Top Executive Banner ─── */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white p-6 sm:p-7 rounded-2xl border border-slate-200/80 shadow-2xs">
         <div className="flex items-start sm:items-center gap-4">
-          <button
-            onClick={() => navigate('/finance/dashboard')}
-            className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200/80 text-slate-700 transition flex items-center justify-center cursor-pointer shrink-0"
-            title="Back to Finance Dashboard"
-          >
-            <ArrowLeft className="w-5 h-5 text-slate-800" />
-          </button>
-          
           <div className="w-12 h-12 rounded-2xl bg-blue-50 text-[#1557FF] flex items-center justify-center shrink-0 border border-blue-100">
             <FileText className="w-6 h-6" />
           </div>
