@@ -15,7 +15,7 @@ import {
   LineSparkline,
   BarSparkline,
 } from "@bklitui/ui/sparkline";
-import {
+import { 
   Activity,
   AlertCircle,
   ArrowDownRight,
@@ -26,39 +26,39 @@ import {
   Briefcase,
   Building,
   Building2,
-  Calendar,
+  Calendar, 
   CheckCheck,
-  CheckCircle2,
-  Clock,
+  CheckCircle2, 
+  Clock, 
   CreditCard,
-  DollarSign,
+  DollarSign, 
   Download,
   Eye,
   FileBarChart,
   FileCheck,
-  FileText,
+  FileText, 
   Filter,
-  IndianRupee,
+  IndianRupee, 
   Landmark,
   Layers,
   LayoutDashboard,
-  LayoutGrid,
+  LayoutGrid, 
   PieChart,
-  Plus,
+  Plus, 
   Printer,
-  Receipt,
-  RefreshCw,
+  Receipt, 
+  RefreshCw, 
   Scale,
-  Search,
+  Search, 
   Send,
-  Settings,
+  Settings, 
   ShieldAlert,
-  ShieldCheck,
-  TrendingDown,
-  TrendingUp,
+  ShieldCheck, 
+  TrendingDown, 
+  TrendingUp, 
   Users,
   Wallet,
-  X
+  X 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -88,11 +88,11 @@ export default function FinanceDashboard() {
     return () => clearInterval(timer);
   }, []);
 
-  const [newExpense, setNewExpense] = useState({
-    category: 'Medical Supplies',
-    description: '',
-    amount: '',
-    incurredOn: new Date().toISOString().split('T')[0]
+  const [newExpense, setNewExpense] = useState({ 
+    category: 'Medical Supplies', 
+    description: '', 
+    amount: '', 
+    incurredOn: new Date().toISOString().split('T')[0] 
   });
 
   // Calculate start & end dates based on selected range
@@ -321,7 +321,7 @@ export default function FinanceDashboard() {
   const filteredExpenses = useMemo(() => {
     return expenses.filter(e => {
       const matchCat = expenseFilter === 'ALL' || e.status === expenseFilter;
-      const matchSearch = !searchTerm ||
+      const matchSearch = !searchTerm || 
         (e.description && e.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (e.category && e.category.toLowerCase().includes(searchTerm.toLowerCase()));
       return matchCat && matchSearch;
@@ -330,7 +330,7 @@ export default function FinanceDashboard() {
 
   return (
     <div className="w-full min-h-screen p-4 sm:p-6 lg:p-8 xl:p-10 space-y-6 bg-slate-50/60 font-finance tracking-[-0.01em] max-w-[1920px] mx-auto antialiased">
-
+      
       {/* ─── Top Executive Banner ─── */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white p-6 sm:p-7 rounded-2xl border border-slate-200/80 shadow-2xs">
         <div className="flex items-center gap-4">
@@ -378,7 +378,7 @@ export default function FinanceDashboard() {
             </div>
           </div>
 
-          <button
+          <button 
             onClick={handleRefreshAll}
             className="p-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-600 border border-slate-200/90 shadow-2xs hover:text-[#1557FF] transition flex items-center gap-1.5 text-xs font-bold cursor-pointer"
             title="Refresh finance data"
@@ -396,63 +396,25 @@ export default function FinanceDashboard() {
         </div>
       </div>
 
-      {/* ─── Quick-Access Financial Ledgers & Statements Strip ─── */}
-      <div className="bg-white px-4 sm:px-6 py-3.5 rounded-2xl border border-slate-200/80 shadow-2xs flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-        <div className="flex items-center gap-2 text-xs font-extrabold text-slate-800 uppercase tracking-wider shrink-0">
-          <div className="w-7 h-7 rounded-lg bg-blue-50 text-[#1557FF] flex items-center justify-center">
-            <FileCheck className="w-4 h-4" />
-          </div>
-          <span>Financial Ledgers & Statements</span>
+      {/* ─── Quick Nav Shortcut to Dedicated Ledger Pages ─── */}
+      <div className="p-4 bg-blue-50/70 rounded-2xl border border-blue-200 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-2 text-blue-950 font-bold">
+          <FileCheck className="w-5 h-5 text-[#1557FF]" />
+          <span>Dedicated Financial Ledgers & Statements:</span>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:flex lg:items-center gap-2 flex-wrap">
-          <button
-            onClick={() => navigate('/finance/invoices')}
-            className="px-3.5 py-2 bg-slate-50 hover:bg-[#1557FF] text-slate-700 hover:text-white border border-slate-200/80 hover:border-[#1557FF] rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
-          >
-            <FileText className="w-3.5 h-3.5 shrink-0" />
-            <span>Invoices</span>
-          </button>
-          <button
-            onClick={() => navigate('/finance/payments')}
-            className="px-3.5 py-2 bg-slate-50 hover:bg-[#1557FF] text-slate-700 hover:text-white border border-slate-200/80 hover:border-[#1557FF] rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
-          >
-            <CreditCard className="w-3.5 h-3.5 shrink-0" />
-            <span>Payments</span>
-          </button>
-          <button
-            onClick={() => navigate('/finance/pnl')}
-            className="px-3.5 py-2 bg-slate-50 hover:bg-[#1557FF] text-slate-700 hover:text-white border border-slate-200/80 hover:border-[#1557FF] rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
-          >
-            <FileBarChart className="w-3.5 h-3.5 shrink-0" />
-            <span>P&amp;L Statement</span>
-          </button>
-          <button
-            onClick={() => navigate('/finance/insurance-claims')}
-            className="px-3.5 py-2 bg-slate-50 hover:bg-[#1557FF] text-slate-700 hover:text-white border border-slate-200/80 hover:border-[#1557FF] rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
-          >
-            <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
-            <span>Insurance Claims</span>
-          </button>
-          <button
-            onClick={() => navigate('/finance/refunds')}
-            className="px-3.5 py-2 bg-slate-50 hover:bg-[#1557FF] text-slate-700 hover:text-white border border-slate-200/80 hover:border-[#1557FF] rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
-          >
-            <Receipt className="w-3.5 h-3.5 shrink-0" />
-            <span>Refunds &amp; Credit Notes</span>
-          </button>
-          <button
-            onClick={() => navigate('/finance/daily-cash')}
-            className="px-3.5 py-2 bg-slate-50 hover:bg-[#1557FF] text-slate-700 hover:text-white border border-slate-200/80 hover:border-[#1557FF] rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
-          >
-            <Wallet className="w-3.5 h-3.5 shrink-0" />
-            <span>Cash Drawers</span>
-          </button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <button onClick={() => navigate('/finance/invoices')} className="px-3 py-1.5 bg-white border border-blue-200 rounded-lg font-bold text-slate-700 hover:bg-blue-100 transition cursor-pointer">Invoices</button>
+          <button onClick={() => navigate('/finance/payments')} className="px-3 py-1.5 bg-white border border-blue-200 rounded-lg font-bold text-slate-700 hover:bg-blue-100 transition cursor-pointer">Payments</button>
+          <button onClick={() => navigate('/finance/pnl')} className="px-3 py-1.5 bg-white border border-blue-200 rounded-lg font-bold text-slate-700 hover:bg-blue-100 transition cursor-pointer">P&L Statement</button>
+          <button onClick={() => navigate('/finance/insurance-claims')} className="px-3 py-1.5 bg-white border border-blue-200 rounded-lg font-bold text-slate-700 hover:bg-blue-100 transition cursor-pointer">Insurance Claims</button>
+          <button onClick={() => navigate('/finance/refunds')} className="px-3 py-1.5 bg-white border border-blue-200 rounded-lg font-bold text-slate-700 hover:bg-blue-100 transition cursor-pointer">Refunds & Credit Notes</button>
+          <button onClick={() => navigate('/finance/daily-cash')} className="px-3 py-1.5 bg-white border border-blue-200 rounded-lg font-bold text-slate-700 hover:bg-blue-100 transition cursor-pointer">Cash Drawers</button>
         </div>
       </div>
 
       {/* ─── 4 Primary Top Financial KPIs ─── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 xl:gap-6">
-
+        
         {/* Total Revenue */}
         <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/80 shadow-2xs relative overflow-hidden group">
           <div className="absolute top-0 left-0 right-0 h-1 bg-[#1557FF]"></div>
@@ -600,7 +562,7 @@ export default function FinanceDashboard() {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
-
+          
           <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
             <span className="text-[10px] font-bold text-slate-500 uppercase block truncate">Today's Collection</span>
             <p className="text-sm font-black text-slate-900 font-financeMono tabular-nums mt-0.5">{formatINR(todayCollection)}</p>
@@ -652,17 +614,17 @@ export default function FinanceDashboard() {
         </div>
       </div>
 
-      {/* ─── 8 Core Areas Interactive Navigation Bar ─── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-8 gap-2.5">
+      {/* ─── 7 Core Areas Interactive Navigation Bar ─── */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
         {[
-          { id: 'overview', label: '1. Overview', icon: LayoutGrid },
-          { id: 'revenue', label: '2. Revenue', icon: TrendingUp },
-          { id: 'expenses', label: '3. Expenses', icon: TrendingDown },
-          { id: 'receivables', label: '4. Receivables', icon: Receipt },
-          { id: 'payables', label: '5. Payables', icon: Building2 },
-          { id: 'accounting', label: '6. Accounting', icon: BookOpen },
-          { id: 'banking', label: '7. Banking & Cash', icon: Landmark },
-          { id: 'payroll', label: '8. HR Payroll', icon: Users },
+          { id: 'overview', label: '1. Executive Overview & Charts', icon: LayoutGrid },
+          { id: 'revenue', label: '2. Revenue & Billing Streams', icon: TrendingUp },
+          { id: 'expenses', label: '3. Expenses & Approvals', icon: TrendingDown },
+          { id: 'receivables', label: '4. Accounts Receivable', icon: Receipt },
+          { id: 'payables', label: '5. Accounts Payable & Vendors', icon: Building2 },
+          { id: 'accounting', label: '6. Accounting & General Ledger', icon: BookOpen },
+          { id: 'banking', label: '7. Banking & Cash Treasury', icon: Landmark },
+          { id: 'payroll', label: '8. HR Payroll Integration', icon: Users },
         ].map(tab => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -670,14 +632,14 @@ export default function FinanceDashboard() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-3 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 whitespace-nowrap transition-all cursor-pointer ${
+              className={`px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 whitespace-nowrap transition-all cursor-pointer ${
                 isActive
                   ? 'bg-[#1557FF] text-white shadow-sm shadow-[#1557FF]/25 ring-2 ring-[#1557FF]/20'
                   : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200/90 shadow-2xs'
               }`}
             >
               <Icon className="w-4 h-4 shrink-0" />
-              <span className="truncate">{tab.label}</span>
+              {tab.label}
             </button>
           );
         })}
@@ -686,10 +648,10 @@ export default function FinanceDashboard() {
       {/* ─── Tab 1: Executive Overview & Charts ─── */}
       {activeTab === 'overview' && (
         <div className="space-y-6">
-
+          
           {/* Charts Row 1: Revenue vs Expenses & Department Breakdown */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
+            
             {/* 6-Month Revenue vs Expenses Trend (Bklit BarChart UI) */}
             <div className="lg:col-span-7 xl:col-span-8 bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-2xs space-y-6">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -748,7 +710,7 @@ export default function FinanceDashboard() {
                       <span className="font-financeMono tabular-nums font-bold text-slate-900">{formatINR(dept.amount)} ({dept.percentage}%)</span>
                     </div>
                     <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                      <div
+                      <div 
                         className="h-full rounded-full transition-all duration-500"
                         style={{ width: `${dept.percentage}%`, backgroundColor: dept.color }}
                       ></div>
@@ -767,7 +729,7 @@ export default function FinanceDashboard() {
 
           {/* Charts Row 2: Payment Methods & Receivables Aging */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
+            
             {/* Payment Method Distribution */}
             <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-2xs space-y-4">
               <div className="flex items-center justify-between">
@@ -814,7 +776,7 @@ export default function FinanceDashboard() {
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-black text-slate-900 font-financeMono tabular-nums">{formatINR(age.amount)}</p>
-                      <button
+                      <button 
                         onClick={() => setActiveTab('receivables')}
                         className="text-[10px] font-bold text-[#1557FF] hover:text-blue-700 uppercase tracking-wider cursor-pointer"
                       >
@@ -911,7 +873,7 @@ export default function FinanceDashboard() {
               <h3 className="text-base font-black text-slate-900">Hospital Operational Expenditures</h3>
               <p className="text-xs text-slate-500">Track multi-department medical purchases, utility expenses, and approval queues</p>
             </div>
-            <button
+            <button 
               onClick={() => setIsExpenseModalOpen(true)}
               className="px-4 py-2.5 bg-[#1557FF] hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
             >
@@ -925,10 +887,11 @@ export default function FinanceDashboard() {
               <button
                 key={st}
                 onClick={() => setExpenseFilter(st)}
-                className={`px-3 py-1.5 rounded-lg font-bold transition cursor-pointer ${expenseFilter === st
-                  ? 'bg-slate-900 text-white shadow-2xs'
-                  : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
-                  }`}
+                className={`px-3 py-1.5 rounded-lg font-bold transition cursor-pointer ${
+                  expenseFilter === st
+                    ? 'bg-slate-900 text-white shadow-2xs'
+                    : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+                }`}
               >
                 {st.replace('_', ' ')}
               </button>
@@ -964,24 +927,25 @@ export default function FinanceDashboard() {
                         <td className="py-3.5 px-4 font-medium text-slate-700 max-w-xs truncate">{exp.description}</td>
                         <td className="py-3.5 px-4 text-right font-black font-financeMono tabular-nums text-slate-900">{formatINR(exp.amount)}</td>
                         <td className="py-3.5 px-4 text-center">
-                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase ${exp.status === 'PAID' ? 'bg-blue-50 text-[#1557FF] border border-blue-200' :
+                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase ${
+                            exp.status === 'PAID' ? 'bg-blue-50 text-[#1557FF] border border-blue-200' :
                             exp.status === 'APPROVED' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' :
-                              exp.status === 'REJECTED' ? 'bg-rose-50 text-rose-700 border border-rose-200' :
-                                'bg-amber-50 text-amber-700 border border-amber-200'
-                            }`}>
+                            exp.status === 'REJECTED' ? 'bg-rose-50 text-rose-700 border border-rose-200' :
+                            'bg-amber-50 text-amber-700 border border-amber-200'
+                          }`}>
                             {exp.status.replace('_', ' ')}
                           </span>
                         </td>
                         <td className="py-3.5 px-4 text-right space-x-1">
                           {exp.status === 'PENDING_APPROVAL' && (
                             <>
-                              <button
+                              <button 
                                 onClick={() => approveMutation.mutate(exp.id)}
                                 className="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-[#1557FF] font-bold rounded-lg transition text-[11px] cursor-pointer"
                               >
                                 Approve
                               </button>
-                              <button
+                              <button 
                                 onClick={() => rejectExpenseMutation.mutate({ id: exp.id, reason: 'Budget deficit' })}
                                 className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-lg transition text-[11px] cursor-pointer"
                               >
@@ -990,7 +954,7 @@ export default function FinanceDashboard() {
                             </>
                           )}
                           {exp.status === 'APPROVED' && (
-                            <button
+                            <button 
                               onClick={() => payExpenseMutation.mutate(exp.id)}
                               className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition text-[11px] cursor-pointer"
                             >
@@ -1052,7 +1016,7 @@ export default function FinanceDashboard() {
                       </td>
                       <td className="py-3.5 px-4 font-financeMono tabular-nums text-slate-600">{rec.dueDate}</td>
                       <td className="py-3.5 px-4 text-right">
-                        <button
+                        <button 
                           onClick={() => toast.success(`Payment follow-up notice sent for ${rec.invoiceNumber}`)}
                           className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg transition text-[11px] cursor-pointer"
                         >
@@ -1104,13 +1068,14 @@ export default function FinanceDashboard() {
                       <td className="py-3.5 px-4 text-right font-black font-financeMono tabular-nums text-slate-900">{formatINR(pay.amount)}</td>
                       <td className="py-3.5 px-4 font-financeMono tabular-nums text-slate-600">{pay.dueDate}</td>
                       <td className="py-3.5 px-4 text-center">
-                        <span className={`px-2 py-0.5 rounded-md font-extrabold text-[10px] ${pay.status === 'OVERDUE' ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-amber-50 text-amber-700 border border-amber-200'
-                          }`}>
+                        <span className={`px-2 py-0.5 rounded-md font-extrabold text-[10px] ${
+                          pay.status === 'OVERDUE' ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-amber-50 text-amber-700 border border-amber-200'
+                        }`}>
                           {pay.status.replace('_', ' ')}
                         </span>
                       </td>
                       <td className="py-3.5 px-4 text-right">
-                        <button
+                        <button 
                           onClick={() => toast.success(`Bank disbursement initiated for ${pay.vendorName}`)}
                           className="px-3 py-1 bg-[#1557FF] hover:bg-blue-700 text-white font-bold rounded-lg transition text-[11px] cursor-pointer"
                         >
@@ -1159,11 +1124,12 @@ export default function FinanceDashboard() {
                       <td className="py-3.5 px-4 font-financeMono tabular-nums font-bold text-slate-900">{coa.accountCode}</td>
                       <td className="py-3.5 px-4 font-bold text-slate-800">{coa.accountName}</td>
                       <td className="py-3.5 px-4">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${coa.accountType === 'ASSET' ? 'bg-blue-50 text-[#1557FF]' :
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${
+                          coa.accountType === 'ASSET' ? 'bg-blue-50 text-[#1557FF]' :
                           coa.accountType === 'LIABILITY' ? 'bg-rose-50 text-rose-700' :
-                            coa.accountType === 'EQUITY' ? 'bg-purple-50 text-purple-700' :
-                              coa.accountType === 'REVENUE' ? 'bg-indigo-50 text-indigo-700' : 'bg-amber-50 text-amber-700'
-                          }`}>
+                          coa.accountType === 'EQUITY' ? 'bg-purple-50 text-purple-700' :
+                          coa.accountType === 'REVENUE' ? 'bg-indigo-50 text-indigo-700' : 'bg-amber-50 text-amber-700'
+                        }`}>
                           {coa.accountType}
                         </span>
                       </td>
@@ -1374,7 +1340,7 @@ export default function FinanceDashboard() {
             </div>
 
             <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
-              <button
+              <button 
                 onClick={() => setIsExpenseModalOpen(false)}
                 className="px-4 py-2 font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition cursor-pointer"
               >

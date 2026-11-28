@@ -440,7 +440,7 @@ const FinanceRefunds = () => {
 
       {/* ─── Initiate Refund Modal ─── */}
       {isModalOpen && createPortal(
-        <div className="fixed inset-0 z-[9998] bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[9998] bg-black/70 flex items-center justify-center p-4">
           <div className="relative z-[9999] bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-slate-100 space-y-5 animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2.5">
